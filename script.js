@@ -42,7 +42,7 @@ function showPage(pageId) {
 
 // ฟังก์ชันบันทึกกิจกรรม (ใช้ร่วมกับ Google Apps Script)
 async function addEvent() {
-    const url = "ใส่URLเว็บแอปของคุณที่นี่"; 
+    const url = "https://script.google.com/macros/s/AKfycbzJirF7Ldstah4LZepPRCGWmnoPSDnLGv0KvFb3bac-bvh8iLLxMdUH0Tc5EmIAz_c/exec"; 
     const title = document.getElementById('eventTitle').value;
     const start = document.getElementById('eventStart').value;
     const end = document.getElementById('eventEnd').value;
@@ -66,3 +66,4 @@ async function addEvent() {
         msg.innerText = "❌ ผิดพลาด: " + e.message;
     }
 }
+
