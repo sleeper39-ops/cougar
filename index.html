@@ -1,40 +1,38 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>เข้าสู่ระบบ</title>
+    <title>Login - Cougar2</title>
     <style>
-        body { font-family: 'Sarabun', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 350px; text-align: center; }
-        h2 { color: #333; margin-bottom: 25px; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        button:hover { background: #2980b9; }
-        #msg { color: #e74c3c; font-size: 14px; margin-top: 10px; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #2c3e50; }
+        .login-box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; }
+        input { display: block; width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #3498db; color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
-
-<div class="login-box">
-    <h2>Login</h2>
-    <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน">
-    <input type="password" id="password" placeholder="รหัสผ่าน">
-    <button onclick="checkLogin()">เข้าสู่ระบบ</button>
-    <p id="msg"></p>
-</div>
-<script src="script.js"></script>
+    <div class="login-box">
+        <h2>เข้าสู่ระบบ</h2>
+        <input type="text" id="username" placeholder="ไอดี">
+        <input type="password" id="password" placeholder="รหัสผ่าน">
+        <button onclick="checkLogin()">ตกลง</button>
+        <p id="msg"></p>
+    </div>
 
     <script>
-    // ดักจับการกดปุ่ม Enter ทั่วทั้งหน้าจอ Login
-    document.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            checkLogin();
+        const users = [{ id: "admin", pass: "admin2" }, { id: "user", pass: "user2" }];
+        function checkLogin() {
+            const u = document.getElementById("username").value;
+            const p = document.getElementById("password").value;
+            const found = users.find(user => user.id === u && user.pass === p);
+            if (found) {
+                localStorage.setItem("isLoggedIn", "true");
+                window.location.href = "main.html";
+            } else {
+                document.getElementById("msg").innerText = "รหัสผ่านผิด!";
+                document.getElementById("msg").style.color = "red";
+            }
         }
-    });
-</script>
-
+    </script>
 </body>
 </html>
-
-
-
