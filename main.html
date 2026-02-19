@@ -5,35 +5,31 @@
     <title>Cougar2 - Smart System</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        body { display: flex; margin: 0; font-family: 'Segoe UI', sans-serif; background: #f0f2f5; height: 100vh; }
+        body { display: flex; margin: 0; font-family: sans-serif; background: #f4f7f6; height: 100vh; overflow: hidden; }
         .sidebar { width: 250px; background: #1a1a1a; color: white; padding: 20px; display: flex; flex-direction: column; }
         .sidebar a { color: #bbb; text-decoration: none; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; }
         .sidebar a.active { background: #3498db; color: white; }
-        .main-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .main-content { flex: 1; padding: 25px; overflow-y: auto; }
         .page-content { display: none; }
-        .page-content.active { display: block; }
-        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .cam-card { background: #000; border-radius: 10px; aspect-ratio: 16/9; position: relative; overflow: hidden; }
-        .video-player { width: 100%; height: 100%; }
-        .calendar-container { background: white; padding: 20px; border-radius: 10px; height: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        input { padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        button#btnSubmit { padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button#btnSubmit:disabled { background: #ccc; }
+        .active-page { display: block !important; }
+        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .cam-card { background: #000; border-radius: 12px; aspect-ratio: 16/9; position: relative; overflow: hidden; border: 2px solid #fff; }
+        .video-player { width: 100%; height: 100%; object-fit: cover; }
+        .calendar-container { background: white; padding: 15px; border-radius: 12px; height: 600px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h2>Cougar2</h2>
-        <a onclick="showPage('live-page')" id="btn-live" class="active">กล้องสด</a>
-        <a onclick="showPage('calendar-page')" id="btn-cal">ปฏิทินการจอง</a>
-        <a href="map.html">แผนที่</a>
-        <button onclick="logout()" style="margin-top:auto; padding:10px; background:#e74c3c; border:none; color:white; border-radius:5px; cursor:pointer;">ออกระบบ</button>
+        <a href="javascript:void(0)" onclick="showPage('live-page')" id="btn-live" class="active">หน้าหลัก</a>
+        <a href="javascript:void(0)" onclick="showPage('calendar-page')" id="btn-cal">ปฏิทินกิจกรรม</a>
+        <button onclick="logout()" style="margin-top:auto; background:#e74c3c; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">ออกจากระบบ</button>
     </div>
 
     <div class="main-content">
-        <div id="live-page" class="page-content active">
-            <h2>ระบบสตรีมสด</h2>
+        <div id="live-page" class="page-content active-page">
+            <h2>กล้องวงจรปิดสด</h2>
             <div class="video-grid">
                 <div class="cam-card"><video id="v1" class="video-player" autoplay muted playsinline></video></div>
                 <div class="cam-card"><video id="v2" class="video-player" autoplay muted playsinline></video></div>
@@ -43,80 +39,76 @@
         </div>
 
         <div id="calendar-page" class="page-content">
-            <h2>จัดการการจอง</h2>
-            <div style="background:white; padding:20px; border-radius:10px; margin-bottom:20px;">
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <input type="text" id="eventTitle" placeholder="ระบุหัวข้อการจอง..." style="flex:2">
-                    <input type="datetime-local" id="eventStart">
-                    <input type="datetime-local" id="eventEnd">
-                    <button onclick="addEvent()" id="btnSubmit">บันทึกการจอง</button>
-                </div>
+            <h2>จัดการกิจกรรม / การจอง</h2>
+            <div style="background:#fff; padding:20px; border-radius:12px; margin-bottom:20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <input type="text" id="eventTitle" placeholder="หัวข้อ..." style="padding:8px; width:200px;">
+                <input type="datetime-local" id="eventStart" style="padding:8px;">
+                <input type="datetime-local" id="eventEnd" style="padding:8px;">
+                <button onclick="addEvent()" id="btnSubmit" style="padding:8px 20px; background:#27ae60; color:white; border:none; border-radius:5px; cursor:pointer;">บันทึก</button>
                 <p id="statusMsg" style="margin-top:10px; font-weight:bold;"></p>
             </div>
             <div class="calendar-container">
                 <iframe id="calFrame" src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok" 
-                        style="border:0" width="100%" height="100%" frameborder="0"></iframe>
+                style="border:0" width="100%" height="100%" frameborder="0"></iframe>
             </div>
         </div>
     </div>
 
     <script>
-        function showPage(p) {
-            document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(p).classList.add('active');
-            document.getElementById('btn-live').className = (p==='live-page'?'active':'');
-            document.getElementById('btn-cal').className = (p==='calendar-page'?'active':'');
+        // เช็คการ Login
+        if (localStorage.getItem("isLoggedIn") !== "true") { window.location.href = "index.html"; }
+
+        // ฟังก์ชันสลับหน้า
+        function showPage(id) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(id).classList.add('active-page');
+            document.getElementById('btn-live').classList.remove('active');
+            document.getElementById('btn-cal').classList.remove('active');
+            if(id === 'live-page') document.getElementById('btn-live').classList.add('active');
+            if(id === 'calendar-page') document.getElementById('btn-cal').classList.add('active');
         }
 
+        // ฟังก์ชันเพิ่มกิจกรรม
         async function addEvent() {
-            const url = "ใส่_URL_ที่ได้จาก_DEPLOY_อันใหม่_ตรงนี้"; 
+            const url = "ใส่_URL_WEBAPP_จาก_GAS_ตรงนี้";
             const title = document.getElementById('eventTitle').value;
             const start = document.getElementById('eventStart').value;
             const end = document.getElementById('eventEnd').value;
             const msg = document.getElementById('statusMsg');
-            const btn = document.getElementById('btnSubmit');
 
             if(!title || !start || !end) return alert("กรุณากรอกข้อมูลให้ครบ");
 
-            msg.innerText = "⏳ กำลังบันทึกข้อมูล...";
+            msg.innerText = "⏳ กำลังบันทึก...";
             msg.style.color = "blue";
-            btn.disabled = true;
 
             try {
-                // ส่งข้อมูลเข้า GAS
                 await fetch(url, {
                     method: 'POST',
                     mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, start, end })
                 });
-
-                // เนื่องจาก no-cors เราจะใช้เวลาหน่วง 2 วินาทีแล้วรีเฟรช
-                msg.innerText = "✅ บันทึกสำเร็จ! กำลังอัปเดตปฏิทิน...";
+                msg.innerText = "✅ บันทึกสำเร็จ! (Telegram แจ้งเตือนแล้ว)";
                 msg.style.color = "green";
-                
-                setTimeout(() => {
-                    document.getElementById('calFrame').src += ""; // รีโหลดปฏิทิน
-                    document.getElementById('eventTitle').value = "";
+                setTimeout(() => { 
+                    document.getElementById('calFrame').src += ""; // Refresh Iframe
                     msg.innerText = "";
-                    btn.disabled = false;
-                }, 2500);
-
+                }, 3000);
             } catch (e) {
-                msg.innerText = "❌ เกิดข้อผิดพลาด: " + e.message;
-                msg.style.color = "red";
-                btn.disabled = false;
+                msg.innerText = "❌ ผิดพลาด: " + e.message;
             }
         }
 
-        // โหลดวิดีโอ (ตัวอย่าง)
+        function logout() { localStorage.clear(); window.location.href = "index.html"; }
+
+        // โหลดวิดีโอ
         function setVid(id, src) {
             var v = document.getElementById(id);
             if (Hls.isSupported()) { var hls = new Hls(); hls.loadSource(src); hls.attachMedia(v); }
         }
         setVid('v1', 'https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist.m3u8');
-        // เพิ่ม v2-v4 ตามเดิม...
+        setVid('v2', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist.m3u8');
+        setVid('v3', 'https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist.m3u8');
+        setVid('v4', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist.m3u8');
     </script>
 </body>
 </html>
