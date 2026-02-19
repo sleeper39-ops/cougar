@@ -2,187 +2,100 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>หน้าหลัก - ระบบจัดการที่จอดรถ</title>
+    <title>Cougar2 - Smart System</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { display: flex; height: 100vh; background: #f0f2f5; }
+        /* สไตล์พื้นฐาน */
+        body { display: flex; margin: 0; font-family: sans-serif; background: #f4f7f6; height: 100vh; }
         
-        .sidebar { width: 260px; background: #1a1a1a; color: white; padding: 20px; display: flex; flex-direction: column; }
-        .sidebar h3 { margin-bottom: 30px; color: #3498db; text-align: center; }
-        .sidebar a { color: #bbb; text-decoration: none; padding: 15px; display: block; border-radius: 8px; margin-bottom: 5px; }
-        .sidebar a:hover { background: #333; color: white; }
+        /* Sidebar */
+        .sidebar { width: 250px; background: #1a1a1a; color: white; padding: 20px; display: flex; flex-direction: column; }
+        .sidebar h2 { color: #3498db; text-align: center; margin-bottom: 30px; }
+        .sidebar a { color: #bbb; text-decoration: none; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: block; }
+        .sidebar a:hover, .sidebar a.active { background: #333; color: white; }
+        .logout-btn { margin-top: auto; background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
+
+        /* พื้นที่แสดงผลขวามือ */
+        .main-content { flex: 1; padding: 25px; overflow-y: auto; }
         
-        .content { flex: 1; padding: 40px; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; }
-        .cam-card { background: #000; aspect-ratio: 16/9; border-radius: 12px; position: relative; display: flex; align-items: center; justify-content: center; color: #666; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .cam-label { position: absolute; top: 15px; left: 15px; background: rgba(231, 76, 60, 0.8); color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
-        
-        .logout { margin-top: auto; background: #c0392b !important; text-align: center; }
+        /* ส่วนจัดการการซ่อน/แสดง */
+        .page-content { display: none; } 
+        .page-content.active { display: block; }
+
+        /* สไตล์หน้ากล้อง */
+        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .cam-card { background: #000; border-radius: 12px; aspect-ratio: 16/9; position: relative; border: 2px solid #fff; overflow: hidden; }
+        .video-player { width: 100%; height: 100%; object-fit: cover; }
+        .cam-label { position: absolute; top: 10px; left: 10px; background: rgba(231,76,60,0.9); color: white; padding: 4px 12px; border-radius: 15px; font-size: 12px; z-index: 5; }
+
+        /* สไตล์หน้าปฏิทิน */
+        .calendar-container { background: white; padding: 15px; border-radius: 12px; height: 85vh; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 
-    <script>
-        if (sessionStorage.getItem("isLoggedIn") !== "true") {
-            window.location.href = "index.html";
-        }
-    </script>
-
     <div class="sidebar">
-        <h3>Cougar2</h3>
-        <div id="calendar-page" class="page-content" style="display: none;">
-    <h1 style="margin-bottom: 20px;">ปฏิทินกิจกรรม</h1>
-    <div style="background: white; padding: 15px; border-radius: 12px; height: 80vh; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-        <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok" 
-                style="border: 0" width="100%" height="100%" frameborder="0" scrolling="no">
-        </iframe>
-    </div>
-</div>
-        <a onclick="showPage('live-page')" id="nav-live" class="active">หน้าหลัก</a>
-        <a onclick="showPage('calendar-page')" id="nav-cal">ปฏิทินกิจกรรม</a>
+        <h2>Cougar2</h2>
+        <a onclick="showPage('live-page')" id="btn-live" class="active">หน้าหลัก</a>
+        <a onclick="showPage('calendar-page')" id="btn-cal">ปฏิทินกิจกรรม</a>
         <a href="map.html">Map</a>
-        <a href="#" class="logout" onclick="logout()">ออกจากระบบ</a>
+        <button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
     </div>
 
-<div class="content">
-    <h1 style="margin-bottom: 20px; color: #333;">ระบบสตรีมสดกล้อง 4 ตัว</h1>
-    <div class="video-grid">
-        
-        <div class="cam-card">
-            <div class="cam-label">● LIVE - กล้อง 1</div>
-            <video id="video1" class="video-player" autoplay muted playsinline controls></video>
+    <div class="main-content">
+
+        <div id="live-page" class="page-content active">
+            <h1 style="margin-bottom: 20px;">ระบบสตรีมสดกล้อง 4 ตัว</h1>
+            <div class="video-grid">
+                <div class="cam-card"><div class="cam-label">● LIVE - กล้อง 1</div><video id="v1" class="video-player" autoplay muted playsinline></video></div>
+                <div class="cam-card"><div class="cam-label">● LIVE - กล้อง 2</div><video id="v2" class="video-player" autoplay muted playsinline></video></div>
+                <div class="cam-card"><div class="cam-label">● LIVE - กล้อง 3</div><video id="v3" class="video-player" autoplay muted playsinline></video></div>
+                <div class="cam-card"><div class="cam-label">● LIVE - กล้อง 4</div><video id="v4" class="video-player" autoplay muted playsinline></video></div>
+            </div>
         </div>
 
-        <div class="cam-card">
-            <div class="cam-label">● LIVE - กล้อง 2</div>
-            <video id="video2" class="video-player" autoplay muted playsinline controls></video>
-        </div>
-
-        <div class="cam-card">
-            <div class="cam-label">● LIVE - กล้อง 3</div>
-            <video id="video3" class="video-player" autoplay muted playsinline controls></video>
-        </div>
-
-        <div class="cam-card">
-            <div class="cam-label">● LIVE - กล้อง 4</div>
-            <video id="video4" class="video-player" autoplay muted playsinline controls></video>
+        <div id="calendar-page" class="page-content">
+            <h1 style="margin-bottom: 20px;">ปฏิทินกิจกรรม</h1>
+            <div class="calendar-container">
+                <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok" 
+                        style="border: 0" width="100%" height="100%" frameborder="0" scrolling="no"></iframe>
+            </div>
         </div>
 
     </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-<script>
-    function setupVideo(videoId, streamUrl) {
-        var video = document.getElementById(videoId);
-        if (Hls.isSupported()) {
-            var hls = new Hls();
-            hls.loadSource(streamUrl);
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                video.play();
-            });
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = streamUrl;
-            video.addEventListener('loadedmetadata', function() {
-                video.play();
-            });
-        }
-    }
-
-    // --- ใส่ลิงก์กล้องทั้ง 4 ตัวที่นี่ ---
-    setupVideo('video1', 'https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist_w2010918290.m3u8');
-    setupVideo('video2', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist_w34733218.m3u8');
-    
-    // เปลี่ยน URL ด้านล่างนี้เป็นลิงก์กล้องตัวใหม่ของคุณ
-    setupVideo('video3', 'https://streaming.udoncity.go.th:1935/live/Axis_12_38.stream/chunklist_w1610502304.m3u8'); 
-    setupVideo('video4', 'https://streaming.udoncity.go.th:1935/live/Axis_12_22.stream/chunklist_w236554495.m3u8');
-</script>
-
-<style>
-    .video-grid {
-        display: grid;
-        /* ปรับ minmax ให้เล็กลงหน่อยเพื่อให้โชว์ 2 ตัวต่อแถวได้สวยๆ */
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
-        gap: 20px;
-    }
-    .cam-card {
-        background: #000;
-        border-radius: 12px;
-        aspect-ratio: 16 / 9;
-        position: relative;
-        overflow: hidden;
-        border: 2px solid #fff;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-    .video-player {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .cam-label {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: rgba(231, 76, 60, 0.9);
-        color: white;
-        padding: 4px 12px;
-        border-radius: 15px;
-        font-size: 12px;
-        z-index: 10;
-    }
-</style>
-
-<style>
-    /* ปรับแต่ง Grid ให้ดูทันสมัยขึ้น */
-    .video-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-        gap: 25px;
-    }
-
-    .cam-card {
-        background: #000;
-        border-radius: 12px;
-        aspect-ratio: 16 / 9;
-        position: relative;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        border: 2px solid #fff;
-    }
-
-    .cam-label {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        background: rgba(231, 76, 60, 0.9);
-        color: white;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: bold;
-        z-index: 10;
-        letter-spacing: 0.5px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    }
-</style>
 
     <script>
-        function logout() {
-            sessionStorage.clear();
-            window.location.href = "index.html";
+        // 1. ฟังก์ชันสลับหน้า
+        function showPage(pageId) {
+            // ซ่อนทุกหน้า
+            document.getElementById('live-page').classList.remove('active');
+            document.getElementById('calendar-page').classList.remove('active');
+            // แสดงหน้าที่เลือก
+            document.getElementById(pageId).classList.add('active');
+
+            // เปลี่ยนสีปุ่มในเมนู
+            document.getElementById('btn-live').classList.remove('active');
+            document.getElementById('btn-cal').classList.remove('active');
+            if(pageId === 'live-page') document.getElementById('btn-live').classList.add('active');
+            if(pageId === 'calendar-page') document.getElementById('btn-cal').classList.add('active');
         }
+
+        // 2. ฟังก์ชันโหลดกล้อง
+        function setupVideo(id, url) {
+            var v = document.getElementById(id);
+            if (Hls.isSupported()) {
+                var hls = new Hls(); hls.loadSource(url); hls.attachMedia(v);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() { v.play(); });
+            }
+        }
+
+        // ใส่ลิงก์กล้องของคุณ
+        setupVideo('v1', 'https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist_w2010918290.m3u8');
+        setupVideo('v2', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist_w34733218.m3u8');
+        setupVideo('v3', 'https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist_w2010918290.m3u8');
+        setupVideo('v4', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist_w34733218.m3u8');
+
+        function logout() { localStorage.clear(); window.location.href = "index.html"; }
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
