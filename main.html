@@ -107,6 +107,58 @@
 
         function logout() { localStorage.clear(); window.location.href = "index.html"; }
     </script>
+        <script>
+        // ... ฟังก์ชันเดิมที่มีอยู่ (เช่น showPage หรือ setupVideo) ...
+
+        // วางฟังก์ชัน addEvent ต่อท้ายตรงนี้ได้เลยครับ
+        async function addEvent() {
+            // อย่าลืมเปลี่ยน URL ตรงนี้เป็นลิงก์ Web App ที่ได้จาก Google Apps Script นะครับ
+            const url = "https://script.google.com/macros/s/XXXXX/exec"; 
+            
+            const title = document.getElementById('eventTitle').value;
+            const start = document.getElementById('eventStart').value;
+            const end = document.getElementById('eventEnd').value;
+            const msg = document.getElementById('statusMsg');
+
+            if (!title || !start || !end) {
+                alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+                return;
+            }
+
+            msg.innerText = "กำลังบันทึก...";
+            document.getElementById('btnSubmit').disabled = true;
+
+            try {
+                // สำหรับ Google Apps Script ต้องใช้โหมด 'no-cors' หรือจัดการฝั่ง Server
+                // แต่ปกติ fetch แบบ POST ไปยัง Web App จะเจอปัญหา Redirect
+                // แนะนำให้ส่งแบบนี้เพื่อให้ทำงานกับ GAS ได้ดีที่สุด:
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors', // สำคัญ: เพื่อเลี่ยงปัญหา CORS กับ Google
+                    headers: { 'Content-Type': 'application/plaintext' },
+                    body: JSON.stringify({ title, start, end })
+                });
+
+                // หมายเหตุ: ถ้าใช้ mode: 'no-cors' เราจะไม่สามารถอ่าน JSON result ได้ตรงๆ
+                // แต่กิจกรรมจะถูกบันทึกลงปฏิทินเรียบร้อยแล้วครับ
+                msg.style.color = "green";
+                msg.innerText = "ส่งคำขอสำเร็จ! กรุณารอ 2-3 วินาทีแล้วรีเฟรชปฏิทิน";
+                document.getElementById('eventTitle').value = "";
+                
+                // สั่งรีเฟรช iframe ปฏิทิน
+                setTimeout(() => {
+                    document.querySelector('iframe').src += ""; 
+                }, 2000);
+
+            } catch (error) {
+                msg.style.color = "red";
+                msg.innerText = "เกิดข้อผิดพลาด: " + error.message;
+            } finally {
+                document.getElementById('btnSubmit').disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>
+
 
