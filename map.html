@@ -1,19 +1,12 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
- <meta charset="UTF-8">
-    <title>แผนที่ที่จอดรถ</title>
-
-    <script>
-        // ถ้าค่า isLoggedIn ในเครื่องไม่ใช่ "true" ให้เด้งไปหน้าแรกทันที
-        if (sessionStorage.getItem("isLoggedIn") !== "true") {
-            window.location.href = "index.html"; 
-        }
-    </script>
-    
-    <style>
-        /* สไตล์เดิมของคุณ... */
-    </style>
+<script>
+    // ถ้าไม่มีบัตรผ่าน ให้เด้งกลับหน้า Login
+    if (sessionStorage.getItem("isLoggedIn") !== "true") {
+        window.location.href = "index.html"; 
+    }
+</script>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>CCTV ONLINE SYSTEM - FIREBASE</title>
@@ -345,4 +338,5 @@ function toggleGrid() {
 </script>
 </body>
 </html>
+
 
