@@ -1,23 +1,23 @@
-// 1. ส่วนเก็บข้อมูลผู้ใช้ (เพิ่ม/ลด/แก้ไข ตรงนี้ได้เลย)
+// รายชื่อผู้ที่มีสิทธิ์เข้าใช้งาน
 const users = [
     { id: "admin", pass: "admin2" },
-    { id: "user1", pass: "1234" }, // ตัวอย่างการเพิ่ม ID ใหม่
-    { id: "tapo_manager", pass: "parking99" }
+    { id: "user", pass: "user2" }
 ];
 
-// 2. ฟังก์ชันตรวจสอบการ Login
 function checkLogin() {
     const userIn = document.getElementById("username").value;
     const passIn = document.getElementById("password").value;
     const msg = document.getElementById("msg");
 
-    // ตรวจสอบว่า ID และ Pass ตรงกับในรายการที่มีไหม
+    // ตรวจสอบข้อมูลใน Array users
     const foundUser = users.find(u => u.id === userIn && u.pass === passIn);
 
     if (foundUser) {
-        // ถ้าถูก ให้ไปหน้า main.html
+        // สร้าง Token จำลองไว้ในเครื่องเพื่อให้หน้า main รู้ว่าล็อคอินแล้ว
+        sessionStorage.setItem("isLoggedIn", "true");
+        // ย้ายไปหน้า main.html
         window.location.href = "main.html"; 
     } else {
-        msg.innerText = "ID หรือ Password ไม่ถูกต้อง!";
+        msg.innerText = "ไอดีหรือรหัสผ่านไม่ถูกต้อง!";
     }
 }
