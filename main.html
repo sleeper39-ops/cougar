@@ -37,7 +37,7 @@
     </div>
 
    <div class="content">
-    <h1 style="margin-bottom: 20px;">สตรีมสดจากกล้อง Tapo</h1>
+    <h1 style="margin-bottom: 20px; color: #333;">สตรีมสด</h1>
     <div class="video-grid">
         
         <div class="cam-card">
@@ -46,12 +46,10 @@
                 src="https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist_w2010918290.m3u8" 
                 width="100%" 
                 height="100%" 
-                style="border:none; border-radius: 8px;" 
+                style="border:none; border-radius: 8px; background: #000;" 
+                allow="autoplay; fullscreen"
                 allowfullscreen>
             </iframe>
-            <video id="video" autoplay muted playsinline controls width="100%">
-    <source src="your-stream-url" type="video/mp4">
-</video>
         </div>
 
         <div class="cam-card">
@@ -60,16 +58,47 @@
                 src="https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist_w34733218.m3u8" 
                 width="100%" 
                 height="100%" 
-                style="border:none; border-radius: 8px;" 
+                style="border:none; border-radius: 8px; background: #000;" 
+                allow="autoplay; fullscreen"
                 allowfullscreen>
             </iframe>
-            <video id="video" autoplay muted playsinline controls width="100%">
-    <source src="your-stream-url" type="video/mp4">
-</video>
         </div>
 
     </div>
 </div>
+
+<style>
+    /* ปรับแต่ง Grid ให้ดูทันสมัยขึ้น */
+    .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 25px;
+    }
+
+    .cam-card {
+        background: #000;
+        border-radius: 12px;
+        aspect-ratio: 16 / 9;
+        position: relative;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        border: 2px solid #fff;
+    }
+
+    .cam-label {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: rgba(231, 76, 60, 0.9);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: bold;
+        z-index: 10;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+</style>
 
     <script>
         function logout() {
@@ -79,6 +108,7 @@
     </script>
 </body>
 </html>
+
 
 
 
