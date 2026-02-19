@@ -42,3 +42,23 @@ function showPage(pageId) {
         if(pageId === 'calendar-page') navCal.classList.add('active');
     }
 }
+
+// ฟังก์ชันสำหรับรับค่าจากหน้าเว็บมาบันทึกในปฏิทิน
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    
+    // ใส่ ID ปฏิทินของคุณ (หาได้จาก Settings ใน Google Calendar)
+    var calendarId = "0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083@group.calendar.google.com";
+    var calendar = CalendarApp.getCalendarById(calendarId);
+    
+    // สร้างกิจกรรม: (หัวข้อ, วันที่เริ่ม, วันที่สิ้นสุด)
+    calendar.createEvent(data.title, new Date(data.start), new Date(data.end));
+    
+    return ContentService.createTextOutput(JSON.stringify({"status": "success"}))
+           .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({"status": "error", "message": error.toString()}))
+           .setMimeType(ContentService.MimeType.JSON);
+  }
+}
