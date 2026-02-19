@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Login System</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; }
+        .login-card { border: 1px solid #ccc; padding: 20px; border-radius: 8px; width: 300px; }
+        input { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <h2>เข้าสู่ระบบ</h2>
+    <input type="text" id="username" placeholder="ไอดี (ID)">
+    <input type="password" id="password" placeholder="รหัสผ่าน (Password)">
+    <button onclick="checkLogin()">Login</button>
+    <p id="msg" style="color: red;"></p>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
