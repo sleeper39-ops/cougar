@@ -9,33 +9,36 @@ function checkLogin() {
     const passIn = document.getElementById("password").value;
     const msg = document.getElementById("msg");
 
-    // ตรวจสอบข้อมูลใน Array users
     const foundUser = users.find(u => u.id === userIn && u.pass === passIn);
 
     if (foundUser) {
-        // สร้าง Token จำลองไว้ในเครื่องเพื่อให้หน้า main รู้ว่าล็อคอินแล้ว
-        sessionStorage.setItem("isLoggedIn", "true");
-        // ย้ายไปหน้า main.html
+        // ใช้ localStorage เพื่อให้ระบบจำการล็อกอินไว้ตลอด
+        localStorage.setItem("isLoggedIn", "true");
         window.location.href = "main.html"; 
     } else {
+        msg.style.color = "red";
         msg.innerText = "ไอดีหรือรหัสผ่านไม่ถูกต้อง!";
     }
 }
 
-<script>
+// ฟังก์ชันสลับหน้า (สำหรับหน้า main.html)
 function showPage(pageId) {
-    // 1. ซ่อนทุกหน้าก่อน
-    document.getElementById('live-page').style.display = 'none';
-    document.getElementById('calendar-page').style.display = 'none';
+    const livePage = document.getElementById('live-page');
+    const calPage = document.getElementById('calendar-page');
+    const navLive = document.getElementById('nav-live');
+    const navCal = document.getElementById('nav-cal');
 
-    // 2. แสดงเฉพาะหน้าที่กดเลือก
-    document.getElementById(pageId).style.display = 'block';
+    // ตรวจสอบก่อนว่ามี Element เหล่านี้จริงไหมเพื่อป้องกัน Error
+    if (livePage && calPage) {
+        livePage.style.display = 'none';
+        calPage.style.display = 'none';
+        document.getElementById(pageId).style.display = 'block';
+    }
 
-    // 3. เปลี่ยนสีเมนูให้รู้ว่าเลือกหน้านี้อยู่
-    document.getElementById('nav-live').classList.remove('active');
-    document.getElementById('nav-cal').classList.remove('active');
-    
-    if(pageId === 'live-page') document.getElementById('nav-live').classList.add('active');
-    if(pageId === 'calendar-page') document.getElementById('nav-cal').classList.add('active');
+    if (navLive && navCal) {
+        navLive.classList.remove('active');
+        navCal.classList.remove('active');
+        if(pageId === 'live-page') navLive.classList.add('active');
+        if(pageId === 'calendar-page') navCal.classList.add('active');
+    }
 }
-</script>
