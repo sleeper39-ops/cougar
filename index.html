@@ -22,26 +22,19 @@
     <button onclick="checkLogin()">เข้าสู่ระบบ</button>
     <p id="msg"></p>
 </div>
+<script src="script.js"></script>
 
-    <div class="login-box">
-    <h2>Smart Parking Login</h2>
-    <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน">
-    <input type="password" id="password" placeholder="รหัสผ่าน" onkeypress="handleEnter(event)">
-    <button onclick="checkLogin()">เข้าสู่ระบบ</button>
-    <p id="msg"></p>
-</div>
-
-<script>
-    // ฟังก์ชันช่วยเช็คการกด Enter
-    function handleEnter(event) {
-        if (event.key === "Enter") {
+    <script>
+    // ดักจับการกดปุ่ม Enter ทั่วทั้งหน้าจอ Login
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
             checkLogin();
         }
-    }
+    });
 </script>
-<script src="script.js"></script>
 
 </body>
 </html>
+
 
 
