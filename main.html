@@ -2,68 +2,22 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการที่จอดรถ - Main</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>หน้าหลัก - ระบบจัดการที่จอดรถ</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Sarabun', sans-serif; margin: 0; padding: 0; }
-        body { display: flex; height: 100vh; background-color: #f4f7f6; }
-
-        /* แถบเมนูด้านซ้าย (Sidebar) */
-        .sidebar {
-            width: 250px;
-            background-color: #2c3e50;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        }
-        .sidebar h2 { font-size: 1.2rem; margin-bottom: 30px; text-align: center; color: #3498db; }
-        .sidebar a {
-            color: #ecf0f1;
-            text-decoration: none;
-            padding: 12px 15px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            transition: 0.3s;
-        }
-        .sidebar a:hover { background-color: #34495e; color: #3498db; }
-        .logout-btn { margin-top: auto; background-color: #e74c3c !important; text-align: center; }
-
-        /* พื้นที่เนื้อหาหลัก */
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-        .header { margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { display: flex; height: 100vh; background: #f0f2f5; }
         
-        /* ส่วนแสดงกล้อง (Video Placeholder) */
-        .camera-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 20px;
-        }
-        .camera-box {
-            background: #000;
-            border-radius: 10px;
-            aspect-ratio: 16 / 9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-            border: 3px solid #fff;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .camera-box span { color: #555; font-size: 0.9rem; }
-        .status-tag {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(46, 204, 113, 0.8);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
+        .sidebar { width: 260px; background: #1a1a1a; color: white; padding: 20px; display: flex; flex-direction: column; }
+        .sidebar h3 { margin-bottom: 30px; color: #3498db; text-align: center; }
+        .sidebar a { color: #bbb; text-decoration: none; padding: 15px; display: block; border-radius: 8px; margin-bottom: 5px; }
+        .sidebar a:hover { background: #333; color: white; }
+        
+        .content { flex: 1; padding: 40px; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; }
+        .cam-card { background: #000; aspect-ratio: 16/9; border-radius: 12px; position: relative; display: flex; align-items: center; justify-content: center; color: #666; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .cam-label { position: absolute; top: 15px; left: 15px; background: rgba(231, 76, 60, 0.8); color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        
+        .logout { margin-top: auto; background: #c0392b !important; text-align: center; }
     </style>
 </head>
 <body>
@@ -75,27 +29,32 @@
     </script>
 
     <div class="sidebar">
-        <h2>Smart Parking</h2>
-        <a href="#">🏠 หน้าหลัก</a>
-        <a href="https://www.google.com" target="_blank">🌐 ลิงก์ไปเว็บอื่น 1</a>
-        <a href="http://your-ubuntu-ip:5000" target="_blank">📊 ระบบตรวจจับ (Frigate)</a>
-        <a href="#" onclick="alert('ตั้งค่าระบบ')">⚙️ ตั้งค่ากล้อง</a>
-        
-        <a href="#" class="logout-btn" onclick="logout()">ออกจากระบบ</a>
+        <h3>PARKING AI</h3>
+        <a href="#">หน้าหลักกล้องสด</a>
+        <a href="https://www.google.com" target="_blank">รายงานย้อนหลัง</a>
+        <a href="https://www.google.com" target="_blank">ตั้งค่าระบบ</a>
+        <a href="#" class="logout" onclick="logout()">ออกจากระบบ</a>
     </div>
 
-    <div class="main-content">
-        <div class="header">
-            <h1>ระบบสตรีมสดกล้อง Tapo</h1>
-            <p>สถานะปัจจุบัน: กำลังตรวจจับที่จอดรถ</p>
-        </div>
-
-        <div class="camera-container">
-            <div class="camera-box">
-                <div class="status-tag">LIVE - กล้องหน้าบ้าน</div>
-                <span style="color:white;">[ กำลังดึงสตรีมจาก rtsp://tapo_camera... ]</span>
+    <div class="content">
+        <h1 style="margin-bottom: 20px;">สตรีมสดจากกล้อง Tapo</h1>
+        <div class="video-grid">
+            <div class="cam-card">
+                <div class="cam-label">● LIVE - ทางเข้า</div>
+                [ เชื่อมต่อกล้องผ่าน RTSP ]
             </div>
+            <div class="cam-card">
+                <div class="cam-label">● LIVE - ช่องจอด 01</div>
+                [ เชื่อมต่อกล้องผ่าน RTSP ]
+            </div>
+        </div>
+    </div>
 
-            <div class="camera-box">
-                <div class="status-tag">LIVE - ช่องจอดรถ B1</div>
-                <span style="color:white;">[ No Signal ]</span>
+    <script>
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
