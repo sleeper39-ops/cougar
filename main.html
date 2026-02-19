@@ -37,17 +37,27 @@
     </div>
 
 <div class="content">
-    <h1 style="margin-bottom: 20px; color: #333;">สตรีมสดจากกล้อง Tapo (HLS Player)</h1>
+    <h1 style="margin-bottom: 20px; color: #333;">ระบบสตรีมสดกล้อง 4 ตัว</h1>
     <div class="video-grid">
         
         <div class="cam-card">
-            <div class="cam-label">● LIVE - ทางเข้า</div>
+            <div class="cam-label">● LIVE - กล้อง 1</div>
             <video id="video1" class="video-player" autoplay muted playsinline controls></video>
         </div>
 
         <div class="cam-card">
-            <div class="cam-label">● LIVE - ช่องจอด 01</div>
+            <div class="cam-label">● LIVE - กล้อง 2</div>
             <video id="video2" class="video-player" autoplay muted playsinline controls></video>
+        </div>
+
+        <div class="cam-card">
+            <div class="cam-label">● LIVE - กล้อง 3</div>
+            <video id="video3" class="video-player" autoplay muted playsinline controls></video>
+        </div>
+
+        <div class="cam-card">
+            <div class="cam-label">● LIVE - กล้อง 4</div>
+            <video id="video4" class="video-player" autoplay muted playsinline controls></video>
         </div>
 
     </div>
@@ -63,10 +73,9 @@
             hls.loadSource(streamUrl);
             hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                video.play(); // บังคับให้เล่นอัตโนมัติ
+                video.play();
             });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            // สำหรับ Safari
             video.src = streamUrl;
             video.addEventListener('loadedmetadata', function() {
                 video.play();
@@ -74,16 +83,21 @@
         }
     }
 
-    // ใส่ลิงก์ .m3u8 ของคุณที่นี่
+    // --- ใส่ลิงก์กล้องทั้ง 4 ตัวที่นี่ ---
     setupVideo('video1', 'https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist_w2010918290.m3u8');
     setupVideo('video2', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist_w34733218.m3u8');
+    
+    // เปลี่ยน URL ด้านล่างนี้เป็นลิงก์กล้องตัวใหม่ของคุณ
+    setupVideo('video3', 'https://streaming.udoncity.go.th:1935/live/Axis_12_38.stream/chunklist_w1610502304.m3u8'); 
+    setupVideo('video4', 'https://streaming.udoncity.go.th:1935/live/Axis_12_22.stream/chunklist_w236554495.m3u8');
 </script>
 
 <style>
     .video-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-        gap: 25px;
+        /* ปรับ minmax ให้เล็กลงหน่อยเพื่อให้โชว์ 2 ตัวต่อแถวได้สวยๆ */
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+        gap: 20px;
     }
     .cam-card {
         background: #000;
@@ -92,21 +106,22 @@
         position: relative;
         overflow: hidden;
         border: 2px solid #fff;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
     .video-player {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* ให้วิดีโอเต็มกรอบพอดี */
+        object-fit: cover;
     }
     .cam-label {
         position: absolute;
-        top: 15px;
-        left: 15px;
+        top: 10px;
+        left: 10px;
         background: rgba(231, 76, 60, 0.9);
         color: white;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 13px;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 12px;
         z-index: 10;
     }
 </style>
@@ -152,6 +167,7 @@
     </script>
 </body>
 </html>
+
 
 
 
