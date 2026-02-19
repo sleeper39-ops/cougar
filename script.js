@@ -1,4 +1,4 @@
-// รายชื่อผู้ที่มีสิทธิ์เข้าใช้งาน
+// === ส่วนของหน้า Login (index.html) ===
 const users = [
     { id: "admin", pass: "admin2" },
     { id: "user", pass: "user2" }
@@ -10,9 +10,7 @@ function checkLogin() {
     const msg = document.getElementById("msg");
 
     const foundUser = users.find(u => u.id === userIn && u.pass === passIn);
-
     if (foundUser) {
-        // ใช้ localStorage เพื่อให้ระบบจำการล็อกอินไว้ตลอด
         localStorage.setItem("isLoggedIn", "true");
         window.location.href = "main.html"; 
     } else {
@@ -21,25 +19,50 @@ function checkLogin() {
     }
 }
 
-// ฟังก์ชันสลับหน้า (สำหรับหน้า main.html)
+// === ส่วนของหน้าหลัก (main.html) ===
 function showPage(pageId) {
-    const livePage = document.getElementById('live-page');
-    const calPage = document.getElementById('calendar-page');
-    const navLive = document.getElementById('nav-live');
-    const navCal = document.getElementById('nav-cal');
+    // 1. จัดการการแสดงผลหน้า
+    const pages = document.querySelectorAll('.page-content');
+    pages.forEach(p => p.style.display = 'none');
+    
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) targetPage.style.display = 'block';
 
-    // ตรวจสอบก่อนว่ามี Element เหล่านี้จริงไหมเพื่อป้องกัน Error
-    if (livePage && calPage) {
-        livePage.style.display = 'none';
-        calPage.style.display = 'none';
-        document.getElementById(pageId).style.display = 'block';
-    }
+    // 2. จัดการสีเมนู (เช็ค ID ให้ตรงกับ HTML ของคุณ)
+    const btnLive = document.getElementById('btn-live');
+    const btnCal = document.getElementById('btn-cal');
 
-    if (navLive && navCal) {
-        navLive.classList.remove('active');
-        navCal.classList.remove('active');
-        if(pageId === 'live-page') navLive.classList.add('active');
-        if(pageId === 'calendar-page') navCal.classList.add('active');
+    if (btnLive && btnCal) {
+        btnLive.classList.remove('active');
+        btnCal.classList.remove('active');
+        if(pageId === 'live-page') btnLive.classList.add('active');
+        if(pageId === 'calendar-page') btnCal.classList.add('active');
     }
 }
 
+// ฟังก์ชันบันทึกกิจกรรม (ใช้ร่วมกับ Google Apps Script)
+async function addEvent() {
+    const url = "ใส่URLเว็บแอปของคุณที่นี่"; 
+    const title = document.getElementById('eventTitle').value;
+    const start = document.getElementById('eventStart').value;
+    const end = document.getElementById('eventEnd').value;
+    const msg = document.getElementById('statusMsg');
+
+    if (!title || !start || !end) return alert("กรอกข้อมูลไม่ครบ");
+
+    msg.innerText = "⏳ กำลังบันทึก...";
+    try {
+        await fetch(url, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ title, start, end })
+        });
+        msg.innerText = "✅ สำเร็จ! รออัปเดตปฏิทิน...";
+        setTimeout(() => {
+            document.querySelector('iframe').src += ""; // รีเฟรชปฏิทิน
+            msg.innerText = "";
+        }, 2000);
+    } catch (e) {
+        msg.innerText = "❌ ผิดพลาด: " + e.message;
+    }
+}
