@@ -5,31 +5,20 @@
     <title>Cougar2 - Smart System</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        /* สไตล์พื้นฐาน */
         body { display: flex; margin: 0; font-family: sans-serif; background: #f4f7f6; height: 100vh; }
-        
-        /* Sidebar */
         .sidebar { width: 250px; background: #1a1a1a; color: white; padding: 20px; display: flex; flex-direction: column; }
         .sidebar h2 { color: #3498db; text-align: center; margin-bottom: 30px; }
         .sidebar a { color: #bbb; text-decoration: none; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: block; }
         .sidebar a:hover, .sidebar a.active { background: #333; color: white; }
         .logout-btn { margin-top: auto; background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
-
-        /* พื้นที่แสดงผลขวามือ */
         .main-content { flex: 1; padding: 25px; overflow-y: auto; }
-        
-        /* ส่วนจัดการการซ่อน/แสดง */
         .page-content { display: none; } 
         .page-content.active { display: block; }
-
-        /* สไตล์หน้ากล้อง */
         .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .cam-card { background: #000; border-radius: 12px; aspect-ratio: 16/9; position: relative; border: 2px solid #fff; overflow: hidden; }
         .video-player { width: 100%; height: 100%; object-fit: cover; }
         .cam-label { position: absolute; top: 10px; left: 10px; background: rgba(231,76,60,0.9); color: white; padding: 4px 12px; border-radius: 15px; font-size: 12px; z-index: 5; }
-
-        /* สไตล์หน้าปฏิทิน */
-        .calendar-container { background: white; padding: 15px; border-radius: 12px; height: 85vh; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .calendar-container { background: white; padding: 15px; border-radius: 12px; height: 600px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -43,7 +32,6 @@
     </div>
 
     <div class="main-content">
-
         <div id="live-page" class="page-content active">
             <h1 style="margin-bottom: 20px;">ระบบสตรีมสดกล้อง 4 ตัว</h1>
             <div class="video-grid">
@@ -54,112 +42,12 @@
             </div>
         </div>
 
-        <div id="calendar-page" class="page-content" style="display: none;">
-    <h1>ปฏิทินกิจกรรม</h1>
-    
-    <div style="background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-        <h3>+ เพิ่มรายการจอง/กิจกรรม</h3>
-        <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
-            <input type="text" id="eventTitle" placeholder="หัวข้อ (เช่น จองช่อง 01)" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; flex: 1;">
-            <input type="datetime-local" id="eventStart" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <input type="datetime-local" id="eventEnd" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <button onclick="addEvent()" id="btnSubmit" style="background: #27ae60; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;">บันทึก</button>
-        </div>
-        <p id="statusMsg" style="margin-top: 10px; font-size: 14px;"></p>
-    </div>
-
-    <div class="calendar-container">
-        <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok" 
-                style="border: 0" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
-    </div>
-</div>
-
-    <script>
-        // 1. ฟังก์ชันสลับหน้า
-        function showPage(pageId) {
-            // ซ่อนทุกหน้า
-            document.getElementById('live-page').classList.remove('active');
-            document.getElementById('calendar-page').classList.remove('active');
-            // แสดงหน้าที่เลือก
-            document.getElementById(pageId).classList.add('active');
-
-            // เปลี่ยนสีปุ่มในเมนู
-            document.getElementById('btn-live').classList.remove('active');
-            document.getElementById('btn-cal').classList.remove('active');
-            if(pageId === 'live-page') document.getElementById('btn-live').classList.add('active');
-            if(pageId === 'calendar-page') document.getElementById('btn-cal').classList.add('active');
-        }
-
-        // 2. ฟังก์ชันโหลดกล้อง
-        function setupVideo(id, url) {
-            var v = document.getElementById(id);
-            if (Hls.isSupported()) {
-                var hls = new Hls(); hls.loadSource(url); hls.attachMedia(v);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() { v.play(); });
-            }
-        }
-
-        // ใส่ลิงก์กล้องของคุณ
-        setupVideo('v1', 'https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist_w2010918290.m3u8');
-        setupVideo('v2', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist_w34733218.m3u8');
-        setupVideo('v3', 'https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist_w2010918290.m3u8');
-        setupVideo('v4', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist_w34733218.m3u8');
-
-        function logout() { localStorage.clear(); window.location.href = "index.html"; }
-    </script>
-        <script>
-        // ... ฟังก์ชันเดิมที่มีอยู่ (เช่น showPage หรือ setupVideo) ...
-
-        // วางฟังก์ชัน addEvent ต่อท้ายตรงนี้ได้เลยครับ
-        async function addEvent() {
-            // อย่าลืมเปลี่ยน URL ตรงนี้เป็นลิงก์ Web App ที่ได้จาก Google Apps Script นะครับ
-            const url = "https://script.google.com/macros/s/AKfycbzJirF7Ldstah4LZepPRCGWmnoPSDnLGv0KvFb3bac-bvh8iLLxMdUH0Tc5EmIAz_c/exec"; 
-            
-            const title = document.getElementById('eventTitle').value;
-            const start = document.getElementById('eventStart').value;
-            const end = document.getElementById('eventEnd').value;
-            const msg = document.getElementById('statusMsg');
-
-            if (!title || !start || !end) {
-                alert("กรุณากรอกข้อมูลให้ครบถ้วน");
-                return;
-            }
-
-            msg.innerText = "กำลังบันทึก...";
-            document.getElementById('btnSubmit').disabled = true;
-
-            try {
-                // สำหรับ Google Apps Script ต้องใช้โหมด 'no-cors' หรือจัดการฝั่ง Server
-                // แต่ปกติ fetch แบบ POST ไปยัง Web App จะเจอปัญหา Redirect
-                // แนะนำให้ส่งแบบนี้เพื่อให้ทำงานกับ GAS ได้ดีที่สุด:
-                const response = await fetch(url, {
-                    method: 'POST',
-                    mode: 'no-cors', // สำคัญ: เพื่อเลี่ยงปัญหา CORS กับ Google
-                    headers: { 'Content-Type': 'application/plaintext' },
-                    body: JSON.stringify({ title, start, end })
-                });
-
-                // หมายเหตุ: ถ้าใช้ mode: 'no-cors' เราจะไม่สามารถอ่าน JSON result ได้ตรงๆ
-                // แต่กิจกรรมจะถูกบันทึกลงปฏิทินเรียบร้อยแล้วครับ
-                msg.style.color = "green";
-                msg.innerText = "ส่งคำขอสำเร็จ! กรุณารอ 2-3 วินาทีแล้วรีเฟรชปฏิทิน";
-                document.getElementById('eventTitle').value = "";
-                
-                // สั่งรีเฟรช iframe ปฏิทิน
-                setTimeout(() => {
-                    document.querySelector('iframe').src += ""; 
-                }, 2000);
-
-            } catch (error) {
-                msg.style.color = "red";
-                msg.innerText = "เกิดข้อผิดพลาด: " + error.message;
-            } finally {
-                document.getElementById('btnSubmit').disabled = false;
-            }
-        }
-    </script>
-</body>
-</html>
-
-
-
+        <div id="calendar-page" class="page-content">
+            <h1>ปฏิทินกิจกรรม</h1>
+            <div style="background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3>+ เพิ่มรายการจอง/กิจกรรม</h3>
+                <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                    <input type="text" id="eventTitle" placeholder="หัวข้อ" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; flex: 1;">
+                    <input type="datetime-local" id="eventStart" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    <input type="datetime-local" id="eventEnd" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    <button onclick="addEvent()" id="btnSubmit" style="background:
