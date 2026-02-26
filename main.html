@@ -3068,106 +3068,81 @@
         }
     </script>
 
-
-    <script type="module" src="fcp_v2_assets/main.js"></script>
-
-    <!-- Duplicate Mobile Control Popup Removed (using the one at line ~2160) -->
-
-    <!-- PC Match ID Popup -->
-    <div id="pcMatchPopup" class="pc-match-overlay">
-        <div class="pc-match-content">
-            <h3 data-lang="selectMatchId"></h3>
-            <div class="pc-match-controls">
-                <button onclick="adjustPcMatchId(-1)" class="pc-match-btn minus">-</button>
-                <div id="pcMatchPopupVal" class="pc-match-val">1</div>
-                <button onclick="adjustPcMatchId(1)" class="pc-match-btn plus">+</button>
-            </div>
-            <div class="pc-match-actions">
-                <button onclick="closePcMatchPopup()" style="background: #444;" data-lang="cancelBtn">Cancel</button>
-                <button onclick="confirmPcMatchId()" style="background: #2563eb;" data-lang="loadBtn">LOAD</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Script for PC Popup -->
-    <script>
-        function openPcMatchPopup() {
-            const current = document.getElementById('matchID').value;
-            document.getElementById('pcMatchPopupVal').innerText = current;
-            document.getElementById('pcMatchPopup').style.display = 'flex';
-        }
-        function closePcMatchPopup() {
-            document.getElementById('pcMatchPopup').style.display = 'none';
-        }
-        function adjustPcMatchId(delta) {
-            let el = document.getElementById('pcMatchPopupVal');
-            let val = parseInt(el.innerText) || 1;
-            val += delta;
-            if (val < 1) val = 1;
-            el.innerText = val;
-        }
-        function confirmPcMatchId() {
-            const val = document.getElementById('pcMatchPopupVal').innerText;
-            document.getElementById('matchID').value = val;
-            document.getElementById('pcMatchIdBtn').innerText = val;
-            fcpAPI.applyMatch(); // Trigger existing Logic
-            closePcMatchPopup();
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                // Simple toast fallback if main toast not available (though it is)
-                const el = document.createElement('div');
-                el.style.position = 'fixed';
-                el.style.bottom = '20px';
-                el.style.left = '50%';
-                el.style.transform = 'translateX(-50%)';
-                el.style.background = '#22c55e';
-                el.style.color = 'white';
-                el.style.padding = '10px 20px';
-                el.style.borderRadius = '5px';
-                el.style.zIndex = '3000';
-                el.innerText = 'Copied: ' + text;
-                document.body.appendChild(el);
-                setTimeout(() => el.remove(), 2000);
-            });
-        }
-    </script>
-
-
 <script>
-    // สร้างตัวแปรจำลองระบบ (Bypass fcpAPI ที่ขาดหายไป)
-    window.fcpAPI = {
-        applyMatch: function() {
-            console.log("Match ID Applied: " + document.getElementById('matchID').value);
-            alert("ระบบกำลังดึงข้อมูล Match ID: " + document.getElementById('matchID').value);
-        }
-    };
+    /* --- สมองจำลอง (Offline Logic) --- */
+    
+    // 1. จัดการตัวแปรพื้นฐาน
+    let scoreA = 0;
+    let scoreB = 0;
+    let timerSeconds = 0;
+    let timerRunning = false;
+    let timerInterval;
 
-    // แก้ไขปุ่ม Start ที่ค้าง Loading
-    window.onload = function() {
+    // 2. ปลดล็อกหน้า Welcome และปุ่ม Loading
+    window.addEventListener('load', function() {
         const startBtn = document.getElementById('closeWelcomeBtn');
         if (startBtn) {
             startBtn.disabled = false;
             startBtn.style.opacity = "1";
             startBtn.style.cursor = "pointer";
-            startBtn.innerHTML = '<i class="fas fa-play"></i> START NOW';
-            
+            startBtn.innerHTML = "START (OFFLINE MODE)";
             startBtn.onclick = function() {
-                document.getElementById('welcomeSponsorPopup').style.display = 'none';
                 document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('welcomeSponsorPopup').style.display = 'none';
             };
         }
-    };
+        
+        // ปลดล็อก input ชื่อ
+        if (document.getElementById('visitorName')) {
+            document.getElementById('visitorName').disabled = false;
+        }
+    });
 
-    // ฟังก์ชันพื้นฐานสำหรับเพิ่ม/ลดคะแนน (เขียนเผื่อไว้ถ้าปุ่มหลักกดไม่ได้)
-    function addScore(team, delta) {
-        let scoreEl = document.getElementById('score' + team);
-        if (scoreEl) {
-            let current = parseInt(scoreEl.innerText) || 0;
-            scoreEl.innerText = Math.max(0, current + delta);
+    // 3. ฟังก์ชันเพิ่ม/ลดคะแนน (เชื่อมกับปุ่มในหน้าจอ)
+    // หมายเหตุ: ปุ่มใน HTML ต้นฉบับอาจเรียกฟังก์ชันที่ชื่อต่างกัน 
+    // เราจะใช้การตรวจจับคลิกที่ตัวปุ่มโดยตรง
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+
+        // ดักฟังปุ่ม Reset (เพื่อทดสอบ)
+        if (btn.id === 'resetAllBtn') {
+            scoreA = 0; scoreB = 0;
+            updateDisplay();
+        }
+    });
+
+    // 4. ฟังก์ชันจัดการเวลาเบื้องต้น
+    function toggleTimer() {
+        if (timerRunning) {
+            clearInterval(timerInterval);
+            timerRunning = false;
+        } else {
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                updateTimerUI();
+            }, 1000);
+            timerRunning = true;
         }
     }
+
+    function updateTimerUI() {
+        const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+        const s = (timerSeconds % 60).toString().padStart(2, '0');
+        const display = document.getElementById('timerDisplay') || document.querySelector('.timer');
+        if (display) display.innerText = `${m}:${s}`;
+    }
+
+    function updateDisplay() {
+        if (document.getElementById('scoreA')) document.getElementById('scoreA').innerText = scoreA;
+        if (document.getElementById('scoreB')) document.getElementById('scoreB').innerText = scoreB;
+    }
+
+    // สร้าง fcpAPI จำลองเพื่อไม่ให้โค้ดเก่า Error
+    window.fcpAPI = {
+        applyMatch: () => console.log("Offline: Match Applied"),
+        updateScore: () => updateDisplay()
+    };
 </script>
 
     
@@ -3175,6 +3150,7 @@
 
 
 </html>
+
 
 
 
