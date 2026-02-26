@@ -3,20 +3,25 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>CCTV ONLINE SYSTEM - FIREBASE</title>
+<title>CCTV MONITORING SYSTEM PRO</title>
  
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
  
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
- 
 <style>
 body { margin:0; background:#0f172a; color:white; font-family:system-ui; overflow:hidden; }
-.topbar { height:60px; background:linear-gradient(90deg,#0b2447,#19376d); display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 10001; position: relative; }
+ 
+.topbar {
+    height:60px; background:linear-gradient(90deg,#0b2447,#19376d);
+    display:flex; align-items:center; justify-content:space-between; padding:0 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 10001; position: relative;
+}
+ 
 .grid-btn { background:#2563eb; border:none; color:white; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight: bold; transition: 0.2s; }
+.grid-btn:hover { background: #3b82f6; }
+
 .admin-btns { display: none; gap: 10px; }
 .btn-add { background: #10b981; }
 .btn-logout { background: #ef4444; }
@@ -24,62 +29,72 @@ body { margin:0; background:#0f172a; color:white; font-family:system-ui; overflo
 .modal { display:none; position:fixed; z-index:20000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; }
 .modal-content { background:#1e293b; padding:25px; border-radius:12px; width:350px; border:1px solid #334155; }
 .modal-content input { width:100%; padding:10px; margin:10px 0; background:#0f172a; border:1px solid #334155; color:white; border-radius:6px; box-sizing:border-box; }
-
+ 
 .main-container { display:flex; height:calc(100vh - 60px); }
 .sidebar { width:320px; background:#1e293b; display:flex; flex-direction:column; border-right: 1px solid #334155; }
-.status-summary { padding: 20px 15px; background: #111827; border-bottom: 1px solid #334155; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.stat-box { text-align: center; font-size: 9px; color: #94a3b8; }
-.stat-box b { font-size: 16px; color: white; display: block; }
  
-.camera-item { background:#111827; padding:8px 12px; border-radius:8px; margin-bottom:6px; cursor:pointer; border-left:4px solid transparent; transition:0.2s; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-.camera-item b { font-weight: 500; }
-.camera-item small { font-size: 10px; }
+.status-summary {
+    padding: 20px 15px; background: #111827; border-bottom: 1px solid #334155;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+.stat-box { text-align: center; }
+.stat-box span { display: block; font-size: 10px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; }
+.stat-box b { font-size: 18px; font-weight: 800; }
+.text-all { color: #f8fafc; }
+.text-online { color: #22c55e !important; }
+.text-offline { color: #ef4444 !important; }
  
-.camera-item.active-play { 
-    border-left: 4px solid #3b82f6; 
-    background: #1e293b; 
-    animation: pulse-blue 1.0s infinite ease-in-out; 
+.camera-list-container { padding: 15px; overflow-y: auto; flex: 1; }
+.camera-item {
+   background:#111827; padding:12px; border-radius:8px; margin-bottom:8px;
+    cursor:pointer; border-left:4px solid transparent; transition:0.2s;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
 }
-@keyframes pulse-blue { 
-    0% { box-shadow: inset 0 0 0px rgba(37, 99, 235, 0); } 
-    50% { box-shadow: inset 0 0 15px rgba(37, 99, 235, 0.5); } 
-    100% { box-shadow: inset 0 0 0px rgba(37, 99, 235, 0); } 
-}
+.camera-item b { font-size: 13px; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.camera-item small { font-size: 10px; font-weight: 700; flex-shrink: 0; padding: 2px 6px; background: rgba(0,0,0,0.3); border-radius: 4px; }
  
 #map { flex:1; z-index:1; }
 
-/* Grid View CSS Updates */
-.grid-overlay { position:fixed; top:60px; left:0; right:0; bottom:0; background:#020617; display:none; padding:15px; z-index:10000; overflow-y: auto; }
-.grid-full { display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; width: 100%; align-content: start; }
+/* --- GRID VIEW 3x4 FIXED --- */
+.grid-overlay { 
+    position:fixed; top:60px; left:0; right:0; bottom:0; 
+    background:#020617; display:none; padding:10px; z-index:10000;
+}
+.grid-full { 
+    display:grid; 
+    grid-template-columns: repeat(3, 1fr); /* 3 คอลัมน์ */
+    grid-template-rows: repeat(4, 1fr);    /* 4 แถว */
+    gap: 8px; 
+    width: 100%; 
+    height: 100%; /* บังคับให้สูงพอดีจอ */
+}
 .grid-item { 
-    position:relative; 
-    background:#000; 
-    border-radius: 6px; 
-    overflow: hidden; 
+    position:relative; background:#000; 
+    border-radius: 4px; overflow: hidden; 
     border: 1px solid #334155; 
-    aspect-ratio: 16/9; 
-    display: flex;       /* จัดกึ่งกลาง */
-    align-items: center; 
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
 }
-.grid-item video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* สำคัญ: ทำให้ภาพไม่ซูม ไม่โดนตัดขอบ */
-    cursor: pointer;
+.grid-item video { width: 100%; height: 100%; object-fit: cover; }
+.grid-label { 
+    position:absolute; top:0; left:0; right:0; 
+    background:rgba(0,0,0,0.7); font-size:10px; padding:2px 8px; 
+    z-index:5; display:flex; justify-content: space-between;
 }
+.grid-offline-text { color: #ef4444; font-weight: bold; font-size: 12px; text-transform: uppercase; }
 
-.leaflet-tooltip { background: #000 !important; border: 2px solid #3b82f6 !important; padding: 0 !important; border-radius: 8px !important; overflow: hidden; opacity: 1 !important; pointer-events: auto !important; }
-.video-box { width: 350px; aspect-ratio: 16/9; position: relative; background: #000; }
-.video-box video { width: 100%; height: 100%; object-fit: contain; display: block; cursor: pointer; }
+/* Tooltip & Icon */
+.leaflet-tooltip { background: #000 !important; border: 2px solid #3b82f6 !important; padding: 0 !important; border-radius: 8px !important; overflow: hidden; opacity: 1 !important; }
+.video-box { width: 320px; aspect-ratio: 16/9; position: relative; background: #000; overflow: hidden; }
+.video-box video { width: 100%; height: 100%; object-fit: fill; display: block; }
+.leaflet-control-layers { background: #1e293b !important; color: white !important; border: none !important; border-radius: 8px !important; }
 </style>
 </head>
 <body>
  
 <div class="topbar">
     <div>
-        <span onclick="openLogin()" style="cursor:pointer">📡 <b>CCTV ONLINE</b></span>
-        <button class="grid-btn" style="margin-left:15px" onclick="toggleGrid()">GRID VIEW</button>
+        <span onclick="openLogin()" style="cursor:pointer">📡 <b>CCTV MONITORING SYSTEM</b></span>
+        <button class="grid-btn" style="margin-left:15px" onclick="toggleGrid()">GRID VIEW (3x4)</button>
     </div>
     <div class="admin-btns" id="adminControls">
         <button class="grid-btn btn-add" onclick="openCamModal()">+ เพิ่มกล้อง</button>
@@ -90,199 +105,139 @@ body { margin:0; background:#0f172a; color:white; font-family:system-ui; overflo
 <div class="main-container">
     <div class="sidebar">
         <div class="status-summary">
-            <div class="stat-box"><span>TOTAL</span><b id="stat-total">0</b></div>
-            <div class="stat-box"><span>ONLINE</span><b id="stat-online" style="color:#22c55e">0</b></div>
-            <div class="stat-box"><span>OFFLINE</span><b id="stat-offline" style="color:#ef4444">0</b></div>
+            <div class="stat-box"><span>Total</span><b class="text-all" id="stat-total">0</b></div>
+            <div class="stat-box"><span>Online</span><b class="text-online" id="stat-online">0</b></div>
+            <div class="stat-box"><span>Offline</span><b class="text-offline" id="stat-offline">0</b></div>
         </div>
-        <div class="camera-list-container" style="overflow-y:auto; flex:1; padding:10px;">
-            <h4 style="margin:0 0 10px 0; color:#94a3b8; font-size:10px; letter-spacing: 1px;">📷 ONLINE DEVICE</h4>
+        <div class="camera-list-container">
+            <h4 style="margin-top:0; color:#94a3b8; font-size:11px; text-transform:uppercase;">📷 Device List</h4>
             <div id="cameraList"></div>
         </div>
     </div>
     <div id="map"></div>
 </div>
- 
+
 <div class="grid-overlay" id="gridOverlay"><div class="grid-full" id="gridFull"></div></div>
- 
+
 <div class="modal" id="loginModal">
     <div class="modal-content">
         <h3>🔒 Admin Login</h3>
-        <input type="password" id="passInput" placeholder="รหัสผ่าน..." onkeyup="checkEnter(event)">
+        <input type="password" id="passInput" placeholder="รหัสผ่าน..." onkeyup="if(event.key==='Enter') login()">
         <button class="grid-btn" style="width:100%" onclick="login()">เข้าสู่ระบบ</button>
         <button class="grid-btn" style="width:100%; background:transparent; margin-top:5px" onclick="closeModal('loginModal')">ยกเลิก</button>
     </div>
 </div>
- 
+
 <div class="modal" id="camModal">
     <div class="modal-content">
-        <h3>ข้อมูลกล้อง</h3>
+        <h3 id="modalTitle">ข้อมูลกล้อง</h3>
         <input type="hidden" id="editIdx">
-        <input type="text" id="camName" placeholder="ชื่อกล้อง">
-        <input type="number" id="camLat" step="any" placeholder="Lat">
-        <input type="number" id="camLng" step="any" placeholder="Lng">
-        <input type="text" id="camURL" placeholder="URL .m3u8">
-        <button class="grid-btn btn-add" style="width:100%; margin-top:10px" onclick="saveCamera()">บันทึกข้อมูล</button>
-        <button id="delBtn" class="grid-btn btn-logout" style="width:100%; margin-top:5px; display:none" onclick="deleteCamera()">ลบกล้องนี้</button>
+        <label style="font-size:11px">ชื่อกล้อง</label><input type="text" id="camName">
+        <div style="display:flex; gap:5px">
+            <div style="flex:1"><label style="font-size:11px">Lat</label><input type="number" id="camLat" step="any"></div>
+            <div style="flex:1"><label style="font-size:11px">Lng</label><input type="number" id="camLng" step="any"></div>
+        </div>
+        <label style="font-size:11px">URL HLS (.m3u8)</label><input type="text" id="camURL">
+        <button class="grid-btn btn-add" style="width:100%; margin-top:10px" onclick="saveCamera()">บันทึก</button>
+        <button id="delBtn" class="grid-btn btn-logout" style="width:100%; margin-top:5px; display:none" onclick="deleteCamera()">ลบกล้อง</button>
         <button class="grid-btn" style="width:100%; background:transparent; margin-top:5px" onclick="closeModal('camModal')">ปิด</button>
     </div>
 </div>
  
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBAnzM3E8ZL7B7PXhaI1KgUBzBGWESq3Js",
-  authDomain: "cctv-276a1.firebaseapp.com",
-  databaseURL: "https://cctv-276a1-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "cctv-276a1",
-  storageBucket: "cctv-276a1.firebasestorage.app",
-  messagingSenderId: "771343203688",
-  appId: "1:771343203688:web:6dbbf5131e7b7d42c9aadd",
-  measurementId: "G-9894M76PV4"
-};
- 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
- 
-// --- ฟังก์ชันเสริมสำหรับ Login ---
-function checkEnter(event) {
-    if (event.key === "Enter") {
-        login();
-    }
-}
- 
-function toggleFullscreen(v) {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        if (v.requestFullscreen) v.requestFullscreen();
-        else if (v.webkitRequestFullscreen) v.webkitRequestFullscreen();
-    } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    }
-}
- 
+// --- แผนที่ ---
 var googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxZoom: 20 });
 var googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { maxZoom: 20 });
 var googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20 });
 var map = L.map('map', { center: [17.4138, 102.7876], zoom: 14, layers: [googleHybrid] });
-L.control.layers({"ไฮบริด": googleHybrid, "ดาวเทียม": googleSat, "ถนน":googleStreets}, null, { collapsed: false }).addTo(map);
- 
-let cameras = [];
-let activeHls = {};
+L.control.layers({ "ไฮบริด": googleHybrid, "ดาวเทียม": googleSat, "ถนน": googleStreets }, null, { collapsed: false }).addTo(map);
+
+let cameras = JSON.parse(localStorage.getItem('cctv_data')) || [];
 let markers = {};
+let activeHls = {};
 let isAdmin = false;
- 
-db.ref('cameras').on('value', (snapshot) => {
-    const data = snapshot.val();
-    cameras = [];
-    if (data) {
-       Object.keys(data).forEach(key => {
-           cameras.push({ id: key, ...data[key] });
-        });
-    }
-    updateUI();
-});
- 
+
 function updateUI() {
     for(let id in markers) map.removeLayer(markers[id]);
     markers = {};
     document.getElementById("cameraList").innerHTML = "";
-    
-    cameras.forEach((cam, index) => {
-        let isOnline = cam.stream !== "";
-        let color = isOnline ? "#22c55e" : "#ef4444";
-        let marker = L.marker([cam.lat, cam.lng], { 
-            icon: L.divIcon({
-               className:"",
-               html: `<div style="width:30px;height:30px;border-radius:50%;background:#111;border:2px solid ${color};display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:10px;box-shadow:0 0 10px rgba(0,0,0,0.5);">${index+1}</div>`,
-               iconSize:[30,30]
-            }) 
-        }).addTo(map);
-        
-        marker.on("click", () => isAdmin ? openCamModal(index) : toggleCamera(cam, index));
-        markers[index] = marker;
- 
-        const div = document.createElement("div");
-        div.className = "camera-item";
-        div.id = "item-" + index;
-        div.innerHTML = `<b>${index+1}. ${cam.name}</b><small style="color:${color}">● ${isOnline ? 'ON' : 'OFF'}</small>`;
-        div.onclick = () => isAdmin ? openCamModal(index) : toggleCamera(cam, index);
-        document.getElementById("cameraList").appendChild(div);
-    });
- 
     document.getElementById('stat-total').innerText = cameras.length;
     document.getElementById('stat-online').innerText = cameras.filter(c => c.stream !== "").length;
     document.getElementById('stat-offline').innerText = cameras.filter(c => c.stream === "").length;
-}
- 
-function toggleCamera(cam, idx) {
-    if(cam.stream === "") return;
-    if (activeHls[idx]) {
-       activeHls[idx].destroy(); delete activeHls[idx];
-       markers[idx].closeTooltip(); markers[idx].unbindTooltip();
-       document.getElementById("item-"+idx).classList.remove("active-play");
-    } else {
-       markers[idx].bindTooltip(
-           `<div class="video-box" id="box-${idx}">
-               <video id="v-${idx}" autoplay muted controls ondblclick="toggleFullscreen(this)" onclick="event.stopPropagation();"></video>
-           </div>`, 
-           { permanent: true, direction: 'top', opacity: 1, interactive: true }
-       ).openTooltip();
+
+    cameras.forEach((cam, index) => {
+        let isOnline = cam.stream !== "";
+        let statusColor = isOnline ? "#22c55e" : "#ef4444";
         
-       const box = document.getElementById(`box-${idx}`);
-       if(box) {
-           L.DomEvent.disableClickPropagation(box);
-           L.DomEvent.on(box, 'dblclick', L.DomEvent.stopPropagation);
-       }
- 
-       if (Hls.isSupported()) {
-           const hls = new Hls(); hls.loadSource(cam.stream);
-           hls.attachMedia(document.getElementById(`v-${idx}`));
-           activeHls[idx] = hls;
-           document.getElementById("item-"+idx).classList.add("active-play");
-       }
+        let marker = L.marker([cam.lat, cam.lng], { 
+            icon: L.divIcon({
+                className:"",
+                html: `<div style="width:36px;height:36px;border-radius:50%;background:#111;border:2px solid ${statusColor};display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;box-shadow:0 0 10px rgba(0,0,0,0.5);">
+                        <i class="fas fa-video" style="font-size:10px;"></i>
+                        <span style="font-size:10px; font-weight:800;">${index+1}</span>
+                       </div>`,
+                iconSize:[36,36]
+            }) 
+        }).addTo(map);
+
+        marker.on("click", () => isAdmin ? openCamModal(index) : toggleCamera(cam, index));
+        markers[index] = marker;
+
+        const div = document.createElement("div");
+        div.className = "camera-item";
+        div.id = "item-" + index;
+        div.innerHTML = `<b>${index+1}. ${cam.name}</b><small style="color:${statusColor}">● ${isOnline ? 'ON' : 'OFF'}</small>`;
+        div.onclick = () => isAdmin ? openCamModal(index) : toggleCamera(cam, index);
+        document.getElementById("cameraList").appendChild(div);
+    });
+    localStorage.setItem('cctv_data', JSON.stringify(cameras));
+}
+
+function toggleGrid() {
+    const overlay = document.getElementById("gridOverlay");
+    overlay.style.display = overlay.style.display === "block" ? "none" : "block";
+    const grid = document.getElementById("gridFull");
+    grid.innerHTML = "";
+    
+    if(overlay.style.display === "block") {
+        // วนลูปแสดง 12 ช่อง (ถ้ากล้องมีมากกว่า 12 จะแสดงตามลำดับ ถ้ามีน้อยกว่าจะแสดงตามที่มี)
+        cameras.forEach((cam, index) => {
+            const item = document.createElement("div");
+            item.className = "grid-item";
+            if (cam.stream !== "") {
+                item.innerHTML = `<video autoplay muted id="gv-${index}"></video>
+                    <div class="grid-label"><span>#${index+1}</span><span>${cam.name}</span></div>`;
+                grid.appendChild(item);
+                if (Hls.isSupported()) {
+                    const hls = new Hls(); hls.loadSource(cam.stream); hls.attachMedia(document.getElementById(`gv-${index}`));
+                }
+            } else {
+                item.innerHTML = `<div class="grid-offline-text">OFFLINE</div>
+                    <div class="grid-label"><span>#${index+1}</span><span>${cam.name}</span></div>`;
+                grid.appendChild(item);
+            }
+        });
     }
 }
- 
-function saveCamera() {
-    const idx = document.getElementById("editIdx").value;
-    const data = {
-        name: document.getElementById("camName").value || "Cam",
-        lat: parseFloat(document.getElementById("camLat").value),
-        lng: parseFloat(document.getElementById("camLng").value),
-        stream: document.getElementById("camURL").value
-    };
- 
-    if(idx !== "") {
-        const camId = cameras[idx].id;
-        db.ref('cameras/' + camId).set(data);
+
+// ฟังก์ชันเสริม
+function toggleCamera(cam, idx) {
+    if(cam.stream === "") return alert("Offline");
+    if (activeHls[idx]) {
+        activeHls[idx].destroy(); delete activeHls[idx];
+        markers[idx].closeTooltip(); markers[idx].unbindTooltip();
     } else {
-        db.ref('cameras').push(data);
-    }
-    closeModal("camModal");
-}
- 
-function deleteCamera() {
-    const idx = document.getElementById("editIdx").value;
-    if(idx !== "" && confirm("ยืนยันการลบกล้องนี้?")) {
-        const camId = cameras[idx].id;
-        db.ref('cameras/' + camId).remove();
-        closeModal("camModal");
+        markers[idx].bindTooltip(`<div class="video-box"><video id="v-${idx}" autoplay muted controls></video></div>`, { permanent: true, direction: 'top', opacity: 1 }).openTooltip();
+        if (Hls.isSupported()) {
+            const hls = new Hls(); hls.loadSource(cam.stream); hls.attachMedia(document.getElementById(`v-${idx}`));
+            activeHls[idx] = hls;
+        }
     }
 }
- 
-function login() { 
-    if(document.getElementById("passInput").value === "admin2") { 
-        isAdmin = true; 
-        document.getElementById("adminControls").style.display = "flex"; 
-        closeModal("loginModal"); 
-        document.getElementById("passInput").value = ""; 
-    } else {
-        alert("รหัสผ่านไม่ถูกต้อง");
-    }
-}
-function openLogin() { if(!isAdmin) { document.getElementById("loginModal").style.display = "flex"; document.getElementById("passInput").focus(); } }
-function logout() { isAdmin = false; document.getElementById("adminControls").style.display = "none"; }
+function login() { if(document.getElementById("passInput").value === "admin2") { isAdmin = true; document.getElementById("adminControls").style.display = "flex"; closeModal("loginModal"); updateUI(); } }
+function openLogin() { if(!isAdmin) { document.getElementById("passInput").value=""; document.getElementById("loginModal").style.display = "flex"; } }
+function logout() { isAdmin = false; document.getElementById("adminControls").style.display = "none"; updateUI(); }
 function closeModal(id) { document.getElementById(id).style.display = "none"; }
- 
 function openCamModal(idx = null) {
     document.getElementById("editIdx").value = idx !== null ? idx : "";
     if(idx !== null) {
@@ -300,35 +255,15 @@ function openCamModal(idx = null) {
     }
     document.getElementById("camModal").style.display = "flex";
 }
- 
-function toggleGrid() {
-    const o = document.getElementById("gridOverlay");
-    o.style.display = o.style.display === "block" ? "none" : "block";
-    const g = document.getElementById("gridFull"); g.innerHTML = "";
-    if(o.style.display === "block") {
-        cameras.forEach((cam, i) => {
-            const item = document.createElement("div"); 
-            item.className = "grid-item";
-            if (cam.stream !== "") {
-                // แก้ไขตรงนี้: เพิ่ม object-fit:contain และ style ที่ถูกต้อง
-                item.innerHTML = `
-                <video autoplay muted id="gv-${i}" 
-                       style="width:100%; height:100%; object-fit:contain;" 
-                       ondblclick="toggleFullscreen(this)"></video>
-                <div style="position:absolute;top:0;left:0;background:rgba(0,0,0,0.7);font-size:10px;padding:4px;z-index:10">#${i+1} ${cam.name}</div>`;
-                g.appendChild(item);
-                if (Hls.isSupported()) { 
-                    const h = new Hls(); 
-                    h.loadSource(cam.stream); 
-                    h.attachMedia(document.getElementById(`gv-${i}`)); 
-                }
-            } else { 
-                item.innerHTML = `<div style="color:red;padding:20px;font-size:10px;text-align:center;">OFFLINE</div>`; 
-                g.appendChild(item); 
-            }
-        });
-    }
+function saveCamera() {
+    const idx = document.getElementById("editIdx").value;
+    const data = { name: document.getElementById("camName").value || "Cam", lat: parseFloat(document.getElementById("camLat").value), lng: parseFloat(document.getElementById("camLng").value), stream: document.getElementById("camURL").value };
+    if(idx !== "") cameras[idx] = data; else cameras.push(data);
+    closeModal("camModal"); updateUI();
 }
+function deleteCamera() { if(confirm("ลบ?")) { cameras.splice(document.getElementById("editIdx").value, 1); closeModal("camModal"); updateUI(); } }
+
+updateUI();
 </script>
 </body>
 </html>
