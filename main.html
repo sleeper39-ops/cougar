@@ -3133,7 +3133,55 @@
             });
         }
     </script>
+
+
+<script>
+    // 1. ปลดล็อคปุ่ม Start ให้กดได้ทันที แม้ฐานข้อมูลจะยังไม่โหลด
+    const startBtn = document.getElementById('closeWelcomeBtn');
+    if (startBtn) {
+        // ลบ Event เดิมทิ้งแล้วใส่คำสั่งใหม่เข้าไป
+        startBtn.onclick = function(e) {
+            e.preventDefault();
+            forceOpenDashboard();
+        };
+        // ทำให้ปุ่มดูเหมือนพร้อมใช้งาน (เผื่อโค้ดเดิมสั่งจางไว้)
+        startBtn.style.opacity = "1";
+        startBtn.style.cursor = "pointer";
+        startBtn.disabled = false;
+    }
+
+    function forceOpenDashboard() {
+        // 2. สั่งปิดหน้าจอ Welcome / Login
+        // หน้าจอนี้มักจะมี class หรือ id ที่คลุมไว้ เช่น 'welcome-overlay' หรือ 'login-screen'
+        const welcomeScreen = document.querySelector('.welcome-screen') || 
+                            document.getElementById('welcomeOverlay') ||
+                            document.querySelector('.login-container');
+        
+        if (welcomeScreen) {
+            welcomeScreen.style.display = 'none';
+        }
+
+        // 3. แสดงหน้า Dashboard หลัก
+        const mainUI = document.querySelector('.main-content') || 
+                      document.getElementById('mainContent');
+        if (mainUI) {
+            mainUI.style.display = 'block';
+        }
+
+        console.log("System Bypassed: Dashboard is now active.");
+    }
+
+    // 4. แก้ไขเรื่องช่องใส่ชื่อที่โดนล็อค (Disabled)
+    const nameInput = document.getElementById('visitorName');
+    if (nameInput) {
+        nameInput.disabled = false;
+        nameInput.style.background = "rgba(255,255,255,0.1)";
+    }
+</script>
+
+    
 </body>
 
 
 </html>
+
