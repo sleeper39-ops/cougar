@@ -3135,13 +3135,47 @@
     </script>
 
 
+<script>
+    // สร้างตัวแปรจำลองระบบ (Bypass fcpAPI ที่ขาดหายไป)
+    window.fcpAPI = {
+        applyMatch: function() {
+            console.log("Match ID Applied: " + document.getElementById('matchID').value);
+            alert("ระบบกำลังดึงข้อมูล Match ID: " + document.getElementById('matchID').value);
+        }
+    };
 
+    // แก้ไขปุ่ม Start ที่ค้าง Loading
+    window.onload = function() {
+        const startBtn = document.getElementById('closeWelcomeBtn');
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.style.opacity = "1";
+            startBtn.style.cursor = "pointer";
+            startBtn.innerHTML = '<i class="fas fa-play"></i> START NOW';
+            
+            startBtn.onclick = function() {
+                document.getElementById('welcomeSponsorPopup').style.display = 'none';
+                document.getElementById('welcomeScreen').style.display = 'none';
+            };
+        }
+    };
+
+    // ฟังก์ชันพื้นฐานสำหรับเพิ่ม/ลดคะแนน (เขียนเผื่อไว้ถ้าปุ่มหลักกดไม่ได้)
+    function addScore(team, delta) {
+        let scoreEl = document.getElementById('score' + team);
+        if (scoreEl) {
+            let current = parseInt(scoreEl.innerText) || 0;
+            scoreEl.innerText = Math.max(0, current + delta);
+        }
+    }
+</script>
 
     
 </body>
 
 
 </html>
+
 
 
 
