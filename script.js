@@ -4,7 +4,7 @@ import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebase
 const firebaseConfig = {
     apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
     authDomain: "cougar2-database.firebaseapp.com",
-    databaseURL: "https://cougar2-database-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    databaseURL: "https://cougar2-database-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "cougar2-database",
     storageBucket: "cougar2-database.firebasestorage.app",
     messagingSenderId: "429808185249",
@@ -192,4 +192,5 @@ window.onload = () => {
     updateDashboard();
     setInterval(updateDashboard, 1000);
 };
+
 
