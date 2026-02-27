@@ -3,204 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cougar2 - Multi-View System</title>
+    <title>Cougar2 - Cloud Integrated System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
-            --sidebar-width: 260px;
+            --sidebar-width: 280px; /* ขยับความกว้างออกมาทางขวาอีก */
             --sidebar-bg: #1a1c1e;
             --sidebar-hover: #2c2f33;
             --primary-blue: #3498db;
             --bg-light: #f4f6f9;
-            --danger: #e74c3c;
-            --success: #2ecc71;
         }
 
         body { margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; height: 100vh; background: var(--bg-light); overflow: hidden; }
 
-        /* --- Sidebar --- */
-        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding-top: 20px; flex-shrink: 0; }
-        .sidebar h1 { text-align: center; font-size: 1.6rem; margin-bottom: 35px; color: var(--primary-blue); }
+        /* --- Sidebar ปรับปรุงใหม่ --- */
+        .sidebar { 
+            width: var(--sidebar-width); 
+            background: var(--sidebar-bg); 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            padding-top: 25px; 
+            flex-shrink: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+        }
+        .sidebar h1 { text-align: center; font-size: 1.8rem; margin-bottom: 40px; color: var(--primary-blue); letter-spacing: 2px; }
         
         .nav-item { 
-            padding: 16px 28px; cursor: pointer; display: flex; align-items: center; gap: 15px; 
-            transition: all 0.3s ease; color: #adb5bd; font-size: 15px; border-left: 4px solid transparent;
+            padding: 18px 30px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; /* เพิ่มระยะห่างระหว่าง Icon กับ Text */
+            transition: all 0.3s ease; 
+            color: #adb5bd; 
+            font-size: 16px; /* ปรับขนาดตัวอักษรเมนู */
+            text-decoration: none;
+            border-left: 5px solid transparent;
         }
-        .nav-item:hover { background: var(--sidebar-hover); color: #ffffff; padding-left: 35px; }
-        .nav-item.active { background: #24272b; color: white; border-left: 4px solid var(--primary-blue); }
 
-        /* --- Content Area --- */
+        /* ขยายขนาด Icon */
+        .nav-item i { 
+            font-size: 1.4rem; /* ขนาดไอคอนใหญ่ขึ้นตามสั่ง */
+            width: 25px; 
+            text-align: center;
+        }
+
+        .nav-item:hover { 
+            background: var(--sidebar-hover); 
+            color: #ffffff; 
+            padding-left: 40px; 
+        }
+
+        .nav-item.active { 
+            background: #24272b; 
+            color: white; 
+            border-left: 5px solid var(--primary-blue); 
+        }
+
+        /* --- Main Content Area --- */
         .wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .top-header { height: 60px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 10; }
         
-        .content-container { flex: 1; padding: 25px; overflow-y: auto; position: relative; }
+        .top-header { 
+            height: 65px; 
+            background: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 35px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
 
-        /* การซ่อน/แสดงเนื้อหา */
-        .view-section { display: none; animation: fadeIn 0.3s ease; }
-        .view-section.active { display: block; }
+        /* Container สำหรับแสดงเนื้อหาหน้าเว็บต่างๆ */
+        #content-frame-container { 
+            flex: 1; 
+            width: 100%; 
+            height: 100%;
+            border: none;
+            background: var(--bg-light);
+        }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Stats & Grid (หน้าหลัก) */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
-        .stat-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #eee; }
-        .grid-downloads { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        
-        /* ช่องว่างเปล่าสำหรับหน้าอื่นๆ */
-        .placeholder-view { background: white; padding: 40px; border-radius: 15px; text-align: center; color: #888; }
-
-        #admin-panel { display: none; background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; border: 1px dashed var(--primary-blue); }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h1>Cougar2</h1>
-        <div class="nav-item active" onclick="switchView('home', this)"><i class="fas fa-home"></i> หน้าหลัก</div>
-        <div class="nav-item" onclick="switchView('cctv', this)"><i class="fas fa-video"></i> ระบบกล้องสด</div>
-        <div class="nav-item" onclick="switchView('map', this)"><i class="fas fa-map"></i> แผนที่ระบบ</div>
-        <div class="nav-item" onclick="switchView('calendar', this)"><i class="fas fa-calendar-alt"></i> ปฏิทิน</div>
+        <div class="nav-item active" onclick="switchPage('dashboard', this)">
+            <i class="fas fa-home"></i> <span>หน้าหลัก</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('cctv.html', this)">
+            <i class="fas fa-video"></i> <span>ระบบกล้องสด</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('map.html', this)">
+            <i class="fas fa-map-marked-alt"></i> <span>แผนที่ระบบ</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('calendar.html', this)">
+            <i class="fas fa-calendar-alt"></i> <span>ปฏิทินงาน</span>
+        </div>
     </div>
 
     <div class="wrapper">
         <div class="top-header">
-            <h2 id="page-title">Dashboard</h2>
-            <button id="auth-btn" style="background:var(--primary-blue); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;" onclick="window.toggleAuth()">Admin Login</button>
+            <h2 id="current-title">Dashboard</h2>
+            <div id="admin-status" style="font-size: 14px; color: #7f8c8d;">
+                <i class="fas fa-circle" style="color: #2ecc71; font-size: 10px;"></i> System Online
+            </div>
         </div>
 
-        <div class="content-container">
-            
-            <section id="view-home" class="view-section active">
-                <div class="stats-grid">
-                    <div class="stat-card"><i class="fas fa-clock" style="color:var(--success)"></i><div style="font-size:20px; font-weight:bold;" id="dash-time">00:00</div><div>เวลาปัจจุบัน</div></div>
-                    <div class="stat-card"><i class="fas fa-folder-open" style="color:var(--primary-blue)"></i><div style="font-size:20px; font-weight:bold;" id="dash-count">0 รายการ</div><div>ไฟล์ในระบบ</div></div>
-                    <div class="stat-card"><i class="fas fa-shield-alt"></i><div style="font-size:20px; font-weight:bold;" id="dash-status">Guest Mode</div><div>โหมดการใช้งาน</div></div>
-                </div>
-
-                <div id="admin-panel">
-                    <h4 style="margin-top:0;">Admin Control</h4>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:10px;">
-                        <input type="hidden" id="editKey">
-                        <input type="text" id="itemName" placeholder="ชื่อไฟล์" style="padding:8px; border:1px solid #ddd; border-radius:5px;">
-                        <input type="text" id="itemImg" placeholder="ลิงก์รูป" style="padding:8px; border:1px solid #ddd; border-radius:5px;">
-                        <input type="text" id="itemLink" placeholder="ลิงก์โหลด" style="padding:8px; border:1px solid #ddd; border-radius:5px;">
-                        <button onclick="window.saveItem()" style="background:var(--success); color:white; border:none; padding:0 20px; border-radius:5px; cursor:pointer;">บันทึก</button>
-                    </div>
-                </div>
-
-                <div id="download-list" class="grid-downloads"></div>
-            </section>
-
-            <section id="view-cctv" class="view-section">
-                <div class="placeholder-view">
-                    <i class="fas fa-video fa-3x" style="margin-bottom:15px;"></i>
-                    <h3>ระบบกล้องสด (Live CCTV)</h3>
-                    <p>ขณะนี้ระบบกำลังเชื่อมต่อกับ Server กล้องวงจรปิด...</p>
-                </div>
-            </section>
-
-            <section id="view-map" class="view-section">
-                <div class="placeholder-view">
-                    <i class="fas fa-map-marked-alt fa-3x" style="margin-bottom:15px;"></i>
-                    <h3>แผนที่ระบบ (System Map)</h3>
-                    <div style="width:100%; height:400px; background:#eee; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-                        พื้นที่แสดงแผนที่ Google Maps
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-calendar" class="view-section">
-                <div class="placeholder-view">
-                    <i class="fas fa-calendar-alt fa-3x" style="margin-bottom:15px;"></i>
-                    <h3>ปฏิทินงาน (Schedule)</h3>
-                    <p>ตารางงานประจำเดือนกุมภาพันธ์ 2024</p>
-                </div>
-            </section>
-
+        <div id="content-frame-container">
+            <iframe src="about:blank" id="main-iframe"></iframe>
         </div>
     </div>
 
-    <script type="module">
-        // --- ฟังก์ชันสลับหน้าจอ ---
-        window.switchView = (viewName, element) => {
-            // 1. ซ่อนทุกหน้า
-            document.querySelectorAll('.view-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            // 2. แสดงหน้าที่เลือก
-            document.getElementById('view-' + viewName).classList.add('active');
-            
-            // 3. เปลี่ยนชื่อหัวข้อ Dashboard
-            const titles = { 'home': 'Dashboard', 'cctv': 'ระบบกล้องสด', 'map': 'แผนที่ระบบ', 'calendar': 'ปฏิทินงาน' };
-            document.getElementById('page-title').innerText = titles[viewName];
+    <script>
+        const iframe = document.getElementById('main-iframe');
+        const titleText = document.getElementById('current-title');
 
-            // 4. เปลี่ยนสีเมนูที่ถูกกด
+        // ฟังก์ชันสลับหน้าเว็บ
+        function switchPage(url, element) {
+            // 1. ปรับสถานะปุ่มใน Sidebar
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             element.classList.add('active');
-        };
 
-        // --- ระบบ Firebase (เหมือนเดิม) ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+            // 2. เปลี่ยนหัวข้อ
+            const label = element.querySelector('span').innerText;
+            titleText.innerText = label;
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
-            authDomain: "cougar2-database.firebaseapp.com",
-            databaseURL: "https://cougar2-database-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "cougar2-database",
-            storageBucket: "cougar2-database.firebasestorage.app",
-            messagingSenderId: "429808185249",
-            appId: "1:429808185249:web:4afa08e0a7a973b00d25e0"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        let items = [];
-        let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-
-        onValue(ref(db, "cougar_data"), (snapshot) => {
-            const data = snapshot.val();
-            items = data ? Object.keys(data).map(key => ({ key, ...data[key] })) : [];
-            window.renderItems();
-        });
-
-        window.renderItems = () => {
-            const list = document.getElementById('download-list');
-            if(!list) return;
-            list.innerHTML = '';
-            items.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <img src="${item.img || 'https://via.placeholder.com/300x160'}" style="width:100%; height:160px; object-fit:contain; background:#222;">
-                    <div style="padding:15px; text-align:center;">
-                        <h4 style="margin:0 0 10px 0;">${item.name}</h4>
-                        <button onclick="window.open('${item.link}', '_blank')" style="width:100%; padding:10px; background:var(--success); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Download</button>
-                    </div>
-                `;
-                list.appendChild(card);
-            });
-            document.getElementById('dash-count').innerText = items.length + " รายการ";
-        };
-
-        // ระบบล็อกอินพื้นฐาน
-        window.toggleAuth = () => {
-            if(isAdmin) { sessionStorage.removeItem('isAdmin'); location.reload(); }
-            else {
-                let p = prompt("Password:");
-                if(p === "admin2") { sessionStorage.setItem('isAdmin', 'true'); location.reload(); }
+            // 3. โหลดไฟล์ HTML เข้ามาในฝั่งขวา
+            if(url === 'dashboard') {
+                // หากหน้าหลักอยู่ในไฟล์เดียวกัน ให้ใส่ Logic หรือโหลดหน้า home.html
+                iframe.srcdoc = `
+                    <div style="font-family:sans-serif; padding:50px; text-align:center; color:#555;">
+                        <h2>ยินดีต้อนรับสู่ระบบ Cougar2</h2>
+                        <p>กรุณาเลือกเมนูทางด้านซ้ายเพื่อเริ่มใช้งาน</p>
+                    </div>`;
+            } else {
+                iframe.src = url; // โหลด cctv.html, map.html ฯลฯ
             }
-        };
-
-        if(isAdmin) {
-            document.getElementById('admin-panel').style.display = 'block';
-            document.getElementById('dash-status').innerText = "Admin Mode";
         }
 
-        setInterval(() => {
-            document.getElementById('dash-time').innerText = new Date().toLocaleTimeString('th-TH',{hour:'2-digit', minute:'2-digit'});
-        }, 1000);
+        // ตั้งค่าหน้าเริ่มต้น
+        window.onload = () => {
+            switchPage('dashboard', document.querySelector('.nav-item'));
+        };
     </script>
 </body>
 </html>
