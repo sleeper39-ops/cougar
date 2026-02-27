@@ -1,3 +1,14 @@
+/* ================= Firebase Import ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+    getDatabase,
+    ref,
+    push,
+    set,
+    update,
+    remove,
+    onValue
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 /* ================= Firebase Config ================= */
 const firebaseConfig = {
@@ -19,26 +30,34 @@ let isAdmin = false;
 /* ================= Clock ================= */
 setInterval(() => {
     const now = new Date();
-    document.getElementById("dash-time").innerText =
-        now.toLocaleTimeString("th-TH");
+    const timeEl = document.getElementById("dash-time");
+    if (timeEl) {
+        timeEl.innerText = now.toLocaleTimeString("th-TH");
+    }
 }, 1000);
 
 /* ================= Realtime Load ================= */
 onValue(ref(db, "cougar_data"), (snapshot) => {
     const data = snapshot.val() || {};
+
     items = Object.keys(data).map(id => ({
         id,
         ...data[id]
     }));
 
     renderItems();
-    document.getElementById("dash-count").innerText =
-        items.length + " รายการ";
+
+    const countEl = document.getElementById("dash-count");
+    if (countEl) {
+        countEl.innerText = items.length + " รายการ";
+    }
 });
 
 /* ================= Render ================= */
 function renderItems() {
     const container = document.getElementById("download-list");
+    if (!container) return;
+
     container.innerHTML = "";
 
     items.forEach(item => {
@@ -59,7 +78,7 @@ function renderItems() {
 
         <div class="download-info">
             <h4>${item.name}</h4>
-            <button class="btn-download is-open"
+            <button class="btn-download"
                 ${item.locked ? "disabled" : ""}
                 onclick="window.openLink('${item.link}')">
                 ${item.locked ? "Locked" : "Download Now"}
@@ -109,14 +128,15 @@ window.saveItem = async function () {
                 name,
                 image,
                 link,
-                locked: false
+                locked: false,
+                createdAt: Date.now()
             });
         }
 
         resetForm();
 
     } catch (err) {
-        console.error(err);
+        console.error("SAVE ERROR:", err);
     }
 };
 
@@ -145,12 +165,12 @@ window.toggleLock = async function (id, current) {
 };
 
 /* ================= Reset ================= */
-window.resetForm = function () {
+function resetForm() {
     document.getElementById("itemName").value = "";
     document.getElementById("itemImg").value = "";
     document.getElementById("itemLink").value = "";
     document.getElementById("editId").value = "";
-};
+}
 
 /* ================= Lightbox ================= */
 window.openLightbox = function (src) {
