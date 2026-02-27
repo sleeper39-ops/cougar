@@ -181,6 +181,21 @@
     <div id="imgLightbox" class="lightbox" onclick="closeLightbox()"><img id="lightboxImg" src=""></div>
 
     <script>
+        // --- ส่วนความปลอดภัย: การเข้ารหัส SHA-256 ---
+        async function hashText(text) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // รหัส Hash ที่ผ่านการคำนวณมาแล้ว (ความลับ)
+        const HASH_CONFIG = {
+            u: "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918", // 'admin'
+            p: "1729221147d3388701e19488347f3b3924df39c59573887c936746973e8f85f5", // 'admin2'
+            k: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"  // 'password'
+        };
+
         let items = JSON.parse(localStorage.getItem('cougar_final_data')) || [];
 
         function openLightbox(src) { document.getElementById('lightboxImg').src = src; document.getElementById('imgLightbox').style.display = 'flex'; }
@@ -193,12 +208,9 @@
                 const modal = document.getElementById('loginModal');
                 modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
                 document.getElementById('recoveryKey').value = "";
-                
-                // ล้างค่าเดิมก่อนแสดง Modal (กัน Browser แอบใส่ให้)
                 document.getElementById('auth_u_key').value = "";
                 document.getElementById('auth_p_key').value = "";
 
-                // โหลดค่าจาก localStorage ของเราเองเท่านั้น
                 const savedID = localStorage.getItem('remembered_id');
                 const savedPass = localStorage.getItem('remembered_pass');
                 if(savedID && savedPass) {
@@ -211,12 +223,16 @@
             }
         }
 
-        function handleLogin() {
+        async function handleLogin() {
             const id = document.getElementById('auth_u_key').value;
             const pass = document.getElementById('auth_p_key').value;
             const isRemember = document.getElementById('rememberMe').checked;
 
-            if (id === "admin" && pass === "admin2") {
+            // ตรวจสอบข้อมูลด้วยการเทียบ Hash
+            const typedIDHash = await hashText(id);
+            const typedPassHash = await hashText(pass);
+
+            if (typedIDHash === HASH_CONFIG.u && typedPassHash === HASH_CONFIG.p) {
                 if(isRemember) {
                     localStorage.setItem('remembered_id', id);
                     localStorage.setItem('remembered_pass', pass);
@@ -224,17 +240,22 @@
                     localStorage.removeItem('remembered_id');
                     localStorage.removeItem('remembered_pass');
                 }
-                sessionStorage.setItem('isAdmin', 'true'); location.reload();
-            } else { alert("รหัสผ่านไม่ถูกต้อง"); }
+                sessionStorage.setItem('isAdmin', 'true'); 
+                location.reload();
+            } else { 
+                alert("ID หรือรหัสผ่านไม่ถูกต้อง"); 
+            }
         }
 
-        function checkKeyword() {
+        async function checkKeyword() {
             const key = document.getElementById('recoveryKey').value;
-            if (key === "password") {
+            if (key === "") return alert("กรุณาใส่คีย์เวิร์ดก่อนครับ");
+
+            const typedKeyHash = await hashText(key);
+
+            if (typedKeyHash === HASH_CONFIG.k) {
                 alert("✅ คีย์เวิร์ดถูกต้อง!\n\nID: admin\nPassword: admin2");
                 document.getElementById('recoveryKey').value = "";
-            } else if (key === "") {
-                alert("กรุณาใส่คีย์เวิร์ดก่อนครับ");
             } else {
                 alert("❌ คีย์เวิร์ดไม่ถูกต้อง!");
             }
