@@ -11,7 +11,7 @@
             --bg-dark: #1a1a1a; --bg-body: #f0f2f5;
             --sidebar-width: 260px;
         }
-        body { display: flex; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-body); height: 100vh; overflow: hidden; }
+        body { display: flex; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-body); height: 100vh; overflow: hidden; }
         
         /* Sidebar Menu */
         .sidebar { width: var(--sidebar-width); background: var(--bg-dark); color: white; padding: 25px 15px; display: flex; flex-direction: column; z-index: 10; }
@@ -46,25 +46,30 @@
         input:checked + .slider { background-color: var(--warning); }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        /* Card & Typography Update */
+        /* Card Update */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding-bottom: 40px; }
-        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; display: flex; flex-direction: column; }
+        
         .card-img-container { width: 100%; height: 180px; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; }
         .card-img-container img { width: 100%; height: 100%; object-fit: contain; transition: 0.3s; }
         
-        .download-info { padding: 22px 20px; text-align: center; }
+        .download-info { padding: 20px; text-align: center; flex-grow: 1; }
         
-        /* ปรับแต่งชื่อไฟล์ให้สวยงาม */
+        /* สไตล์ชื่อไฟล์ใหม่: รองรับ 2 บรรทัด */
         .download-info h4 {
             margin: 0 0 15px 0;
-            font-size: 16px;            /* ขนาดที่พอดี */
-            font-weight: 600;           /* กึ่งหนา ดูพรีเมียม */
-            color: #2c3e50;             /* สีน้ำเงินเข้มเทา */
-            letter-spacing: 0.3px;      /* ระยะห่างตัวอักษรพอสวย */
-            white-space: nowrap;        /* บรรทัดเดียว */
-            overflow: hidden;           /* ซ่อนส่วนที่ล้น */
-            text-overflow: ellipsis;    /* แสดง ... เมื่อชื่อยาว */
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
             line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            word-wrap: break-word;
+            height: 2.8em; /* ล็อกความสูงไว้เพื่อให้กล่องเท่ากัน */
         }
 
         .btn-download { display: block; width: 100%; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; margin-bottom: 10px; font-size: 14px; }
@@ -149,22 +154,16 @@
             return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        function openImage(src) {
-            const lb = document.getElementById('imgLightbox');
-            document.getElementById('lightboxImg').src = src;
-            lb.style.display = 'flex';
-        }
+        function openImage(src) { document.getElementById('lightboxImg').src = src; document.getElementById('imgLightbox').style.display = 'flex'; }
 
         function toggleAuthModal() {
-            if (sessionStorage.getItem('isAdmin') === 'true') {
-                sessionStorage.removeItem('isAdmin'); location.reload();
-            } else { document.getElementById('loginModal').style.display = 'flex'; }
+            if (sessionStorage.getItem('isAdmin') === 'true') { sessionStorage.removeItem('isAdmin'); location.reload(); }
+            else { document.getElementById('loginModal').style.display = 'flex'; }
         }
 
         function handleLogin() {
-            if (document.getElementById('adminPass').value === 'admin2') {
-                sessionStorage.setItem('isAdmin', 'true'); location.reload();
-            } else { alert("รหัสผ่านผิด"); }
+            if (document.getElementById('adminPass').value === 'admin2') { sessionStorage.setItem('isAdmin', 'true'); location.reload(); }
+            else { alert("รหัสผ่านผิด"); }
         }
 
         function showPage(pageId) {
@@ -211,7 +210,6 @@
                             <label class="switch"><input type="checkbox" ${item.locked ? 'checked' : ''} onchange="toggleItemLock(${index})"><span class="slider"></span></label>
                             <span style="font-size:11px; font-weight:bold; color:#666;">ล็อก</span>
                         </div>
-                        <button onclick="editItem(${index})" class="admin-btn-text" style="color:var(--primary);"><i class="fas fa-edit"></i> แก้ไข</button>
                         <button onclick="deleteItem(${index})" class="admin-btn-text" style="color:var(--danger);"><i class="fas fa-trash"></i> ลบ</button>
                     </div>` : '';
 
