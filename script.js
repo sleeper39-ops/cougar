@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+// --- 1. Firebase Configuration ---
 const firebaseConfig = {
     apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
     authDomain: "cougar2-database.firebaseapp.com",
@@ -21,32 +22,40 @@ let state = {
     isAdmin: sessionStorage.getItem('isAdmin') === 'true'
 };
 
-// --- 1. การดึงข้อมูล (Real-time Sync) ---
-// บังคับให้ดึงจาก Server เสมอ
+// --- 2. การดึงข้อมูล (Real-time Sync) ---
 onValue(itemsRef, (snapshot) => {
     const data = snapshot.val();
     console.log("📡 ข้อมูลจาก Cloud อัปเดตแล้ว:", data);
     
-    // ตรวจสอบข้อมูล: ถ้าบน Cloud เป็น null ต้องแสดงเป็นลิสต์ว่าง
-    state.items = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+    // ตรวจสอบข้อมูล: ป้องกันปัญหา data เป็น null หรือ object
+    if (!data) {
+        state.items = [];
+    } else if (Array.isArray(data)) {
+        state.items = data;
+    } else {
+        state.items = Object.values(data);
+    }
     
     window.renderItems();
     window.updateDashboard();
 }, (error) => {
     console.error("❌ Firebase Sync Error:", error);
     if (error.code === 'PERMISSION_DENIED') {
-        alert("⚠️ เครื่องนี้ไม่มีสิทธิ์อ่านข้อมูล! กรุณาเช็ก Rules ใน Firebase");
+        alert("⚠️ เครื่องนี้ไม่มีสิทธิ์อ่านข้อมูล! ตรวจสอบว่ากด Publish ใน Firebase Rules หรือยัง");
     }
 });
 
-// --- 2. การบันทึกข้อมูล (Force Write to Cloud) ---
+// --- 3. ฟังก์ชันบันทึกข้อมูล (แก้ไขให้เสถียรขึ้น) ---
 window.saveItem = async function() {
     const nameEl = document.getElementById('itemName');
     const linkEl = document.getElementById('itemLink');
     const imgEl = document.getElementById('itemImg');
     const indexEl = document.getElementById('editIndex');
 
-    if (!nameEl || !linkEl) return;
+    if (!nameEl || !linkEl) {
+        console.error("❌ หา Element HTML ไม่เจอ! เช็ค id ใน main.html");
+        return;
+    }
 
     const name = nameEl.value.trim();
     const link = linkEl.value.trim();
@@ -57,20 +66,22 @@ window.saveItem = async function() {
         let updatedItems = [...state.items];
         const itemData = { name, link, img, locked: false };
 
-        if (index > -1) updatedItems[index] = itemData;
-        else updatedItems.push(itemData);
+        if (index > -1) {
+            updatedItems[index] = itemData;
+        } else {
+            updatedItems.push(itemData);
+        }
 
         try {
-            // ใช้ await เพื่อรอให้ส่งข้อมูลสำเร็จจริงๆ
+            // บังคับส่งข้อมูลขึ้น Server และรอจนกว่าจะเสร็จ
             await set(itemsRef, updatedItems);
-            console.log("✅ Data sent to Cloud successfully!");
-            alert("✅ บันทึกสำเร็จ! ตอนนี้ทุกเครื่องจะเห็นข้อมูลแล้ว");
+            console.log("✅ ข้อมูลถูกส่งไป Cloud เรียบร้อย!");
+            alert("✅ บันทึกสำเร็จ! ข้อมูลออนไลน์แล้วทุกเครื่อง");
             window.resetForm();
         } catch (err) {
             console.error("🔥 Save Error:", err);
-            // แจ้งสาเหตุที่แท้จริง
             if (err.code === 'PERMISSION_DENIED') {
-                alert("❌ บันทึกไม่ได้! เพราะ 'Rules' ใน Firebase ยังไม่ได้กด Publish");
+                alert("❌ บันทึกไม่ได้! กรุณาไปที่ Firebase Rules แล้วกดปุ่ม 'Publish' สีฟ้า");
             } else {
                 alert("❌ บันทึกไม่สำเร็จ: " + err.message);
             }
@@ -80,13 +91,13 @@ window.saveItem = async function() {
     }
 };
 
-// --- 3. ส่วนการแสดงผล (UI) ---
+// --- 4. การแสดงผล UI ---
 window.renderItems = function() {
     const list = document.getElementById('download-list');
     if (!list) return;
     
     if (state.items.length === 0) {
-        list.innerHTML = '<p style="text-align:center; color:gray;">ไม่มีข้อมูลในระบบ (Cloud is empty)</p>';
+        list.innerHTML = '<p style="text-align:center; color:gray; padding:20px;">ยังไม่มีข้อมูลในระบบ</p>';
         return;
     }
 
@@ -100,17 +111,17 @@ window.renderItems = function() {
                 <button onclick="window.open('${item.link}', '_blank')" class="btn-download is-open">Download</button>
             </div>
             ${state.isAdmin ? `
-                <div class="admin-controls" style="padding:10px; border-top:1px solid #eee;">
-                    <button onclick="window.editItem(${index})" style="color:blue; background:none; border:none; cursor:pointer;">Edit</button>
-                    <button onclick="window.deleteItem(${index})" style="color:red; background:none; border:none; cursor:pointer; margin-left:10px;">Delete</button>
+                <div class="admin-controls" style="padding:10px; border-top:1px solid #eee; display:flex; gap:10px;">
+                    <button onclick="window.editItem(${index})" style="color:blue; background:none; border:none; cursor:pointer; font-weight:bold;">แก้ไข</button>
+                    <button onclick="window.deleteItem(${index})" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">ลบ</button>
                 </div>` : ''}
         </div>
     `).join('');
 };
 
-// --- 4. ฟังก์ชันเสริมอื่นๆ ---
+// --- 5. ฟังก์ชันเสริม ---
 window.deleteItem = async function(index) {
-    if (confirm("ต้องการลบรายการนี้ใช่หรือไม่?")) {
+    if (confirm("ต้องการลบรายการนี้จาก Cloud ใช่หรือไม่?")) {
         let updatedItems = [...state.items];
         updatedItems.splice(index, 1);
         try {
@@ -128,7 +139,7 @@ window.editItem = function(index) {
         document.getElementById('itemLink').value = item.link;
         document.getElementById('itemImg').value = item.img;
         document.getElementById('editIndex').value = index;
-        document.getElementById('btn-save').innerText = "Update Data";
+        document.getElementById('btn-save').innerText = "อัปเดตข้อมูล";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 };
@@ -137,7 +148,7 @@ window.updateDashboard = function() {
     const countEl = document.getElementById('dash-count');
     if (countEl) countEl.innerText = `${state.items.length} รายการ`;
     const statusEl = document.getElementById('dash-status');
-    if (statusEl) statusEl.innerText = state.isAdmin ? "Admin Mode" : "Guest Mode";
+    if (statusEl) statusEl.innerText = state.isAdmin ? "โหมดผู้ดูแล" : "โหมดผู้ชม";
 };
 
 window.resetForm = function() {
@@ -159,3 +170,8 @@ window.performLogin = function() {
         location.reload();
     } else { alert("Login Failed!"); }
 };
+
+// บังคับให้โหลดข้อมูลครั้งแรก
+document.addEventListener('DOMContentLoaded', () => {
+    window.updateDashboard();
+});
