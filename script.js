@@ -22,113 +22,90 @@ let state = {
     isAdmin: sessionStorage.getItem('isAdmin') === 'true'
 };
 
-// --- 2. การดึงข้อมูล (Real-time Sync) ---
+// --- 2. Real-time Sync (ดึงข้อมูล) ---
 onValue(itemsRef, (snapshot) => {
     const data = snapshot.val();
-    console.log("📡 ข้อมูลจาก Cloud อัปเดตแล้ว:", data);
+    console.log("📡 Cloud Sync:", data);
     
-    // ตรวจสอบข้อมูล: ป้องกันปัญหา data เป็น null หรือ object
-    if (!data) {
-        state.items = [];
-    } else if (Array.isArray(data)) {
-        state.items = data;
-    } else {
-        state.items = Object.values(data);
-    }
+    // จัดการข้อมูลให้เป็น Array เสมอ
+    if (!data) state.items = [];
+    else if (Array.isArray(data)) state.items = data;
+    else state.items = Object.values(data);
     
     window.renderItems();
     window.updateDashboard();
 }, (error) => {
-    console.error("❌ Firebase Sync Error:", error);
-    if (error.code === 'PERMISSION_DENIED') {
-        alert("⚠️ เครื่องนี้ไม่มีสิทธิ์อ่านข้อมูล! ตรวจสอบว่ากด Publish ใน Firebase Rules หรือยัง");
-    }
+    console.error("❌ Sync Error:", error);
 });
 
-// --- 3. ฟังก์ชันบันทึกข้อมูล (แก้ไขให้เสถียรขึ้น) ---
+// --- 3. Save Function (บันทึกลง Cloud) ---
 window.saveItem = async function() {
-    const nameEl = document.getElementById('itemName');
-    const linkEl = document.getElementById('itemLink');
-    const imgEl = document.getElementById('itemImg');
-    const indexEl = document.getElementById('editIndex');
-
-    if (!nameEl || !linkEl) {
-        console.error("❌ หา Element HTML ไม่เจอ! เช็ค id ใน main.html");
-        return;
-    }
-
-    const name = nameEl.value.trim();
-    const link = linkEl.value.trim();
-    const img = imgEl.value.trim() || 'https://via.placeholder.com/300x180?text=No+Image';
-    const index = parseInt(indexEl.value || "-1");
+    const name = document.getElementById('itemName')?.value.trim();
+    const link = document.getElementById('itemLink')?.value.trim();
+    const img = document.getElementById('itemImg')?.value.trim() || 'https://via.placeholder.com/300x180?text=Cougar2';
+    const index = parseInt(document.getElementById('editIndex')?.value || "-1");
 
     if (name && link) {
         let updatedItems = [...state.items];
         const itemData = { name, link, img, locked: false };
 
-        if (index > -1) {
-            updatedItems[index] = itemData;
-        } else {
-            updatedItems.push(itemData);
-        }
+        if (index > -1) updatedItems[index] = itemData;
+        else updatedItems.push(itemData);
 
         try {
-            // บังคับส่งข้อมูลขึ้น Server และรอจนกว่าจะเสร็จ
+            // บังคับเขียนลง Firebase และรอจนเสร็จ
             await set(itemsRef, updatedItems);
-            console.log("✅ ข้อมูลถูกส่งไป Cloud เรียบร้อย!");
-            alert("✅ บันทึกสำเร็จ! ข้อมูลออนไลน์แล้วทุกเครื่อง");
+            alert("✅ บันทึกสำเร็จ! ข้อมูลออนไลน์ทุกเครื่องแล้ว");
             window.resetForm();
         } catch (err) {
-            console.error("🔥 Save Error:", err);
+            console.error("🔥 Firebase Write Error:", err);
             if (err.code === 'PERMISSION_DENIED') {
-                alert("❌ บันทึกไม่ได้! กรุณาไปที่ Firebase Rules แล้วกดปุ่ม 'Publish' สีฟ้า");
+                alert("❌ บันทึกไม่ได้! กรุณากดปุ่ม Publish สีฟ้าในหน้า Rules ของ Firebase");
             } else {
-                alert("❌ บันทึกไม่สำเร็จ: " + err.message);
+                alert("❌ เกิดข้อผิดพลาด: " + err.message);
             }
         }
     } else {
-        alert("กรุณากรอกชื่อและลิงก์");
+        alert("กรุณากรอกชื่อและลิงก์ให้ครบถ้วน");
     }
 };
 
-// --- 4. การแสดงผล UI ---
+// --- 4. UI Rendering ---
 window.renderItems = function() {
     const list = document.getElementById('download-list');
     if (!list) return;
     
     if (state.items.length === 0) {
-        list.innerHTML = '<p style="text-align:center; color:gray; padding:20px;">ยังไม่มีข้อมูลในระบบ</p>';
+        list.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px; color:#999;"><h3>☁️ Cloud is empty</h3><p>เพิ่มข้อมูลจากแอดมินพาเนลเพื่อเริ่มใช้งาน</p></div>';
         return;
     }
 
     list.innerHTML = state.items.map((item, index) => `
         <div class="download-card">
-            <div class="card-img-container">
-                <img src="${item.img}" onerror="this.src='https://via.placeholder.com/300x180?text=Error'">
+            <div class="card-img-container" onclick="window.openImage('${item.img}')">
+                <img src="${item.img}" onerror="this.src='https://via.placeholder.com/300x180?text=Image+Error'">
             </div>
             <div class="download-info">
                 <h4>${item.name}</h4>
-                <button onclick="window.open('${item.link}', '_blank')" class="btn-download is-open">Download</button>
+                <button onclick="window.open('${item.link}', '_blank')" class="btn-download is-open">
+                    <i class="fas fa-download"></i> Download Now
+                </button>
             </div>
             ${state.isAdmin ? `
-                <div class="admin-controls" style="padding:10px; border-top:1px solid #eee; display:flex; gap:10px;">
-                    <button onclick="window.editItem(${index})" style="color:blue; background:none; border:none; cursor:pointer; font-weight:bold;">แก้ไข</button>
-                    <button onclick="window.deleteItem(${index})" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">ลบ</button>
+                <div class="admin-controls">
+                    <button class="admin-btn-text" style="color:var(--primary);" onclick="window.editItem(${index})">Edit</button>
+                    <button class="admin-btn-text" style="color:var(--danger);" onclick="window.deleteItem(${index})">Delete</button>
                 </div>` : ''}
         </div>
     `).join('');
 };
 
-// --- 5. ฟังก์ชันเสริม ---
-window.deleteItem = async function(index) {
-    if (confirm("ต้องการลบรายการนี้จาก Cloud ใช่หรือไม่?")) {
+// --- 5. Admin & Helpers ---
+window.deleteItem = function(index) {
+    if (confirm("ลบรายการนี้ออกจากระบบ Cloud?")) {
         let updatedItems = [...state.items];
         updatedItems.splice(index, 1);
-        try {
-            await set(itemsRef, updatedItems);
-        } catch (err) {
-            alert("ลบไม่สำเร็จ: " + err.message);
-        }
+        set(itemsRef, updatedItems);
     }
 };
 
@@ -144,22 +121,36 @@ window.editItem = function(index) {
     }
 };
 
-window.updateDashboard = function() {
-    const countEl = document.getElementById('dash-count');
-    if (countEl) countEl.innerText = `${state.items.length} รายการ`;
-    const statusEl = document.getElementById('dash-status');
-    if (statusEl) statusEl.innerText = state.isAdmin ? "โหมดผู้ดูแล" : "โหมดผู้ชม";
-};
-
 window.resetForm = function() {
     ['itemName', 'itemLink', 'itemImg'].forEach(id => {
         const el = document.getElementById(id);
         if(el) el.value = '';
     });
-    const idxEl = document.getElementById('editIndex');
-    if(idxEl) idxEl.value = '-1';
-    const btn = document.getElementById('btn-save');
-    if(btn) btn.innerText = "บันทึก";
+    document.getElementById('editIndex').value = '-1';
+    document.getElementById('btn-save').innerText = "บันทึก";
+};
+
+window.updateDashboard = function() {
+    // อัปเดตเวลา
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    if(document.getElementById('dash-time')) document.getElementById('dash-time').innerText = timeStr;
+    
+    // อัปเดตจำนวนและสถานะ
+    if(document.getElementById('dash-count')) document.getElementById('dash-count').innerText = `${state.items.length} รายการ`;
+    const statusEl = document.getElementById('dash-status');
+    const authBtn = document.getElementById('auth-btn');
+    const adminPanel = document.getElementById('admin-panel');
+
+    if (state.isAdmin) {
+        if(statusEl) statusEl.innerText = "Admin Mode";
+        if(authBtn) { authBtn.innerText = "Admin Logout"; authBtn.style.background = "var(--danger)"; }
+        if(adminPanel) adminPanel.style.display = 'block';
+    } else {
+        if(statusEl) statusEl.innerText = "Guest Mode";
+        if(authBtn) { authBtn.innerText = "Admin Login"; authBtn.style.background = "var(--primary)"; }
+        if(adminPanel) adminPanel.style.display = 'none';
+    }
 };
 
 window.performLogin = function() {
@@ -171,7 +162,37 @@ window.performLogin = function() {
     } else { alert("Login Failed!"); }
 };
 
-// บังคับให้โหลดข้อมูลครั้งแรก
+window.toggleAuth = function() {
+    if (state.isAdmin) {
+        if(confirm("Logout?")) { sessionStorage.removeItem('isAdmin'); location.reload(); }
+    } else { document.getElementById('loginModal').style.display = 'flex'; }
+};
+
+window.showPage = function(pageId) {
+    document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId)?.classList.add('active');
+    
+    document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+    const navId = 'nav-' + pageId.split('-')[0];
+    document.getElementById(navId)?.classList.add('active');
+    
+    // เปลี่ยนหัวข้อ Top Nav
+    const titles = { 'dash-page': 'Dashboard', 'live-page': 'Live CCTV', 'map-page': 'System Map', 'calendar-page': 'Calendar' };
+    document.getElementById('nav-title').innerText = titles[pageId] || 'Cougar2';
+};
+
+window.openImage = function(src) {
+    const lb = document.getElementById('imgLightbox');
+    const img = document.getElementById('lightboxImg');
+    if(lb && img) { img.src = src; lb.style.display = 'flex'; }
+};
+
+// เริ่มต้นระบบ
 document.addEventListener('DOMContentLoaded', () => {
     window.updateDashboard();
+    setInterval(() => {
+        const now = new Date();
+        const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        if(document.getElementById('dash-time')) document.getElementById('dash-time').innerText = timeStr;
+    }, 1000);
 });
