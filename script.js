@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// --- Configuration ---
+// --- 1. Configuration (ตรวจสอบ URL ให้เป๊ะ) ---
 const firebaseConfig = {
     apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
     authDomain: "cougar2-database.firebaseapp.com",
@@ -26,11 +26,14 @@ let state = {
 const ADMIN_CONF = { user: "admin", pass: "admin2", keyword: "password" };
 const HASH_CONFIG = { dl: "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4" };
 
-// --- Sync Data ---
+// --- 2. Real-time Sync ---
 onValue(itemsRef, (snapshot) => {
+    console.log("Firebase Data Received:", snapshot.val()); // ตรวจสอบข้อมูลใน Console
     state.items = snapshot.val() || [];
     window.renderItems();
     updateDashboard();
+}, (error) => {
+    console.error("Firebase Read Error:", error);
 });
 
 onValue(configRef, (snapshot) => {
@@ -41,8 +44,8 @@ onValue(configRef, (snapshot) => {
     window.renderItems();
 });
 
-// --- Functions (Global Access) ---
-window.saveItem = function() {
+// --- 3. Save Function (ปรับปรุงใหม่) ---
+window.saveItem = async function() {
     const nameEl = document.getElementById('itemName');
     const linkEl = document.getElementById('itemLink');
     const imgEl = document.getElementById('itemImg');
@@ -52,46 +55,41 @@ window.saveItem = function() {
 
     const index = parseInt(indexEl.value);
     const name = nameEl.value.trim();
-    const img = imgEl.value.trim();
+    const img = imgEl.value.trim() || 'https://via.placeholder.com/300x180?text=Cougar2';
     const link = linkEl.value.trim();
 
-    if (name && link) {
-        const newItem = { 
-            name, 
-            img: img || 'https://via.placeholder.com/300x180?text=Cougar2', 
-            link, 
-            locked: (index > -1 && state.items[index] ? state.items[index].locked : false) 
-        };
-        
-        let newItems = [...state.items];
-        if (index > -1) newItems[index] = newItem;
-        else newItems.push(newItem);
-        
-        set(itemsRef, newItems).then(() => {
-            window.resetForm();
-            alert("บันทึกสำเร็จ!");
-        }).catch(err => alert("เกิดข้อผิดพลาด: " + err.message));
-    } else { alert("กรุณากรอกชื่อและลิงก์โหลด"); }
+    if (!name || !link) {
+        alert("กรุณากรอกชื่อและลิงก์โหลด");
+        return;
+    }
+
+    const newItem = { 
+        name, 
+        img, 
+        link, 
+        locked: (index > -1 && state.items[index] ? state.items[index].locked : false) 
+    };
+    
+    let newItems = [...state.items];
+    if (index > -1) newItems[index] = newItem;
+    else newItems.push(newItem);
+    
+    try {
+        await set(itemsRef, newItems);
+        window.resetForm();
+        alert("✅ บันทึกข้อมูลลง Cloud สำเร็จ!");
+    } catch (err) {
+        console.error("Save Error:", err);
+        alert("❌ บันทึกไม่สำเร็จ! ตรวจสอบ Firebase Rules (ต้องเป็น true ทั้งคู่)");
+    }
 };
 
+// --- 4. UI & Controls ---
 window.deleteItem = function(index) {
     if(confirm("ต้องการลบรายการนี้ใช่หรือไม่?")) {
         let newItems = [...state.items];
         newItems.splice(index, 1);
         set(itemsRef, newItems);
-    }
-};
-
-window.toggleItemLock = function(index) {
-    if(!state.items[index]) return;
-    state.items[index].locked = !state.items[index].locked;
-    set(itemsRef, state.items);
-};
-
-window.toggleGlobalLock = function() {
-    const lockToggle = document.getElementById('globalLock');
-    if(lockToggle) {
-        set(configRef, { isGlobalLocked: lockToggle.checked });
     }
 };
 
@@ -126,23 +124,22 @@ window.renderItems = function() {
     });
 };
 
-window.secureDownload = async function(link, itemLocked) {
-    if (state.isGlobalLocked || itemLocked) {
-        const pass = prompt("ใส่รหัสผ่านเพื่อดาวน์โหลด:");
-        if (!pass) return;
-        const hashedInput = await hashText(pass);
-        const currentHash = localStorage.getItem('custom_download_hash') || HASH_CONFIG.dl;
-        if (hashedInput === currentHash) window.open(link, '_blank');
-        else alert("รหัสผ่านไม่ถูกต้อง");
-    } else { window.open(link, '_blank'); }
+window.toggleItemLock = function(index) {
+    if(!state.items[index]) return;
+    state.items[index].locked = !state.items[index].locked;
+    set(itemsRef, state.items);
 };
 
-window.performLogin = function() {
-    const uEl = document.getElementById('loginUser');
-    const pEl = document.getElementById('loginPass');
-    if (!uEl || !pEl) return;
+window.toggleGlobalLock = function() {
+    const lockToggle = document.getElementById('globalLock');
+    if(lockToggle) set(configRef, { isGlobalLocked: lockToggle.checked });
+};
 
-    if (uEl.value === ADMIN_CONF.user && pEl.value === ADMIN_CONF.pass) {
+// --- 5. Auth & Helpers ---
+window.performLogin = function() {
+    const u = document.getElementById('loginUser')?.value;
+    const p = document.getElementById('loginPass')?.value;
+    if (u === ADMIN_CONF.user && p === ADMIN_CONF.pass) {
         sessionStorage.setItem('isAdmin', 'true');
         location.reload();
     } else { alert("Login Failed!"); }
@@ -157,35 +154,6 @@ window.toggleAuth = function() {
     }
 };
 
-window.handleForgotPassword = function() {
-    const key = prompt("ใส่ Keyword:");
-    if (key === ADMIN_CONF.keyword) alert(`User: ${ADMIN_CONF.user}\nPass: ${ADMIN_CONF.pass}`);
-};
-
-async function hashText(text) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text);
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-window.showPage = function(pageId) {
-    const pages = document.querySelectorAll('.page-content');
-    pages.forEach(el => el.classList.remove('active'));
-    
-    const targetPage = document.getElementById(pageId);
-    if(targetPage) targetPage.classList.add('active');
-
-    document.querySelectorAll('.sidebar a').forEach(el => el.classList.remove('active'));
-    const navId = 'nav-' + pageId.split('-')[0];
-    const navLink = document.getElementById(navId);
-    if(navLink) navLink.classList.add('active');
-
-    const titles = {'dash-page': 'Dashboard', 'live-page': 'Live System', 'map-page': 'Map', 'calendar-page': 'Calendar'};
-    const titleEl = document.getElementById('nav-title');
-    if(titleEl) titleEl.innerText = titles[pageId] || 'Cougar2';
-};
-
 window.editItem = function(index) {
     const item = state.items[index];
     if(!item) return;
@@ -198,8 +166,7 @@ window.editItem = function(index) {
 };
 
 window.resetForm = function() {
-    const fields = ['itemName', 'itemImg', 'itemLink', 'editIndex'];
-    fields.forEach(id => {
+    ['itemName', 'itemImg', 'itemLink', 'editIndex'].forEach(id => {
         const el = document.getElementById(id);
         if(el) el.value = (id === 'editIndex' ? '-1' : '');
     });
@@ -210,26 +177,48 @@ window.resetForm = function() {
 window.openImage = function(src) {
     const lbImg = document.getElementById('lightboxImg');
     const lb = document.getElementById('imgLightbox');
-    if(lbImg && lb) {
-        lbImg.src = src;
-        lb.style.display = 'flex';
-    }
+    if(lbImg && lb) { lbImg.src = src; lb.style.display = 'flex'; }
+};
+
+async function hashText(text) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+window.secureDownload = async function(link, itemLocked) {
+    if (state.isGlobalLocked || itemLocked) {
+        const pass = prompt("ใส่รหัสผ่านเพื่อดาวน์โหลด:");
+        if (!pass) return;
+        const hashedInput = await hashText(pass);
+        const currentHash = localStorage.getItem('custom_download_hash') || HASH_CONFIG.dl;
+        if (hashedInput === currentHash) window.open(link, '_blank');
+        else alert("รหัสผ่านไม่ถูกต้อง");
+    } else { window.open(link, '_blank'); }
+};
+
+window.showPage = function(pageId) {
+    document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById(pageId);
+    if(target) target.classList.add('active');
+    
+    document.querySelectorAll('.sidebar a').forEach(el => el.classList.remove('active'));
+    const navId = 'nav-' + pageId.split('-')[0];
+    const nav = document.getElementById(navId);
+    if(nav) nav.classList.add('active');
 };
 
 function updateDashboard() {
     const now = new Date();
     const timeEl = document.getElementById('dash-time');
-    const countEl = document.getElementById('dash-count');
-    const statusEl = document.getElementById('dash-status');
-    const iconEl = document.getElementById('status-icon');
-
     if(timeEl) timeEl.innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    const countEl = document.getElementById('dash-count');
     if(countEl) countEl.innerText = state.items.length + " รายการ";
+    const statusEl = document.getElementById('dash-status');
     if(statusEl) statusEl.innerText = state.isAdmin ? "Admin Mode" : "Guest Mode";
-    if(iconEl) iconEl.style.color = state.isAdmin ? "#2ecc71" : "#95a5a6";
 }
 
-// Initialize on load
 window.addEventListener('DOMContentLoaded', () => {
     const adminPanel = document.getElementById('admin-panel');
     if (state.isAdmin && adminPanel) adminPanel.style.display = 'block';
