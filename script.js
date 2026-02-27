@@ -193,6 +193,19 @@ window.performLogin = () => {
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
+    // --- ฟังก์ชันกด Enter เพื่อเข้าสู่ระบบ ---
+    const loginUser = document.getElementById('loginUser');
+    const loginPass = document.getElementById('loginPass');
+
+    loginUser?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loginPass.focus(); // กด Enter ที่ User แล้วไปช่อง Pass
+    });
+
+    loginPass?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') window.performLogin(); // กด Enter ที่ Pass แล้ว Login
+    });
+
+    // --- ตรวจสอบสถานะ Admin ---
     if(isAdmin) {
         const adminPanel = document.getElementById('admin-panel');
         if(adminPanel) adminPanel.style.display = 'block';
@@ -210,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(statusIcon) statusIcon.style.color = "#2ecc71";
     }
     
+    // --- นาฬิกา ---
     setInterval(() => {
         const timeEl = document.getElementById('dash-time');
         if(timeEl) {
