@@ -60,7 +60,7 @@ window.renderItems = () => {
     if(!list) return;
     list.innerHTML = '';
     
-    items.forEach((item, index) => {
+    items.forEach((item) => {
         const effectivelyLocked = isGlobalLocked || item.locked;
         const card = document.createElement('div');
         card.className = 'download-card';
@@ -71,14 +71,14 @@ window.renderItems = () => {
             <div class="download-info">
                 <h4>${item.name}</h4>
                 <button onclick="window.secureDownload('${item.link}', ${item.locked})" 
-                        class="btn-download ${effectivelyLocked ? 'is-locked' : 'is-open'}"
+                        class="btn-download"
                         style="background:${effectivelyLocked ? 'var(--warning)' : 'var(--success)'}; color:white;">
                     <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> 
                     ${effectivelyLocked ? 'Password Required' : 'Download Now'}
                 </button>
             </div>
             ${isAdmin ? `
-            <div class="admin-controls">
+            <div class="admin-controls" style="display:flex; justify-content: space-around; padding: 12px; background: #fdfdfd; border-top: 1px solid #eee;">
                 <div style="display:flex; align-items:center; gap:5px;">
                     <label class="switch">
                         <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
@@ -86,8 +86,8 @@ window.renderItems = () => {
                     </label>
                     <span style="font-size:11px; font-weight:bold; color:#666;">Lock</span>
                 </div>
-                <button onclick="window.editItem('${item.key}')" class="admin-btn-text" style="color:var(--primary);"><i class="fas fa-edit"></i> Edit</button>
-                <button onclick="window.deleteItem('${item.key}')" class="admin-btn-text" style="color:var(--danger);"><i class="fas fa-trash"></i> Delete</button>
+                <button onclick="window.editItem('${item.key}')" class="admin-btn-text" style="color:var(--primary); border:none; background:none; cursor:pointer; font-weight:bold;"><i class="fas fa-edit"></i> Edit</button>
+                <button onclick="window.deleteItem('${item.key}')" class="admin-btn-text" style="color:var(--danger); border:none; background:none; cursor:pointer; font-weight:bold;"><i class="fas fa-trash"></i> Delete</button>
             </div>` : ''}
         `;
         list.appendChild(card);
@@ -105,8 +105,11 @@ window.saveItem = async () => {
     if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์โหลด");
 
     const data = { name, img, link, locked: false };
-    if(key) await update(ref(db, `cougar_data/${key}`), data);
-    else await push(ref(db, "cougar_data"), data);
+    if(key) {
+        await update(ref(db, `cougar_data/${key}`), data);
+    } else {
+        await push(ref(db, "cougar_data"), data);
+    }
     
     window.resetForm();
 };
@@ -131,7 +134,7 @@ window.resetForm = () => {
     document.getElementById('btn-save').style.background = "var(--success)";
 };
 
-window.deleteItem = (key) => confirm("ต้องการลบ?") && remove(ref(db, `cougar_data/${key}`));
+window.deleteItem = (key) => confirm("ต้องการลบรายการนี้?") && remove(ref(db, `cougar_data/${key}`));
 
 window.toggleItemLock = (key, curr) => update(ref(db, `cougar_data/${key}`), { locked: !curr });
 
@@ -142,23 +145,28 @@ window.toggleGlobalLock = () => {
 
 window.changeDownloadPass = async () => {
     const p = document.getElementById('newDownloadPass').value;
-    if (p) {
-        const hash = await hashText(p);
-        await update(ref(db, "settings"), { downloadPassHash: hash });
-        alert("เปลี่ยนรหัสผ่านสำเร็จ!");
-        document.getElementById('newDownloadPass').value = '';
-    }
+    if (!p) return alert("กรุณากรอกรหัสผ่านที่ต้องการเปลี่ยน");
+    
+    const hash = await hashText(p);
+    await update(ref(db, "settings"), { downloadPassHash: hash });
+    alert("เปลี่ยนรหัสผ่านดาวน์โหลดสำเร็จ!");
+    document.getElementById('newDownloadPass').value = '';
 };
 
 // --- Auth & Security ---
 window.secureDownload = async (link, itemLocked) => {
     if (isGlobalLocked || itemLocked) {
-        const pass = prompt("กรุณาใส่รหัสผ่าน:");
+        const pass = prompt("ไฟล์นี้ถูกล็อคไว้ กรุณาใส่รหัสผ่าน:");
         if (!pass) return;
         const hashedInput = await hashText(pass);
-        if (hashedInput === downloadPassHash) window.open(link, '_blank');
-        else alert("รหัสไม่ถูกต้อง");
-    } else window.open(link, '_blank');
+        if (hashedInput === downloadPassHash) {
+            window.open(link, '_blank');
+        } else {
+            alert("รหัสผ่านไม่ถูกต้อง");
+        }
+    } else {
+        window.open(link, '_blank');
+    }
 };
 
 window.toggleAuth = () => {
@@ -173,30 +181,52 @@ window.toggleAuth = () => {
 };
 
 window.performLogin = () => {
-    if(document.getElementById('loginUser').value === "admin" && document.getElementById('loginPass').value === "admin2") {
+    const user = document.getElementById('loginUser').value;
+    const pass = document.getElementById('loginPass').value;
+    if(user === "admin" && pass === "admin2") {
         sessionStorage.setItem('isAdmin', 'true');
         location.reload();
-    } else alert("Username หรือ Password ไม่ถูกต้อง");
+    } else {
+        alert("Username หรือ Password ไม่ถูกต้อง");
+    }
 };
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
     if(isAdmin) {
-        document.getElementById('admin-panel').style.display = 'block';
+        const adminPanel = document.getElementById('admin-panel');
+        if(adminPanel) adminPanel.style.display = 'block';
+        
         const authBtn = document.getElementById('auth-btn');
-        authBtn.innerText = "Logout Admin";
-        authBtn.style.background = "var(--danger)";
-        document.getElementById('dash-status').innerText = "Admin Mode";
-        document.getElementById('status-icon').style.color = "#2ecc71";
+        if(authBtn) {
+            authBtn.innerText = "Logout Admin";
+            authBtn.style.background = "var(--danger)";
+        }
+        
+        const statusText = document.getElementById('dash-status');
+        if(statusText) statusText.innerText = "Admin Mode";
+        
+        const statusIcon = document.getElementById('status-icon');
+        if(statusIcon) statusIcon.style.color = "#2ecc71";
     }
+    
     setInterval(() => {
         const timeEl = document.getElementById('dash-time');
-        if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+        if(timeEl) {
+            timeEl.innerText = new Date().toLocaleTimeString('th-TH', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
     }, 1000);
 });
 
 window.openImage = (src) => {
     const lb = document.getElementById('imgLightbox');
-    document.getElementById('lightboxImg').src = src;
-    lb.style.display = 'flex';
+    const lbImg = document.getElementById('lightboxImg');
+    if(lb && lbImg) {
+        lbImg.src = src;
+        lb.style.display = 'flex';
+    }
 };
