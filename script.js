@@ -38,6 +38,7 @@ setInterval(() => {
 
 /* ================= Realtime Load ================= */
 onValue(ref(db, "cougar_data"), (snapshot) => {
+    console.log("Realtime Triggered");
     const data = snapshot.val() || {};
 
     items = Object.keys(data).map(id => ({
@@ -103,13 +104,19 @@ function renderItems() {
 }
 
 /* ================= Add / Edit ================= */
-window.saveItem = async function () {
+window.saveItem = async function (e) {
+
+    if (e) e.preventDefault(); // กันกรณีอยู่ใน form
+
+    console.log("Save clicked");
 
     try {
         const name = document.getElementById("itemName").value.trim();
         const image = document.getElementById("itemImg").value.trim();
         const link = document.getElementById("itemLink").value.trim();
         const editId = document.getElementById("editId").value;
+
+        console.log("DATA:", name, image, link);
 
         if (!name || !link) {
             alert("กรอกข้อมูลให้ครบ");
@@ -122,6 +129,7 @@ window.saveItem = async function () {
                 image,
                 link
             });
+            console.log("Updated successfully");
         } else {
             const newRef = push(ref(db, "cougar_data"));
             await set(newRef, {
@@ -131,12 +139,14 @@ window.saveItem = async function () {
                 locked: false,
                 createdAt: Date.now()
             });
+            console.log("Uploaded successfully");
         }
 
         resetForm();
 
     } catch (err) {
         console.error("SAVE ERROR:", err);
+        alert("เกิดข้อผิดพลาด ดู Console");
     }
 };
 
@@ -181,24 +191,4 @@ window.openLightbox = function (src) {
 /* ================= Open Link ================= */
 window.openLink = function (url) {
     window.open(url, "_blank");
-};
-
-/* ================= Auth ================= */
-window.toggleAuth = function () {
-    document.getElementById("loginModal").style.display = "flex";
-};
-
-window.performLogin = function () {
-    const user = document.getElementById("loginUser").value;
-    const pass = document.getElementById("loginPass").value;
-
-    if (user === "admin" && pass === "1234") {
-        isAdmin = true;
-        document.getElementById("admin-panel").style.display = "block";
-        document.getElementById("dash-status").innerText = "Admin Mode";
-        document.getElementById("loginModal").style.display = "none";
-        renderItems();
-    } else {
-        alert("รหัสไม่ถูกต้อง");
-    }
 };
