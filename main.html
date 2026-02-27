@@ -39,64 +39,34 @@
         .page-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Lightbox Modal (สำหรับขยายรูป) */
-        .lightbox {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            align-items: center;
-            justify-content: center;
-            cursor: zoom-out;
-            animation: fadeIn 0.3s ease;
-        }
-        .lightbox img {
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            cursor: default;
-        }
-        .lightbox-close {
-            position: absolute;
-            top: 20px; right: 30px;
-            color: white; font-size: 40px;
-            cursor: pointer;
-        }
-
-        /* Modal ทั่วไป */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; }
-        .modal-content input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
-        /* Admin Panel */
-        #admin-panel { display: none; background: #fff; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; animation: slideDown 0.3s ease; }
-        .admin-form { display: flex; flex-wrap: wrap; gap: 15px; }
-        .admin-form input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; flex: 1; min-width: 200px; }
-        .btn-add { background: var(--success); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-save { background: var(--warning); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        /* Admin Panel Improved UI */
+        #admin-panel { display: none; background: #fff; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
+        .admin-form-container { display: flex; flex-direction: column; gap: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+        .input-group label { font-size: 13px; font-weight: bold; color: #444; }
+        .input-group input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; }
+        .admin-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        
+        /* Lightbox */
+        .lightbox { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
+        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
 
         /* Cards */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 20px; padding-bottom: 40px; }
-        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #ddd; position: relative; }
-        .download-card img { 
-            width: 100%; height: 180px; 
-            object-fit: cover; background: #eee; 
-            cursor: zoom-in; /* เปลี่ยน cursor ให้รู้ว่ากดขยายได้ */
-            transition: 0.3s;
-        }
-        .download-card img:hover { filter: brightness(0.9); }
+        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #ddd; }
+        .download-card img { width: 100%; height: 180px; object-fit: cover; cursor: zoom-in; }
         .download-info { padding: 20px; text-align: center; }
-        .btn-download { display: inline-block; background: var(--bg-dark); color: white; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 90%; transition: 0.3s; }
+        .btn-download { display: inline-block; background: var(--bg-dark); color: white; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 90%; }
         
         .admin-actions { display: flex; justify-content: center; gap: 15px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
         .admin-actions span { cursor: pointer; font-size: 13px; font-weight: bold; }
 
         .frame-container { flex: 1; width: 100%; background: white; border-radius: 15px; overflow: hidden; border: 1px solid #ddd; height: 75vh; }
         iframe { width: 100%; height: 100%; border: 0; }
+
+        @media (min-width: 769px) {
+            .admin-form-container { flex-direction: row; align-items: flex-end; }
+        }
     </style>
 </head>
 <body>
@@ -121,29 +91,40 @@
                 <h1>Obs Docks UI</h1>
                 
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
-                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center;">
                         <i class="fas fa-clock" style="color:var(--success); font-size: 2rem;"></i>
                         <h3 id="clock">00:00</h3><p style="color:#666;">เวลาปัจจุบัน</p>
                     </div>
-                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center;">
                         <i class="fas fa-folder-open" style="color:var(--primary); font-size: 2rem;"></i>
                         <h3 id="file-count">0 รายการ</h3><p style="color:#666;">ไฟล์ในระบบ</p>
                     </div>
-                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center;">
                         <i class="fas fa-shield-alt" id="status-icon" style="color:#ccc; font-size: 2rem;"></i>
                         <h3 id="status-text">Guest</h3><p style="color:#666;">โหมดการใช้งาน</p>
                     </div>
                 </div>
 
                 <div id="admin-panel">
-                    <h3 id="panel-title"><i class="fas fa-plus-circle"></i> เพิ่มไฟล์ใหม่ (Google Drive)</h3>
-                    <div class="admin-form">
-                        <input type="text" id="itemName" placeholder="ชื่อซอฟต์แวร์">
-                        <input type="text" id="itemImg" placeholder="ลิงก์รูปภาพ">
-                        <input type="text" id="itemLink" placeholder="ลิงก์ดาวน์โหลด">
+                    <h3 id="panel-title"><i class="fas fa-plus-circle"></i> จัดการไฟล์ข้อมูล</h3>
+                    <div class="admin-form-container">
+                        <div class="input-group">
+                            <label><i class="fas fa-tag"></i> ชื่อซอฟต์แวร์ / รายการ</label>
+                            <input type="text" id="itemName" placeholder="ระบุชื่อรายการ">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-image"></i> ลิงก์รูปภาพ (Direct Link)</label>
+                            <input type="text" id="itemImg" placeholder="https://i.ibb.co/...">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-link"></i> ลิงก์ดาวน์โหลด (Google Drive)</label>
+                            <input type="text" id="itemLink" placeholder="https://drive.google.com/...">
+                        </div>
                         <input type="hidden" id="editIndex" value="-1">
-                        <button id="btn-submit-item" class="btn-add" onclick="saveItem()">เพิ่มรายการ</button>
-                        <button id="btn-cancel-edit" style="display:none; background:#888; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer;" onclick="cancelEdit()">ยกเลิก</button>
+                        <div class="admin-buttons">
+                            <button id="btn-submit-item" class="btn-add" style="background:var(--success); color:white; border:none; padding:12px 20px; border-radius:8px; cursor:pointer; font-weight:bold;" onclick="saveItem()">บันทึก</button>
+                            <button id="btn-cancel-edit" style="display:none; background:#888; color:white; border:none; padding:12px 20px; border-radius:8px; cursor:pointer;" onclick="cancelEdit()">ยกเลิก</button>
+                        </div>
                     </div>
                 </div>
 
@@ -156,35 +137,29 @@
         </div>
     </div>
 
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
+    <div id="loginModal" class="modal" style="display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+        <div class="modal-content" style="background:white; padding:30px; border-radius:15px; width:320px; position:relative;">
             <span onclick="toggleAuthModal()" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:20px;">&times;</span>
             <h3>Admin Login</h3>
-            <input type="text" id="adminID" placeholder="ID">
-            <input type="password" id="adminPass" placeholder="Password">
-            <button class="btn-submit" onclick="handleLogin()">เข้าสู่ระบบ</button>
+            <input type="text" id="adminID" placeholder="ID" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ddd;">
+            <input type="password" id="adminPass" placeholder="Password" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ddd;">
+            <button class="btn-submit" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;" onclick="handleLogin()">เข้าสู่ระบบ</button>
         </div>
     </div>
 
     <div id="imgLightbox" class="lightbox" onclick="closeLightbox()">
-        <span class="lightbox-close">&times;</span>
-        <img id="lightboxImg" src="" alt="Enlarged view">
+        <img id="lightboxImg" src="">
     </div>
 
     <script>
         let items = JSON.parse(localStorage.getItem('cougar_final_data')) || [];
 
-        // ฟังก์ชันเปิดรูปขยาย
         function openLightbox(src) {
             const lightbox = document.getElementById('imgLightbox');
-            const img = document.getElementById('lightboxImg');
-            img.src = src;
+            document.getElementById('lightboxImg').src = src;
             lightbox.style.display = 'flex';
         }
-
-        function closeLightbox() {
-            document.getElementById('imgLightbox').style.display = 'none';
-        }
+        function closeLightbox() { document.getElementById('imgLightbox').style.display = 'none'; }
 
         function toggleAuthModal() {
             if (sessionStorage.getItem('isAdmin') === 'true') {
@@ -226,12 +201,9 @@
                     </div>` : '';
 
                 const imgSrc = formatDriveLink(item.img);
-
                 list.innerHTML += `
                     <div class="download-card">
-                        <img src="${imgSrc}" 
-                             onclick="openLightbox('${imgSrc}')" 
-                             onerror="this.src='https://via.placeholder.com/300x200?text=Error+Loading'">
+                        <img src="${imgSrc}" onclick="openLightbox('${imgSrc}')" onerror="this.src='https://via.placeholder.com/300x200?text=Error+Loading'">
                         <div class="download-info">
                             <h3 style="margin:0 0 15px 0;">${item.name}</h3>
                             <a href="${item.link}" target="_blank" class="btn-download">Link : Download</a>
@@ -241,7 +213,6 @@
             });
         }
 
-        // ... (saveItem, editItem, cancelEdit, deleteItem, showPage เหมือนเดิม)
         function saveItem() {
             const name = document.getElementById('itemName').value;
             const img = document.getElementById('itemImg').value;
@@ -249,15 +220,11 @@
             const editIdx = parseInt(document.getElementById('editIndex').value);
 
             if (name && link) {
-                if (editIdx > -1) {
-                    items[editIdx] = { name, img, link };
-                } else {
-                    items.push({ name, img, link });
-                }
+                if (editIdx > -1) { items[editIdx] = { name, img, link }; } 
+                else { items.push({ name, img, link }); }
                 localStorage.setItem('cougar_final_data', JSON.stringify(items));
-                cancelEdit();
-                renderItems();
-            } else { alert("กรุณากรอกข้อมูลให้ครบ"); }
+                cancelEdit(); renderItems();
+            } else { alert("กรุณากรอกข้อมูลให้ครบ (ชื่อและลิงก์ดาวน์โหลด)"); }
         }
 
         function editItem(index) {
@@ -266,11 +233,8 @@
             document.getElementById('itemImg').value = item.img;
             document.getElementById('itemLink').value = item.link;
             document.getElementById('editIndex').value = index;
-
             document.getElementById('panel-title').innerHTML = '<i class="fas fa-edit"></i> กำลังแก้ไขข้อมูล';
-            const btn = document.getElementById('btn-submit-item');
-            btn.innerText = "บันทึกการแก้ไข";
-            btn.className = "btn-save";
+            document.getElementById('btn-submit-item').innerText = "อัปเดต";
             document.getElementById('btn-cancel-edit').style.display = "inline-block";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -281,9 +245,7 @@
             document.getElementById('itemLink').value = '';
             document.getElementById('editIndex').value = '-1';
             document.getElementById('panel-title').innerHTML = '<i class="fas fa-plus-circle"></i> เพิ่มไฟล์ใหม่ (Google Drive)';
-            const btn = document.getElementById('btn-submit-item');
-            btn.innerText = "เพิ่มรายการ";
-            btn.className = "btn-add";
+            document.getElementById('btn-submit-item').innerText = "บันทึก";
             document.getElementById('btn-cancel-edit').style.display = "none";
         }
 
