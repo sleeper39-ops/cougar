@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cougar2 - Secure System Fixed</title>
+    <title>Cougar2 - Full System with Secure Lock</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
@@ -25,19 +25,10 @@
         /* Login Modal */
         .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index: 9999; align-items:center; justify-content:center; }
         .login-card { background: white; padding: 30px; border-radius: 20px; width: 350px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
-        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; transition: 0.3s; }
-        .login-input:focus { border-color: var(--primary); box-shadow: 0 0 5px rgba(52, 152, 219, 0.3); }
-        .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-login:hover { background: #2980b9; }
+        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        /* Dashboard & Admin Panels */
-        .dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-box { background: white; padding: 25px; border-radius: 15px; text-align: center; border: 1px solid #eee; }
-        .stat-value { font-size: 1.5rem; font-weight: bold; }
-        #admin-panel { display: none; background: white; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end; }
-
-        /* Switches & Items */
+        /* Switch UI */
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
@@ -45,26 +36,41 @@
         input:checked + .slider { background-color: var(--danger); }
         input:checked + .slider:before { transform: translateX(16px); }
 
+        /* Dashboard Stats */
+        .dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-box { background: white; padding: 25px; border-radius: 15px; text-align: center; border: 1px solid #eee; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; }
+        .icon-time { color: #2ecc71; } .icon-file { color: #3498db; } .icon-mode { color: #2ecc71; }
+
+        /* Admin Panel */
+        #admin-panel { display: none; background: white; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end; }
+
+        /* Cards */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .card-img-container img { width: 100%; height: 180px; object-fit: contain; background: #222; }
-        .btn-download { display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; color: white; margin-top: 10px; }
-        
+        .btn-download { display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; color: white; margin-top: 10px; }
+        .is-locked { background: var(--warning); }
+        .is-open { background: var(--success); }
+        .admin-card-controls { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 10px; background: #f9f9f9; border-top: 1px solid #eee; }
+
         .page-content { display: none; height: 100%; }
         .page-content.active { display: block; }
-        iframe { width: 100%; height: calc(100vh - 150px); border: none; border-radius: 15px; }
+        iframe { width: 100%; height: calc(100vh - 150px); border: none; border-radius: 15px; background: white; }
     </style>
 </head>
 <body>
 
     <div id="loginModal" class="modal-overlay">
         <div class="login-card">
-            <h3 style="margin-top:0;"><i class="fas fa-lock"></i> Admin Login</h3>
-            <input type="text" id="loginUser" class="login-input" placeholder="Username" onkeyup="checkEnter(event)">
-            <input type="password" id="loginPass" class="login-input" placeholder="Password" onkeyup="checkEnter(event)">
+            <h3><i class="fas fa-lock"></i> Admin Login</h3>
+            <input type="text" id="loginUser" class="login-input" placeholder="Username">
+            <input type="password" id="loginPass" class="login-input" placeholder="Password">
             <div style="display:flex; justify-content:space-between; margin: 10px 0; font-size: 13px;">
-                <label style="cursor:pointer;"><input type="checkbox" id="rememberMe"> Remember Me</label>
-                <span onclick="forgotPass()" style="color:var(--primary); cursor:pointer; font-weight:bold;">Forgot Password?</span>
+                <label><input type="checkbox" id="rememberMe"> Remember Me</label>
+                <span onclick="forgotPass()" style="color:var(--primary); cursor:pointer;">Forgot Password?</span>
             </div>
             <button onclick="handleLogin()" class="btn-login">Login</button>
             <button onclick="closeLogin()" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer; color:#999;">Cancel</button>
@@ -87,18 +93,23 @@
 
         <div class="main-content">
             <div id="dash-page" class="page-content active">
+                
                 <div class="dashboard-stats">
-                    <div class="stat-box"><i class="fas fa-clock" style="color:#2ecc71"></i><div class="stat-value" id="dash-time">00:00</div><div style="color:#888; font-size:12px;">เวลาปัจจุบัน</div></div>
-                    <div class="stat-box"><i class="fas fa-file-download" style="color:#3498db"></i><div class="stat-value" id="dash-count">0</div><div style="color:#888; font-size:12px;">ไฟล์ทั้งหมด</div></div>
-                    <div class="stat-box"><i class="fas fa-shield-alt" style="color:#2ecc71"></i><div class="stat-value" id="dash-status">Guest</div><div style="color:#888; font-size:12px;">สถานะผู้ใช้</div></div>
+                    <div class="stat-box"><i class="fas fa-clock icon-time"></i><div class="stat-value" id="dash-time">00:00</div><div class="stat-label">เวลาปัจจุบัน</div></div>
+                    <div class="stat-box"><i class="fas fa-file-download icon-file"></i><div class="stat-value" id="dash-count">0</div><div class="stat-label">ไฟล์ทั้งหมด</div></div>
+                    <div class="stat-box"><i class="fas fa-shield-alt icon-mode"></i><div class="stat-value" id="dash-status">Guest</div><div class="stat-label">สถานะ</div></div>
                 </div>
 
                 <div id="admin-panel">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                        <h4 style="margin:0;"><i class="fas fa-tools"></i> ระบบจัดการไฟล์</h4>
-                        <div style="display:flex; gap:15px; align-items:center;">
-                            <span style="font-size:12px; font-weight:bold;">Lock all</span>
-                            <label class="switch"><input type="checkbox" id="globalLock" onchange="toggleGlobalLock()"><span class="slider"></span></label>
+                    <div class="admin-header">
+                        <h4 style="margin:0;"><i class="fas fa-tools"></i> Admin Control</h4>
+                        <div style="display:flex; gap:20px; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:12px; font-weight:bold;">Lock all downloads</span>
+                                <label class="switch"><input type="checkbox" id="globalLock" onchange="toggleGlobalLock()"><span class="slider"></span></label>
+                            </div>
+                            <input type="text" id="newDlPass" placeholder="รหัสโหลดใหม่" style="padding:5px; border-radius:5px; border:1px solid #ddd; font-size:12px;">
+                            <button onclick="changeDlPass()" style="font-size:11px; padding:5px 10px; cursor:pointer;">Update Pass</button>
                         </div>
                     </div>
                     <div class="form-row">
@@ -106,7 +117,7 @@
                         <input type="text" id="itemName" class="login-input" placeholder="ชื่อไฟล์" style="margin:0">
                         <input type="text" id="itemImg" class="login-input" placeholder="ลิงก์รูปภาพ" style="margin:0">
                         <input type="text" id="itemLink" class="login-input" placeholder="ลิงก์ดาวน์โหลด" style="margin:0">
-                        <button onclick="saveItem()" id="btn-save" class="btn-login" style="width:100px; background:var(--success)">บันทึก</button>
+                        <button onclick="saveItem()" id="btn-save" class="btn-login" style="width:100px; background:var(--success)">Save</button>
                     </div>
                 </div>
 
@@ -120,8 +131,10 @@
     </div>
 
     <script>
-        const ADMIN_DATA = { user: "admin", pass: "admin2", keyword: "password" };
-        const DEFAULT_DL_HASH = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // 1234
+        const CONFIG = { 
+            admin: { user: "admin", pass: "admin2", keyword: "password" },
+            defaultDlHash: "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4" // Default: 1234
+        };
         
         let items = JSON.parse(localStorage.getItem('cougar_final_data')) || [];
         let isGlobalLocked = JSON.parse(localStorage.getItem('global_lock')) || false;
@@ -133,58 +146,28 @@
             return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        // --- AUTH FUNCTIONS ---
-        function checkEnter(e) {
-            if (e.key === "Enter") handleLogin();
-        }
-
         function toggleAuth() {
-            if (isLoggedIn()) {
-                if(confirm("ต้องการออกจากระบบแอดมิน?")) {
-                    localStorage.removeItem('isAdmin');
-                    sessionStorage.removeItem('isAdmin');
-                    location.reload();
-                }
-            } else {
-                document.getElementById('loginModal').style.display = 'flex';
-                document.getElementById('loginUser').focus();
-            }
+            if (isLoggedIn()) { logout(); } 
+            else { document.getElementById('loginModal').style.display = 'flex'; }
         }
 
         function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
 
         function handleLogin() {
-            const u = document.getElementById('loginUser').value;
-            const p = document.getElementById('loginPass').value;
-            const remember = document.getElementById('rememberMe').checked;
-
-            if (u === ADMIN_DATA.user && p === ADMIN_DATA.pass) {
-                if(remember) {
-                    localStorage.setItem('isAdmin', 'true');
-                } else {
-                    sessionStorage.setItem('isAdmin', 'true');
-                }
+            const u = document.getElementById('loginUser').value, p = document.getElementById('loginPass').value, rem = document.getElementById('rememberMe').checked;
+            if (u === CONFIG.admin.user && p === CONFIG.admin.pass) {
+                (rem ? localStorage : sessionStorage).setItem('isAdmin', 'true');
                 location.reload();
-            } else {
-                alert("Username หรือ Password ไม่ถูกต้อง!");
-            }
+            } else { alert("Invalid Credentials"); }
         }
 
-        function isLoggedIn() {
-            // เช็คทั้งสองที่เพื่อให้ระบบ Remember Me ทำงาน
-            return localStorage.getItem('isAdmin') === 'true' || sessionStorage.getItem('isAdmin') === 'true';
-        }
-
+        function isLoggedIn() { return localStorage.getItem('isAdmin') === 'true' || sessionStorage.getItem('isAdmin') === 'true'; }
+        function logout() { localStorage.removeItem('isAdmin'); sessionStorage.removeItem('isAdmin'); location.reload(); }
         function forgotPass() {
-            const key = prompt("กรุณาใส่ Keyword เพื่อกู้คืนรหัส:");
-            if (key === ADMIN_DATA.keyword) {
-                alert(`ID: ${ADMIN_DATA.user}\nPASS: ${ADMIN_DATA.pass}`);
-            } else if (key !== null) {
-                alert("Keyword ไม่ถูกต้อง");
-            }
+            const k = prompt("Recovery Keyword:");
+            if (k === CONFIG.admin.keyword) alert(`User: ${CONFIG.admin.user}\nPass: ${CONFIG.admin.pass}`);
         }
 
-        // --- CORE SYSTEM ---
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -204,14 +187,23 @@
             renderItems();
         }
 
+        async function changeDlPass() {
+            const p = document.getElementById('newDlPass').value;
+            if (p) {
+                localStorage.setItem('dl_hash', await hashText(p));
+                alert("Download password updated!");
+                document.getElementById('newDlPass').value = '';
+            }
+        }
+
         async function secureDl(link, itemLocked) {
             if (isGlobalLocked || itemLocked) {
-                const pass = prompt("ใส่รหัสผ่านเพื่อดาวน์โหลด:");
+                const pass = prompt("Enter download password:");
                 if (!pass) return;
                 const hashed = await hashText(pass);
-                const currentHash = localStorage.getItem('dl_hash') || DEFAULT_DL_HASH;
+                const currentHash = localStorage.getItem('dl_hash') || CONFIG.defaultDlHash;
                 if (hashed === currentHash) window.open(link, '_blank');
-                else alert("รหัสผ่านไม่ถูกต้อง!");
+                else alert("Wrong Password!");
             } else { window.open(link, '_blank'); }
         }
 
@@ -219,6 +211,7 @@
             const list = document.getElementById('download-list');
             list.innerHTML = '';
             const isAdmin = isLoggedIn();
+            
             if(isAdmin) document.getElementById('globalLock').checked = isGlobalLocked;
 
             items.forEach((item, index) => {
@@ -227,20 +220,17 @@
                     <div class="download-card">
                         <div class="card-img-container"><img src="${item.img || 'https://via.placeholder.com/300x180'}"></div>
                         <div style="padding:15px; text-align:center;">
-                            <h4 style="margin:0 0 10px 0;">${item.name}</h4>
-                            <button onclick="secureDl('${item.link}', ${item.locked})" 
-                                    class="btn-download ${effectivelyLocked ? 'is-locked' : 'is-open'}" 
-                                    style="background:${effectivelyLocked ? 'var(--warning)' : 'var(--success)'}">
-                                <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> 
-                                ${effectivelyLocked ? 'Protected' : 'Download Now'}
+                            <h4 style="margin:0;">${item.name}</h4>
+                            <button onclick="secureDl('${item.link}', ${item.locked})" class="btn-download ${effectivelyLocked ? 'is-locked' : 'is-open'}">
+                                <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> ${effectivelyLocked ? 'Protected' : 'Download Now'}
                             </button>
                         </div>
                         ${isAdmin ? `
-                            <div style="display:flex; justify-content:center; align-items:center; gap:10px; padding:10px; background:#f9f9f9; border-top:1px solid #eee;">
+                            <div class="admin-card-controls">
                                 <label class="switch"><input type="checkbox" ${item.locked ? 'checked' : ''} onchange="toggleItemLock(${index})"><span class="slider"></span></label>
                                 <span style="font-size:11px; font-weight:bold;">Lock</span>
-                                <button onclick="editItem(${index})" style="border:none; background:none; color:var(--primary); cursor:pointer; font-size:12px; margin-left:10px;"><i class="fas fa-edit"></i> Edit</button>
-                                <button onclick="deleteItem(${index})" style="border:none; background:none; color:var(--danger); cursor:pointer; font-size:12px;"><i class="fas fa-trash"></i> Del</button>
+                                <button onclick="editItem(${index})" style="border:none; background:none; color:var(--primary); cursor:pointer; margin-left:10px;">Edit</button>
+                                <button onclick="deleteItem(${index})" style="border:none; background:none; color:var(--danger); cursor:pointer;">Delete</button>
                             </div>
                         ` : ''}
                     </div>`;
@@ -252,10 +242,8 @@
             const now = new Date();
             document.getElementById('dash-time').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
             document.getElementById('dash-count').innerText = items.length;
-            
             if(isLoggedIn()) {
-                document.getElementById('dash-status').innerText = "Admin Mode";
-                document.getElementById('dash-status').parentElement.querySelector('i').style.color = "var(--danger)";
+                document.getElementById('dash-status').innerText = "Admin";
                 document.getElementById('admin-panel').style.display = "block";
                 document.getElementById('auth-btn').innerText = "Logout Admin";
                 document.getElementById('auth-btn').style.background = "var(--danger)";
@@ -268,7 +256,8 @@
                 if(idx > -1) items[idx] = { ...items[idx], name:n, img:i, link:l };
                 else items.push({ name:n, img:i, link:l, locked: false });
                 localStorage.setItem('cougar_final_data', JSON.stringify(items));
-                resetForm(); renderItems();
+                document.getElementById('editIndex').value = "-1"; document.getElementById('itemName').value = ""; document.getElementById('itemImg').value = ""; document.getElementById('itemLink').value = "";
+                renderItems();
             }
         }
 
@@ -278,22 +267,12 @@
             document.getElementById('itemImg').value = item.img;
             document.getElementById('itemLink').value = item.link;
             document.getElementById('editIndex').value = i;
-            document.getElementById('btn-save').innerText = "อัปเดต";
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        function deleteItem(i) { if(confirm("ลบไฟล์นี้?")) { items.splice(i, 1); localStorage.setItem('cougar_final_data', JSON.stringify(items)); renderItems(); } }
-        
-        function resetForm() {
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('itemName').value = ""; document.getElementById('itemImg').value = ""; document.getElementById('itemLink').value = "";
-            document.getElementById('btn-save').innerText = "บันทึก";
-        }
+        function deleteItem(i) { if(confirm("Delete?")) { items.splice(i, 1); localStorage.setItem('cougar_final_data', JSON.stringify(items)); renderItems(); } }
 
-        window.onload = () => {
-            renderItems();
-            setInterval(updateStats, 1000);
-        };
+        window.onload = () => { renderItems(); setInterval(updateStats, 1000); };
     </script>
 </body>
 </html>
