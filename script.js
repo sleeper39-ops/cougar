@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, update, remove, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// --- การตั้งค่า Firebase ---
+// --- Firebase Config ---
 const firebaseConfig = {
     apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
     authDomain: "cougar2-database.firebaseapp.com",
@@ -12,102 +12,126 @@ const firebaseConfig = {
     appId: "1:429808185249:web:4afa08e0a7a973b00d25e0"
 };
 
-// เริ่มต้น Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ตัวแปร Global
 let items = [];
 let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 let isGlobalLocked = false;
+let downloadPassHash = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // Default '1234'
 
-// --- Firebase Listeners (ดึงข้อมูล Realtime) ---
+// --- Helper: Hash Function ---
+async function hashText(text) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
-// ดึงข้อมูลรายการไฟล์
+// --- Listeners ---
 onValue(ref(db, "cougar_data"), (snap) => {
     const data = snap.val();
     items = data ? Object.keys(data).map(k => ({ key: k, ...data[k] })) : [];
     window.renderItems();
 });
 
-// ดึงข้อมูลการตั้งค่า (การล็อคทั้งหมด)
 onValue(ref(db, "settings"), (snap) => {
     const s = snap.val() || {};
     isGlobalLocked = s.globalLock || false;
-    const lockCheckbox = document.getElementById('globalLock');
-    if(isAdmin && lockCheckbox) lockCheckbox.checked = isGlobalLocked;
+    downloadPassHash = s.downloadPassHash || downloadPassHash;
+    if(isAdmin && document.getElementById('globalLock')) {
+        document.getElementById('globalLock').checked = isGlobalLocked;
+    }
     window.renderItems();
 });
 
-// --- ฟังก์ชันการแสดงผลและ UI ---
-
-// สลับหน้า Content
+// --- UI Functions ---
 window.showPage = (id, el) => {
     document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById('nav-title').innerText = el.innerText.trim();
+    if(el) el.classList.add('active');
+    else document.getElementById('nav-' + id.split('-')[0]).classList.add('active');
+    document.getElementById('nav-title').innerText = document.getElementById('nav-' + id.split('-')[0]).innerText.trim();
 };
 
-// วาดรายการ Download Card
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
     list.innerHTML = '';
     
-    items.forEach(item => {
-        const isLocked = isGlobalLocked || item.locked;
+    items.forEach((item, index) => {
+        const effectivelyLocked = isGlobalLocked || item.locked;
         const card = document.createElement('div');
         card.className = 'download-card';
         card.innerHTML = `
-            <img src="${item.img || 'https://via.placeholder.com/300x180'}" class="card-img">
-            <div style="padding:20px; text-align:center;">
-                <h4 style="margin:0;">${item.name}</h4>
-                <button onclick="window.handleDownload('${item.link}', ${item.locked})" 
-                        class="btn-download" 
-                        style="background:${isLocked ? 'var(--warning)' : 'var(--success)'}; color:white;">
-                    <i class="fas ${isLocked ? 'fa-lock' : 'fa-download'}"></i> ${isLocked ? 'Locked' : 'Download'}
+            <div class="card-img-container" onclick="window.openImage('${item.img || ''}')">
+                <img src="${item.img || 'https://via.placeholder.com/300x180?text=Cougar2'}" class="card-img">
+            </div>
+            <div class="download-info">
+                <h4>${item.name}</h4>
+                <button onclick="window.secureDownload('${item.link}', ${item.locked})" 
+                        class="btn-download ${effectivelyLocked ? 'is-locked' : 'is-open'}"
+                        style="background:${effectivelyLocked ? 'var(--warning)' : 'var(--success)'}; color:white;">
+                    <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> 
+                    ${effectivelyLocked ? 'Password Required' : 'Download Now'}
                 </button>
             </div>
             ${isAdmin ? `
-            <div style="padding:10px; border-top:1px solid #eee; display:flex; justify-content:space-around; align-items:center;">
-                <button onclick="window.editItem('${item.key}')" style="border:none; background:none; color:var(--primary); cursor:pointer;"><i class="fas fa-edit"></i> Edit</button>
-                <button onclick="window.deleteItem('${item.key}')" style="border:none; background:none; color:var(--danger); cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
-                <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
+            <div class="admin-controls">
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <label class="switch">
+                        <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
+                        <span class="slider"></span>
+                    </label>
+                    <span style="font-size:11px; font-weight:bold; color:#666;">Lock</span>
+                </div>
+                <button onclick="window.editItem('${item.key}')" class="admin-btn-text" style="color:var(--primary);"><i class="fas fa-edit"></i> Edit</button>
+                <button onclick="window.deleteItem('${item.key}')" class="admin-btn-text" style="color:var(--danger);"><i class="fas fa-trash"></i> Delete</button>
             </div>` : ''}
         `;
         list.appendChild(card);
     });
-    
-    const countEl = document.getElementById('dash-count');
-    if(countEl) countEl.innerText = items.length + " รายการ";
+    document.getElementById('dash-count').innerText = items.length + " รายการ";
 };
 
-// --- ฟังก์ชัน Admin ---
-
-// บันทึกหรืออัปเดตข้อมูล
+// --- Admin Actions ---
 window.saveItem = async () => {
     const key = document.getElementById('editKey').value;
-    const data = {
-        name: document.getElementById('itemName').value,
-        img: document.getElementById('itemImg').value,
-        link: document.getElementById('itemLink').value,
-        locked: false
-    };
-    
-    if(!data.name || !data.link) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+    const name = document.getElementById('itemName').value;
+    const img = document.getElementById('itemImg').value;
+    const link = document.getElementById('itemLink').value;
 
+    if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์โหลด");
+
+    const data = { name, img, link, locked: false };
     if(key) await update(ref(db, `cougar_data/${key}`), data);
     else await push(ref(db, "cougar_data"), data);
     
-    // เคลียร์ฟอร์ม
+    window.resetForm();
+};
+
+window.editItem = (key) => {
+    const item = items.find(i => i.key === key);
+    document.getElementById('itemName').value = item.name;
+    document.getElementById('itemImg').value = item.img;
+    document.getElementById('itemLink').value = item.link;
+    document.getElementById('editKey').value = key;
+    document.getElementById('btn-save').innerText = "Update";
+    document.getElementById('btn-save').style.background = "var(--primary)";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.resetForm = () => {
     document.getElementById('editKey').value = '';
     document.getElementById('itemName').value = '';
     document.getElementById('itemImg').value = '';
     document.getElementById('itemLink').value = '';
     document.getElementById('btn-save').innerText = "บันทึก";
+    document.getElementById('btn-save').style.background = "var(--success)";
 };
+
+window.deleteItem = (key) => confirm("ต้องการลบ?") && remove(ref(db, `cougar_data/${key}`));
 
 window.toggleItemLock = (key, curr) => update(ref(db, `cougar_data/${key}`), { locked: !curr });
 
@@ -116,73 +140,63 @@ window.toggleGlobalLock = () => {
     update(ref(db, "settings"), { globalLock: isChecked });
 };
 
-window.deleteItem = (key) => confirm("คุณแน่ใจว่าต้องการลบไฟล์นี้หรือไม่?") && remove(ref(db, `cougar_data/${key}`));
-
-window.editItem = (key) => {
-    const item = items.find(i => i.key === key);
-    if(item) {
-        document.getElementById('itemName').value = item.name;
-        document.getElementById('itemImg').value = item.img;
-        document.getElementById('itemLink').value = item.link;
-        document.getElementById('editKey').value = key;
-        document.getElementById('btn-save').innerText = "Update";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+window.changeDownloadPass = async () => {
+    const p = document.getElementById('newDownloadPass').value;
+    if (p) {
+        const hash = await hashText(p);
+        await update(ref(db, "settings"), { downloadPassHash: hash });
+        alert("เปลี่ยนรหัสผ่านสำเร็จ!");
+        document.getElementById('newDownloadPass').value = '';
     }
 };
 
-// --- ระบบดาวน์โหลดและการเข้าสู่ระบบ ---
-
-window.handleDownload = (link, itemLocked) => {
-    if(isGlobalLocked || itemLocked) {
-        const pass = prompt("ไฟล์นี้ถูกล็อคไว้ ระบุรหัสผ่านดาวน์โหลด:");
-        if(pass === "1234") window.open(link, '_blank');
-        else if(pass !== null) alert("รหัสผ่านไม่ถูกต้อง");
-    } else {
-        window.open(link, '_blank');
-    }
+// --- Auth & Security ---
+window.secureDownload = async (link, itemLocked) => {
+    if (isGlobalLocked || itemLocked) {
+        const pass = prompt("กรุณาใส่รหัสผ่าน:");
+        if (!pass) return;
+        const hashedInput = await hashText(pass);
+        if (hashedInput === downloadPassHash) window.open(link, '_blank');
+        else alert("รหัสไม่ถูกต้อง");
+    } else window.open(link, '_blank');
 };
 
 window.toggleAuth = () => {
     if(isAdmin) {
-        sessionStorage.removeItem('isAdmin');
-        location.reload();
+        if(confirm("ต้องการออกจากระบบ Admin ใช่หรือไม่?")) {
+            sessionStorage.removeItem('isAdmin');
+            location.reload();
+        }
     } else {
         document.getElementById('loginModal').style.display='flex';
     }
 };
 
 window.performLogin = () => {
-    const user = document.getElementById('loginUser').value;
-    const pass = document.getElementById('loginPass').value;
-    
-    if(user === "admin" && pass === "admin2") {
+    if(document.getElementById('loginUser').value === "admin" && document.getElementById('loginPass').value === "admin2") {
         sessionStorage.setItem('isAdmin', 'true');
         location.reload();
-    } else {
-        alert("Username หรือ Password ไม่ถูกต้อง");
-    }
+    } else alert("Username หรือ Password ไม่ถูกต้อง");
 };
 
-// ตรวจสอบสถานะ Admin เมื่อโหลดหน้า
+// --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
     if(isAdmin) {
-        const panel = document.getElementById('admin-panel');
+        document.getElementById('admin-panel').style.display = 'block';
         const authBtn = document.getElementById('auth-btn');
-        const dashStatus = document.getElementById('dash-status');
-        const statusIcon = document.getElementById('status-icon');
-
-        if(panel) panel.style.display = 'block';
-        if(authBtn) {
-            authBtn.innerText = "Logout Admin";
-            authBtn.style.background = "var(--danger)";
-        }
-        if(dashStatus) dashStatus.innerText = "Admin Mode";
-        if(statusIcon) statusIcon.style.color = "#2ecc71";
+        authBtn.innerText = "Logout Admin";
+        authBtn.style.background = "var(--danger)";
+        document.getElementById('dash-status').innerText = "Admin Mode";
+        document.getElementById('status-icon').style.color = "#2ecc71";
     }
-
-    // นาฬิกา
     setInterval(() => {
         const timeEl = document.getElementById('dash-time');
         if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
     }, 1000);
 });
+
+window.openImage = (src) => {
+    const lb = document.getElementById('imgLightbox');
+    document.getElementById('lightboxImg').src = src;
+    lb.style.display = 'flex';
+};
