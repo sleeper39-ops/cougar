@@ -25,131 +25,113 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 let items = [];
-let isAdmin = false;
+let isAdmin = sessionStorage.getItem('isAdmin') === 'true'; // จำสถานะการเข้าสู่ระบบ
 
 /* ================= Clock ================= */
 setInterval(() => {
     const now = new Date();
     const timeEl = document.getElementById("dash-time");
     if (timeEl) {
-        timeEl.innerText = now.toLocaleTimeString("th-TH");
+        timeEl.innerText = now.toLocaleTimeString("th-TH", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
 }, 1000);
 
 /* ================= Realtime Load ================= */
 onValue(ref(db, "cougar_data"), (snapshot) => {
-
-    const data = snapshot.val() || {};
-
-    items = Object.keys(data).map(id => ({
-        id,
-        ...data[id]
-    }));
+    const data = snapshot.val();
+    
+    if (!data) {
+        items = [];
+    } else {
+        // แปลง Object จาก Firebase ให้กลายเป็น Array พร้อมเก็บ Key (ID)
+        items = Object.keys(data).map(id => ({
+            id,
+            ...data[id]
+        }));
+    }
 
     renderItems();
-
-    const countEl = document.getElementById("dash-count");
-    if (countEl) {
-        countEl.innerText = items.length + " รายการ";
-    }
+    updateDashboardUI();
 });
 
-/* ================= Render ================= */
+/* ================= Render UI ================= */
 function renderItems() {
-
     const container = document.getElementById("download-list");
     if (!container) return;
 
-    container.innerHTML = "";
+    if (items.length === 0) {
+        container.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:gray; padding:20px;">☁️ ไม่มีข้อมูลบนคลาวด์</p>`;
+        return;
+    }
 
-    items.forEach(item => {
-
+    container.innerHTML = items.map(item => {
         const imgSrc = item.image && item.image.startsWith("http")
             ? item.image
             : "https://via.placeholder.com/300x180?text=Cougar2";
 
-        const card = document.createElement("div");
-        card.className = "download-card";
-
-        card.innerHTML = `
-        <div class="card-img-container"
-            onclick="window.openLightbox('${imgSrc}')">
-            <img src="${imgSrc}"
-             onerror="this.src='https://via.placeholder.com/300x180?text=No+Image'">
-        </div>
-
-        <div class="download-info">
-            <h4>${item.name}</h4>
-            <button class="btn-download"
-                ${item.locked ? "disabled" : ""}
-                onclick="window.openLink('${item.link}')">
-                ${item.locked ? "Locked" : "Download Now"}
-            </button>
-        </div>
-
-        ${isAdmin ? `
-        <div class="admin-controls">
-            <button class="admin-btn-text"
-                onclick="window.editItem('${item.id}')">Edit</button>
-            <button class="admin-btn-text"
-                onclick="window.deleteItem('${item.id}')">Delete</button>
-            <button class="admin-btn-text"
-                onclick="window.toggleLock('${item.id}', ${item.locked})">
-                ${item.locked ? "Unlock" : "Lock"}
-            </button>
-        </div>` : ""}
-        `;
-
-        container.appendChild(card);
-    });
+        return `
+        <div class="download-card">
+            <div class="card-img-container" onclick="window.openLightbox('${imgSrc}')">
+                <img src="${imgSrc}" onerror="this.src='https://via.placeholder.com/300x180?text=No+Image'">
+            </div>
+            <div class="download-info">
+                <h4>${item.name}</h4>
+                <button class="btn-download ${item.locked ? 'is-locked' : 'is-open'}" 
+                    ${item.locked && !isAdmin ? "disabled" : ""} 
+                    onclick="window.openLink('${item.link}')">
+                    ${item.locked ? '<i class="fas fa-lock"></i> Locked' : '<i class="fas fa-download"></i> Download'}
+                </button>
+            </div>
+            ${isAdmin ? `
+            <div class="admin-controls">
+                <button class="admin-btn-text" style="color:blue" onclick="window.editItem('${item.id}')">Edit</button>
+                <button class="admin-btn-text" style="color:red" onclick="window.deleteItem('${item.id}')">Delete</button>
+                <button class="admin-btn-text" style="color:orange" onclick="window.toggleLock('${item.id}', ${item.locked})">
+                    ${item.locked ? "Unlock" : "Lock"}
+                </button>
+            </div>` : ""}
+        </div>`;
+    }).join('');
 }
 
 /* ================= Save (Add / Edit) ================= */
 window.saveItem = async function () {
+    const name = document.getElementById("itemName").value.trim();
+    const image = document.getElementById("itemImg").value.trim();
+    const link = document.getElementById("itemLink").value.trim();
+    const editId = document.getElementById("editId").value;
+
+    if (!name || !link) {
+        alert("กรุณากรอกชื่อและลิงก์");
+        return;
+    }
 
     try {
-
-        const name = document.getElementById("itemName").value.trim();
-        const image = document.getElementById("itemImg").value.trim();
-        const link = document.getElementById("itemLink").value.trim();
-        const editId = document.getElementById("editId").value;
-
-        if (!name || !link) {
-            alert("กรอกข้อมูลให้ครบ");
-            return;
-        }
-
         if (editId) {
-
+            // โหมดแก้ไข
             await update(ref(db, "cougar_data/" + editId), {
-                name,
-                image,
-                link
+                name, image, link
             });
-
+            alert("✅ อัปเดตข้อมูลสำเร็จ");
         } else {
-
+            // โหมดเพิ่มใหม่
             const newRef = push(ref(db, "cougar_data"));
-
             await set(newRef, {
-                name,
-                image,
-                link,
+                name, image, link,
                 locked: false,
                 createdAt: Date.now()
             });
+            alert("✅ เพิ่มข้อมูลลง Cloud สำเร็จ");
         }
-
-        resetForm();
-
+        window.resetForm();
     } catch (err) {
         console.error("SAVE ERROR:", err);
+        alert("❌ บันทึกไม่สำเร็จ: " + err.message);
     }
 };
 
-/* ================= Edit ================= */
+/* ================= Admin Functions ================= */
 window.editItem = function (id) {
-
     const item = items.find(x => x.id === id);
     if (!item) return;
 
@@ -157,87 +139,122 @@ window.editItem = function (id) {
     document.getElementById("itemImg").value = item.image || "";
     document.getElementById("itemLink").value = item.link;
     document.getElementById("editId").value = id;
+    document.getElementById("btn-save").innerText = "Update Data";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-/* ================= Delete ================= */
 window.deleteItem = async function (id) {
-
-    if (!confirm("ยืนยันลบ?")) return;
-
-    await remove(ref(db, "cougar_data/" + id));
+    if (!confirm("ยืนยันการลบข้อมูลนี้จาก Cloud?")) return;
+    try {
+        await remove(ref(db, "cougar_data/" + id));
+    } catch (err) {
+        alert("ลบไม่สำเร็จ: " + err.message);
+    }
 };
 
-/* ================= Lock ================= */
-window.toggleLock = async function (id, current) {
-
+window.toggleLock = async function (id, currentStatus) {
     await update(ref(db, "cougar_data/" + id), {
-        locked: !current
+        locked: !currentStatus
     });
 };
 
-/* ================= Reset ================= */
 window.resetForm = function () {
-
     document.getElementById("itemName").value = "";
     document.getElementById("itemImg").value = "";
     document.getElementById("itemLink").value = "";
     document.getElementById("editId").value = "";
+    document.getElementById("btn-save").innerText = "บันทึก";
 };
 
-/* ================= Lightbox ================= */
-window.openLightbox = function (src) {
-
-    document.getElementById("lightboxImg").src = src;
-    document.getElementById("imgLightbox").style.display = "flex";
-};
-
-/* ================= Open Link ================= */
-window.openLink = function (url) {
-
-    window.open(url, "_blank");
-};
-
-/* ================= Auth ================= */
+/* ================= Auth System ================= */
 window.toggleAuth = function () {
-
-    document.getElementById("loginModal").style.display = "flex";
+    if (isAdmin) {
+        if(confirm("ต้องการออกจากระบบแอดมิน?")) {
+            sessionStorage.removeItem('isAdmin');
+            location.reload();
+        }
+    } else {
+        document.getElementById("loginModal").style.display = "flex";
+    }
 };
 
 window.performLogin = function () {
-
     const user = document.getElementById("loginUser").value;
     const pass = document.getElementById("loginPass").value;
 
     if (user === "admin" && pass === "1234") {
-
         isAdmin = true;
-
-        document.getElementById("admin-panel").style.display = "block";
-        document.getElementById("dash-status").innerText = "Admin Mode";
+        sessionStorage.setItem('isAdmin', 'true');
         document.getElementById("loginModal").style.display = "none";
-
+        updateDashboardUI();
         renderItems();
-
     } else {
-
         alert("รหัสไม่ถูกต้อง");
     }
 };
 
-/* ================= Page Navigation ================= */
+function updateDashboardUI() {
+    const countEl = document.getElementById("dash-count");
+    const statusEl = document.getElementById("dash-status");
+    const adminPanel = document.getElementById("admin-panel");
+    const authBtn = document.getElementById("auth-btn");
+
+    if (countEl) countEl.innerText = items.length + " รายการ";
+    
+    if (isAdmin) {
+        if (statusEl) statusEl.innerText = "Admin Mode";
+        if (adminPanel) adminPanel.style.display = "block";
+        if (authBtn) {
+            authBtn.innerText = "Logout Admin";
+            authBtn.style.background = "var(--danger)";
+        }
+    } else {
+        if (statusEl) statusEl.innerText = "Guest Mode";
+        if (adminPanel) adminPanel.style.display = "none";
+        if (authBtn) {
+            authBtn.innerText = "Admin Login";
+            authBtn.style.background = "var(--primary)";
+        }
+    }
+}
+
+/* ================= Utilities ================= */
+window.openLightbox = function (src) {
+    const lightboxImg = document.getElementById("lightboxImg");
+    if (lightboxImg) lightboxImg.src = src;
+    document.getElementById("imgLightbox").style.display = "flex";
+};
+
+window.openLink = function (url) {
+    window.open(url, "_blank");
+};
+
 window.showPage = function (pageId) {
-
-    document.querySelectorAll(".page-content").forEach(p => {
-        p.classList.remove("active");
-    });
-
+    // ซ่อนทุกหน้า
+    document.querySelectorAll(".page-content").forEach(p => p.classList.remove("active"));
+    
+    // แสดงหน้าที่เลือก
     const target = document.getElementById(pageId);
     if (target) target.classList.add("active");
 
-    document.querySelectorAll(".sidebar a").forEach(a => {
-        a.classList.remove("active");
-    });
-
-    const nav = document.getElementById("nav-dash");
-    if (nav) nav.classList.add("active");
+    // อัปเดต Sidebar Active
+    document.querySelectorAll(".sidebar a").forEach(a => a.classList.remove("active"));
+    
+    // แมป ID ปุ่มใน Sidebar
+    const navMapping = {
+        'dash-page': 'nav-dash',
+        'live-page': 'nav-live',
+        'map-page': 'nav-map',
+        'calendar-page': 'nav-cal'
+    };
+    
+    const activeNavId = navMapping[pageId];
+    if (activeNavId) document.getElementById(activeNavId).classList.add("active");
+    
+    // เปลี่ยนหัวข้อ Top Nav
+    const titles = { 'dash-page': 'Dashboard', 'live-page': 'Live CCTV', 'map-page': 'Map View', 'calendar-page': 'Schedule' };
+    document.getElementById('nav-title').innerText = titles[pageId] || 'Cougar2';
 };
+
+// รันครั้งแรกเมื่อโหลดหน้าเว็บ
+document.addEventListener('DOMContentLoaded', updateDashboardUI);
