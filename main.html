@@ -10,230 +10,60 @@
     
     <style>
         :root {
-            --primary: #3498db;
-            --danger: #e74c3c;
-            --success: #27ae60;
-            --bg-dark: #1a1a1a;
-            --bg-body: #f0f2f5;
-            --sidebar-width: 260px;
+            --primary: #3498db; --danger: #e74c3c; --success: #27ae60;
+            --bg-dark: #1a1a1a; --bg-body: #f0f2f5; --sidebar-width: 260px;
         }
+        body { display: flex; margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-body); height: 100vh; overflow: hidden; }
 
-        body { 
-            display: flex; 
-            margin: 0; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: var(--bg-body); 
-            height: 100vh; 
-            overflow: hidden;
-        }
+        .sidebar { width: var(--sidebar-width); background: var(--bg-dark); color: white; padding: 25px 15px; display: flex; flex-direction: column; }
+        .sidebar h2 { color: var(--primary); text-align: center; margin-bottom: 40px; }
+        .sidebar a { color: #bbb; text-decoration: none; padding: 14px 20px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
+        .sidebar a:hover, .sidebar a.active { background: var(--primary); color: white; }
 
-        /* Sidebar Navigation */
-        .sidebar { 
-            width: var(--sidebar-width); 
-            background: var(--bg-dark); 
-            color: white; 
-            padding: 25px 15px; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-        }
-
-        .sidebar h2 { 
-            color: var(--primary); 
-            text-align: center; 
-            margin-bottom: 40px; 
-            font-size: 1.8rem;
-            letter-spacing: 2px;
-        }
-
-        .sidebar a { 
-            color: #bbb; 
-            text-decoration: none; 
-            padding: 14px 20px; 
-            border-radius: 10px; 
-            margin-bottom: 8px; 
-            cursor: pointer; 
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar a i { width: 20px; }
-
-        .sidebar a:hover, .sidebar a.active { 
-            background: var(--primary); 
-            color: white; 
-        }
-
-        .logout-btn { 
-            margin-top: auto; 
-            background: var(--danger); 
-            color: white; 
-            border: none; 
-            padding: 12px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-weight: bold;
-            transition: opacity 0.3s;
-        }
-
-        .logout-btn:hover { opacity: 0.9; }
-
-        /* Main Content Area */
-        .main-content { 
-            flex: 1; 
-            padding: 30px; 
-            overflow-y: auto; 
-        }
-
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
         .page-content { display: none; animation: fadeIn 0.4s ease; }
         .page-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Video Grid Layout */
-        .video-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
-            gap: 20px; 
-        }
-
-        .cam-card { 
-            background: #000; 
-            border-radius: 15px; 
-            aspect-ratio: 16/9; 
-            position: relative; 
-            overflow: hidden; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
-
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .cam-card { background: #000; border-radius: 15px; aspect-ratio: 16/9; position: relative; overflow: hidden; }
         .video-player { width: 100%; height: 100%; object-fit: cover; }
-
-        .cam-label { 
-            position: absolute; 
-            top: 15px; 
-            left: 15px; 
-            background: rgba(231, 76, 60, 0.85); 
-            color: white; 
-            padding: 5px 15px; 
-            border-radius: 20px; 
-            font-size: 12px; 
-            z-index: 5;
-            backdrop-filter: blur(4px);
-        }
-
-        .card {
-            background: white; 
-            padding: 25px; 
-            border-radius: 15px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-        }
-
-        .form-group {
-            display: flex; 
-            gap: 15px; 
-            margin-top: 15px; 
-            flex-wrap: wrap;
-        }
-
-        input { 
-            padding: 12px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 14px;
-            outline-color: var(--primary);
-        }
-
-        button#btnSubmit { 
-            padding: 10px 25px; 
-            background: var(--success); 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        button#btnSubmit:disabled { background: #ccc; cursor: not-allowed; }
-
-        .calendar-container { 
-            height: 700px; 
-            border-radius: 15px; 
-            overflow: hidden;
-            border: 1px solid #ddd;
-        }
+        .cam-label { position: absolute; top: 15px; left: 15px; background: rgba(231, 76, 60, 0.85); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; z-index: 5; }
+        
+        .logout-btn { margin-top: auto; background: var(--danger); color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h2>Cougar2</h2>
-        <a onclick="showPage('live-page')" id="nav-live" class="active">
-            <i class="fas fa-video"></i> ระบบกล้องสด
-        </a>
-        <a onclick="showPage('calendar-page')" id="nav-cal">
-            <i class="fas fa-calendar-alt"></i> ปฏิทินกิจกรรม
-        </a>
-        <a href="map.html">
-            <i class="fas fa-map-marked-alt"></i> แผนที่
-        </a>
-        <button class="logout-btn" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
-        </button>
+        <a onclick="showPage('live-page')" id="nav-live" class="active"><i class="fas fa-video"></i> ระบบกล้องสด</a>
+        <a onclick="showPage('calendar-page')" id="nav-cal"><i class="fas fa-calendar-alt"></i> ปฏิทินกิจกรรม</a>
+        <a onclick="showPage('map-page')" id="nav-map"><i class="fas fa-map-marked-alt"></i> แผนที่</a>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>
     </div>
 
     <div class="main-content">
-        
         <div id="live-page" class="page-content active">
-            <h1 style="margin-bottom: 10px;">ระบบสตรีมสด</h1>
-            <p style="color: #666; margin-bottom: 30px;">แสดงผลกล้องวงจรปิดแบบ Real-time เทศบาลนครอุดรธานี</p>
-            
+            <h1>ระบบสตรีมสด</h1>
             <div class="video-grid">
-                <div class="cam-card">
-                    <div class="cam-label"><i class="fas fa-circle"></i> LIVE - แยกกรมหลวง</div>
-                    <video id="v1" class="video-player" autoplay muted playsinline controls></video>
-                </div>
-                <div class="cam-card">
-                    <div class="cam-label"><i class="fas fa-circle"></i> LIVE - แยกร่วมทวี (ไปเซ็นทรัล)</div>
-                    <video id="v2" class="video-player" autoplay muted playsinline controls></video>
-                </div>
-                <div class="cam-card">
-                    <div class="cam-label"><i class="fas fa-circle"></i> LIVE - แยกเซ็นทรัล</div>
-                    <video id="v3" class="video-player" autoplay muted playsinline controls></video>
-                </div>
-                <div class="cam-card">
-                    <div class="cam-label"><i class="fas fa-circle"></i> LIVE - แยกสถานีรถไฟ</div>
-                    <video id="v4" class="video-player" autoplay muted playsinline controls></video>
-                </div>
+                <div class="cam-card"><div class="cam-label">แยกกรมหลวง</div><video id="v1" class="video-player" autoplay muted playsinline controls></video></div>
+                <div class="cam-card"><div class="cam-label">แยกร่วมทวี</div><video id="v2" class="video-player" autoplay muted playsinline controls></video></div>
+                <div class="cam-card"><div class="cam-label">แยกเซ็นทรัล</div><video id="v3" class="video-player" autoplay muted playsinline controls></video></div>
+                <div class="cam-card"><div class="cam-label">แยกสถานีรถไฟ</div><video id="v4" class="video-player" autoplay muted playsinline controls></video></div>
+            </div>
+        </div>
+
+        <div id="map-page" class="page-content">
+            <h1 style="margin-bottom: 15px;">แผนที่ตำแหน่งกล้อง</h1>
+            <div style="width: 100%; height: 75vh; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <iframe src="map.html" width="100%" height="100%" frameborder="0"></iframe>
             </div>
         </div>
 
         <div id="calendar-page" class="page-content">
-            <h1 style="margin-bottom: 25px;">จัดการการจองและกิจกรรม</h1>
-            
-            <div class="card">
-                <h3><i class="fas fa-plus-circle"></i> เพิ่มรายการจองใหม่</h3>
-                <div class="form-group">
-                    <input type="text" id="eventTitle" placeholder="หัวข้อการจอง..." style="flex: 2;">
-                    <input type="datetime-local" id="eventStart">
-                    <input type="datetime-local" id="eventEnd">
-                    <button onclick="addEvent()" id="btnSubmit">บันทึกข้อมูล</button>
-                </div>
-                <p id="statusMsg" style="margin-top:15px; font-size: 14px;"></p>
+            <h1>จัดการการจอง</h1>
             </div>
-
-            <div class="calendar-container">
-                <iframe id="calFrame" 
-                        src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok" 
-                        style="border:0" width="100%" height="100%" frameborder="0" scrolling="no"></iframe>
-            </div>
-        </div>
-
     </div>
 
     <script>
@@ -244,47 +74,9 @@
             document.querySelectorAll('.sidebar a').forEach(el => el.classList.remove('active'));
             if(pageId === 'live-page') document.getElementById('nav-live').classList.add('active');
             if(pageId === 'calendar-page') document.getElementById('nav-cal').classList.add('active');
+            if(pageId === 'map-page') document.getElementById('nav-map').classList.add('active');
         }
 
-        async function addEvent() {
-            const url = "ใส่_URL_ที่ได้จาก_DEPLOY_ตรงนี้"; 
-            const title = document.getElementById('eventTitle').value;
-            const start = document.getElementById('eventStart').value;
-            const end = document.getElementById('eventEnd').value;
-            const msg = document.getElementById('statusMsg');
-            const btn = document.getElementById('btnSubmit');
-
-            if(!title || !start || !end) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
-
-            msg.innerText = "⏳ กำลังบันทึกข้อมูล...";
-            msg.style.color = "#3498db";
-            btn.disabled = true;
-
-            try {
-                await fetch(url, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ title, start, end })
-                });
-
-                msg.innerText = "✅ บันทึกสำเร็จ! กำลังอัปเดตปฏิทิน...";
-                msg.style.color = "#27ae60";
-                
-                setTimeout(() => {
-                    document.getElementById('calFrame').src += "";
-                    document.getElementById('eventTitle').value = "";
-                    msg.innerText = "";
-                    btn.disabled = false;
-                }, 2500);
-
-            } catch (e) {
-                msg.innerText = "❌ เกิดข้อผิดพลาด: " + e.message;
-                msg.style.color = "#e74c3c";
-                btn.disabled = false;
-            }
-        }
-
-        // ฟังก์ชันโหลดวิดีโอ HLS
         function initPlayer(id, src) {
             const video = document.getElementById(id);
             if (Hls.isSupported()) {
@@ -296,25 +88,15 @@
             }
         }
 
-        // โหลด URL กล้องทั้ง 4 ตัวเมื่อเปิดหน้าเว็บ
         window.onload = () => {
-            // กล้อง 1: แยกกรมหลวง
             initPlayer('v1', 'https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist_w2010918290.m3u8');
-            
-            // กล้อง 2: แยกร่วมทวี
             initPlayer('v2', 'https://streaming.udoncity.go.th:1935/live/Axis_12_22.stream/chunklist_w236554495.m3u8');
-            
-            // กล้อง 3: แยกเซ็นทรัล
             initPlayer('v3', 'https://streaming.udoncity.go.th:1935/live/Axis_12_38.stream/chunklist_w1610502304.m3u8');
-            
-            // กล้อง 4: แยกสถานีรถไฟ
             initPlayer('v4', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist_w34733218.m3u8');
         };
 
         function logout() {
-            if(confirm("ยืนยันการออกจากระบบ?")) {
-                window.location.href = "login.html";
-            }
+            if(confirm("ยืนยันการออกจากระบบ?")) window.location.href = "login.html";
         }
     </script>
 </body>
