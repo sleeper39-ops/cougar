@@ -20,7 +20,7 @@ let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 let isGlobalLocked = false;
 let downloadPassHash = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
 
-// --- Helper Functions ---
+// --- Helper: Hash Function ---
 async function hashText(text) {
     const encoder = new TextEncoder();
     const data = encoder.encode(text);
@@ -55,6 +55,8 @@ window.showPage = (id, el) => {
         const navEl = document.getElementById('nav-' + id.split('-')[0]);
         if(navEl) navEl.classList.add('active');
     }
+    const navTitle = document.getElementById('nav-' + id.split('-')[0]);
+    if(navTitle) document.getElementById('nav-title').innerText = navTitle.innerText.trim();
 };
 
 window.renderItems = () => {
@@ -74,29 +76,31 @@ window.renderItems = () => {
                 <h4>${item.name}</h4>
                 <button onclick="window.secureDownload('${item.link}', ${item.locked})" 
                         class="btn-download"
-                        style="background:${effectivelyLocked ? '#f39c12' : '#2ecc71'}; color:white;">
+                        style="background:${effectivelyLocked ? 'var(--warning)' : 'var(--success)'}; color:white;">
                     <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> 
                     ${effectivelyLocked ? 'Password Required' : 'Download Now'}
                 </button>
             </div>
             ${isAdmin ? `
-            <div class="admin-controls" style="display:flex; justify-content: space-around; padding: 10px; border-top: 1px solid #eee;">
-                 <label class="switch">
-                    <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
-                    <span class="slider"></span>
-                 </label>
-                 <button onclick="window.editItem('${item.key}')" class="admin-btn-text" style="color:#3498db; border:none; background:none; cursor:pointer;"><i class="fas fa-edit"></i> Edit</button>
-                 <button onclick="window.deleteItem('${item.key}')" class="admin-btn-text" style="color:#e74c3c; border:none; background:none; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
+            <div class="admin-controls">
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <label class="switch">
+                        <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
+                        <span class="slider"></span>
+                    </label>
+                    <span style="font-size:11px; font-weight:bold; color:#666;">Lock</span>
+                </div>
+                <button onclick="window.editItem('${item.key}')" class="admin-btn-text" style="color:var(--primary);"><i class="fas fa-edit"></i> Edit</button>
+                <button onclick="window.deleteItem('${item.key}')" class="admin-btn-text" style="color:var(--danger);"><i class="fas fa-trash"></i> Delete</button>
             </div>` : ''}
         `;
         list.appendChild(card);
     });
-    
     const countEl = document.getElementById('dash-count');
     if(countEl) countEl.innerText = items.length + " รายการ";
 };
 
-// --- Admin Actions ---
+// --- Auth & Security ---
 window.performLogin = () => {
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
@@ -106,21 +110,37 @@ window.performLogin = () => {
     } else alert("Username หรือ Password ไม่ถูกต้อง");
 };
 
+// ฟังก์ชันลืมรหัสผ่านตามที่ต้องการ
 window.forgotPassword = () => {
-    const correctKeyword = "password"; 
-    const userKeyword = prompt("ใส่ Keyword เพื่อดูรหัสผ่าน:");
-    if (userKeyword === null) return;
-    if (userKeyword === correctKeyword.toLowerCase()) {
+    const keyword = prompt("ใส่ Keyword เพื่อดูรหัสผ่าน:");
+    if (keyword === null) return; // กดยกเลิก
+
+    if (keyword === "password") {
         alert("ตรวจสอบสำเร็จ!\n\nUsername: admin\nPassword: admin2");
-    } else alert("Keyword ไม่ถูกต้อง!");
+    } else {
+        alert("Keyword ไม่ถูกต้อง!");
+    }
 };
 
+window.toggleAuth = () => {
+    if(isAdmin) {
+        if(confirm("ต้องการออกจากระบบ Admin ใช่หรือไม่?")) {
+            sessionStorage.removeItem('isAdmin');
+            location.reload();
+        }
+    } else {
+        const modal = document.getElementById('loginModal');
+        if(modal) modal.style.display='flex';
+    }
+};
+
+// --- Admin Actions ---
 window.saveItem = async () => {
     const key = document.getElementById('editKey').value;
     const name = document.getElementById('itemName').value;
     const img = document.getElementById('itemImg').value;
     const link = document.getElementById('itemLink').value;
-    if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์");
+    if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์โหลด");
     const data = { name, img, link, locked: false };
     if(key) await update(ref(db, `cougar_data/${key}`), data);
     else await push(ref(db, "cougar_data"), data);
@@ -132,8 +152,8 @@ window.resetForm = () => {
     document.getElementById('itemName').value = '';
     document.getElementById('itemImg').value = '';
     document.getElementById('itemLink').value = '';
-    const btn = document.getElementById('btn-save');
-    if(btn) { btn.innerText = "บันทึก"; btn.style.background = "#2ecc71"; }
+    document.getElementById('btn-save').innerText = "บันทึก";
+    document.getElementById('btn-save').style.background = "var(--success)";
 };
 
 window.editItem = (key) => {
@@ -142,8 +162,8 @@ window.editItem = (key) => {
     document.getElementById('itemImg').value = item.img;
     document.getElementById('itemLink').value = item.link;
     document.getElementById('editKey').value = key;
-    const btn = document.getElementById('btn-save');
-    if(btn) { btn.innerText = "Update"; btn.style.background = "#3498db"; }
+    document.getElementById('btn-save').innerText = "Update";
+    document.getElementById('btn-save').style.background = "var(--primary)";
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
@@ -162,18 +182,6 @@ window.secureDownload = async (link, itemLocked) => {
         if (hashedInput === downloadPassHash) window.open(link, '_blank');
         else alert("รหัสผ่านไม่ถูกต้อง");
     } else window.open(link, '_blank');
-};
-
-window.toggleAuth = () => {
-    if(isAdmin) {
-        if(confirm("ต้องการออกจากระบบ Admin ใช่หรือไม่?")) {
-            sessionStorage.removeItem('isAdmin');
-            location.reload();
-        }
-    } else {
-        const modal = document.getElementById('loginModal');
-        if(modal) modal.style.display='flex';
-    }
 };
 
 // --- Init ---
@@ -196,25 +204,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const authBtn = document.getElementById('auth-btn');
         if(authBtn) {
             authBtn.innerText = "Logout Admin";
-            authBtn.style.background = "#e74c3c";
+            authBtn.style.background = "var(--danger)";
         }
-        const statusText = document.getElementById('dash-status');
-        if(statusText) statusText.innerText = "Admin Mode";
+        document.getElementById('dash-status').innerText = "Admin Mode";
+        document.getElementById('status-icon').style.color = "#2ecc71";
     }
     
-    // ระบบนาฬิกา
     setInterval(() => {
         const timeEl = document.getElementById('dash-time');
-        if(timeEl) {
-            timeEl.innerText = new Date().toLocaleTimeString('th-TH', {
-                hour: '2-digit', minute: '2-digit', second: '2-digit'
-            });
-        }
+        if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }, 1000);
 });
 
 window.openImage = (src) => {
     const lb = document.getElementById('imgLightbox');
-    const lbImg = document.getElementById('lightboxImg');
-    if(lb && lbImg) { lbImg.src = src; lb.style.display = 'flex'; }
+    document.getElementById('lightboxImg').src = src;
+    lb.style.display = 'flex';
 };
