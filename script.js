@@ -38,7 +38,7 @@ setInterval(() => {
 
 /* ================= Realtime Load ================= */
 onValue(ref(db, "cougar_data"), (snapshot) => {
-    console.log("Realtime Triggered");
+
     const data = snapshot.val() || {};
 
     items = Object.keys(data).map(id => ({
@@ -56,6 +56,7 @@ onValue(ref(db, "cougar_data"), (snapshot) => {
 
 /* ================= Render ================= */
 function renderItems() {
+
     const container = document.getElementById("download-list");
     if (!container) return;
 
@@ -103,20 +104,15 @@ function renderItems() {
     });
 }
 
-/* ================= Add / Edit ================= */
-window.saveItem = async function (e) {
-
-    if (e) e.preventDefault(); // กันกรณีอยู่ใน form
-
-    console.log("Save clicked");
+/* ================= Save (Add / Edit) ================= */
+window.saveItem = async function () {
 
     try {
+
         const name = document.getElementById("itemName").value.trim();
         const image = document.getElementById("itemImg").value.trim();
         const link = document.getElementById("itemLink").value.trim();
         const editId = document.getElementById("editId").value;
-
-        console.log("DATA:", name, image, link);
 
         if (!name || !link) {
             alert("กรอกข้อมูลให้ครบ");
@@ -124,14 +120,17 @@ window.saveItem = async function (e) {
         }
 
         if (editId) {
+
             await update(ref(db, "cougar_data/" + editId), {
                 name,
                 image,
                 link
             });
-            console.log("Updated successfully");
+
         } else {
+
             const newRef = push(ref(db, "cougar_data"));
+
             await set(newRef, {
                 name,
                 image,
@@ -139,19 +138,18 @@ window.saveItem = async function (e) {
                 locked: false,
                 createdAt: Date.now()
             });
-            console.log("Uploaded successfully");
         }
 
         resetForm();
 
     } catch (err) {
         console.error("SAVE ERROR:", err);
-        alert("เกิดข้อผิดพลาด ดู Console");
     }
 };
 
 /* ================= Edit ================= */
 window.editItem = function (id) {
+
     const item = items.find(x => x.id === id);
     if (!item) return;
 
@@ -163,32 +161,83 @@ window.editItem = function (id) {
 
 /* ================= Delete ================= */
 window.deleteItem = async function (id) {
+
     if (!confirm("ยืนยันลบ?")) return;
+
     await remove(ref(db, "cougar_data/" + id));
 };
 
 /* ================= Lock ================= */
 window.toggleLock = async function (id, current) {
+
     await update(ref(db, "cougar_data/" + id), {
         locked: !current
     });
 };
 
 /* ================= Reset ================= */
-function resetForm() {
+window.resetForm = function () {
+
     document.getElementById("itemName").value = "";
     document.getElementById("itemImg").value = "";
     document.getElementById("itemLink").value = "";
     document.getElementById("editId").value = "";
-}
+};
 
 /* ================= Lightbox ================= */
 window.openLightbox = function (src) {
+
     document.getElementById("lightboxImg").src = src;
     document.getElementById("imgLightbox").style.display = "flex";
 };
 
 /* ================= Open Link ================= */
 window.openLink = function (url) {
+
     window.open(url, "_blank");
+};
+
+/* ================= Auth ================= */
+window.toggleAuth = function () {
+
+    document.getElementById("loginModal").style.display = "flex";
+};
+
+window.performLogin = function () {
+
+    const user = document.getElementById("loginUser").value;
+    const pass = document.getElementById("loginPass").value;
+
+    if (user === "admin" && pass === "1234") {
+
+        isAdmin = true;
+
+        document.getElementById("admin-panel").style.display = "block";
+        document.getElementById("dash-status").innerText = "Admin Mode";
+        document.getElementById("loginModal").style.display = "none";
+
+        renderItems();
+
+    } else {
+
+        alert("รหัสไม่ถูกต้อง");
+    }
+};
+
+/* ================= Page Navigation ================= */
+window.showPage = function (pageId) {
+
+    document.querySelectorAll(".page-content").forEach(p => {
+        p.classList.remove("active");
+    });
+
+    const target = document.getElementById(pageId);
+    if (target) target.classList.add("active");
+
+    document.querySelectorAll(".sidebar a").forEach(a => {
+        a.classList.remove("active");
+    });
+
+    const nav = document.getElementById("nav-dash");
+    if (nav) nav.classList.add("active");
 };
