@@ -110,15 +110,29 @@ window.performLogin = () => {
     } else alert("Username หรือ Password ไม่ถูกต้อง");
 };
 
-// ฟังก์ชันลืมรหัสผ่านตามที่ต้องการ
+// ฟังก์ชันลืมรหัสผ่าน
 window.forgotPassword = () => {
     const keyword = prompt("ใส่ Keyword เพื่อดูรหัสผ่าน:");
-    if (keyword === null) return; // กดยกเลิก
-
+    if (keyword === null) return; 
     if (keyword === "password") {
         alert("ตรวจสอบสำเร็จ!\n\nUsername: admin\nPassword: admin2");
     } else {
         alert("Keyword ไม่ถูกต้อง!");
+    }
+};
+
+// ฟังก์ชันเปลี่ยนรหัสดาวน์โหลด (Update: เป็น Popup แทนกล่อง input)
+window.changeDownloadPass = async () => {
+    const newPass = prompt("กรุณากรอกรหัสผ่านดาวน์โหลดใหม่ที่คุณต้องการ:");
+    if (newPass === null) return;
+    if (newPass.trim() === "") return alert("กรุณากรอกรหัสผ่านที่ต้องการเปลี่ยน");
+
+    try {
+        const hash = await hashText(newPass);
+        await update(ref(db, "settings"), { downloadPassHash: hash });
+        alert("เปลี่ยนรหัสผ่านดาวน์โหลดสำเร็จ!");
+    } catch (error) {
+        alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
     }
 };
 
