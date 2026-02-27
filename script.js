@@ -1,3 +1,4 @@
+
 /* ================= Firebase Config ================= */
 const firebaseConfig = {
     apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
@@ -12,128 +13,172 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ================= State ================= */
-const state = {
-    items: []
-};
+let items = [];
+let isAdmin = false;
 
-/* ================= Safe Helper ================= */
-function safeAsync(fn) {
-    return async (...args) => {
-        try {
-            await fn(...args);
-        } catch (err) {
-            console.error("Firebase Error:", err);
-        }
-    };
-}
+/* ================= Clock ================= */
+setInterval(() => {
+    const now = new Date();
+    document.getElementById("dash-time").innerText =
+        now.toLocaleTimeString("th-TH");
+}, 1000);
 
-/* ================= Load Realtime ================= */
+/* ================= Realtime Load ================= */
 onValue(ref(db, "cougar_data"), (snapshot) => {
     const data = snapshot.val() || {};
-    state.items = Object.keys(data).map(id => ({
+    items = Object.keys(data).map(id => ({
         id,
         ...data[id]
     }));
+
     renderItems();
-});
-
-/* ================= Add / Edit ================= */
-window.saveItem = safeAsync(async function () {
-
-    const name = document.getElementById("fileName")?.value.trim();
-    const image = document.getElementById("imageUrl")?.value.trim();
-    const link = document.getElementById("downloadUrl")?.value.trim();
-    const editId = document.getElementById("editId")?.value;
-
-    if (!name || !link) {
-        alert("กรุณากรอกข้อมูลให้ครบ");
-        return;
-    }
-
-    if (editId) {
-        await update(ref(db, "cougar_data/" + editId), {
-            name,
-            image,
-            link
-        });
-        document.getElementById("editId").value = "";
-    } else {
-        const newRef = push(ref(db, "cougar_data"));
-        await set(newRef, {
-            name,
-            image,
-            link,
-            locked: false
-        });
-    }
-
-    clearForm();
-});
-
-/* ================= Delete ================= */
-window.deleteItem = safeAsync(async function (id) {
-    if (!confirm("ยืนยันการลบ?")) return;
-    await remove(ref(db, "cougar_data/" + id));
-});
-
-/* ================= Lock ================= */
-window.toggleLock = safeAsync(async function (id, current) {
-    await update(ref(db, "cougar_data/" + id), {
-        locked: !current
-    });
+    document.getElementById("dash-count").innerText =
+        items.length + " รายการ";
 });
 
 /* ================= Render ================= */
 function renderItems() {
-    const container = document.getElementById("itemsContainer");
-    if (!container) return;
-
+    const container = document.getElementById("download-list");
     container.innerHTML = "";
 
-    state.items.forEach(item => {
+    items.forEach(item => {
 
-        const card = document.createElement("div");
-        card.className = "card";
-
-        const img = item.image && item.image.startsWith("http")
+        const imgSrc = item.image && item.image.startsWith("http")
             ? item.image
             : "https://via.placeholder.com/300x180?text=Cougar2";
 
+        const card = document.createElement("div");
+        card.className = "download-card";
+
         card.innerHTML = `
-            <img src="${img}" onerror="this.src='https://via.placeholder.com/300x180?text=No+Image'">
+        <div class="card-img-container"
+            onclick="window.openLightbox('${imgSrc}')">
+            <img src="${imgSrc}"
+             onerror="this.src='https://via.placeholder.com/300x180?text=No+Image'">
+        </div>
+
+        <div class="download-info">
             <h4>${item.name}</h4>
-            <a href="${item.link}" target="_blank">
-                <button ${item.locked ? "disabled" : ""}>
-                    ${item.locked ? "Locked" : "Download Now"}
-                </button>
-            </a>
-            <br>
-            <button onclick="editItem('${item.id}')">Edit</button>
-            <button onclick="deleteItem('${item.id}')">Delete</button>
-            <button onclick="toggleLock('${item.id}', ${item.locked})">
+            <button class="btn-download is-open"
+                ${item.locked ? "disabled" : ""}
+                onclick="window.openLink('${item.link}')">
+                ${item.locked ? "Locked" : "Download Now"}
+            </button>
+        </div>
+
+        ${isAdmin ? `
+        <div class="admin-controls">
+            <button class="admin-btn-text"
+                onclick="window.editItem('${item.id}')">Edit</button>
+            <button class="admin-btn-text"
+                onclick="window.deleteItem('${item.id}')">Delete</button>
+            <button class="admin-btn-text"
+                onclick="window.toggleLock('${item.id}', ${item.locked})">
                 ${item.locked ? "Unlock" : "Lock"}
             </button>
+        </div>` : ""}
         `;
 
         container.appendChild(card);
     });
 }
 
+/* ================= Add / Edit ================= */
+window.saveItem = async function () {
+
+    try {
+        const name = document.getElementById("itemName").value.trim();
+        const image = document.getElementById("itemImg").value.trim();
+        const link = document.getElementById("itemLink").value.trim();
+        const editId = document.getElementById("editId").value;
+
+        if (!name || !link) {
+            alert("กรอกข้อมูลให้ครบ");
+            return;
+        }
+
+        if (editId) {
+            await update(ref(db, "cougar_data/" + editId), {
+                name,
+                image,
+                link
+            });
+        } else {
+            const newRef = push(ref(db, "cougar_data"));
+            await set(newRef, {
+                name,
+                image,
+                link,
+                locked: false
+            });
+        }
+
+        resetForm();
+
+    } catch (err) {
+        console.error(err);
+    }
+};
+
 /* ================= Edit ================= */
 window.editItem = function (id) {
-    const item = state.items.find(x => x.id === id);
+    const item = items.find(x => x.id === id);
     if (!item) return;
 
-    document.getElementById("fileName").value = item.name;
-    document.getElementById("imageUrl").value = item.image;
-    document.getElementById("downloadUrl").value = item.link;
+    document.getElementById("itemName").value = item.name;
+    document.getElementById("itemImg").value = item.image || "";
+    document.getElementById("itemLink").value = item.link;
     document.getElementById("editId").value = id;
 };
 
-/* ================= Clear ================= */
-function clearForm() {
-    document.getElementById("fileName").value = "";
-    document.getElementById("imageUrl").value = "";
-    document.getElementById("downloadUrl").value = "";
-}
+/* ================= Delete ================= */
+window.deleteItem = async function (id) {
+    if (!confirm("ยืนยันลบ?")) return;
+    await remove(ref(db, "cougar_data/" + id));
+};
+
+/* ================= Lock ================= */
+window.toggleLock = async function (id, current) {
+    await update(ref(db, "cougar_data/" + id), {
+        locked: !current
+    });
+};
+
+/* ================= Reset ================= */
+window.resetForm = function () {
+    document.getElementById("itemName").value = "";
+    document.getElementById("itemImg").value = "";
+    document.getElementById("itemLink").value = "";
+    document.getElementById("editId").value = "";
+};
+
+/* ================= Lightbox ================= */
+window.openLightbox = function (src) {
+    document.getElementById("lightboxImg").src = src;
+    document.getElementById("imgLightbox").style.display = "flex";
+};
+
+/* ================= Open Link ================= */
+window.openLink = function (url) {
+    window.open(url, "_blank");
+};
+
+/* ================= Auth ================= */
+window.toggleAuth = function () {
+    document.getElementById("loginModal").style.display = "flex";
+};
+
+window.performLogin = function () {
+    const user = document.getElementById("loginUser").value;
+    const pass = document.getElementById("loginPass").value;
+
+    if (user === "admin" && pass === "1234") {
+        isAdmin = true;
+        document.getElementById("admin-panel").style.display = "block";
+        document.getElementById("dash-status").innerText = "Admin Mode";
+        document.getElementById("loginModal").style.display = "none";
+        renderItems();
+    } else {
+        alert("รหัสไม่ถูกต้อง");
+    }
+};
