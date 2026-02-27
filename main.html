@@ -154,20 +154,22 @@
             <span onclick="toggleAuthModal()" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:20px;">&times;</span>
             <h3 style="margin-top:0;">Admin Login</h3>
             
-            <input type="text" id="adminID" placeholder="ID" style="width:100%; padding:10px; margin:10px 0 5px 0; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
-            <input type="password" id="adminPass" onkeydown="if(event.key==='Enter') handleLogin()" placeholder="Password" style="width:100%; padding:10px; margin:5px 0; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
-            
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px; cursor: pointer;">
-                <input type="checkbox" id="rememberMe" style="cursor: pointer;">
-                <label for="rememberMe" style="font-size: 12px; color: #666; cursor: pointer;">จดจำ ID และรหัสผ่าน</label>
-            </div>
+            <form autocomplete="off" onsubmit="return false;">
+                <input type="text" id="auth_u_key" autocomplete="off" placeholder="ID" style="width:100%; padding:10px; margin:10px 0 5px 0; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
+                <input type="password" id="auth_p_key" autocomplete="new-password" onkeydown="if(event.key==='Enter') handleLogin()" placeholder="Password" style="width:100%; padding:10px; margin:5px 0; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
+                
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px; cursor: pointer;">
+                    <input type="checkbox" id="rememberMe" style="cursor: pointer;">
+                    <label for="rememberMe" style="font-size: 12px; color: #666; cursor: pointer;">จดจำ ID และรหัสผ่าน</label>
+                </div>
 
-            <button style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-bottom: 15px;" onclick="handleLogin()">เข้าสู่ระบบ</button>
+                <button type="button" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-bottom: 15px;" onclick="handleLogin()">เข้าสู่ระบบ</button>
+            </form>
 
             <div style="border-top: 1px dashed #ccc; padding-top: 15px;">
                 <p style="font-size: 11px; color: #888; margin-bottom: 5px; text-align: center;">ลืมรหัสผ่าน? ใส่คีย์เวิร์ดกู้คืน</p>
                 <div style="display: flex; gap: 5px;">
-                    <input type="text" id="recoveryKey" placeholder="คีย์เวิร์ด..." style="flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ddd; font-size: 12px;">
+                    <input type="text" id="recoveryKey" autocomplete="off" placeholder="คีย์เวิร์ด..." style="flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ddd; font-size: 12px;">
                     <button onclick="checkKeyword()" style="background: #34495e; color: white; border: none; padding: 0 12px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold;">
                         กู้คืน
                     </button>
@@ -192,24 +194,29 @@
                 modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
                 document.getElementById('recoveryKey').value = "";
                 
-                // โหลดค่าที่จำไว้มาใส่ช่อง input (ถ้ามี)
+                // ล้างค่าเดิมก่อนแสดง Modal (กัน Browser แอบใส่ให้)
+                document.getElementById('auth_u_key').value = "";
+                document.getElementById('auth_p_key').value = "";
+
+                // โหลดค่าจาก localStorage ของเราเองเท่านั้น
                 const savedID = localStorage.getItem('remembered_id');
                 const savedPass = localStorage.getItem('remembered_pass');
                 if(savedID && savedPass) {
-                    document.getElementById('adminID').value = savedID;
-                    document.getElementById('adminPass').value = savedPass;
+                    document.getElementById('auth_u_key').value = savedID;
+                    document.getElementById('auth_p_key').value = savedPass;
                     document.getElementById('rememberMe').checked = true;
+                } else {
+                    document.getElementById('rememberMe').checked = false;
                 }
             }
         }
 
         function handleLogin() {
-            const id = document.getElementById('adminID').value;
-            const pass = document.getElementById('adminPass').value;
+            const id = document.getElementById('auth_u_key').value;
+            const pass = document.getElementById('auth_p_key').value;
             const isRemember = document.getElementById('rememberMe').checked;
 
             if (id === "admin" && pass === "admin2") {
-                // ระบบจดจำ ID/Pass
                 if(isRemember) {
                     localStorage.setItem('remembered_id', id);
                     localStorage.setItem('remembered_pass', pass);
@@ -217,7 +224,6 @@
                     localStorage.removeItem('remembered_id');
                     localStorage.removeItem('remembered_pass');
                 }
-
                 sessionStorage.setItem('isAdmin', 'true'); location.reload();
             } else { alert("รหัสผ่านไม่ถูกต้อง"); }
         }
