@@ -3,107 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cougar2 - Smart City Management</title>
+    <title>Cougar2 - Smart System Control</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
-            --primary: #2563eb;
-            --secondary: #64748b;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --bg-main: #f8fafc;
-            --sidebar-bg: #ffffff;
-            --card-bg: #ffffff;
-            --text-dark: #1e293b;
-            --text-light: #64748b;
-            --sidebar-width: 250px;
+            --primary: #3498db;
+            --accent: #00d2ff;
+            --danger: #e74c3c;
+            --bg-dark: #0f172a;
+            --sidebar-bg: #1a1a1a;
+            --card-bg: #1e293b;
+            --sidebar-width: 260px;
         }
 
         body { 
             margin: 0; display: flex; height: 100vh; 
-            background: var(--bg-main); color: var(--text-dark);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden;
+            background: var(--bg-dark); color: white;
+            font-family: 'Segoe UI', sans-serif; overflow: hidden;
         }
 
-        /* Sidebar Design - สีขาวสะอาด */
+        /* Sidebar - โทนเข้มแบบเดิม */
         .sidebar { 
             width: var(--sidebar-width); background: var(--sidebar-bg); 
             padding: 25px 15px; display: flex; flex-direction: column;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05); z-index: 10;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
         }
 
         .sidebar h2 { 
-            font-size: 1.4rem; font-weight: 700; color: var(--primary);
-            text-align: center; margin-bottom: 35px; border-bottom: 2px solid var(--bg-main);
-            padding-bottom: 15px;
+            color: var(--primary); text-align: center; margin-bottom: 40px; 
+            font-size: 1.8rem; letter-spacing: 2px; font-weight: bold;
         }
 
         .sidebar a { 
-            color: var(--secondary); text-decoration: none; padding: 12px 18px;
-            border-radius: 10px; margin-bottom: 5px; cursor: pointer;
-            display: flex; align-items: center; gap: 12px; transition: 0.2s;
-            font-size: 0.95rem;
+            color: #bbb; text-decoration: none; padding: 14px 20px; 
+            border-radius: 10px; margin-bottom: 8px; cursor: pointer; 
+            display: flex; align-items: center; gap: 12px; transition: 0.3s;
         }
 
         .sidebar a:hover, .sidebar a.active { 
-            background: #eff6ff; color: var(--primary); font-weight: 600;
+            background: var(--primary); color: white; 
         }
 
         /* Content Area */
         .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
-        .page-content { display: none; width: 100%; height: 100%; animation: fadeIn 0.3s ease; }
+        .page-content { display: none; width: 100%; height: 100%; animation: fadeIn 0.4s ease; }
         .page-content.active { display: flex; flex-direction: column; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Dashboard & Stats */
+        /* Dashboard Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
         .stat-card { 
-            background: var(--card-bg); padding: 20px; border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+            background: var(--card-bg); padding: 20px; border-radius: 15px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.05);
         }
-        .stat-card h3 { margin: 10px 0 5px 0; font-size: 1.5rem; }
-        .stat-card p { margin: 0; color: var(--text-light); font-size: 0.85rem; }
+        .stat-card h3 { margin: 10px 0 0; color: var(--accent); font-size: 1.5rem; }
+        .stat-card p { margin: 0; color: #94a3b8; font-size: 0.8rem; }
 
-        /* Video Grid - ปรับขนาดเล็กลง (3 ตัวต่อแถว) */
+        /* Video Grid - ปรับขนาดกล้องให้เล็กลง (3-4 ตัวต่อแถว) */
         .video-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
             gap: 15px; 
         }
         .cam-card { 
-            background: #000; border-radius: 12px; aspect-ratio: 16/9;
-            position: relative; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: #000; border-radius: 12px; aspect-ratio: 16/9; 
+            position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
         }
         .video-player { width: 100%; height: 100%; object-fit: cover; }
         .cam-label { 
-            position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9);
-            padding: 4px 12px; border-radius: 6px; font-size: 11px;
-            color: var(--text-dark); font-weight: 600; z-index: 5;
+            position: absolute; top: 10px; left: 10px; background: rgba(231, 76, 60, 0.85); 
+            color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; z-index: 5;
         }
 
-        /* Map & Calendar Container - ขยายให้พอดีหน้าจอ */
-        .full-frame-container {
-            flex: 1;
-            width: 100%;
-            background: white;
-            border-radius: 15px;
-            border: 1px solid #e2e8f0;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        /* Map & Calendar - ขยายเต็มพื้นที่ */
+        .full-frame {
+            flex: 1; width: 100%; border-radius: 15px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1); background: #000;
         }
         iframe { width: 100%; height: 100%; border: none; }
 
-        .logout-btn { margin-top: auto; background: #fff1f2; color: var(--danger); border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .logout-btn:hover { background: var(--danger); color: white; }
+        .logout-btn { 
+            margin-top: auto; background: var(--danger); color: white; 
+            border: none; padding: 12px; border-radius: 10px; cursor: pointer; 
+            font-weight: bold; transition: 0.3s;
+        }
+        .logout-btn:hover { opacity: 0.8; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <h2>Cougar2 <small style="font-size: 10px; color: #94a3b8;">SMART</small></h2>
-        <a onclick="showPage('dash-page')" id="nav-dash" class="active"><i class="fas fa-chart-line"></i> หน้าหลัก</a>
+        <h2>Cougar2</h2>
+        <a onclick="showPage('dash-page')" id="nav-dash" class="active"><i class="fas fa-home"></i> หน้าหลัก</a>
         <a onclick="showPage('live-page')" id="nav-live"><i class="fas fa-video"></i> ระบบกล้องสด</a>
         <a onclick="showPage('map-page')" id="nav-map"><i class="fas fa-map-marked-alt"></i> แผนที่ระบบ</a>
         <a onclick="showPage('calendar-page')" id="nav-cal"><i class="fas fa-calendar-alt"></i> กิจกรรม</a>
@@ -114,39 +107,39 @@
     <div class="main-content">
         
         <div id="dash-page" class="page-content active">
-            <h2 style="margin: 0 0 20px 0;">Dashboard Overview</h2>
+            <h1 style="margin-top: 0;">System Overview</h1>
             <div class="stats-grid">
-                <div class="stat-card"><p>Status</p><h3>Online</h3></div>
-                <div class="stat-card"><p>Active Cameras</p><h3>4/4</h3></div>
-                <div class="stat-card"><p>Today's Events</p><h3>12</h3></div>
-                <div class="stat-card"><p>Local Time</p><h3 id="clock">00:00</h3></div>
+                <div class="stat-card"><i class="fas fa-shield-alt"></i><p>System Status</p><h3>ACTIVE</h3></div>
+                <div class="stat-card"><i class="fas fa-camera"></i><p>Total Cameras</p><h3>4</h3></div>
+                <div class="stat-card"><i class="fas fa-calendar-check"></i><p>Events Today</p><h3>12</h3></div>
+                <div class="stat-card"><i class="fas fa-clock"></i><p>Local Time</p><h3 id="clock">00:00</h3></div>
             </div>
-            <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                <h4 style="margin-top: 0;"><i class="fas fa-bullhorn" style="color: var(--primary);"></i> ระบบแจ้งเตือน</h4>
-                <p style="color: var(--text-light); font-size: 0.9rem;">ระบบทำงานปกติ ไม่พบปัญหาสัญญาณภาพขัดข้องในขณะนี้</p>
+            <div style="background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
+                <h3 style="margin-top: 0; color: var(--primary);">ยินดีต้อนรับเข้าสู่ระบบควบคุม</h3>
+                <p style="color: #94a3b8;">เลือกเมนูทางด้านซ้ายเพื่อตรวจสอบกล้องวงจรปิดแบบ Real-time หรือจัดการแผนที่กิจกรรม</p>
             </div>
         </div>
 
         <div id="live-page" class="page-content">
-            <h2 style="margin-bottom: 20px;">Live Surveillance</h2>
+            <h1 style="margin-top: 0;">Live Surveillance</h1>
             <div class="video-grid">
-                <div class="cam-card"><div class="cam-label">CAM 01 - แยกกรมหลวง</div><video id="v1" class="video-player" autoplay muted playsinline controls></video></div>
-                <div class="cam-card"><div class="cam-label">CAM 02 - แยกร่วมทวี</div><video id="v2" class="video-player" autoplay muted playsinline controls></video></div>
-                <div class="cam-card"><div class="cam-label">CAM 03 - แยกเซ็นทรัล</div><video id="v3" class="video-player" autoplay muted playsinline controls></video></div>
-                <div class="cam-card"><div class="cam-label">CAM 04 - แยกสถานีรถไฟ</div><video id="v4" class="video-player" autoplay muted playsinline controls></video></div>
+                <div class="cam-card"><div class="cam-label">แยกกรมหลวง</div><video id="v1" class="video-player" autoplay muted playsinline controls></video></div>
+                <div class="cam-card"><div class="cam-label">แยกร่วมทวี</div><video id="v2" class="video-player" autoplay muted playsinline controls></video></div>
+                <div class="cam-card"><div class="cam-label">แยกเซ็นทรัล</div><video id="v3" class="video-player" autoplay muted playsinline controls></video></div>
+                <div class="cam-card"><div class="cam-label">แยกสถานีรถไฟ</div><video id="v4" class="video-player" autoplay muted playsinline controls></video></div>
             </div>
         </div>
 
         <div id="map-page" class="page-content">
-            <h2 style="margin-bottom: 15px;">City Network Map</h2>
-            <div class="full-frame-container">
+            <h1 style="margin-top: 0;">City Map Network</h1>
+            <div class="full-frame">
                 <iframe src="map.html"></iframe>
             </div>
         </div>
 
         <div id="calendar-page" class="page-content">
-            <h2 style="margin-bottom: 15px;">Event Schedule</h2>
-            <div class="full-frame-container">
+            <h1 style="margin-top: 0;">Activity Calendar</h1>
+            <div class="full-frame">
                 <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok"></iframe>
             </div>
         </div>
