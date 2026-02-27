@@ -7,12 +7,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
-            --primary: #3498db; --danger: #e74c3c; --success: #27ae60; --warning: #f39c12;
+            --primary: #3498db; --danger: #e74c3c; --success: #27ae60; --warning: #f39c12; --secondary: #95a5a6;
             --bg-dark: #1a1a1a; --bg-body: #f0f2f5;
             --sidebar-width: 260px;
         }
         body { display: flex; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-body); height: 100vh; overflow: hidden; }
         
+        /* Sidebar */
         .sidebar { width: var(--sidebar-width); background: var(--bg-dark); color: white; padding: 25px 15px; display: flex; flex-direction: column; z-index: 10; }
         .sidebar h2 { color: var(--primary); text-align: center; margin-bottom: 40px; font-size: 1.8rem; }
         .sidebar a { color: #bbb; text-decoration: none; padding: 14px 20px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
@@ -26,25 +27,40 @@
         .page-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Admin Panel - ปรับปรุงระยะห่างช่อง Input */
+        /* Admin Panel */
         #admin-panel { display: none; background: white; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         
-        /* ใช้ Grid ในการจัดเรียงช่องกรอกข้อมูล */
+        .admin-settings-bar { display: flex; align-items: center; gap: 20px; }
+        .setting-item { display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 6px 15px; border-radius: 10px; border: 1px solid #eee; }
+        .mini-pass-input { display: flex; gap: 5px; align-items: center; border-left: 2px solid #ddd; padding-left: 15px; }
+        .mini-pass-input input { padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; width: 140px; }
+
+        /* Admin Form Grid */
         .form-row { 
             display: grid; 
             grid-template-columns: 1fr 1fr 1fr auto; 
-            gap: 20px; /* เว้นระยะห่างระหว่างช่อง */
+            gap: 20px; 
             align-items: flex-end; 
         }
         .input-group { display: flex; flex-direction: column; gap: 8px; }
         .input-group label { font-size: 12px; font-weight: bold; color: #555; }
-        .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; transition: 0.3s; }
-        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 5px rgba(52, 152, 219, 0.2); }
+        .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
 
-        /* Card System */
+        .btn-group { display: flex; gap: 10px; }
+        .btn-action { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; height: 41px; color: white; }
+
+        /* Switch */
+        .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--danger); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        /* Cards */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding-bottom: 40px; }
-        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; display: flex; flex-direction: column; }
+        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
         .card-img-container { width: 100%; height: 180px; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; }
         .card-img-container img { width: 100%; height: 100%; object-fit: contain; }
         
@@ -54,19 +70,12 @@
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.8em;
         }
 
-        .btn-download { display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; font-size: 14px; }
+        .btn-download { display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
         .is-locked { background: var(--warning); color: white; }
         .is-open { background: var(--success); color: white; }
 
         .admin-controls { display: flex; justify-content: center; align-items: center; gap: 15px; padding: 12px; background: #fdfdfd; border-top: 1px solid #f0f0f0; }
         .admin-btn-text { border: none; background: none; cursor: pointer; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
-
-        .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--warning); }
-        input:checked + .slider:before { transform: translateX(16px); }
 
         .lightbox { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
         .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
@@ -92,12 +101,19 @@
             <div id="dash-page" class="page-content active">
                 <div id="admin-panel">
                     <div class="admin-header">
-                        <h3 style="margin:0;"><i class="fas fa-tools"></i> จัดการไฟล์</h3>
-                        <div style="display:flex; align-items:center; gap:15px; background:#f8f9fa; padding:8px 15px; border-radius:10px;">
-                            <span style="font-size:12px; font-weight:bold;">ล็อกเว็บ:</span>
-                            <label class="switch"><input type="checkbox" id="globalLock" onchange="toggleGlobalLock()"><span class="slider"></span></label>
+                        <h3 style="margin:0;"><i class="fas fa-tools"></i> Admin Control Panel</h3>
+                        <div class="admin-settings-bar">
+                            <div class="setting-item">
+                                <span style="font-size:12px; font-weight:bold; color:#d35400;">Lock all downloads</span>
+                                <label class="switch"><input type="checkbox" id="globalLock" onchange="toggleGlobalLock()"><span class="slider"></span></label>
+                            </div>
+                            <div class="mini-pass-input">
+                                <input type="text" id="newDownloadPass" placeholder="รหัสผ่านดาวน์โหลดใหม่">
+                                <button onclick="changeDownloadPass()" style="background:var(--primary); color:white; border:none; padding:7px 12px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:bold;">เปลี่ยนรหัส</button>
+                            </div>
                         </div>
                     </div>
+
                     <div class="form-row">
                         <input type="hidden" id="editIndex" value="-1">
                         <div class="input-group">
@@ -105,14 +121,17 @@
                             <input type="text" id="itemName" placeholder="ระบุชื่อไฟล์...">
                         </div>
                         <div class="input-group">
-                            <label>ลิงก์รูปภาพ (Direct Link)</label>
-                            <input type="text" id="itemImg" placeholder="https://...">
+                            <label>ลิงก์รูปภาพ</label>
+                            <input type="text" id="itemImg" placeholder="URL รูปภาพ...">
                         </div>
                         <div class="input-group">
                             <label>ลิงก์ดาวน์โหลด</label>
-                            <input type="text" id="itemLink" placeholder="https://...">
+                            <input type="text" id="itemLink" placeholder="URL ดาวน์โหลด...">
                         </div>
-                        <button onclick="saveItem()" id="btn-save" style="background:var(--success); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; height:41px;">บันทึกข้อมูล</button>
+                        <div class="btn-group">
+                            <button onclick="saveItem()" id="btn-save" class="btn-action" style="background:var(--success);">บันทึก</button>
+                            <button onclick="resetForm()" id="btn-cancel" class="btn-action" style="background:var(--secondary);"><i class="fas fa-times"></i> ยกเลิก</button>
+                        </div>
                     </div>
                 </div>
                 <div id="download-list" class="download-grid"></div>
@@ -180,22 +199,22 @@
                     <div class="admin-controls">
                         <div style="display:flex; align-items:center; gap:5px;">
                             <label class="switch"><input type="checkbox" ${item.locked ? 'checked' : ''} onchange="toggleItemLock(${index})"><span class="slider"></span></label>
-                            <span style="font-size:11px; font-weight:bold; color:#666;">ล็อก</span>
+                            <span style="font-size:11px; font-weight:bold; color:#666;">Lock</span>
                         </div>
-                        <button onclick="editItem(${index})" class="admin-btn-text" style="color:var(--primary);"><i class="fas fa-edit"></i> แก้ไข</button>
-                        <button onclick="deleteItem(${index})" class="admin-btn-text" style="color:var(--danger);"><i class="fas fa-trash"></i> ลบ</button>
+                        <button onclick="editItem(${index})" class="admin-btn-text" style="color:var(--primary);"><i class="fas fa-edit"></i> Edit</button>
+                        <button onclick="deleteItem(${index})" class="admin-btn-text" style="color:var(--danger);"><i class="fas fa-trash"></i> Delete</button>
                     </div>` : '';
 
                 list.innerHTML += `
                     <div class="download-card">
                         <div class="card-img-container" onclick="openImage('${item.img || ''}')">
-                            <img src="${item.img || 'https://via.placeholder.com/300x180?text=No+Image'}">
+                            <img src="${item.img || 'https://via.placeholder.com/300x180?text=Cougar2'}">
                         </div>
                         <div class="download-info">
                             <h4>${item.name}</h4>
                             <button onclick="secureDownload('${item.link}', ${item.locked})" class="btn-download ${effectivelyLocked ? 'is-locked' : 'is-open'}">
                                 <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> 
-                                ${effectivelyLocked ? 'ใส่รหัสผ่าน' : 'Download'}
+                                ${effectivelyLocked ? 'Password Required' : 'Download Now'}
                             </button>
                         </div>
                         ${adminUI}
@@ -213,11 +232,10 @@
                 const newItem = { name, img, link, locked: (index > -1 ? items[index].locked : false) };
                 if (index > -1) { items[index] = newItem; } 
                 else { items.push(newItem); }
-                
                 localStorage.setItem('cougar_final_data', JSON.stringify(items));
                 resetForm();
                 renderItems();
-            } else { alert("กรุณากรอกชื่อและลิงก์โหลด!"); }
+            } else { alert("กรุณากรอกชื่อและลิงก์โหลด"); }
         }
 
         function editItem(index) {
@@ -226,7 +244,7 @@
             document.getElementById('itemImg').value = item.img;
             document.getElementById('itemLink').value = item.link;
             document.getElementById('editIndex').value = index;
-            document.getElementById('btn-save').innerText = "อัปเดตข้อมูล";
+            document.getElementById('btn-save').innerText = "Update";
             document.getElementById('btn-save').style.background = "var(--primary)";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -236,8 +254,17 @@
             document.getElementById('itemImg').value = '';
             document.getElementById('itemLink').value = '';
             document.getElementById('editIndex').value = '-1';
-            document.getElementById('btn-save').innerText = "บันทึกข้อมูล";
+            document.getElementById('btn-save').innerText = "บันทึก";
             document.getElementById('btn-save').style.background = "var(--success)";
+        }
+
+        async function changeDownloadPass() {
+            const p = document.getElementById('newDownloadPass').value;
+            if (p) {
+                localStorage.setItem('custom_download_hash', await hashText(p));
+                alert("เปลี่ยนรหัสผ่านสำเร็จ!");
+                document.getElementById('newDownloadPass').value = '';
+            }
         }
 
         async function secureDownload(link, itemLocked) {
@@ -251,7 +278,7 @@
             } else { window.open(link, '_blank'); }
         }
 
-        function deleteItem(index) { if(confirm("ต้องการลบไฟล์นี้ใช่หรือไม่?")) { items.splice(index, 1); localStorage.setItem('cougar_final_data', JSON.stringify(items)); renderItems(); } }
+        function deleteItem(index) { if(confirm("ต้องการลบ?")) { items.splice(index, 1); localStorage.setItem('cougar_final_data', JSON.stringify(items)); renderItems(); } }
 
         window.onload = () => {
             if (sessionStorage.getItem('isAdmin') === 'true') {
