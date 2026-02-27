@@ -20,28 +20,38 @@
         .top-nav { height: 60px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .main-content { flex: 1; padding: 30px; overflow-y: auto; }
 
-        /* สไตล์สวิตช์สไลด์ (Toggle) */
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        /* สไตล์สวิตช์สไลด์ */
+        .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--warning); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        input:checked + .slider:before { transform: translateX(16px); }
 
-        /* Card & UI */
+        /* Admin Panel จัดระเบียบใหม่ */
+        #admin-panel { display: none; background: white; padding: 20px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; position: relative; }
+        .admin-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        
+        /* โซนมุมขวาบน */
+        .top-right-settings { display: flex; align-items: center; gap: 12px; background: #f8f9fa; padding: 5px 12px; border-radius: 10px; border: 1px solid #eee; }
+        .mini-pass-input { display: flex; gap: 5px; align-items: center; }
+        .mini-pass-input input { padding: 5px 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 12px; width: 100px; }
+        .btn-mini { padding: 5px 10px; font-size: 11px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; }
+
+        /* ช่องกรอกแถวเดียวกัน */
+        .form-row { display: flex; gap: 10px; align-items: flex-end; }
+        .input-group { flex: 1; }
+        .input-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
+        .input-group input { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 13px; }
+
+        /* Card System */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
         .download-info { padding: 20px; text-align: center; }
         .btn-download { display: block; width: 100%; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
         .is-locked { background: var(--warning) !important; color: white; }
         .is-open { background: var(--success); color: white; }
-
-        #admin-panel { display: none; background: white; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; }
-        .input-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        
-        .admin-controls { display: flex; justify-content: center; align-items: center; gap: 15px; padding: 12px; background: #f9f9f9; border-top: 1px solid #eee; }
+        .admin-controls { display: flex; justify-content: center; align-items: center; gap: 15px; padding: 10px; background: #f9f9f9; border-top: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -61,31 +71,29 @@
             <div id="dash-page" class="page-content active">
                 
                 <div id="admin-panel">
-                    <h3><i class="fas fa-cogs"></i> ระบบจัดการไฟล์</h3>
-                    <div class="admin-form-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="itemName"></div>
-                        <div class="input-group"><label>ลิงก์รูป</label><input type="text" id="itemImg"></div>
-                        <div class="input-group" style="grid-column: span 2;"><label>ลิงก์โหลด</label><input type="text" id="itemLink"></div>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                        <button onclick="saveItem()" id="btn-submit-item" style="background:var(--success); color:white; border:none; padding:10px 25px; border-radius:8px; cursor:pointer;">เพิ่มไฟล์</button>
+                    <div class="admin-header">
+                        <h3 style="margin:0; font-size: 16px;"><i class="fas fa-plus-circle"></i> จัดการไฟล์</h3>
                         
-                        <div style="background:#fff3e0; padding:10px 20px; border-radius:10px; border:1px solid #ffe0b2; display:flex; align-items:center; gap:10px;">
-                            <span style="font-weight:bold; color:#e65100;">ล็อกทุกไฟล์:</span>
-                            <label class="switch">
-                                <input type="checkbox" id="globalLock" onchange="toggleGlobalLock()">
-                                <span class="slider"></span>
-                            </label>
+                        <div class="top-right-settings">
+                            <div style="display:flex; align-items:center; gap:6px; border-right: 1px solid #ddd; padding-right: 10px;">
+                                <span style="font-size:11px; font-weight:bold; color:#e65100;">ล็อกทุกไฟล์</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="globalLock" onchange="toggleGlobalLock()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="mini-pass-input">
+                                <input type="text" id="newDownloadPass" placeholder="รหัสใหม่...">
+                                <button onclick="changeDownloadPass()" class="btn-mini">เปลี่ยน</button>
+                            </div>
                         </div>
                     </div>
 
-                    <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; display: flex; gap: 10px; align-items: flex-end;">
-                        <div class="input-group" style="margin:0; flex: 1;">
-                            <label>ตั้งรหัสผ่านดาวน์โหลดใหม่</label>
-                            <input type="text" id="newDownloadPass" placeholder="พิมพ์รหัสที่ต้องการ...">
-                        </div>
-                        <button onclick="changeDownloadPass()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">อัปเดตรหัส</button>
+                    <div class="form-row">
+                        <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="itemName"></div>
+                        <div class="input-group"><label>ลิงก์รูป</label><input type="text" id="itemImg"></div>
+                        <div class="input-group"><label>ลิงก์โหลด</label><input type="text" id="itemLink"></div>
+                        <button onclick="saveItem()" id="btn-submit-item" style="background:var(--success); color:white; border:none; padding:9px 20px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:13px;">เพิ่มไฟล์</button>
                     </div>
                 </div>
 
@@ -153,22 +161,22 @@
             const list = document.getElementById('download-list');
             list.innerHTML = '';
             const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-            document.getElementById('globalLock').checked = isGlobalLocked;
+            if(isAdmin) document.getElementById('globalLock').checked = isGlobalLocked;
 
             items.forEach((item, index) => {
                 const effectivelyLocked = isGlobalLocked || item.locked;
                 const adminUI = isAdmin ? `
                     <div class="admin-controls">
-                        <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:6px;">
                             <label class="switch">
                                 <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="toggleItemLock(${index})">
                                 <span class="slider"></span>
                             </label>
-                            <span style="font-size:12px; font-weight:bold;">ล็อก</span>
+                            <span style="font-size:11px; font-weight:bold;">ล็อก</span>
                         </div>
                         <div style="display:flex; gap:10px; margin-left:auto;">
-                            <button onclick="editItem(${index})" style="border:none; background:none; color:var(--primary); cursor:pointer; font-size:14px;"><i class="fas fa-edit"></i> แก้ไข</button>
-                            <button onclick="deleteItem(${index})" style="border:none; background:none; color:var(--danger); cursor:pointer; font-size:14px;"><i class="fas fa-trash"></i></button>
+                            <button onclick="editItem(${index})" style="border:none; background:none; color:var(--primary); cursor:pointer; font-size:13px;"><i class="fas fa-edit"></i> แก้ไข</button>
+                            <button onclick="deleteItem(${index})" style="border:none; background:none; color:var(--danger); cursor:pointer; font-size:13px;"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>` : '';
 
@@ -176,7 +184,7 @@
                     <div class="download-card">
                         <img src="${item.img || 'https://via.placeholder.com/300x150'}" style="width:100%; height:150px; object-fit:cover;">
                         <div class="download-info">
-                            <h4 style="margin:0 0 10px 0;">${item.name}</h4>
+                            <h4 style="margin:0 0 10px 0; font-size:14px;">${item.name}</h4>
                             <button onclick="secureDownload('${item.link}', ${item.locked})" class="btn-download ${effectivelyLocked ? 'is-locked' : 'is-open'}">
                                 <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> 
                                 ${effectivelyLocked ? 'ใส่รหัสเพื่อโหลด' : 'Download'}
@@ -197,14 +205,21 @@
                 location.reload();
             }
         }
+
         function deleteItem(index) { if(confirm("ลบไฟล์นี้?")) { items.splice(index, 1); localStorage.setItem('cougar_final_data', JSON.stringify(items)); renderItems(); } }
+
         async function changeDownloadPass() {
             const newPass = document.getElementById('newDownloadPass').value;
             if (newPass) {
                 localStorage.setItem('custom_download_hash', await hashText(newPass));
-                alert("เปลี่ยนรหัสผ่านดาวน์โหลดเรียบร้อย!");
+                alert("เปลี่ยนรหัสผ่านเรียบร้อย!");
                 document.getElementById('newDownloadPass').value = '';
             }
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
         }
 
         window.onload = () => {
