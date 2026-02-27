@@ -10,7 +10,6 @@
     <style>
         :root {
             --primary: #3498db;
-            --primary-dark: #2980b9;
             --danger: #e74c3c;
             --success: #27ae60;
             --warning: #f39c12;
@@ -18,9 +17,11 @@
             --bg-body: #f0f2f5;
             --sidebar-width: 260px;
             --top-height: 60px;
-            /* เพิ่มสีสำหรับปุ่มดาวน์โหลดโดยเฉพาะ */
-            --download-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --download-hover: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            
+            /* --- โทนสีใหม่สำหรับปุ่มดาวน์โหลด (Modern Teal-Green) --- */
+            --download-gradient: linear-gradient(135deg, #02aab0 0%, #00cdac 100%);
+            --download-hover: linear-gradient(135deg, #00cdac 0%, #02aab0 100%);
+            --download-shadow: rgba(0, 205, 172, 0.3);
         }
 
         body { display: flex; margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-body); height: 100vh; overflow: hidden; }
@@ -43,55 +44,57 @@
         .page-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Admin Panel */
+        /* Admin Panel Improved UI */
         #admin-panel { display: none; background: #fff; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
         .admin-form-container { display: flex; flex-direction: column; gap: 15px; }
         .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
         .input-group label { font-size: 13px; font-weight: bold; color: #444; }
         .input-group input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; }
         .admin-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        
+        /* Lightbox */
+        .lightbox { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
+        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
 
-        /* Cards */
+        /* Cards & Download Button */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 20px; padding-bottom: 40px; }
         .download-card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); transition: 0.3s; }
         .download-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
         .download-card img { width: 100%; height: 180px; object-fit: cover; cursor: zoom-in; }
         .download-info { padding: 25px; text-align: center; }
         
-        /* ปุ่มดาวน์โหลดใหม่ */
+        /* --- ปรับแต่งปุ่มดาวน์โหลดใหม่ (สีใหม่ + จัดกึ่งกลาง) --- */
         .btn-download { 
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
+            justify-content: center; /* จัดเนื้อหาตรงกลางแนวตั้ง */
+            gap: 10px; /* ระยะห่างระหว่างไอคอนและข้อความ */
             background: var(--download-gradient);
             color: white; 
             text-decoration: none; 
-            padding: 14px; 
+            padding: 14px 20px; 
             border-radius: 12px; 
             font-weight: 600; 
-            width: 100%; 
+            width: 100%; /* เต็มความกว้างการ์ด */
+            box-sizing: border-box; /* กัน padding ดันความกว้างล้น */
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px var(--download-shadow);
             border: none;
+            cursor: pointer;
+            text-align: center; /* สำรองสำหรับการจัดกลาง */
         }
+        
         .btn-download:hover { 
             background: var(--download-hover);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 6px 20px rgba(0, 205, 172, 0.5);
             transform: scale(1.02);
             color: white;
         }
+        
         .btn-download:active { transform: scale(0.98); }
         
         .admin-actions { display: flex; justify-content: center; gap: 15px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
         .admin-actions span { cursor: pointer; font-size: 13px; font-weight: bold; }
-
-        /* Lightbox */
-        .lightbox { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
-        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
-
-        .frame-container { flex: 1; width: 100%; background: white; border-radius: 15px; overflow: hidden; border: 1px solid #ddd; height: 75vh; }
-        iframe { width: 100%; height: 100%; border: 0; }
 
         @media (min-width: 769px) {
             .admin-form-container { flex-direction: row; align-items: flex-end; }
@@ -120,15 +123,15 @@
                 <h1>Obs Docks UI</h1>
                 
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
-                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center;">
                         <i class="fas fa-clock" style="color:var(--success); font-size: 2rem;"></i>
                         <h3 id="clock">00:00</h3><p style="color:#666;">เวลาปัจจุบัน</p>
                     </div>
-                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center;">
                         <i class="fas fa-folder-open" style="color:var(--primary); font-size: 2rem;"></i>
                         <h3 id="file-count">0 รายการ</h3><p style="color:#666;">ไฟล์ในระบบ</p>
                     </div>
-                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center;">
                         <i class="fas fa-shield-alt" id="status-icon" style="color:#ccc; font-size: 2rem;"></i>
                         <h3 id="status-text">Guest</h3><p style="color:#666;">โหมดการใช้งาน</p>
                     </div>
@@ -167,7 +170,7 @@
     </div>
 
     <div id="loginModal" class="modal" style="display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-        <div class="modal-content" style="background:white; padding:30px; border-radius:15px; width:320px; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+        <div class="modal-content" style="background:white; padding:30px; border-radius:15px; width:320px; position:relative;">
             <span onclick="toggleAuthModal()" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:20px;">&times;</span>
             <h3>Admin Login</h3>
             <input type="text" id="adminID" placeholder="ID" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ddd;">
@@ -255,7 +258,7 @@
                 else { items.push({ name, img, link }); }
                 localStorage.setItem('cougar_final_data', JSON.stringify(items));
                 cancelEdit(); renderItems();
-            } else { alert("กรุณากรอกข้อมูลให้ครบ"); }
+            } else { alert("กรุณากรอกข้อมูลให้ครบ (ชื่อและลิงก์ดาวน์โหลด)"); }
         }
 
         function editItem(index) {
