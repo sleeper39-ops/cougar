@@ -109,18 +109,30 @@
 
     <script>
         // ฟังก์ชันแปลงลิงก์ Google Drive ให้เป็น Direct Link สำหรับรูปภาพ
-        function formatDriveLink(url) {
-            if (url.includes('drive.google.com')) {
-                let id = "";
-                if (url.includes('id=')) {
-                    id = url.split('id=')[1].split('&')[0];
-                } else {
-                    id = url.split('/d/')[1].split('/')[0];
-                }
-                return `https://drive.google.com/uc?export=view&id=${id}`;
-            }
-            return url;
+       function formatDriveLink(url) {
+    if (!url || typeof url !== 'string') return '';
+    url = url.trim();
+
+    // ตรวจสอบว่าเป็นลิงก์ Google Drive หรือไม่
+    if (url.includes('drive.google.com')) {
+        let id = "";
+        
+        // ดึง ID จากรูปแบบ /file/d/ID/view (เหมือนลิงก์ที่คุณส่งมา)
+        if (url.includes('/file/d/')) {
+            id = url.split('/file/d/')[1].split('/')[0];
+        } 
+        // ดึง ID จากรูปแบบ ?id=ID
+        else if (url.includes('id=')) {
+            id = url.split('id=')[1].split('&')[0];
         }
+
+        if (id) {
+            // ส่งกลับลิงก์ที่เป็นไฟล์รูปภาพโดยตรงเพื่อให้แสดงผลบนหน้าเว็บได้
+            return `https://drive.google.com/uc?export=view&id=${id}`;
+        }
+    }
+    return url;
+}
 
         let fileItems = JSON.parse(localStorage.getItem('cougar_drive_files')) || [];
 
@@ -187,3 +199,4 @@
     </script>
 </body>
 </html>
+
