@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// ใช้ Config ล่าสุดจากรูปที่ 84 ของคุณ
 const firebaseConfig = {
     apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
     authDomain: "cougar2-database.firebaseapp.com",
@@ -22,18 +21,25 @@ let state = {
     isAdmin: sessionStorage.getItem('isAdmin') === 'true'
 };
 
-// --- ดึงข้อมูลจาก Cloud ---
+// --- 1. การดึงข้อมูล (Real-time Sync) ---
+// บังคับให้ดึงจาก Server เสมอ
 onValue(itemsRef, (snapshot) => {
     const data = snapshot.val();
-    state.items = Array.isArray(data) ? data : []; 
-    console.log("Sync Complete. Items:", state.items.length);
+    console.log("📡 ข้อมูลจาก Cloud อัปเดตแล้ว:", data);
+    
+    // ตรวจสอบข้อมูล: ถ้าบน Cloud เป็น null ต้องแสดงเป็นลิสต์ว่าง
+    state.items = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+    
     window.renderItems();
     window.updateDashboard();
 }, (error) => {
-    console.error("Firebase Sync Error:", error);
+    console.error("❌ Firebase Sync Error:", error);
+    if (error.code === 'PERMISSION_DENIED') {
+        alert("⚠️ เครื่องนี้ไม่มีสิทธิ์อ่านข้อมูล! กรุณาเช็ก Rules ใน Firebase");
+    }
 });
 
-// --- ฟังก์ชันบันทึกข้อมูล (ปรับปรุงใหม่) ---
+// --- 2. การบันทึกข้อมูล (Force Write to Cloud) ---
 window.saveItem = async function() {
     const nameEl = document.getElementById('itemName');
     const linkEl = document.getElementById('itemLink');
@@ -55,36 +61,76 @@ window.saveItem = async function() {
         else updatedItems.push(itemData);
 
         try {
+            // ใช้ await เพื่อรอให้ส่งข้อมูลสำเร็จจริงๆ
             await set(itemsRef, updatedItems);
-            alert("✅ บันทึกสำเร็จ! ข้อมูลถูกส่งไป Cloud แล้ว");
+            console.log("✅ Data sent to Cloud successfully!");
+            alert("✅ บันทึกสำเร็จ! ตอนนี้ทุกเครื่องจะเห็นข้อมูลแล้ว");
             window.resetForm();
         } catch (err) {
-            console.error("Save Error:", err);
-            alert("❌ บันทึกไม่ได้! สาเหตุ: " + (err.code === 'PERMISSION_DENIED' ? "ยังไม่ได้กด Publish Rules ใน Firebase" : err.message));
+            console.error("🔥 Save Error:", err);
+            // แจ้งสาเหตุที่แท้จริง
+            if (err.code === 'PERMISSION_DENIED') {
+                alert("❌ บันทึกไม่ได้! เพราะ 'Rules' ใน Firebase ยังไม่ได้กด Publish");
+            } else {
+                alert("❌ บันทึกไม่สำเร็จ: " + err.message);
+            }
         }
     } else {
         alert("กรุณากรอกชื่อและลิงก์");
     }
 };
 
+// --- 3. ส่วนการแสดงผล (UI) ---
 window.renderItems = function() {
     const list = document.getElementById('download-list');
-    if (!list) return; // ป้องกัน Crash ใน Screenshot 81
+    if (!list) return;
     
+    if (state.items.length === 0) {
+        list.innerHTML = '<p style="text-align:center; color:gray;">ไม่มีข้อมูลในระบบ (Cloud is empty)</p>';
+        return;
+    }
+
     list.innerHTML = state.items.map((item, index) => `
         <div class="download-card">
-            <div class="card-img-container"><img src="${item.img}" onerror="this.src='https://via.placeholder.com/300x180?text=Error'"></div>
+            <div class="card-img-container">
+                <img src="${item.img}" onerror="this.src='https://via.placeholder.com/300x180?text=Error'">
+            </div>
             <div class="download-info">
                 <h4>${item.name}</h4>
                 <button onclick="window.open('${item.link}', '_blank')" class="btn-download is-open">Download</button>
             </div>
             ${state.isAdmin ? `
-                <div class="admin-controls">
-                    <button onclick="window.editItem(${index})">Edit</button>
-                    <button onclick="window.deleteItem(${index})" style="color:red">Delete</button>
+                <div class="admin-controls" style="padding:10px; border-top:1px solid #eee;">
+                    <button onclick="window.editItem(${index})" style="color:blue; background:none; border:none; cursor:pointer;">Edit</button>
+                    <button onclick="window.deleteItem(${index})" style="color:red; background:none; border:none; cursor:pointer; margin-left:10px;">Delete</button>
                 </div>` : ''}
         </div>
     `).join('');
+};
+
+// --- 4. ฟังก์ชันเสริมอื่นๆ ---
+window.deleteItem = async function(index) {
+    if (confirm("ต้องการลบรายการนี้ใช่หรือไม่?")) {
+        let updatedItems = [...state.items];
+        updatedItems.splice(index, 1);
+        try {
+            await set(itemsRef, updatedItems);
+        } catch (err) {
+            alert("ลบไม่สำเร็จ: " + err.message);
+        }
+    }
+};
+
+window.editItem = function(index) {
+    const item = state.items[index];
+    if (item) {
+        document.getElementById('itemName').value = item.name;
+        document.getElementById('itemLink').value = item.link;
+        document.getElementById('itemImg').value = item.img;
+        document.getElementById('editIndex').value = index;
+        document.getElementById('btn-save').innerText = "Update Data";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 };
 
 window.updateDashboard = function() {
@@ -101,6 +147,8 @@ window.resetForm = function() {
     });
     const idxEl = document.getElementById('editIndex');
     if(idxEl) idxEl.value = '-1';
+    const btn = document.getElementById('btn-save');
+    if(btn) btn.innerText = "บันทึก";
 };
 
 window.performLogin = function() {
