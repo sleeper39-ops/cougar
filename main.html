@@ -41,7 +41,7 @@
         .input-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; }
         .input-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         
-        .admin-controls { display: flex; justify-content: center; align-items: center; gap: 20px; padding: 10px; background: #f9f9f9; border-radius: 10px; }
+        .admin-controls { display: flex; justify-content: center; align-items: center; gap: 15px; padding: 12px; background: #f9f9f9; border-top: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -72,7 +72,7 @@
                         <button onclick="saveItem()" id="btn-submit-item" style="background:var(--success); color:white; border:none; padding:10px 25px; border-radius:8px; cursor:pointer;">เพิ่มไฟล์</button>
                         
                         <div style="background:#fff3e0; padding:10px 20px; border-radius:10px; border:1px solid #ffe0b2; display:flex; align-items:center; gap:10px;">
-                            <span style="font-weight:bold; color:#e65100;">ล็อกทุกไฟล์ในระบบ:</span>
+                            <span style="font-weight:bold; color:#e65100;">ล็อกทุกไฟล์:</span>
                             <label class="switch">
                                 <input type="checkbox" id="globalLock" onchange="toggleGlobalLock()">
                                 <span class="slider"></span>
@@ -81,8 +81,11 @@
                     </div>
 
                     <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; display: flex; gap: 10px; align-items: flex-end;">
-                        <div class="input-group" style="margin:0;"><label>รหัสผ่านดาวน์โหลด</label><input type="text" id="newDownloadPass" placeholder="ค่าเดิม 1234"></div>
-                        <button onclick="changeDownloadPass()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;">เปลี่ยนรหัส</button>
+                        <div class="input-group" style="margin:0; flex: 1;">
+                            <label>ตั้งรหัสผ่านดาวน์โหลดใหม่</label>
+                            <input type="text" id="newDownloadPass" placeholder="พิมพ์รหัสที่ต้องการ...">
+                        </div>
+                        <button onclick="changeDownloadPass()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">อัปเดตรหัส</button>
                     </div>
                 </div>
 
@@ -100,7 +103,7 @@
     </div>
 
     <script>
-        const HASH_CONFIG = { dl: "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4" }; // 1234
+        const HASH_CONFIG = { dl: "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4" };
         let items = JSON.parse(localStorage.getItem('cougar_final_data')) || [];
         let isGlobalLocked = JSON.parse(localStorage.getItem('global_lock')) || false;
 
@@ -118,7 +121,7 @@
         }
 
         function handleLogin() {
-            if (document.getElementById('adminPass').value === 'admin2') { // รหัสผ่านเข้าหน้า admin
+            if (document.getElementById('adminPass').value === 'admin2') {
                 sessionStorage.setItem('isAdmin', 'true'); location.reload();
             } else { alert("รหัสผ่านผิด"); }
         }
@@ -136,17 +139,14 @@
         }
 
         async function secureDownload(link, itemLocked) {
-            // ถ้า Master Lock เปิดอยู่ หรือ ไฟล์นั้นถูกล็อกรายตัว
             if (isGlobalLocked || itemLocked) {
-                const pass = prompt("ไฟล์นี้ถูกล็อก กรุณาใส่รหัสผ่าน:");
+                const pass = prompt("กรุณาใส่รหัสผ่าน:");
                 if (!pass) return;
                 const hashedInput = await hashText(pass);
                 const currentHash = localStorage.getItem('custom_download_hash') || HASH_CONFIG.dl;
                 if (hashedInput === currentHash) { window.open(link, '_blank'); } 
-                else { alert("รหัสผ่านไม่ถูกต้อง"); }
-            } else {
-                window.open(link, '_blank');
-            }
+                else { alert("รหัสไม่ถูกต้อง"); }
+            } else { window.open(link, '_blank'); }
         }
 
         function renderItems() {
@@ -159,15 +159,17 @@
                 const effectivelyLocked = isGlobalLocked || item.locked;
                 const adminUI = isAdmin ? `
                     <div class="admin-controls">
-                        <div style="display:flex; align-items:center; gap:5px;">
-                            <span style="font-size:11px;">ล็อกไฟล์:</span>
+                        <div style="display:flex; align-items:center; gap:8px;">
                             <label class="switch">
                                 <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="toggleItemLock(${index})">
                                 <span class="slider"></span>
                             </label>
+                            <span style="font-size:12px; font-weight:bold;">ล็อก</span>
                         </div>
-                        <button onclick="editItem(${index})" style="border:none; background:none; color:var(--primary); cursor:pointer;"><i class="fas fa-edit"></i> แก้ไข</button>
-                        <button onclick="deleteItem(${index})" style="border:none; background:none; color:var(--danger); cursor:pointer;"><i class="fas fa-trash"></i></button>
+                        <div style="display:flex; gap:10px; margin-left:auto;">
+                            <button onclick="editItem(${index})" style="border:none; background:none; color:var(--primary); cursor:pointer; font-size:14px;"><i class="fas fa-edit"></i> แก้ไข</button>
+                            <button onclick="deleteItem(${index})" style="border:none; background:none; color:var(--danger); cursor:pointer; font-size:14px;"><i class="fas fa-trash"></i></button>
+                        </div>
                     </div>` : '';
 
                 list.innerHTML += `
@@ -177,15 +179,14 @@
                             <h4 style="margin:0 0 10px 0;">${item.name}</h4>
                             <button onclick="secureDownload('${item.link}', ${item.locked})" class="btn-download ${effectivelyLocked ? 'is-locked' : 'is-open'}">
                                 <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> 
-                                ${effectivelyLocked ? 'ต้องใช้รหัสผ่าน' : 'ดาวน์โหลดฟรี'}
+                                ${effectivelyLocked ? 'ใส่รหัสเพื่อโหลด' : 'Download'}
                             </button>
-                            ${adminUI}
                         </div>
+                        ${adminUI}
                     </div>`;
             });
         }
 
-        // --- ฟังชั่นพื้นฐาน ---
         function saveItem() {
             const name = document.getElementById('itemName').value;
             const img = document.getElementById('itemImg').value;
@@ -201,7 +202,8 @@
             const newPass = document.getElementById('newDownloadPass').value;
             if (newPass) {
                 localStorage.setItem('custom_download_hash', await hashText(newPass));
-                alert("เปลี่ยนรหัสผ่านดาวน์โหลดสำเร็จ!");
+                alert("เปลี่ยนรหัสผ่านดาวน์โหลดเรียบร้อย!");
+                document.getElementById('newDownloadPass').value = '';
             }
         }
 
