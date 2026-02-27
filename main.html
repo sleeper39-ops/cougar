@@ -19,30 +19,19 @@
             --top-height: 60px;
             --download-gradient: linear-gradient(135deg, #02aab0 0%, #00cdac 100%);
             --download-hover: linear-gradient(135deg, #00cdac 0%, #02aab0 100%);
+            --lock-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
             --download-shadow: rgba(0, 205, 172, 0.3);
         }
 
         body { display: flex; margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-body); height: 100vh; overflow: hidden; }
 
-        /* Sidebar */
         .sidebar { width: var(--sidebar-width); background: var(--bg-dark); color: white; padding: 25px 15px; display: flex; flex-direction: column; z-index: 10; }
         .sidebar h2 { color: var(--primary); text-align: center; margin-bottom: 40px; font-size: 1.8rem; letter-spacing: 2px; }
         .sidebar a { color: #bbb; text-decoration: none; padding: 14px 20px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
         .sidebar a:hover, .sidebar a.active { background: var(--primary); color: white; }
 
-        /* Main Area */
         .wrapper { flex: 1; display: flex; flex-direction: column; position: relative; }
-        
-        .top-nav { 
-            height: var(--top-height); 
-            background: white; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0 30px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            z-index: 5;
-        }
+        .top-nav { height: var(--top-height); background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 5; }
         .nav-title { font-size: 1.25rem; font-weight: bold; color: #333; margin: 0; }
 
         .btn-auth { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
@@ -52,12 +41,8 @@
         .main-content { flex: 1; padding: 30px; overflow-y: auto; }
         .page-content { display: none; animation: fadeIn 0.4s ease; height: 100%; }
         .page-content.active { display: block; }
-        #live-page, #map-page, #calendar-page { height: calc(100vh - var(--top-height) - 60px); }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .frame-container { width: 100%; height: 100%; background: white; border-radius: 15px; overflow: hidden; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        iframe { width: 100%; height: 100%; border: none; display: block; }
 
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 20px; padding-bottom: 40px; }
         .download-card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); transition: 0.3s; }
@@ -66,21 +51,26 @@
         .download-info { padding: 25px; text-align: center; }
         
         .btn-download { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: var(--download-gradient); color: white; text-decoration: none; padding: 14px 20px; border-radius: 12px; font-weight: 600; width: 100%; box-sizing: border-box; transition: all 0.3s ease; box-shadow: 0 4px 15px var(--download-shadow); border: none; cursor: pointer; }
-        .btn-download:hover { background: var(--download-hover); box-shadow: 0 6px 20px rgba(0, 205, 172, 0.5); transform: scale(1.02); color: white; }
+        .btn-download.locked { background: var(--lock-gradient); box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3); }
+        .btn-download:hover { transform: scale(1.02); color: white; opacity: 0.9; }
         
         #admin-panel { display: none; background: #fff; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
         .admin-form-container { display: flex; flex-direction: column; gap: 15px; }
         .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
         .input-group label { font-size: 13px; font-weight: bold; color: #444; }
         .input-group input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; }
-        .admin-buttons { display: flex; gap: 10px; margin-top: 10px; }
-        .admin-actions { display: flex; justify-content: center; gap: 15px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
-        .admin-actions span { cursor: pointer; font-size: 13px; font-weight: bold; }
+
+        /* Switch Toggle */
+        .switch-container { display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px 15px; border-radius: 8px; border: 1px solid #eee; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--warning); }
+        input:checked + .slider:before { transform: translateX(18px); }
 
         .lightbox { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
         .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
-
-        @media (min-width: 769px) { .admin-form-container { flex-direction: row; align-items: flex-end; } }
     </style>
 </head>
 <body>
@@ -121,31 +111,37 @@
                 <div id="admin-panel">
                     <h3 id="panel-title"><i class="fas fa-plus-circle"></i> จัดการไฟล์ข้อมูล</h3>
                     <div class="admin-form-container">
-                        <div class="input-group">
-                            <label><i class="fas fa-tag"></i> ชื่อรายการ</label>
-                            <input type="text" id="itemName" placeholder="ระบุชื่อ">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-image"></i> ลิงก์รูปภาพ</label>
-                            <input type="text" id="itemImg" placeholder="https://...">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-link"></i> ลิงก์ดาวน์โหลด</label>
-                            <input type="text" id="itemLink" placeholder="https://...">
+                        <div class="input-group"><label>ชื่อรายการ</label><input type="text" id="itemName"></div>
+                        <div class="input-group"><label>ลิงก์รูปภาพ</label><input type="text" id="itemImg"></div>
+                        <div class="input-group"><label>ลิงก์ดาวน์โหลด</label><input type="text" id="itemLink"></div>
+                        <div class="switch-container">
+                            <label class="switch"><input type="checkbox" id="itemLocked"><span class="slider"></span></label>
+                            <span style="font-size: 13px; font-weight: bold;">ล็อกรหัสผ่านก่อนดาวน์โหลด</span>
                         </div>
                         <input type="hidden" id="editIndex" value="-1">
-                        <div class="admin-buttons">
-                            <button id="btn-submit-item" style="background:var(--success); color:white; border:none; padding:12px 20px; border-radius:8px; cursor:pointer; font-weight:bold;" onclick="saveItem()">บันทึก</button>
+                        <div style="display:flex; gap:10px;">
+                            <button id="btn-submit-item" style="background:var(--success); color:white; border:none; padding:12px 20px; border-radius:8px; cursor:pointer; font-weight:bold;" onclick="saveItem()">บันทึกรายการ</button>
                             <button id="btn-cancel-edit" style="display:none; background:#888; color:white; border:none; padding:12px 20px; border-radius:8px; cursor:pointer;" onclick="cancelEdit()">ยกเลิก</button>
                         </div>
                     </div>
+
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px dashed var(--primary); display: flex; align-items: center; gap: 15px;">
+                        <div class="input-group" style="max-width: 250px;">
+                            <label><i class="fas fa-key"></i> ตั้งรหัสผ่านดาวน์โหลดใหม่</label>
+                            <input type="text" id="newDownloadPass" placeholder="พิมพ์รหัสใหม่ที่นี่..." style="padding: 8px;">
+                        </div>
+                        <button onclick="changeDownloadPass()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 20px;">
+                            อัปเดตรหัสโหลดไฟล์
+                        </button>
+                    </div>
                 </div>
+                
                 <div id="download-list" class="download-grid"></div>
             </div>
 
-            <div id="live-page" class="page-content"><div class="frame-container"><iframe src="cctv.html"></iframe></div></div>
-            <div id="map-page" class="page-content"><div class="frame-container"><iframe src="map.html"></iframe></div></div>
-            <div id="calendar-page" class="page-content"><div class="frame-container"><iframe src="calendar.html"></iframe></div></div>
+            <div id="live-page" class="page-content" style="height:80vh;"><iframe src="cctv.html" style="width:100%; height:100%; border-radius:15px; border:none;"></iframe></div>
+            <div id="map-page" class="page-content" style="height:80vh;"><iframe src="map.html" style="width:100%; height:100%; border-radius:15px; border:none;"></iframe></div>
+            <div id="calendar-page" class="page-content" style="height:80vh;"><iframe src="calendar.html" style="width:100%; height:100%; border-radius:15px; border:none;"></iframe></div>
         </div>
     </div>
 
@@ -153,27 +149,12 @@
         <div class="modal-content" style="background:white; padding:30px; border-radius:15px; width:320px; position:relative;">
             <span onclick="toggleAuthModal()" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:20px;">&times;</span>
             <h3 style="margin-top:0;">Admin Login</h3>
-            
-            <form autocomplete="off" onsubmit="return false;">
-                <input type="text" id="auth_u_key" autocomplete="off" placeholder="ID" style="width:100%; padding:10px; margin:10px 0 5px 0; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
-                <input type="password" id="auth_p_key" autocomplete="new-password" onkeydown="if(event.key==='Enter') handleLogin()" placeholder="Password" style="width:100%; padding:10px; margin:5px 0; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
-                
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px; cursor: pointer;">
-                    <input type="checkbox" id="rememberMe" style="cursor: pointer;">
-                    <label for="rememberMe" style="font-size: 12px; color: #666; cursor: pointer;">จดจำ ID และรหัสผ่าน</label>
-                </div>
-
-                <button type="button" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-bottom: 15px;" onclick="handleLogin()">เข้าสู่ระบบ</button>
-            </form>
-
-            <div style="border-top: 1px dashed #ccc; padding-top: 15px;">
-                <p style="font-size: 11px; color: #888; margin-bottom: 5px; text-align: center;">ลืมรหัสผ่าน? ใส่คีย์เวิร์ดกู้คืน</p>
-                <div style="display: flex; gap: 5px;">
-                    <input type="text" id="recoveryKey" autocomplete="off" placeholder="คีย์เวิร์ด..." style="flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ddd; font-size: 12px;">
-                    <button onclick="checkKeyword()" style="background: #34495e; color: white; border: none; padding: 0 12px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold;">
-                        กู้คืน
-                    </button>
-                </div>
+            <input type="text" id="auth_u_key" placeholder="ID" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+            <input type="password" id="auth_p_key" placeholder="Password" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+            <button style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;" onclick="handleLogin()">เข้าสู่ระบบ</button>
+            <div style="margin-top:15px; border-top:1px dashed #eee; padding-top:10px;">
+                <input type="text" id="recoveryKey" placeholder="คีย์เวิร์ดกู้คืน..." style="width:100%; padding:8px; border-radius:5px; border:1px solid #ddd; font-size:12px; box-sizing:border-box;">
+                <button onclick="checkKeyword()" style="width:100%; margin-top:5px; background:#34495e; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer; font-size:12px;">กู้คืนรหัสผ่าน</button>
             </div>
         </div>
     </div>
@@ -181,7 +162,7 @@
     <div id="imgLightbox" class="lightbox" onclick="closeLightbox()"><img id="lightboxImg" src=""></div>
 
     <script>
-        // --- ส่วนความปลอดภัย: การเข้ารหัส SHA-256 ---
+        // SHA-256 Hashing System
         async function hashText(text) {
             const encoder = new TextEncoder();
             const data = encoder.encode(text);
@@ -189,11 +170,11 @@
             return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        // รหัส Hash ที่ผ่านการคำนวณมาแล้ว (ความลับ)
         const HASH_CONFIG = {
-            u: "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918", // 'admin'
-            p: "1729221147d3388701e19488347f3b3924df39c59573887c936746973e8f85f5", // 'admin2'
-            k: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"  // 'password'
+            u: "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918", // admin
+            p: "1729221147d3388701e19488347f3b3924df39c59573887c936746973e8f85f5", // admin2
+            k: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8", // password
+            dl: "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4" // 1234 (Default)
         };
 
         let items = JSON.parse(localStorage.getItem('cougar_final_data')) || [];
@@ -205,71 +186,46 @@
             if (sessionStorage.getItem('isAdmin') === 'true') {
                 if(confirm("ออกจากระบบ Admin?")) { sessionStorage.removeItem('isAdmin'); location.reload(); }
             } else {
-                const modal = document.getElementById('loginModal');
-                modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
-                document.getElementById('recoveryKey').value = "";
-                document.getElementById('auth_u_key').value = "";
-                document.getElementById('auth_p_key').value = "";
-
-                const savedID = localStorage.getItem('remembered_id');
-                const savedPass = localStorage.getItem('remembered_pass');
-                if(savedID && savedPass) {
-                    document.getElementById('auth_u_key').value = savedID;
-                    document.getElementById('auth_p_key').value = savedPass;
-                    document.getElementById('rememberMe').checked = true;
-                } else {
-                    document.getElementById('rememberMe').checked = false;
-                }
+                document.getElementById('loginModal').style.display = 'flex';
             }
         }
 
         async function handleLogin() {
-            const id = document.getElementById('auth_u_key').value;
-            const pass = document.getElementById('auth_p_key').value;
-            const isRemember = document.getElementById('rememberMe').checked;
-
-            // ตรวจสอบข้อมูลด้วยการเทียบ Hash
-            const typedIDHash = await hashText(id);
-            const typedPassHash = await hashText(pass);
-
-            if (typedIDHash === HASH_CONFIG.u && typedPassHash === HASH_CONFIG.p) {
-                if(isRemember) {
-                    localStorage.setItem('remembered_id', id);
-                    localStorage.setItem('remembered_pass', pass);
-                } else {
-                    localStorage.removeItem('remembered_id');
-                    localStorage.removeItem('remembered_pass');
-                }
-                sessionStorage.setItem('isAdmin', 'true'); 
-                location.reload();
-            } else { 
-                alert("ID หรือรหัสผ่านไม่ถูกต้อง"); 
-            }
+            const id = await hashText(document.getElementById('auth_u_key').value);
+            const pass = await hashText(document.getElementById('auth_p_key').value);
+            if (id === HASH_CONFIG.u && pass === HASH_CONFIG.p) {
+                sessionStorage.setItem('isAdmin', 'true'); location.reload();
+            } else { alert("ข้อมูลไม่ถูกต้อง"); }
         }
 
         async function checkKeyword() {
-            const key = document.getElementById('recoveryKey').value;
-            if (key === "") return alert("กรุณาใส่คีย์เวิร์ดก่อนครับ");
+            const key = await hashText(document.getElementById('recoveryKey').value);
+            if (key === HASH_CONFIG.k) {
+                const currentRawPass = localStorage.getItem('raw_download_pass') || "1234";
+                alert(`✅ คีย์เวิร์ดถูกต้อง!\n\nID: admin\nPassword: admin2\n\nDownload Pass ล่าสุด: ${currentRawPass}`);
+            } else { alert("❌ คีย์เวิร์ดไม่ถูกต้อง!"); }
+        }
 
-            const typedKeyHash = await hashText(key);
-
-            if (typedKeyHash === HASH_CONFIG.k) {
-                alert("✅ คีย์เวิร์ดถูกต้อง!\n\nID: admin\nPassword: admin2");
-                document.getElementById('recoveryKey').value = "";
-            } else {
-                alert("❌ คีย์เวิร์ดไม่ถูกต้อง!");
+        async function changeDownloadPass() {
+            const newPass = document.getElementById('newDownloadPass').value;
+            if (!newPass) return alert("กรุณากรอกรหัสผ่านใหม่");
+            if (confirm(`ยืนยันการเปลี่ยนรหัสผ่านดาวน์โหลดเป็น: ${newPass}`)) {
+                const hashedPass = await hashText(newPass);
+                localStorage.setItem('custom_download_hash', hashedPass);
+                localStorage.setItem('raw_download_pass', newPass);
+                alert("✅ อัปเดตเรียบร้อย!");
+                document.getElementById('newDownloadPass').value = "";
             }
         }
 
-        function formatDriveLink(url) {
-            if (!url) return 'https://via.placeholder.com/300x200?text=No+Image';
-            if (url.includes('drive.google.com')) {
-                let id = "";
-                if (url.includes('/d/')) id = url.split('/d/')[1].split('/')[0];
-                else if (url.includes('id=')) id = url.split('id=')[1].split('&')[0];
-                return id ? `https://drive.google.com/uc?export=view&id=${id}` : url;
-            }
-            return url;
+        async function secureDownload(link, isLocked) {
+            if (!isLocked) { window.open(link, '_blank'); return; }
+            const pass = prompt("กรุณาใส่รหัสผ่านเพื่อดาวน์โหลด:");
+            if (!pass) return;
+            const hashedInput = await hashText(pass);
+            const currentHash = localStorage.getItem('custom_download_hash') || HASH_CONFIG.dl;
+            if (hashedInput === currentHash) { window.open(link, '_blank'); } 
+            else { alert("❌ รหัสไม่ถูกต้อง!"); }
         }
 
         function renderItems() {
@@ -279,9 +235,21 @@
             const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 
             items.forEach((item, index) => {
-                let adminUI = isAdmin ? `<div class="admin-actions"><span style="color:var(--warning)" onclick="editItem(${index})"><i class="fas fa-edit"></i> แก้ไข</span><span style="color:var(--danger)" onclick="deleteItem(${index})"><i class="fas fa-trash"></i> ลบ</span></div>` : '';
-                const imgSrc = formatDriveLink(item.img);
-                list.innerHTML += `<div class="download-card"><img src="${imgSrc}" onclick="openLightbox('${imgSrc}')"><div class="download-info"><h3 style="margin:0 0 20px 0; font-size: 1.1rem;">${item.name}</h3><a href="${item.link}" target="_blank" class="btn-download"><i class="fas fa-cloud-download-alt"></i> Download</a>${adminUI}</div></div>`;
+                const adminUI = isAdmin ? `<div style="margin-top:10px; display:flex; justify-content:center; gap:15px; border-top:1px solid #eee; padding-top:10px;"><span style="color:var(--warning); cursor:pointer; font-weight:bold; font-size:13px;" onclick="editItem(${index})"><i class="fas fa-edit"></i></span><span style="color:var(--danger); cursor:pointer; font-weight:bold; font-size:13px;" onclick="deleteItem(${index})"><i class="fas fa-trash"></i></span></div>` : '';
+                const lockIcon = item.locked ? '<i class="fas fa-lock"></i> ' : '<i class="fas fa-cloud-download-alt"></i> ';
+                const btnClass = item.locked ? 'btn-download locked' : 'btn-download';
+                
+                list.innerHTML += `
+                    <div class="download-card">
+                        <img src="${item.img || 'https://via.placeholder.com/300x180'}" onclick="openLightbox(this.src)">
+                        <div class="download-info">
+                            <h3 style="margin:0 0 15px 0; font-size:1rem;">${item.name}</h3>
+                            <button onclick="secureDownload('${item.link}', ${item.locked})" class="${btnClass}">
+                                ${lockIcon} ${item.locked ? 'ใส่รหัสเพื่อโหลด' : 'Download'}
+                            </button>
+                            ${adminUI}
+                        </div>
+                    </div>`;
             });
         }
 
@@ -289,10 +257,11 @@
             const name = document.getElementById('itemName').value;
             const img = document.getElementById('itemImg').value;
             const link = document.getElementById('itemLink').value;
+            const locked = document.getElementById('itemLocked').checked;
             const editIdx = parseInt(document.getElementById('editIndex').value);
             if (name && link) {
-                if (editIdx > -1) { items[editIdx] = { name, img, link }; } 
-                else { items.push({ name, img, link }); }
+                const newItem = { name, img, link, locked };
+                if (editIdx > -1) items[editIdx] = newItem; else items.push(newItem);
                 localStorage.setItem('cougar_final_data', JSON.stringify(items));
                 cancelEdit(); renderItems();
             } else { alert("กรุณากรอกข้อมูลให้ครบ"); }
@@ -303,20 +272,20 @@
             document.getElementById('itemName').value = item.name;
             document.getElementById('itemImg').value = item.img;
             document.getElementById('itemLink').value = item.link;
+            document.getElementById('itemLocked').checked = item.locked || false;
             document.getElementById('editIndex').value = index;
-            document.getElementById('panel-title').innerHTML = '<i class="fas fa-edit"></i> กำลังแก้ไขข้อมูล';
             document.getElementById('btn-submit-item').innerText = "อัปเดต";
             document.getElementById('btn-cancel-edit').style.display = "inline-block";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({top:0, behavior:'smooth'});
         }
 
         function cancelEdit() {
             document.getElementById('itemName').value = ''; document.getElementById('itemImg').value = ''; document.getElementById('itemLink').value = '';
-            document.getElementById('editIndex').value = '-1'; document.getElementById('panel-title').innerHTML = '<i class="fas fa-plus-circle"></i> เพิ่มไฟล์ใหม่';
-            document.getElementById('btn-submit-item').innerText = "บันทึก"; document.getElementById('btn-cancel-edit').style.display = "none";
+            document.getElementById('itemLocked').checked = false; document.getElementById('editIndex').value = '-1';
+            document.getElementById('btn-submit-item').innerText = "บันทึกรายการ"; document.getElementById('btn-cancel-edit').style.display = "none";
         }
 
-        function deleteItem(index) { if(confirm("ยืนยันการลบ?")) { items.splice(index, 1); localStorage.setItem('cougar_final_data', JSON.stringify(items)); renderItems(); } }
+        function deleteItem(index) { if(confirm("ลบรายการนี้?")) { items.splice(index, 1); localStorage.setItem('cougar_final_data', JSON.stringify(items)); renderItems(); } }
 
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
@@ -335,7 +304,7 @@
                 btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> <span>Logout Admin</span>';
             }
             renderItems();
-            setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'}); }, 1000);
+            setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'}); }, 1000);
         };
     </script>
 </body>
