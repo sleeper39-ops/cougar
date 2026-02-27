@@ -1,24 +1,22 @@
-// 1. ส่วนเก็บข้อมูลผู้ใช้ (เพิ่ม/ลด/แก้ไข ตรงนี้ได้เลย)
-const users = [
-    { id: "admin", pass: "admin2" },
-    { id: "user1", pass: "1234" }, // ตัวอย่างการเพิ่ม ID ใหม่
-    { id: "tapo_manager", pass: "parking99" }
-];
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-// 2. ฟังก์ชันตรวจสอบการ Login
-function checkLogin() {
-    const userIn = document.getElementById("username").value;
-    const passIn = document.getElementById("password").value;
-    const msg = document.getElementById("msg");
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
+  authDomain: "cougar2-database.firebaseapp.com",
+  databaseURL: "https://cougar2-database-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "cougar2-database",
+  storageBucket: "cougar2-database.firebasestorage.app",
+  messagingSenderId: "429808185249",
+  appId: "1:429808185249:web:4afa08e0a7a973b00d25e0",
+  measurementId: "G-VKV5N9GBFX"
+};
 
-    // ตรวจสอบว่า ID และ Pass ตรงกับในรายการที่มีไหม
-    const foundUser = users.find(u => u.id === userIn && u.pass === passIn);
-
-    if (foundUser) {
-        // ถ้าถูก ให้ไปหน้า main.html
-        window.location.href = "main.html"; 
-    } else {
-        msg.innerText = "ID หรือ Password ไม่ถูกต้อง!";
-    }
-}
-
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
