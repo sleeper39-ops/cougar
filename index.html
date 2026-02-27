@@ -76,15 +76,21 @@
 </head>
 <body>
 
-    <div id="loginModal" class="modal-overlay">
-        <div class="login-card">
-            <h3><i class="fas fa-user-shield"></i> Admin Login</h3>
-            <input type="text" id="loginUser" class="login-input" placeholder="Username">
-            <input type="password" id="loginPass" class="login-input" placeholder="Password">
-            <button onclick="window.performLogin()" class="btn-login">เข้าสู่ระบบ</button>
-            <button onclick="document.getElementById('loginModal').style.display='none'" style="background:none; border:none; color:#999; margin-top:15px; cursor:pointer;">ยกเลิก</button>
+    <div id="loginModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-user-shield"></i> Admin Login</h3>
+        <input type="text" id="loginUser" placeholder="Username">
+        <input type="password" id="loginPass" placeholder="Password">
+        
+        <button onclick="window.performLogin()" class="btn-login" style="background: var(--primary); color: white; width: 100%; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;">เข้าสู่ระบบ</button>
+        
+        <div style="margin-top: 15px; text-align: center;">
+            <a href="javascript:void(0)" onclick="window.forgotPassword()" style="color: var(--primary); text-decoration: none; font-size: 13px; font-weight: bold;">ลืมรหัสผ่าน?</a>
         </div>
+
+        <button onclick="document.getElementById('loginModal').style.display='none'" class="btn-text" style="margin-top: 10px;">ยกเลิก</button>
     </div>
+</div>
 
     <div class="sidebar">
         <h2>Cougar2</h2>
@@ -161,3 +167,4 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
