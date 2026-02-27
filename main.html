@@ -161,15 +161,28 @@
         }
 
         function formatDriveLink(url) {
-            if (!url) return 'https://via.placeholder.com/300x200?text=No+Image';
-            if (url.includes('drive.google.com')) {
-                let id = "";
-                if (url.includes('/d/')) id = url.split('/d/')[1].split('/')[0];
-                else if (url.includes('id=')) id = url.split('id=')[1].split('&')[0];
-                return id ? `https://drive.google.com/uc?export=view&id=${id}` : url;
-            }
-            return url;
+    if (!url || typeof url !== 'string') return 'https://via.placeholder.com/300x200?text=No+Image';
+    url = url.trim();
+
+    if (url.includes('drive.google.com')) {
+        let id = "";
+        
+        // รองรับลิงก์แบบ /file/d/รหัสไฟล์/view
+        if (url.includes('/file/d/')) {
+            id = url.split('/file/d/')[1].split('/')[0];
+        } 
+        // รองรับลิงก์แบบมี ?id=รหัสไฟล์
+        else if (url.includes('id=')) {
+            id = url.split('id=')[1].split('&')[0];
         }
+
+        if (id) {
+            // บังคับให้เป็น Direct Link เพื่อใช้แสดงผลในแท็ก <img>
+            return `https://drive.google.com/uc?export=view&id=${id}`;
+        }
+    }
+    return url; 
+}
 
         function renderItems() {
             const list = document.getElementById('download-list');
@@ -238,3 +251,4 @@
     </script>
 </body>
 </html>
+
