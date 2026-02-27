@@ -12,6 +12,7 @@
             --primary: #3498db;
             --danger: #e74c3c;
             --success: #27ae60;
+            --warning: #f39c12;
             --bg-dark: #1a1a1a;
             --bg-body: #f0f2f5;
             --sidebar-width: 260px;
@@ -28,8 +29,6 @@
 
         /* Main Area */
         .wrapper { flex: 1; display: flex; flex-direction: column; position: relative; }
-        
-        /* Top Nav */
         .top-nav { height: var(--top-height); background: white; display: flex; align-items: center; justify-content: flex-end; padding: 0 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .btn-auth { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
         .btn-login { background: var(--primary); color: white; }
@@ -40,28 +39,29 @@
         .page-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Modal Popup */
+        /* Modal */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; }
-        .modal-content h3 { margin-top: 0; color: var(--bg-dark); }
         .modal-content input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
         /* Admin Panel */
         #admin-panel { display: none; background: #fff; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; animation: slideDown 0.3s ease; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         .admin-form { display: flex; flex-wrap: wrap; gap: 15px; }
         .admin-form input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; flex: 1; min-width: 200px; }
         .btn-add { background: var(--success); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-save { background: var(--warning); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
         /* Cards */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 20px; padding-bottom: 40px; }
-        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #ddd; }
+        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #ddd; position: relative; }
         .download-card img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
         .download-info { padding: 20px; text-align: center; }
         .btn-download { display: inline-block; background: var(--bg-dark); color: white; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 90%; transition: 0.3s; }
         
-        /* Frame Container */
+        .admin-actions { display: flex; justify-content: center; gap: 15px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
+        .admin-actions span { cursor: pointer; font-size: 13px; font-weight: bold; }
+
         .frame-container { flex: 1; width: 100%; background: white; border-radius: 15px; overflow: hidden; border: 1px solid #ddd; height: 75vh; }
         iframe { width: 100%; height: 100%; border: 0; }
     </style>
@@ -85,7 +85,7 @@
 
         <div class="main-content">
             <div id="dash-page" class="page-content active">
-                <h1 style="margin-top:0;">Obs Docks UI</h1>
+                <h1>Obs Docks UI</h1>
                 
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
                     <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
@@ -103,12 +103,14 @@
                 </div>
 
                 <div id="admin-panel">
-                    <h3 style="margin-top:0;"><i class="fas fa-plus-circle"></i> เพิ่มไฟล์ใหม่ (Google Drive)</h3>
+                    <h3 id="panel-title"><i class="fas fa-plus-circle"></i> เพิ่มไฟล์ใหม่ (Google Drive)</h3>
                     <div class="admin-form">
                         <input type="text" id="itemName" placeholder="ชื่อซอฟต์แวร์">
                         <input type="text" id="itemImg" placeholder="ลิงก์รูปภาพ">
                         <input type="text" id="itemLink" placeholder="ลิงก์ดาวน์โหลด">
-                        <button class="btn-add" onclick="addItem()">เพิ่มรายการ</button>
+                        <input type="hidden" id="editIndex" value="-1">
+                        <button id="btn-submit-item" class="btn-add" onclick="saveItem()">เพิ่มรายการ</button>
+                        <button id="btn-cancel-edit" style="display:none; background:#888; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer;" onclick="cancelEdit()">ยกเลิก</button>
                     </div>
                 </div>
 
@@ -135,54 +137,30 @@
         let items = JSON.parse(localStorage.getItem('cougar_final_data')) || [];
 
         function toggleAuthModal() {
-            const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-            if (isAdmin) {
-                // ถ้าเป็น Admin อยู่แล้ว กดจะเป็นการ Logout
-                if(confirm("ต้องการออกจากระบบ Admin ใช่หรือไม่?")) {
-                    sessionStorage.removeItem('isAdmin');
-                    location.reload();
-                }
+            if (sessionStorage.getItem('isAdmin') === 'true') {
+                if(confirm("ออกจากระบบ Admin?")) { sessionStorage.removeItem('isAdmin'); location.reload(); }
             } else {
-                // ถ้าเป็น Guest กดจะเปิด Modal
                 const modal = document.getElementById('loginModal');
                 modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
             }
         }
 
         function handleLogin() {
-            const id = document.getElementById('adminID').value;
-            const pass = document.getElementById('adminPass').value;
-            if (id === "admin" && pass === "admin2") {
-                sessionStorage.setItem('isAdmin', 'true');
-                location.reload();
-            } else {
-                alert("ID หรือ Password ผิดพลาด!");
-            }
+            if (document.getElementById('adminID').value === "admin" && document.getElementById('adminPass').value === "admin2") {
+                sessionStorage.setItem('isAdmin', 'true'); location.reload();
+            } else { alert("รหัสผ่านไม่ถูกต้อง"); }
         }
 
         function formatDriveLink(url) {
-    if (!url || typeof url !== 'string') return 'https://via.placeholder.com/300x200?text=No+Image';
-    url = url.trim();
-
-    if (url.includes('drive.google.com')) {
-        let id = "";
-        
-        // รองรับลิงก์แบบ /file/d/รหัสไฟล์/view
-        if (url.includes('/file/d/')) {
-            id = url.split('/file/d/')[1].split('/')[0];
-        } 
-        // รองรับลิงก์แบบมี ?id=รหัสไฟล์
-        else if (url.includes('id=')) {
-            id = url.split('id=')[1].split('&')[0];
+            if (!url) return 'https://via.placeholder.com/300x200?text=No+Image';
+            if (url.includes('drive.google.com')) {
+                let id = "";
+                if (url.includes('/d/')) id = url.split('/d/')[1].split('/')[0];
+                else if (url.includes('id=')) id = url.split('id=')[1].split('&')[0];
+                return id ? `https://drive.google.com/uc?export=view&id=${id}` : url;
+            }
+            return url;
         }
-
-        if (id) {
-            // บังคับให้เป็น Direct Link เพื่อใช้แสดงผลในแท็ก <img>
-            return `https://drive.google.com/uc?export=view&id=${id}`;
-        }
-    }
-    return url; 
-}
 
         function renderItems() {
             const list = document.getElementById('download-list');
@@ -191,34 +169,71 @@
             const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 
             items.forEach((item, index) => {
-                let deleteUI = isAdmin ? `<p onclick="deleteItem(${index})" style="color:var(--danger); cursor:pointer; font-size:11px; margin-top:15px;">[ ลบรายการ ]</p>` : '';
+                let adminUI = isAdmin ? `
+                    <div class="admin-actions">
+                        <span style="color:var(--warning)" onclick="editItem(${index})"><i class="fas fa-edit"></i> แก้ไข</span>
+                        <span style="color:var(--danger)" onclick="deleteItem(${index})"><i class="fas fa-trash"></i> ลบ</span>
+                    </div>` : '';
+
                 list.innerHTML += `
                     <div class="download-card">
                         <img src="${formatDriveLink(item.img)}" onerror="this.src='https://via.placeholder.com/300x200?text=Error+Loading'">
                         <div class="download-info">
                             <h3 style="margin:0 0 15px 0;">${item.name}</h3>
                             <a href="${item.link}" target="_blank" class="btn-download">Link : Download</a>
-                            ${deleteUI}
+                            ${adminUI}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
-        function addItem() {
+        function saveItem() {
             const name = document.getElementById('itemName').value;
             const img = document.getElementById('itemImg').value;
             const link = document.getElementById('itemLink').value;
+            const editIdx = parseInt(document.getElementById('editIndex').value);
+
             if (name && link) {
-                items.push({ name, img, link });
+                if (editIdx > -1) {
+                    items[editIdx] = { name, img, link };
+                } else {
+                    items.push({ name, img, link });
+                }
                 localStorage.setItem('cougar_final_data', JSON.stringify(items));
+                cancelEdit();
                 renderItems();
-                document.getElementById('itemName').value = ''; document.getElementById('itemImg').value = ''; document.getElementById('itemLink').value = '';
-            }
+            } else { alert("กรุณากรอกข้อมูลให้ครบ"); }
+        }
+
+        function editItem(index) {
+            const item = items[index];
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemImg').value = item.img;
+            document.getElementById('itemLink').value = item.link;
+            document.getElementById('editIndex').value = index;
+
+            document.getElementById('panel-title').innerHTML = '<i class="fas fa-edit"></i> กำลังแก้ไขข้อมูล';
+            const btn = document.getElementById('btn-submit-item');
+            btn.innerText = "บันทึกการแก้ไข";
+            btn.className = "btn-save";
+            document.getElementById('btn-cancel-edit').style.display = "inline-block";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEdit() {
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemImg').value = '';
+            document.getElementById('itemLink').value = '';
+            document.getElementById('editIndex').value = '-1';
+            document.getElementById('panel-title').innerHTML = '<i class="fas fa-plus-circle"></i> เพิ่มไฟล์ใหม่ (Google Drive)';
+            const btn = document.getElementById('btn-submit-item');
+            btn.innerText = "เพิ่มรายการ";
+            btn.className = "btn-add";
+            document.getElementById('btn-cancel-edit').style.display = "none";
         }
 
         function deleteItem(index) {
-            if(confirm("ลบไฟล์นี้?")) {
+            if(confirm("ยืนยันการลบ?")) {
                 items.splice(index, 1);
                 localStorage.setItem('cougar_final_data', JSON.stringify(items));
                 renderItems();
@@ -233,22 +248,19 @@
         }
 
         window.onload = () => {
-            const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-            if (isAdmin) {
+            if (sessionStorage.getItem('isAdmin') === 'true') {
                 document.getElementById('admin-panel').style.display = 'block';
                 document.getElementById('status-text').innerText = "Admin Mode";
                 document.getElementById('status-icon').style.color = "var(--success)";
                 const btn = document.getElementById('auth-btn');
-                btn.classList.replace('btn-login', 'btn-logout');
+                btn.className = "btn-auth btn-logout";
                 btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> <span>Logout Admin</span>';
             }
             renderItems();
             setInterval(() => {
-                const now = new Date();
-                document.getElementById('clock').innerText = now.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+                document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
             }, 1000);
         };
     </script>
 </body>
 </html>
-
