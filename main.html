@@ -70,71 +70,64 @@
             padding: 30px; 
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* ป้องกันการเลื่อนซ้ำซ้อน */
+            overflow-y: auto; /* ให้เลื่อนลงได้เมื่อข้อมูลเยอะ */
         }
 
-        .page-content { display: none; height: 100%; animation: fadeIn 0.4s ease; }
-        .page-content.active { display: flex; flex-direction: column; }
+        .page-content { display: none; animation: fadeIn 0.4s ease; }
+        .page-content.active { display: block; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Video Grid Layout */
-        .video-grid { 
+        /* ระบบ Download Card */
+        .download-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
-            gap: 20px; 
-            overflow-y: auto;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 25px; 
+            margin-top: 20px;
+            padding-bottom: 40px;
         }
 
-        .cam-card { 
-            background: #000; 
-            border-radius: 15px; 
-            aspect-ratio: 16/9; 
-            position: relative; 
-            overflow: hidden; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        .download-card { 
+            background: white; border-radius: 15px; overflow: hidden; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #ddd; 
         }
 
+        .download-card img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
+
+        .download-info { padding: 20px; text-align: center; }
+
+        .btn-download {
+            display: inline-block; background: var(--bg-dark); color: white; 
+            text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; 
+            width: 90%; transition: 0.3s;
+        }
+        .btn-download:hover { background: var(--primary); }
+
+        /* Admin Form */
+        .admin-panel { 
+            background: #fff; padding: 25px; border-radius: 15px; 
+            border: 2px dashed var(--primary); margin-bottom: 30px; 
+        }
+
+        .admin-form { display: flex; flex-wrap: wrap; gap: 15px; }
+        .admin-form input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; flex: 1; min-width: 200px; }
+        
+        .btn-add { 
+            background: var(--success); color: white; border: none; 
+            padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; 
+        }
+
+        /* Video Grid */
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .cam-card { background: #000; border-radius: 15px; aspect-ratio: 16/9; position: relative; overflow: hidden; }
         .video-player { width: 100%; height: 100%; object-fit: cover; }
+        .cam-label { position: absolute; top: 12px; left: 12px; background: rgba(231, 76, 60, 0.9); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; z-index: 5; }
 
-        .cam-label { 
-            position: absolute; 
-            top: 12px; 
-            left: 12px; 
-            background: rgba(231, 76, 60, 0.9); 
-            color: white; 
-            padding: 4px 12px; 
-            border-radius: 20px; 
-            font-size: 11px; 
-            z-index: 5;
-        }
-
-        /* Full Frame Container - สำหรับ Map และ Calendar */
-        .frame-container {
-            flex: 1; /* ขยายให้เต็มพื้นที่ที่เหลือ */
-            width: 100%;
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid #ddd;
-        }
-
+        .frame-container { flex: 1; height: 80vh; width: 100%; background: white; border-radius: 15px; overflow: hidden; border: 1px solid #ddd; }
         iframe { width: 100%; height: 100%; border: 0; }
-
-        .logout-btn { 
-            margin-top: auto; 
-            background: var(--danger); 
-            color: white; 
-            border: none; 
-            padding: 12px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
@@ -153,26 +146,39 @@
         <a onclick="showPage('calendar-page')" id="nav-cal">
             <i class="fas fa-calendar-alt"></i> ปฏิทินกิจกรรม
         </a>
-       
+    </div>
 
     <div class="main-content">
         
         <div id="dash-page" class="page-content active">
-            <h1 style="margin-top:0;">ภาพรวมระบบ</h1>
+            <h1 style="margin-top:0;">ภาพรวมและคลังไฟล์</h1>
+            
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
-                <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                    <i class="fas fa-video" style="color:var(--primary); font-size: 2rem;"></i>
-                    <h3>4 กล้อง</h3><p style="color:#666;">สถานะ: ปกติ</p>
-                </div>
                 <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
                     <i class="fas fa-clock" style="color:var(--success); font-size: 2rem;"></i>
                     <h3 id="clock">00:00</h3><p style="color:#666;">เวลาปัจจุบัน</p>
                 </div>
                 <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                    <i class="fas fa-info-circle" style="color:var(--primary); font-size: 2rem;"></i>
-                    <h3>Online</h3><p style="color:#666;">การเชื่อมต่อ</p>
+                    <i class="fas fa-folder-open" style="color:var(--primary); font-size: 2rem;"></i>
+                    <h3 id="file-count">0 รายการ</h3><p style="color:#666;">ไฟล์ในระบบ</p>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <i class="fas fa-check-circle" style="color:var(--primary); font-size: 2rem;"></i>
+                    <h3>Online</h3><p style="color:#666;">สถานะเซิร์ฟเวอร์</p>
                 </div>
             </div>
+
+            <div class="admin-panel">
+                <h3 style="margin-top:0;"><i class="fas fa-plus-circle"></i> เพิ่มไฟล์ใหม่ (Google Drive)</h3>
+                <div class="admin-form">
+                    <input type="text" id="itemName" placeholder="ชื่อซอฟต์แวร์">
+                    <input type="text" id="itemImg" placeholder="ลิงก์รูปภาพ Google Drive">
+                    <input type="text" id="itemLink" placeholder="ลิงก์ดาวน์โหลดไฟล์">
+                    <button class="btn-add" onclick="addItem()">เพิ่มรายการ</button>
+                </div>
+            </div>
+
+            <div id="download-list" class="download-grid"></div>
         </div>
 
         <div id="live-page" class="page-content">
@@ -186,9 +192,7 @@
         </div>
 
         <div id="map-page" class="page-content">
-            <div class="frame-container">
-                <iframe src="map.html"></iframe>
-            </div>
+            <div class="frame-container"><iframe src="map.html"></iframe></div>
         </div>
 
         <div id="calendar-page" class="page-content">
@@ -200,6 +204,65 @@
     </div>
 
     <script>
+        // --- ระบบจัดการข้อมูล ---
+        let items = JSON.parse(localStorage.getItem('cougar_final_data')) || [];
+
+        function formatDriveLink(url) {
+            if (!url) return 'https://via.placeholder.com/300x200?text=No+Image';
+            if (url.includes('drive.google.com')) {
+                let id = "";
+                if (url.includes('/d/')) id = url.split('/d/')[1].split('/')[0];
+                else if (url.includes('id=')) id = url.split('id=')[1].split('&')[0];
+                return id ? `https://drive.google.com/uc?export=view&id=${id}` : url;
+            }
+            return url;
+        }
+
+        function renderItems() {
+            const list = document.getElementById('download-list');
+            list.innerHTML = '';
+            document.getElementById('file-count').innerText = `${items.length} รายการ`;
+            
+            items.forEach((item, index) => {
+                list.innerHTML += `
+                    <div class="download-card">
+                        <img src="${formatDriveLink(item.img)}" onerror="this.src='https://via.placeholder.com/300x200?text=Error+Loading+Image'">
+                        <div class="download-info">
+                            <h3 style="margin:0 0 15px 0;">${item.name}</h3>
+                            <a href="${item.link}" target="_blank" class="btn-download">Link : Download</a>
+                            <p onclick="deleteItem(${index})" style="color:var(--danger); cursor:pointer; font-size:11px; margin-top:15px;">[ ลบรายการนี้ ]</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function addItem() {
+            const name = document.getElementById('itemName').value;
+            const img = document.getElementById('itemImg').value;
+            const link = document.getElementById('itemLink').value;
+
+            if (name && link) {
+                items.push({ name, img, link });
+                localStorage.setItem('cougar_final_data', JSON.stringify(items));
+                renderItems();
+                document.getElementById('itemName').value = '';
+                document.getElementById('itemImg').value = '';
+                document.getElementById('itemLink').value = '';
+            } else {
+                alert("กรุณากรอกชื่อและลิงก์ดาวน์โหลด");
+            }
+        }
+
+        function deleteItem(index) {
+            if(confirm("ยืนยันการลบ?")) {
+                items.splice(index, 1);
+                localStorage.setItem('cougar_final_data', JSON.stringify(items));
+                renderItems();
+            }
+        }
+
+        // --- ระบบทั่วไป ---
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -222,14 +285,12 @@
         }
 
         window.onload = () => {
+            renderItems();
             initPlayer('v1', 'https://streaming.udoncity.go.th:1935/live/cctv_121.stream/chunklist_w2010918290.m3u8');
             initPlayer('v2', 'https://streaming.udoncity.go.th:1935/live/Axis_12_22.stream/chunklist_w236554495.m3u8');
             initPlayer('v3', 'https://streaming.udoncity.go.th:1935/live/Axis_12_38.stream/chunklist_w1610502304.m3u8');
             initPlayer('v4', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist_w34733218.m3u8');
         };
-
-        function logout() { if(confirm("ยืนยันการออกจากระบบ?")) window.location.href = "login.html"; }
     </script>
 </body>
 </html>
-
