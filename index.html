@@ -26,12 +26,11 @@
         .page-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Login Modal UI */
+        /* Login Modal */
         .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index: 9999; align-items:center; justify-content:center; }
         .login-card { background: white; padding: 30px; border-radius: 20px; width: 350px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); animation: slideIn 0.3s ease; text-align: center; }
         @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
-        .login-input:focus { border-color: var(--primary); }
         .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
         /* Dashboard Stats */
@@ -40,15 +39,11 @@
         .stat-box i { font-size: 2.2rem; margin-bottom: 15px; }
         .stat-value { font-size: 1.4rem; font-weight: bold; color: #000; margin-bottom: 8px; }
         .stat-label { font-size: 13px; color: #888; }
-        .icon-time { color: #2ecc71; }
-        .icon-folder { color: #3498db; }
-        .icon-shield { color: #95a5a6; }
 
-        /* Admin Panel */
+        /* Admin Panel - ตามรูปที่มีเส้นประ */
         #admin-panel { display: none; background: white; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         .admin-settings-bar { display: flex; align-items: center; gap: 20px; }
-        .setting-item { display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 6px 15px; border-radius: 10px; border: 1px solid #eee; }
 
         /* Admin Form Grid */
         .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 20px; align-items: flex-end; }
@@ -65,12 +60,18 @@
         input:checked + .slider { background-color: var(--danger); }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        /* Cards */
+        /* Cards & Lightbox */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding-bottom: 40px; }
         .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        .card-img { width: 100%; height: 180px; object-fit: contain; background: #222; }
+        .card-img-container { width: 100%; height: 180px; background: #222; cursor: zoom-in; }
+        .card-img { width: 100%; height: 100%; object-fit: contain; }
         .download-info { padding: 20px; text-align: center; flex-grow: 1; }
         .btn-download { display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; margin-top: 15px; }
+        .admin-controls { display: flex; justify-content: space-around; padding: 12px; background: #fdfdfd; border-top: 1px solid #f0f0f0; }
+        .admin-btn-text { border: none; background: none; cursor: pointer; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        
+        .lightbox { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -96,24 +97,24 @@
     <div class="wrapper">
         <div class="top-nav">
             <h2 id="nav-title">Dashboard</h2>
-            <button id="auth-btn" onclick="window.toggleAuth()">Admin Login</button>
+            <button id="auth-btn" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;" onclick="window.toggleAuth()">Admin Login</button>
         </div>
 
         <div class="main-content">
             <div id="dash-page" class="page-content active">
                 <div class="dashboard-stats">
                     <div class="stat-box">
-                        <i class="fas fa-clock icon-time"></i>
+                        <i class="fas fa-clock icon-time" style="color:#2ecc71;"></i>
                         <div class="stat-value" id="dash-time">00:00</div>
                         <div class="stat-label">เวลาปัจจุบัน</div>
                     </div>
                     <div class="stat-box">
-                        <i class="fas fa-folder-open icon-folder"></i>
+                        <i class="fas fa-folder-open icon-folder" style="color:#3498db;"></i>
                         <div class="stat-value" id="dash-count">0 รายการ</div>
                         <div class="stat-label">ไฟล์ในระบบ</div>
                     </div>
                     <div class="stat-box">
-                        <i class="fas fa-shield-alt" id="status-icon"></i>
+                        <i class="fas fa-shield-alt" id="status-icon" style="color:#95a5a6;"></i>
                         <div class="stat-value" id="dash-status">Guest Mode</div>
                         <div class="stat-label">โหมดการใช้งาน</div>
                     </div>
@@ -121,19 +122,28 @@
 
                 <div id="admin-panel">
                     <div class="admin-header">
-                        <h3 style="margin:0;"><i class="fas fa-tools"></i> Admin Control</h3>
-                        <div class="setting-item">
-                            <span style="font-size:12px; font-weight:bold; color:var(--danger);">Lock All</span>
-                            <label class="switch"><input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()"><span class="slider"></span></label>
+                        <h3 style="margin:0;"><i class="fas fa-tools"></i> Admin Control Panel</h3>
+                        <div class="admin-settings-bar">
+                            <div class="setting-item" style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:12px; font-weight:bold; color:var(--danger);">Lock all downloads</span>
+                                <label class="switch"><input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()"><span class="slider"></span></label>
+                            </div>
+                            <div class="mini-pass-input" style="display: flex; gap: 5px; align-items: center; border-left: 2px solid #ddd; padding-left: 15px;">
+                                <input type="text" id="newDownloadPass" placeholder="รหัสผ่านดาวน์โหลดใหม่" style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; width: 140px;">
+                                <button onclick="window.changeDownloadPass()" style="background:var(--primary); color:white; border:none; padding:7px 12px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:bold;">เปลี่ยนรหัส</button>
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <input type="hidden" id="editKey">
-                        <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="itemName"></div>
-                        <div class="input-group"><label>ลิงก์รูป</label><input type="text" id="itemImg"></div>
-                        <div class="input-group"><label>ลิงก์โหลด</label><input type="text" id="itemLink"></div>
-                        <button onclick="window.saveItem()" id="btn-save" class="btn-action" style="background:var(--success);">บันทึก</button>
+                        <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="itemName" placeholder="ระบุชื่อไฟล์..."></div>
+                        <div class="input-group"><label>ลิงก์รูปภาพ</label><input type="text" id="itemImg" placeholder="URL รูปภาพ..."></div>
+                        <div class="input-group"><label>ลิงก์ดาวน์โหลด</label><input type="text" id="itemLink" placeholder="URL ดาวน์โหลด..."></div>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="window.saveItem()" id="btn-save" class="btn-action" style="background:var(--success);">บันทึก</button>
+                            <button onclick="window.resetForm()" class="btn-action" style="background:var(--secondary);"><i class="fas fa-times"></i> ยกเลิก</button>
+                        </div>
                     </div>
                 </div>
 
@@ -145,6 +155,8 @@
             <div id="calendar-page" class="page-content"><iframe src="calendar.html" style="width:100%; height:100%; border:none;"></iframe></div>
         </div>
     </div>
+
+    <div id="imgLightbox" class="lightbox" onclick="this.style.display='none'"><img id="lightboxImg"></div>
 
     <script type="module" src="script.js"></script>
 </body>
