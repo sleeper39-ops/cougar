@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cougar2 - Secure System</title>
+    <title>Cougar2 - Double Secure System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
@@ -20,102 +20,87 @@
         .sidebar a:hover, .sidebar a.active { background: var(--primary); color: white; }
 
         .wrapper { flex: 1; display: flex; flex-direction: column; position: relative; }
-        .top-nav { height: 60px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 5; }
+        .top-nav { height: 60px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .main-content { flex: 1; padding: 30px; overflow-y: auto; }
 
-        /* Dashboard Widgets */
-        .stats-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #eee; }
-        .stat-card i { font-size: 28px; margin-bottom: 10px; }
-        .stat-card.green i { color: var(--success); }
-        .stat-card.blue i { color: var(--primary); }
+        /* Login Card Design */
+        #login-area { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 400px; margin: 20px auto; text-align: center; }
+        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; }
+        .login-input:focus { border-color: var(--primary); }
+        
+        .btn-login { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .remember-me { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; margin: 10px 0; }
+
+        /* Hidden Keyword Section */
+        #keyword-section { display: none; margin-top: 20px; padding-top: 20px; border-top: 2px dashed #eee; animation: fadeIn 0.5s ease; }
+
+        /* Final Popup */
+        .popup-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .popup-card { background: #222; color: white; padding: 40px; border-radius: 20px; text-align: center; width: 300px; border: 1px solid var(--primary); box-shadow: 0 0 20px var(--primary); }
 
         /* Admin Panel */
-        #admin-panel { display: none; background: white; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end; }
-        .input-group { display: flex; flex-direction: column; gap: 5px; }
-        .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
-        
-        /* Cards */
-        .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        .card-img { height: 160px; background: #222; overflow: hidden; }
-        .card-img img { width: 100%; height: 100%; object-fit: contain; }
-        .download-info { padding: 20px; text-align: center; }
-        .btn-download { display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; color: white; }
-        .is-locked { background: var(--warning); }
-        .is-open { background: var(--success); }
+        #admin-panel { display: none; background: #fff; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
 
-        /* Login Modal */
-        .modal-overlay { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-box { background: #222; padding: 40px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid #333; animation: zoomIn 0.3s ease; }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h2>Cougar2</h2>
-        <a onclick="showPage('dash-page')" id="nav-dash" class="active"><i class="fas fa-home"></i> หน้าหลัก</a>
-        <a onclick="showPage('live-page')" id="nav-live"><i class="fas fa-video"></i> ระบบกล้องสด</a>
+        <a class="active"><i class="fas fa-home"></i> หน้าหลัก</a>
     </div>
 
     <div class="wrapper">
         <div class="top-nav">
-            <h2 id="nav-title">Dashboard</h2>
-            <button id="auth-btn" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;" onclick="toggleAuthModal()">Admin Login</button>
+            <h2>Dashboard</h2>
+            <button id="logout-btn" style="display:none; background:var(--danger); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;" onclick="logout()">Logout Admin</button>
         </div>
 
         <div class="main-content">
-            <div id="dash-page" class="page-content active">
-                <div class="stats-container">
-                    <div class="stat-card green"><i class="far fa-clock"></i><h3 id="w-time">00:00</h3><p>เวลาปัจจุบัน</p></div>
-                    <div class="stat-card blue"><i class="fas fa-folder"></i><h3 id="w-count">0 รายการ</h3><p>ไฟล์ในระบบ</p></div>
-                    <div class="stat-card green"><i class="fas fa-shield-alt"></i><h3 id="w-mode">User Mode</h3><p>โหมดการใช้งาน</p></div>
+            <div id="login-area">
+                <i class="fas fa-lock" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
+                <h3 style="margin: 0 0 20px 0;">Admin Authentication</h3>
+                
+                <div id="id-pass-section">
+                    <input type="text" id="user-id" class="login-input" placeholder="Username">
+                    <input type="password" id="user-pass" class="login-input" placeholder="Password">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember"> จำรหัสผ่าน
+                    </label>
+                    <button class="btn-login" onclick="validateFirstStep()">Verify Identity</button>
                 </div>
 
-                <div id="admin-panel">
-                    <div class="admin-header">
-                        <h3 style="margin:0;">Admin Control</h3>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <input type="text" id="newDLPass" placeholder="รหัสโหลดใหม่" style="padding:6px; border-radius:5px; border:1px solid #ddd;">
-                            <button onclick="changeDLPass()" style="background:var(--primary); color:white; border:none; padding:7px 12px; border-radius:5px; cursor:pointer; font-size:12px;">เปลี่ยนรหัสโหลด</button>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <input type="hidden" id="editIndex" value="-1">
-                        <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="itemName"></div>
-                        <div class="input-group"><label>ลิงก์รูป</label><input type="text" id="itemImg"></div>
-                        <div class="input-group"><label>ลิงก์โหลด</label><input type="text" id="itemLink"></div>
-                        <div style="display:flex; gap:5px;">
-                            <button onclick="saveItem()" id="btn-save" style="background:var(--success); color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">บันทึก</button>
-                            <button onclick="resetForm()" style="background:var(--secondary); color:white; border:none; padding:10px 10px; border-radius:8px; cursor:pointer;">ยกเลิก</button>
-                        </div>
-                    </div>
+                <div id="keyword-section">
+                    <p style="font-size: 12px; color: var(--danger); font-weight: bold;">Step 2: Enter Security Keyword</p>
+                    <input type="password" id="security-keyword" class="login-input" placeholder="Keyword">
+                    <button class="btn-login" style="background: var(--success);" onclick="validateKeyword()">Unlock Admin Panel</button>
                 </div>
-                <div id="download-list" class="download-grid"></div>
+            </div>
+
+            <div id="admin-panel">
+                <h3><i class="fas fa-tools"></i> ระบบจัดการแอดมินเปิดใช้งานแล้ว</h3>
+                <p>ยินดีต้อนรับแอดมิน คุณสามารถแก้ไขข้อมูลไฟล์ได้ที่นี่</p>
+                <hr>
+                <button onclick="location.reload()" style="padding: 10px; cursor:pointer;">รีเฟรชหน้าเพื่อจัดการไฟล์</button>
             </div>
         </div>
     </div>
 
-    <div id="loginModal" class="modal-overlay">
-        <div class="modal-box">
-            <i class="fas fa-user-shield" style="font-size:50px; color:var(--primary); margin-bottom:20px; display:block;"></i>
-            <h2 style="color:white; margin-bottom:10px;">Admin Access</h2>
-            <input type="password" id="adminKeyword" placeholder="กรอกคีย์เวิร์ด..." style="width:100%; padding:12px; border-radius:8px; border:1px solid #444; background:#111; color:white; text-align:center; margin-bottom:20px; box-sizing:border-box;">
-            <div style="display:flex; gap:10px;">
-                <button onclick="closeModal()" style="flex:1; padding:12px; border-radius:8px; border:none; background:#444; color:white; cursor:pointer;">ยกเลิก</button>
-                <button onclick="checkAdminLogin()" style="flex:1; padding:12px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-weight:bold;">ตกลง</button>
-            </div>
+    <div id="finalPopup" class="popup-overlay">
+        <div class="popup-card">
+            <i class="fas fa-check-circle" style="font-size: 60px; color: var(--success); margin-bottom: 20px;"></i>
+            <h2>Access Granted</h2>
+            <p>ยืนยันตัวตนสำเร็จ!</p>
+            <button onclick="enterAdmin()" style="width:100%; padding:10px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-weight:bold;">ไปที่แผงควบคุม</button>
         </div>
     </div>
 
     <script>
-        // รหัส Hash ของคำว่า "password" (SHA-256)
-        const KEY_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";
-        
-        let items = JSON.parse(localStorage.getItem('cougar_final_data')) || [];
+        // ตั้งค่ารหัสผ่าน (ใช้คำว่า admin / password / password ตามลำดับ)
+        const HASH_ID = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; // admin
+        const HASH_PASS = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"; // password
+        const HASH_KEY = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"; // password (keyword)
 
         async function hash(text) {
             const encoder = new TextEncoder();
@@ -124,110 +109,66 @@
             return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        // ระบบ Login
-        function toggleAuthModal() {
-            if (sessionStorage.getItem('isAdmin') === 'true') {
-                if(confirm("ออกจากระบบ?")) { sessionStorage.removeItem('isAdmin'); location.reload(); }
-            } else {
-                document.getElementById('loginModal').style.display = 'flex';
-                document.getElementById('adminKeyword').focus();
-            }
-        }
-
-        function closeModal() { document.getElementById('loginModal').style.display = 'none'; }
-
-        async function checkAdminLogin() {
-            const input = document.getElementById('adminKeyword').value;
-            const inputHash = await hash(input);
-            if (inputHash === KEY_HASH) {
-                sessionStorage.setItem('isAdmin', 'true');
-                location.reload();
-            } else {
-                alert("คีย์เวิร์ดไม่ถูกต้อง!");
-                document.getElementById('adminKeyword').value = '';
-            }
-        }
-
-        // ระบบเปลี่ยนรหัสโหลด
-        async function changeDLPass() {
-            const val = document.getElementById('newDLPass').value;
-            if(val) {
-                localStorage.setItem('dl_hash', await hash(val));
-                alert("เปลี่ยนรหัสผ่านดาวน์โหลดแล้ว!");
-                document.getElementById('newDLPass').value = '';
-            }
-        }
-
-        async function secureDownload(link) {
-            const pass = prompt("กรุณาใส่รหัสผ่านเพื่อดาวน์โหลด:");
-            if(!pass) return;
-            const inputHash = await hash(pass);
-            const currentHash = localStorage.getItem('dl_hash') || KEY_HASH; // default คือ password
-            if(inputHash === currentHash) { window.open(link, '_blank'); }
-            else { alert("รหัสผ่านไม่ถูกต้อง!"); }
-        }
-
-        // ระบบจัดการไฟล์
-        function renderItems() {
-            const list = document.getElementById('download-list');
-            list.innerHTML = '';
-            const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-            
-            document.getElementById('w-count').innerText = items.length + " รายการ";
-            document.getElementById('w-mode').innerText = isAdmin ? "Admin Mode" : "User Mode";
-            if(isAdmin) document.getElementById('admin-panel').style.display = 'block';
-
-            items.forEach((item, index) => {
-                list.innerHTML += `
-                    <div class="download-card">
-                        <div class="card-img"><img src="${item.img || 'https://via.placeholder.com/300x160'}"></div>
-                        <div class="download-info">
-                            <h4>${item.name}</h4>
-                            <button onclick="secureDownload('${item.link}')" class="btn-download is-locked">
-                                <i class="fas fa-lock"></i> Password Required
-                            </button>
-                            ${isAdmin ? `
-                                <div style="margin-top:15px; font-size:12px; display:flex; justify-content:center; gap:10px;">
-                                    <span onclick="editItem(${index})" style="color:var(--primary); cursor:pointer;"><i class="fas fa-edit"></i> แก้ไข</span>
-                                    <span onclick="deleteItem(${index})" style="color:var(--danger); cursor:pointer;"><i class="fas fa-trash"></i> ลบ</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function saveItem() {
-            const idx = parseInt(document.getElementById('editIndex').value);
-            const name = document.getElementById('itemName').value;
-            const img = document.getElementById('itemImg').value;
-            const link = document.getElementById('itemLink').value;
-            if(name && link) {
-                if(idx > -1) items[idx] = {name, img, link};
-                else items.push({name, img, link});
-                localStorage.setItem('cougar_final_data', JSON.stringify(items));
-                location.reload();
-            }
-        }
-
-        function editItem(i) {
-            const item = items[i];
-            document.getElementById('itemName').value = item.name;
-            document.getElementById('itemImg').value = item.img;
-            document.getElementById('itemLink').value = item.link;
-            document.getElementById('editIndex').value = i;
-            document.getElementById('btn-save').innerText = "อัปเดต";
-        }
-
-        function deleteItem(i) { if(confirm("ลบไฟล์?")) { items.splice(i, 1); localStorage.setItem('cougar_final_data', JSON.stringify(items)); renderItems(); } }
-
+        // โหลดรหัสที่จำไว้
         window.onload = () => {
-            renderItems();
-            setInterval(() => {
-                const n = new Date();
-                document.getElementById('w-time').innerText = n.getHours().toString().padStart(2,'0')+":"+n.getMinutes().toString().padStart(2,'0');
-            }, 1000);
+            if(localStorage.getItem('remembered_id')) {
+                document.getElementById('user-id').value = localStorage.getItem('remembered_id');
+                document.getElementById('user-pass').value = localStorage.getItem('remembered_pass');
+                document.getElementById('remember').checked = true;
+            }
+            if(sessionStorage.getItem('isAdmin') === 'true') showAdminPanel();
         };
+
+        // ขั้นตอนที่ 1: ตรวจ ID/PASS
+        async function validateFirstStep() {
+            const id = document.getElementById('user-id').value;
+            const pass = document.getElementById('user-pass').value;
+            const rem = document.getElementById('remember').checked;
+
+            if(await hash(id) === HASH_ID && await hash(pass) === HASH_PASS) {
+                if(rem) {
+                    localStorage.setItem('remembered_id', id);
+                    localStorage.setItem('remembered_pass', pass);
+                } else {
+                    localStorage.removeItem('remembered_id');
+                    localStorage.removeItem('remembered_pass');
+                }
+                // แสดงช่อง Keyword
+                document.getElementById('id-pass-section').style.opacity = "0.5";
+                document.getElementById('id-pass-section').style.pointerEvents = "none";
+                document.getElementById('keyword-section').style.display = "block";
+            } else {
+                alert("ID หรือ Password ไม่ถูกต้อง!");
+            }
+        }
+
+        // ขั้นตอนที่ 2: ตรวจ Keyword
+        async function validateKeyword() {
+            const key = document.getElementById('security-keyword').value;
+            if(await hash(key) === HASH_KEY) {
+                // เด้ง Popup สุดท้าย
+                document.getElementById('finalPopup').style.display = 'flex';
+            } else {
+                alert("คีย์เวิร์ดความปลอดภัยไม่ถูกต้อง!");
+            }
+        }
+
+        function enterAdmin() {
+            sessionStorage.setItem('isAdmin', 'true');
+            document.getElementById('finalPopup').style.display = 'none';
+            showAdminPanel();
+        }
+
+        function showAdminPanel() {
+            document.getElementById('login-area').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'block';
+            document.getElementById('logout-btn').style.display = 'block';
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isAdmin');
+            location.reload();
+        }
     </script>
 </body>
 </html>
