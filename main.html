@@ -33,13 +33,12 @@
         /* Main Area */
         .wrapper { flex: 1; display: flex; flex-direction: column; position: relative; }
         
-        /* ปรับปรุง Top Nav ให้รองรับข้อความด้านซ้าย */
         .top-nav { 
             height: var(--top-height); 
             background: white; 
             display: flex; 
             align-items: center; 
-            justify-content: space-between; /* แยกซ้าย-ขวา */
+            justify-content: space-between; 
             padding: 0 30px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
             z-index: 5;
@@ -154,10 +153,21 @@
     <div id="loginModal" class="modal" style="display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
         <div class="modal-content" style="background:white; padding:30px; border-radius:15px; width:320px; position:relative;">
             <span onclick="toggleAuthModal()" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:20px;">&times;</span>
-            <h3>Admin Login</h3>
-            <input type="text" id="adminID" placeholder="ID" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ddd;">
-            <input type="password" id="adminPass" placeholder="Password" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ddd;">
-            <button style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;" onclick="handleLogin()">เข้าสู่ระบบ</button>
+            <h3 style="margin-top:0;">Admin Login</h3>
+            <input type="text" id="adminID" placeholder="ID" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
+            <input type="password" id="adminPass" placeholder="Password" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
+            
+            <button style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-bottom: 15px;" onclick="handleLogin()">เข้าสู่ระบบ</button>
+
+            <div style="border-top: 1px dashed #ccc; padding-top: 15px;">
+                <p style="font-size: 11px; color: #888; margin-bottom: 5px; text-align: center;">ลืมรหัสผ่าน? ใส่คีย์เวิร์ดกู้คืน</p>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="recoveryKey" placeholder="คีย์เวิร์ด..." style="flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ddd; font-size: 12px;">
+                    <button onclick="checkKeyword()" style="background: #34495e; color: white; border: none; padding: 0 12px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold;">
+                        กู้คืน
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -175,6 +185,7 @@
             } else {
                 const modal = document.getElementById('loginModal');
                 modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+                document.getElementById('recoveryKey').value = "";
             }
         }
 
@@ -182,6 +193,23 @@
             if (document.getElementById('adminID').value === "admin" && document.getElementById('adminPass').value === "admin2") {
                 sessionStorage.setItem('isAdmin', 'true'); location.reload();
             } else { alert("รหัสผ่านไม่ถูกต้อง"); }
+        }
+
+        // ฟังก์ชันตรวจสอบคีย์เวิร์ด "password"
+        function checkKeyword() {
+            const key = document.getElementById('recoveryKey').value;
+            const mySecretKey = "password"; 
+            const myAdminID = "admin";
+            const myAdminPass = "admin2";
+
+            if (key === mySecretKey) {
+                alert("✅ คีย์เวิร์ดถูกต้อง!\n\nID: " + myAdminID + "\nPassword: " + myAdminPass);
+                document.getElementById('recoveryKey').value = "";
+            } else if (key === "") {
+                alert("กรุณาใส่คีย์เวิร์ดก่อนครับ");
+            } else {
+                alert("❌ คีย์เวิร์ดไม่ถูกต้อง!");
+            }
         }
 
         function formatDriveLink(url) {
@@ -258,7 +286,9 @@
                 btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> <span>Logout Admin</span>';
             }
             renderItems();
-            setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'}); }, 1000);
+            setInterval(() => { 
+                document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'}); 
+            }, 1000);
         };
     </script>
 </body>
