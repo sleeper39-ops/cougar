@@ -193,16 +193,22 @@ window.performLogin = () => {
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
-    // --- ฟังก์ชันกด Enter เพื่อเข้าสู่ระบบ ---
+    // --- ฟังก์ชันกด Enter เพื่อเข้าสู่ระบบ (ปรับปรุงใหม่) ---
     const loginUser = document.getElementById('loginUser');
     const loginPass = document.getElementById('loginPass');
 
-    loginUser?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') loginPass.focus(); // กด Enter ที่ User แล้วไปช่อง Pass
+    loginUser?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // ป้องกันการรีเฟรชหน้า
+            loginPass.focus();
+        }
     });
 
-    loginPass?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') window.performLogin(); // กด Enter ที่ Pass แล้ว Login
+    loginPass?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // ป้องกันการรีเฟรชหน้า
+            window.performLogin();
+        }
     });
 
     // --- ตรวจสอบสถานะ Admin ---
