@@ -18,7 +18,7 @@
             --sidebar-width: 260px;
             --top-height: 60px;
             
-            /* --- โทนสีใหม่สำหรับปุ่มดาวน์โหลด (Modern Teal-Green) --- */
+            /* --- สีปุ่มดาวน์โหลดใหม่ --- */
             --download-gradient: linear-gradient(135deg, #02aab0 0%, #00cdac 100%);
             --download-hover: linear-gradient(135deg, #00cdac 0%, #02aab0 100%);
             --download-shadow: rgba(0, 205, 172, 0.3);
@@ -40,21 +40,33 @@
         .btn-logout { background: var(--danger); color: white; }
 
         .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-        .page-content { display: none; animation: fadeIn 0.4s ease; }
+        
+        /* แก้ไขสัดส่วนหน้าเพจที่มี Iframe */
+        .page-content { display: none; animation: fadeIn 0.4s ease; height: 100%; }
         .page-content.active { display: block; }
+        #live-page, #map-page, #calendar-page { height: calc(100vh - var(--top-height) - 60px); }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Admin Panel Improved UI */
+        /* Admin Panel */
         #admin-panel { display: none; background: #fff; padding: 25px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 30px; }
         .admin-form-container { display: flex; flex-direction: column; gap: 15px; }
         .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
         .input-group label { font-size: 13px; font-weight: bold; color: #444; }
         .input-group input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; }
         .admin-buttons { display: flex; gap: 10px; margin-top: 10px; }
-        
-        /* Lightbox */
-        .lightbox { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
-        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
+
+        /* การจัดการ Iframe ให้เต็มจอ */
+        .frame-container { 
+            width: 100%; 
+            height: 100%; 
+            background: white; 
+            border-radius: 15px; 
+            overflow: hidden; 
+            border: 1px solid #ddd; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        iframe { width: 100%; height: 100%; border: none; display: block; }
 
         /* Cards & Download Button */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 20px; padding-bottom: 40px; }
@@ -63,27 +75,25 @@
         .download-card img { width: 100%; height: 180px; object-fit: cover; cursor: zoom-in; }
         .download-info { padding: 25px; text-align: center; }
         
-        /* --- ปรับแต่งปุ่มดาวน์โหลดใหม่ (สีใหม่ + จัดกึ่งกลาง) --- */
+        /* ปุ่มดาวน์โหลดใหม่ จัดกึ่งกลาง */
         .btn-download { 
             display: inline-flex;
             align-items: center;
-            justify-content: center; /* จัดเนื้อหาตรงกลางแนวตั้ง */
-            gap: 10px; /* ระยะห่างระหว่างไอคอนและข้อความ */
+            justify-content: center;
+            gap: 10px;
             background: var(--download-gradient);
             color: white; 
             text-decoration: none; 
             padding: 14px 20px; 
             border-radius: 12px; 
             font-weight: 600; 
-            width: 100%; /* เต็มความกว้างการ์ด */
-            box-sizing: border-box; /* กัน padding ดันความกว้างล้น */
+            width: 100%; 
+            box-sizing: border-box;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px var(--download-shadow);
             border: none;
             cursor: pointer;
-            text-align: center; /* สำรองสำหรับการจัดกลาง */
         }
-        
         .btn-download:hover { 
             background: var(--download-hover);
             box-shadow: 0 6px 20px rgba(0, 205, 172, 0.5);
@@ -91,10 +101,12 @@
             color: white;
         }
         
-        .btn-download:active { transform: scale(0.98); }
-        
         .admin-actions { display: flex; justify-content: center; gap: 15px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
         .admin-actions span { cursor: pointer; font-size: 13px; font-weight: bold; }
+
+        /* Lightbox */
+        .lightbox { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
+        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
 
         @media (min-width: 769px) {
             .admin-form-container { flex-direction: row; align-items: flex-end; }
