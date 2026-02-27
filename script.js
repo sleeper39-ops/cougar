@@ -22,12 +22,11 @@ let state = {
     isAdmin: sessionStorage.getItem('isAdmin') === 'true'
 };
 
-// --- 2. Real-time Sync (ดึงข้อมูล) ---
+// --- 2. Real-time Sync ---
 onValue(itemsRef, (snapshot) => {
     const data = snapshot.val();
-    console.log("📡 Cloud Sync:", data);
+    console.log("📡 ข้อมูลจาก Cloud อัปเดตแล้ว:", data);
     
-    // จัดการข้อมูลให้เป็น Array เสมอ
     if (!data) state.items = [];
     else if (Array.isArray(data)) state.items = data;
     else state.items = Object.values(data);
@@ -35,15 +34,29 @@ onValue(itemsRef, (snapshot) => {
     window.renderItems();
     window.updateDashboard();
 }, (error) => {
-    console.error("❌ Sync Error:", error);
+    console.error("❌ Firebase Sync Error:", error);
 });
 
-// --- 3. Save Function (บันทึกลง Cloud) ---
+// --- 3. Save Function (ปรับปรุงใหม่ให้กัน Error) ---
 window.saveItem = async function() {
-    const name = document.getElementById('itemName')?.value.trim();
-    const link = document.getElementById('itemLink')?.value.trim();
-    const img = document.getElementById('itemImg')?.value.trim() || 'https://via.placeholder.com/300x180?text=Cougar2';
-    const index = parseInt(document.getElementById('editIndex')?.value || "-1");
+    console.log("🚀 กำลังเตรียมส่งข้อมูล...");
+    
+    const nameEl = document.getElementById('itemName');
+    const linkEl = document.getElementById('itemLink');
+    const imgEl = document.getElementById('itemImg');
+    const indexEl = document.getElementById('editIndex');
+
+    // ดัก Error ถ้าหา ID ใน HTML ไม่เจอ
+    if (!nameEl || !linkEl) {
+        console.error("❌ ตรวจพบ ID ใน HTML ไม่ตรงกับ Script! กรุณาเช็ค ID 'itemName' และ 'itemLink'");
+        alert("ระบบขัดข้อง: หาช่องกรอกข้อมูลไม่เจอ");
+        return;
+    }
+
+    const name = nameEl.value.trim();
+    const link = linkEl.value.trim();
+    const img = imgEl.value.trim() || 'https://via.placeholder.com/300x180?text=No+Image';
+    const index = parseInt(indexEl?.value || "-1");
 
     if (name && link) {
         let updatedItems = [...state.items];
@@ -53,17 +66,14 @@ window.saveItem = async function() {
         else updatedItems.push(itemData);
 
         try {
-            // บังคับเขียนลง Firebase และรอจนเสร็จ
-            await set(itemsRef, updatedItems);
-            alert("✅ บันทึกสำเร็จ! ข้อมูลออนไลน์ทุกเครื่องแล้ว");
+            console.log("📤 กำลังเขียนข้อมูลลง Firebase...");
+            await set(itemsRef, updatedItems); 
+            console.log("✅ เขียนข้อมูลสำเร็จ!");
+            alert("✅ บันทึกสำเร็จ! ข้อมูลออนไลน์แล้วทุกเครื่อง");
             window.resetForm();
         } catch (err) {
-            console.error("🔥 Firebase Write Error:", err);
-            if (err.code === 'PERMISSION_DENIED') {
-                alert("❌ บันทึกไม่ได้! กรุณากดปุ่ม Publish สีฟ้าในหน้า Rules ของ Firebase");
-            } else {
-                alert("❌ เกิดข้อผิดพลาด: " + err.message);
-            }
+            console.error("🔥 Save Error:", err);
+            alert("❌ บันทึกไม่สำเร็จ: " + err.message);
         }
     } else {
         alert("กรุณากรอกชื่อและลิงก์ให้ครบถ้วน");
@@ -76,14 +86,14 @@ window.renderItems = function() {
     if (!list) return;
     
     if (state.items.length === 0) {
-        list.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px; color:#999;"><h3>☁️ Cloud is empty</h3><p>เพิ่มข้อมูลจากแอดมินพาเนลเพื่อเริ่มใช้งาน</p></div>';
+        list.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px; color:#999;"><h3>☁️ ข้อมูลบน Cloud ว่างเปล่า</h3></div>';
         return;
     }
 
     list.innerHTML = state.items.map((item, index) => `
         <div class="download-card">
             <div class="card-img-container" onclick="window.openImage('${item.img}')">
-                <img src="${item.img}" onerror="this.src='https://via.placeholder.com/300x180?text=Image+Error'">
+                <img src="${item.img}" onerror="this.src='https://via.placeholder.com/300x180?text=Error'">
             </div>
             <div class="download-info">
                 <h4>${item.name}</h4>
@@ -92,31 +102,35 @@ window.renderItems = function() {
                 </button>
             </div>
             ${state.isAdmin ? `
-                <div class="admin-controls">
-                    <button class="admin-btn-text" style="color:var(--primary);" onclick="window.editItem(${index})">Edit</button>
-                    <button class="admin-btn-text" style="color:var(--danger);" onclick="window.deleteItem(${index})">Delete</button>
+                <div class="admin-controls" style="padding:10px; display:flex; gap:10px; justify-content:center;">
+                    <button class="admin-btn-text" style="color:blue;" onclick="window.editItem(${index})">Edit</button>
+                    <button class="admin-btn-text" style="color:red;" onclick="window.deleteItem(${index})">Delete</button>
                 </div>` : ''}
         </div>
     `).join('');
 };
 
-// --- 5. Admin & Helpers ---
-window.deleteItem = function(index) {
-    if (confirm("ลบรายการนี้ออกจากระบบ Cloud?")) {
+// --- 5. Admin Helpers ---
+window.deleteItem = async function(index) {
+    if (confirm("ต้องการลบรายการนี้ออกจากระบบ Cloud ใช่หรือไม่?")) {
         let updatedItems = [...state.items];
         updatedItems.splice(index, 1);
-        set(itemsRef, updatedItems);
+        try {
+            await set(itemsRef, updatedItems);
+        } catch (err) {
+            alert("ลบไม่สำเร็จ: " + err.message);
+        }
     }
 };
 
 window.editItem = function(index) {
     const item = state.items[index];
     if (item) {
-        document.getElementById('itemName').value = item.name;
-        document.getElementById('itemLink').value = item.link;
-        document.getElementById('itemImg').value = item.img;
-        document.getElementById('editIndex').value = index;
-        document.getElementById('btn-save').innerText = "อัปเดตข้อมูล";
+        if(document.getElementById('itemName')) document.getElementById('itemName').value = item.name;
+        if(document.getElementById('itemLink')) document.getElementById('itemLink').value = item.link;
+        if(document.getElementById('itemImg')) document.getElementById('itemImg').value = item.img;
+        if(document.getElementById('editIndex')) document.getElementById('editIndex').value = index;
+        if(document.getElementById('btn-save')) document.getElementById('btn-save').innerText = "อัปเดตข้อมูล";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 };
@@ -126,18 +140,16 @@ window.resetForm = function() {
         const el = document.getElementById(id);
         if(el) el.value = '';
     });
-    document.getElementById('editIndex').value = '-1';
-    document.getElementById('btn-save').innerText = "บันทึก";
+    if(document.getElementById('editIndex')) document.getElementById('editIndex').value = '-1';
+    if(document.getElementById('btn-save')) document.getElementById('btn-save').innerText = "บันทึก";
 };
 
 window.updateDashboard = function() {
-    // อัปเดตเวลา
     const now = new Date();
     const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
     if(document.getElementById('dash-time')) document.getElementById('dash-time').innerText = timeStr;
-    
-    // อัปเดตจำนวนและสถานะ
     if(document.getElementById('dash-count')) document.getElementById('dash-count').innerText = `${state.items.length} รายการ`;
+    
     const statusEl = document.getElementById('dash-status');
     const authBtn = document.getElementById('auth-btn');
     const adminPanel = document.getElementById('admin-panel');
@@ -164,8 +176,11 @@ window.performLogin = function() {
 
 window.toggleAuth = function() {
     if (state.isAdmin) {
-        if(confirm("Logout?")) { sessionStorage.removeItem('isAdmin'); location.reload(); }
-    } else { document.getElementById('loginModal').style.display = 'flex'; }
+        if(confirm("ต้องการออกจากระบบ?")) { sessionStorage.removeItem('isAdmin'); location.reload(); }
+    } else { 
+        const modal = document.getElementById('loginModal');
+        if(modal) modal.style.display = 'flex'; 
+    }
 };
 
 window.showPage = function(pageId) {
@@ -176,9 +191,8 @@ window.showPage = function(pageId) {
     const navId = 'nav-' + pageId.split('-')[0];
     document.getElementById(navId)?.classList.add('active');
     
-    // เปลี่ยนหัวข้อ Top Nav
     const titles = { 'dash-page': 'Dashboard', 'live-page': 'Live CCTV', 'map-page': 'System Map', 'calendar-page': 'Calendar' };
-    document.getElementById('nav-title').innerText = titles[pageId] || 'Cougar2';
+    if(document.getElementById('nav-title')) document.getElementById('nav-title').innerText = titles[pageId] || 'Cougar2';
 };
 
 window.openImage = function(src) {
@@ -187,12 +201,7 @@ window.openImage = function(src) {
     if(lb && img) { img.src = src; lb.style.display = 'flex'; }
 };
 
-// เริ่มต้นระบบ
 document.addEventListener('DOMContentLoaded', () => {
     window.updateDashboard();
-    setInterval(() => {
-        const now = new Date();
-        const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-        if(document.getElementById('dash-time')) document.getElementById('dash-time').innerText = timeStr;
-    }, 1000);
+    setInterval(window.updateDashboard, 1000);
 });
