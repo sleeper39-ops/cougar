@@ -3,91 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cougar2 - Secure Docks UI</title>
+    <title>Cougar2 - Smart Lock System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
-            --primary: #3498db; --danger: #e74c3c; --success: #27ae60; --warning: #f39c12;
+            --primary: #3498db; --danger: #e74c3c; --success: #27ae60; --warning: #f39c12; --secondary: #95a5a6;
             --bg-dark: #1a1a1a; --bg-body: #f0f2f5; --sidebar-width: 260px;
         }
         body { display: flex; margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-body); height: 100vh; overflow: hidden; }
         
-        /* Sidebar & Layout */
         .sidebar { width: var(--sidebar-width); background: var(--bg-dark); color: white; padding: 25px 15px; display: flex; flex-direction: column; z-index: 10; }
-        .sidebar h2 { color: var(--primary); text-align: center; margin-bottom: 40px; letter-spacing: 2px; }
-        .sidebar a { color: #bbb; text-decoration: none; padding: 14px 20px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
+        .sidebar h2 { color: var(--primary); text-align: center; margin-bottom: 40px; }
+        .sidebar a { color: #bbb; text-decoration: none; padding: 14px 20px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
         .sidebar a.active { background: var(--primary); color: white; }
 
-        .wrapper { flex: 1; display: flex; flex-direction: column; position: relative; }
+        .wrapper { flex: 1; display: flex; flex-direction: column; }
         .top-nav { height: 60px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
         .main-content { flex: 1; padding: 25px; overflow-y: auto; }
 
-        /* Admin Panel New Layout */
+        /* Admin Panel */
         #admin-panel { display: none; background: #fff; padding: 20px; border-radius: 15px; border: 2px dashed var(--primary); margin-bottom: 25px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .admin-row { display: grid; grid-template-columns: 1fr 1fr 1.5fr auto; gap: 10px; align-items: flex-end; }
         .input-group { display: flex; flex-direction: column; gap: 5px; }
         .input-group label { font-size: 12px; font-weight: bold; color: #555; }
-        .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
         
-        /* Toggle Switch Style */
-        .switch-container { display: flex; align-items: center; gap: 10px; background: #eee; padding: 10px 15px; border-radius: 10px; margin-bottom: 15px; width: fit-content; }
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--success); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--danger); }
+        input:checked + .slider:before { transform: translateX(16px); }
 
-        /* Grid & Cards */
+        /* Card System */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
-        .card-img { height: 160px; background: #222; }
+        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); position: relative; }
+        .card-img { height: 150px; background: #222; }
         .card-img img { width: 100%; height: 100%; object-fit: cover; }
         .card-info { padding: 15px; text-align: center; }
-        .btn-dl { width: 100%; padding: 12px; border-radius: 10px; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .dl-open { background: var(--success); }
-        .dl-locked { background: var(--danger); }
+        .btn-dl { width: 100%; padding: 12px; border-radius: 10px; border: none; color: white; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
         
-        .lock-badge { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; border-radius: 20px; font-size: 10px; }
+        .admin-controls { display: flex; justify-content: center; align-items: center; gap: 15px; font-size: 12px; border-top: 1px solid #eee; padding-top: 10px; }
+        .lock-status { display: flex; align-items: center; gap: 5px; color: #666; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h2>Cougar2</h2>
-        <a id="nav-dash" class="active"><i class="fas fa-home"></i> หน้าหลัก</a>
+        <a class="active"><i class="fas fa-home"></i> หน้าหลัก</a>
         <a><i class="fas fa-video"></i> กล้องสด</a>
     </div>
 
     <div class="wrapper">
         <div class="top-nav">
-            <div style="display:flex; align-items:center; gap:20px;">
-                <h2 style="margin:0; font-size:1.2rem;">Dashboard</h2>
-                <div class="switch-container" title="ล็อคปุ่มดาวน์โหลดทั้งหมดในระบบ">
-                    <span style="font-size:12px; font-weight:bold;"><i class="fas fa-globe"></i> Global Lock</span>
-                    <label class="switch">
-                        <input type="checkbox" id="globalLockToggle" onchange="updateGlobalLock()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <button id="auth-btn" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold;" onclick="toggleAuthModal()">Admin Login</button>
+            <h2 style="margin:0; font-size:1.1rem;">Secure Dashboard</h2>
+            <button id="auth-btn" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;" onclick="toggleAuthModal()">Admin Login</button>
         </div>
 
         <div class="main-content">
             <div id="admin-panel">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0;"><i class="fas fa-edit"></i> จัดการข้อมูลไฟล์</h3>
-                    <label style="font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer;">
-                        <input type="checkbox" id="itemLocked"> <i class="fas fa-lock"></i> ล็อคไฟล์นี้ (ต้องใช้รหัส)
-                    </label>
+                <div class="admin-header">
+                    <h3 style="margin:0;"><i class="fas fa-tools"></i> แผงควบคุมแอดมิน</h3>
+                    <div style="display:flex; align-items:center; gap:10px; background:#f8d7da; padding:8px 15px; border-radius:10px; border:1px solid #f5c6cb;">
+                        <span style="font-size:12px; font-weight:bold; color:#721c24;"><i class="fas fa-globe"></i> Global Lock (ล็อคทั้งหมด)</span>
+                        <label class="switch">
+                            <input type="checkbox" id="globalLockToggle" onchange="updateGlobalLock()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
                 <div class="admin-row">
                     <input type="hidden" id="editIndex" value="-1">
-                    <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="itemName" placeholder="ระบุชื่อ"></div>
-                    <div class="input-group"><label>ลิงก์รูป</label><input type="text" id="itemImg" placeholder="https://..."></div>
-                    <div class="input-group"><label>ลิงก์ดาวน์โหลด</label><input type="text" id="itemLink" placeholder="https://..."></div>
+                    <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="itemName"></div>
+                    <div class="input-group"><label>ลิงก์รูป</label><input type="text" id="itemImg"></div>
+                    <div class="input-group"><label>ลิงก์ดาวน์โหลด</label><input type="text" id="itemLink"></div>
                     <div style="display:flex; gap:5px;">
                         <button onclick="saveItem()" id="btn-save" style="background:var(--success); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">บันทึก</button>
                         <button onclick="resetForm()" style="background:var(--secondary); color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer;">ยกเลิก</button>
@@ -100,12 +93,12 @@
     </div>
 
     <div id="loginModal" style="display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
-        <div style="background:white; padding:30px; border-radius:15px; width:300px; text-align:center;">
-            <h3>Admin Login</h3>
-            <input type="text" id="auth_u" placeholder="ID" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+        <div style="background:white; padding:30px; border-radius:15px; width:300px;">
+            <h3 style="text-align:center;">Admin Login</h3>
+            <input type="text" id="auth_u" placeholder="Username" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
             <input type="password" id="auth_p" placeholder="Password" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-            <button onclick="handleLogin()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Login</button>
-            <p onclick="toggleAuthModal()" style="font-size:12px; color:#888; margin-top:10px; cursor:pointer;">ปิดหน้าต่าง</p>
+            <button onclick="handleLogin()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">เข้าสู่ระบบ</button>
+            <p onclick="document.getElementById('loginModal').style.display='none'" style="text-align:center; font-size:12px; color:#888; margin-top:10px; cursor:pointer;">ยกเลิก</p>
         </div>
     </div>
 
@@ -116,28 +109,37 @@
 
         window.onload = () => {
             document.getElementById('globalLockToggle').checked = isGlobalLocked;
-            if (sessionStorage.getItem('isAdmin') === 'true') showAdminView();
+            if (sessionStorage.getItem('isAdmin') === 'true') {
+                document.getElementById('admin-panel').style.display = 'block';
+                document.getElementById('auth-btn').innerText = "Logout Admin";
+                document.getElementById('auth-btn').style.background = "var(--danger)";
+            }
             renderItems();
         };
-
-        function toggleAuthModal() {
-            if (sessionStorage.getItem('isAdmin') === 'true') {
-                if(confirm("Logout?")) { sessionStorage.removeItem('isAdmin'); location.reload(); }
-            } else {
-                document.getElementById('loginModal').style.display = 'flex';
-            }
-        }
 
         function handleLogin() {
             if (document.getElementById('auth_u').value === CONFIG.u && document.getElementById('auth_p').value === CONFIG.p) {
                 sessionStorage.setItem('isAdmin', 'true');
                 location.reload();
-            } else { alert("ID/Pass ผิด!"); }
+            } else { alert("ID หรือ Password ผิด!"); }
+        }
+
+        function toggleAuthModal() {
+            if (sessionStorage.getItem('isAdmin') === 'true') {
+                sessionStorage.removeItem('isAdmin'); location.reload();
+            } else { document.getElementById('loginModal').style.display = 'flex'; }
         }
 
         function updateGlobalLock() {
             isGlobalLocked = document.getElementById('globalLockToggle').checked;
             localStorage.setItem('global_lock', isGlobalLocked);
+            renderItems();
+        }
+
+        // ฟังก์ชันสลับการล็อครายไฟล์จากตัว Card
+        function toggleItemLock(index) {
+            items[index].locked = !items[index].locked;
+            localStorage.setItem('cougar_final_data', JSON.stringify(items));
             renderItems();
         }
 
@@ -147,23 +149,31 @@
             const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 
             items.forEach((item, index) => {
-                // เช็คว่าไฟล์นี้ต้องล็อคหรือไม่ (ล็อคจากระบบใหญ่ หรือ ล็อครายไฟล์)
                 const mustLock = isGlobalLocked || item.locked;
                 
                 list.innerHTML += `
                     <div class="download-card">
-                        ${item.locked ? '<span class="lock-badge"><i class="fas fa-lock"></i> Locked</span>' : ''}
-                        <div class="card-img"><img src="${item.img || 'https://via.placeholder.com/300x160'}"></div>
+                        <div class="card-img"><img src="${item.img || 'https://via.placeholder.com/300x150'}"></div>
                         <div class="card-info">
-                            <h4 style="margin:0 0 15px 0;">${item.name}</h4>
-                            <button onclick="attemptDownload('${item.link}', ${mustLock})" class="btn-dl ${mustLock ? 'dl-locked' : 'dl-open'}">
+                            <h4 style="margin:0 0 10px 0;">${item.name}</h4>
+                            <button onclick="doDownload('${item.link}', ${mustLock})" 
+                                    class="btn-dl" 
+                                    style="background:${mustLock ? 'var(--danger)' : 'var(--success)'}">
                                 <i class="fas ${mustLock ? 'fa-lock' : 'fa-download'}"></i> 
-                                ${mustLock ? 'Unlock to Download' : 'Download Now'}
+                                ${mustLock ? 'ใส่รหัสเพื่อโหลด' : 'Download'}
                             </button>
+                            
                             ${isAdmin ? `
-                                <div style="margin-top:10px; font-size:12px; display:flex; justify-content:center; gap:15px;">
-                                    <span onclick="editItem(${index})" style="color:var(--primary); cursor:pointer;">แก้ไข</span>
-                                    <span onclick="deleteItem(${index})" style="color:var(--danger); cursor:pointer;">ลบ</span>
+                                <div class="admin-controls">
+                                    <div class="lock-status">
+                                        <i class="fas fa-lock"></i>
+                                        <label class="switch">
+                                            <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="toggleItemLock(${index})">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <span onclick="editItem(${index})" style="color:var(--primary); cursor:pointer;"><i class="fas fa-edit"></i> แก้ไข</span>
+                                    <span onclick="deleteItem(${index})" style="color:var(--danger); cursor:pointer;"><i class="fas fa-trash"></i> ลบ</span>
                                 </div>
                             ` : ''}
                         </div>
@@ -171,14 +181,11 @@
             });
         }
 
-        function attemptDownload(link, isLocked) {
+        function doDownload(link, isLocked) {
             if (isLocked) {
-                const pass = prompt("ไฟล์นี้ถูกล็อค กรุณาใส่รหัสผ่าน (1234):");
-                if (pass === CONFIG.dlPass) {
-                    window.open(link, '_blank');
-                } else if (pass !== null) {
-                    alert("รหัสผ่านไม่ถูกต้อง!");
-                }
+                const pass = prompt("กรุณาใส่รหัสผ่านเพื่อดาวน์โหลด (1234):");
+                if (pass === CONFIG.dlPass) window.open(link, '_blank');
+                else if (pass !== null) alert("รหัสผ่านไม่ถูกต้อง!");
             } else {
                 window.open(link, '_blank');
             }
@@ -188,17 +195,14 @@
             const name = document.getElementById('itemName').value;
             const img = document.getElementById('itemImg').value;
             const link = document.getElementById('itemLink').value;
-            const locked = document.getElementById('itemLocked').checked;
             const idx = parseInt(document.getElementById('editIndex').value);
 
             if (name && link) {
-                const newItem = { name, img, link, locked };
-                if (idx > -1) items[idx] = newItem;
-                else items.push(newItem);
+                if (idx > -1) items[idx] = { ...items[idx], name, img, link };
+                else items.push({ name, img, link, locked: false });
                 
                 localStorage.setItem('cougar_final_data', JSON.stringify(items));
-                resetForm();
-                renderItems();
+                resetForm(); renderItems();
             } else { alert("กรุณากรอกข้อมูลให้ครบ"); }
         }
 
@@ -207,7 +211,6 @@
             document.getElementById('itemName').value = item.name;
             document.getElementById('itemImg').value = item.img;
             document.getElementById('itemLink').value = item.link;
-            document.getElementById('itemLocked').checked = item.locked || false;
             document.getElementById('editIndex').value = i;
             document.getElementById('btn-save').innerText = "Update";
             window.scrollTo({top:0, behavior:'smooth'});
@@ -218,18 +221,10 @@
             document.getElementById('itemName').value = "";
             document.getElementById('itemImg').value = "";
             document.getElementById('itemLink').value = "";
-            document.getElementById('itemLocked').checked = false;
             document.getElementById('btn-save').innerText = "บันทึก";
         }
 
         function deleteItem(i) { if(confirm("ลบไฟล์นี้?")) { items.splice(i, 1); localStorage.setItem('cougar_final_data', JSON.stringify(items)); renderItems(); } }
-
-        function showAdminView() {
-            document.getElementById('admin-panel').style.display = 'block';
-            const btn = document.getElementById('auth-btn');
-            btn.innerText = "Logout Admin";
-            btn.style.background = "var(--danger)";
-        }
     </script>
 </body>
 </html>
