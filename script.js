@@ -22,30 +22,26 @@ let isAdmin = false;
 let isGlobalLocked = false;
 const _d = (v) => atob(v);
 
-// --- 📊 ระบบสถิติ (Online & Total Visits) ---
+// --- 📊 ระบบสถิติ (ย้ายไปวางหลัง Nav Title) ---
 const initVisitorStats = () => {
-    if (!document.getElementById('visitor-stats-container')) {
-        const statsDiv = document.createElement('div');
-        statsDiv.id = 'visitor-stats-container';
-        statsDiv.style.cssText = `
-            position: fixed; top: 10px; left: 10px; z-index: 9999;
-            background: rgba(0,0,0,0.85); color: white; padding: 10px 15px;
-            border-radius: 12px; font-size: 12px; backdrop-filter: blur(10px);
-            display: flex; flex-direction: column; gap: 6px; pointer-events: none;
-            border-left: 4px solid #2ecc71; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    const navTitle = document.getElementById('nav-title');
+    if (navTitle && !document.getElementById('stats-inline')) {
+        const statsSpan = document.createElement('span');
+        statsSpan.id = 'stats-inline';
+        statsSpan.style.cssText = `
+            font-size: 12px;
+            font-weight: normal;
+            margin-left: 15px;
+            display: inline-flex;
+            gap: 12px;
+            color: #7f8c8d;
+            vertical-align: middle;
         `;
-        statsDiv.innerHTML = `
-            <div style="display:flex; align-items:center; gap:8px;">
-                <i class="fas fa-circle" style="color:#2ecc71; font-size:8px; animation: pulse 1.5s infinite;"></i>
-                <span>Online: <b id="stat-online" style="color:#2ecc71">1</b> คน</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-                <i class="fas fa-eye" style="color:#3498db; font-size:10px;"></i>
-                <span>ยอดเข้าชม: <b id="stat-visits" style="color:#3498db">0</b> ครั้ง</span>
-            </div>
-            <style> @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } } </style>
+        statsSpan.innerHTML = `
+            <span title="Online"><i class="fas fa-circle" style="color:#2ecc71; font-size:8px;"></i> Online: <b id="stat-online">1</b></span>
+            <span title="Visits"><i class="fas fa-eye"></i> Visits: <b id="stat-visits">0</b></span>
         `;
-        document.body.appendChild(statsDiv);
+        navTitle.appendChild(statsSpan);
     }
 
     const onlineRef = ref(db, 'stats/online_users');
@@ -72,7 +68,8 @@ const initVisitorStats = () => {
     });
 };
 
-initVisitorStats();
+// เรียกใช้สถิติ
+setTimeout(initVisitorStats, 500); // รอ DOM โหลดนิดหน่อย
 
 // --- 🔒 ตรวจสอบสถานะ Admin ---
 onAuthStateChanged(auth, (user) => {
@@ -163,32 +160,7 @@ onValue(ref(db, "settings"), (snap) => {
     const s = snap.val() || {};
     isGlobalLocked = s.globalLock || false;
     const lockSwitch = document.getElementById('globalLock');
-    
-    if(isAdmin) {
-        if(lockSwitch) lockSwitch.checked = isGlobalLocked;
-        
-        // --- 🔘 จัดวางปุ่ม Reset All (ปรับปรุงใหม่ ไม่หายแน่นอน) ---
-        const saveBtn = document.getElementById('btn-save'); 
-        if (saveBtn && !document.getElementById('btn-reset-all')) {
-            const resetBtn = document.createElement('button');
-            resetBtn.id = 'btn-reset-all';
-            resetBtn.type = 'button';
-            resetBtn.innerHTML = '<i class="fas fa-history"></i> ล้างยอดทั้งหมด';
-            resetBtn.style.cssText = `
-                background: #ff4757; color: white; border: none; padding: 0 15px;
-                border-radius: 6px; cursor: pointer; font-size: 12px;
-                font-weight: bold; display: inline-flex; align-items: center; gap: 6px;
-                transition: 0.3s; height: 40px; margin-right: 10px;
-                vertical-align: middle;
-            `;
-            resetBtn.onmouseover = () => resetBtn.style.background = '#ff6b81';
-            resetBtn.onmouseout = () => resetBtn.style.background = '#ff4757';
-            resetBtn.onclick = () => window.resetAllDownloads();
-            
-            // นำไปวาง "ข้างหน้า" ปุ่มบันทึกในหน้า Admin
-            saveBtn.parentNode.insertBefore(resetBtn, saveBtn);
-        }
-    }
+    if(isAdmin && lockSwitch) lockSwitch.checked = isGlobalLocked;
     window.renderItems();
 });
 
@@ -266,18 +238,6 @@ window.resetDownloadCount = (key) => {
     }
 };
 
-window.resetAllDownloads = async () => {
-    if (!isAdmin) return;
-    if (confirm("⚠️ ยืนยันการรีเซ็ตยอดดาวน์โหลด 'ทั้งหมด' ให้เป็น 0?\n(ขั้นตอนนี้ไม่สามารถย้อนคืนได้)")) {
-        const updates = {};
-        items.forEach(item => { updates[`cougar_data/${item.key}/downloads`] = 0; });
-        try {
-            await update(ref(db), updates);
-            console.log("All downloads reset success.");
-        } catch (e) { alert("เกิดข้อผิดพลาด: " + e.message); }
-    }
-};
-
 window.resetForm = () => {
     document.getElementById('editKey').value = '';
     document.getElementById('itemName').value = '';
@@ -315,8 +275,13 @@ window.showPage = (id, el) => {
     if(target) target.classList.add('active');
     document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
     if(el) el.classList.add('active');
+    
     const navTitle = document.getElementById('nav-title');
-    if(navTitle) navTitle.innerText = el ? el.innerText.trim() : "Dashboard";
+    if(navTitle) {
+        const stats = document.getElementById('stats-inline');
+        navTitle.innerText = el ? el.innerText.trim() : "Dashboard";
+        if (stats) navTitle.appendChild(stats); // รักษา stats ไว้เสมอเมื่อเปลี่ยนหน้า
+    }
 };
 
 window.openImage = (src) => {
