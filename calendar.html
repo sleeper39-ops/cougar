@@ -39,11 +39,12 @@
             background: #f8fafc; border-left: 4px solid var(--primary); padding: 12px; 
             margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;
         }
-        .event-info strong { display: block; font-size: 14px; }
-        .event-info span { font-size: 11px; color: #64748b; }
+        .event-info strong { display: block; font-size: 14px; margin-bottom: 2px; }
+        .event-info span { font-size: 11px; color: #64748b; line-height: 1.5; }
         .btn-del { 
             background: #fee2e2; color: var(--danger); border: none; cursor: pointer; 
             width: 30px; height: 30px; border-radius: 6px; font-weight: bold; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
         }
         .btn-del:hover { background: var(--danger); color: white; }
 
@@ -70,11 +71,11 @@
             <input type="date" id="date">
         </div>
         <div class="input-item">
-            <label>เวลาเริ่ม</label>
+            <label>เวลาเริ่ม (24 ชม.)</label>
             <input type="time" id="startTime">
         </div>
         <div class="input-item">
-            <label>เวลาสิ้นสุด</label>
+            <label>เวลาสิ้นสุด (24 ชม.)</label>
             <input type="time" id="endTime">
         </div>
         <button class="btn-add" id="btnAdd" onclick="manageEvent('add')">บันทึกนัดหมาย</button>
@@ -97,6 +98,13 @@
 
         window.onload = loadEvents;
 
+        // ฟังก์ชันล้างค่า AM/PM ให้เป็น 24 ชม. แท้ๆ
+        function formatTo24hr(timeStr) {
+            if (!timeStr) return "--:--";
+            // ลบช่องว่างและคำว่า AM, PM, am, pm ออกทั้งหมด
+            return timeStr.replace(/\s?[AaPp][Mm]/g, "").trim();
+        }
+
         async function loadEvents() {
             try {
                 const res = await fetch(`${scriptUrl}?action=list`);
@@ -111,14 +119,17 @@
                 }
 
                 data.forEach(ev => {
+                    const timeStart = formatTo24hr(ev.startTime);
+                    const timeEnd = formatTo24hr(ev.endTime);
+
                     list.innerHTML += `
                         <div class="event-card">
                             <div class="event-info">
                                 <strong>${ev.title}</strong>
                                 <span>📅 ${ev.displayDate}</span><br>
-                                <span>🕒 ${ev.startTime} - ${ev.endTime}</span>
+                                <span>🕒 ${timeStart} - ${timeEnd} น.</span>
                             </div>
-                            <button class="btn-del" onclick="confirmDelete('${ev.title}', '${ev.date}')">×</button>
+                            <button class="btn-del" onclick="confirmDelete('${ev.title}', '${ev.date}')" title="ลบกิจกรรม">×</button>
                         </div>`;
                 });
             } catch (err) {
@@ -126,10 +137,8 @@
             }
         }
 
-        // ฟังก์ชัน Popup ยืนยันก่อนลบ
         function confirmDelete(title, date) {
-            const isConfirmed = confirm(`คุณต้องการลบกิจกรรม "${title}" ใช่หรือไม่?`);
-            if (isConfirmed) {
+            if (confirm(`คุณต้องการลบกิจกรรม "${title}" ใช่หรือไม่?`)) {
                 manageEvent('delete', title, date);
             }
         }
@@ -153,7 +162,7 @@
             fetch(url, { mode: 'no-cors' }).then(() => {
                 setTimeout(() => {
                     location.reload();
-                }, 1200);
+                }, 1000);
             });
         }
     </script>
