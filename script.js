@@ -1,9 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-// เพิ่มการ Import Auth
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// --- Firebase Config (ใช้ตัวเดิมของคุณ) ---
+// --- Firebase Config ---
 const firebaseConfig = {
     apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
     authDomain: "cougar2-database.firebaseapp.com",
@@ -16,21 +15,21 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(app); // สร้างตัวแปร auth
+const auth = getAuth(app);
 
 let items = [];
-let isAdmin = false; // เปลี่ยนเป็น false เริ่มต้น
+let isAdmin = false;
 let isGlobalLocked = false;
-let downloadPassHash = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
 
-// --- 🔒 ระบบตรวจสอบสถานะ Admin (แบบ Real-time) ---
+// --- 🔒 ระบบตรวจสอบสถานะผู้ใช้งาน (Real-time) ---
 onAuthStateChanged(auth, (user) => {
     const panel = document.getElementById('admin-panel');
     const authBtn = document.getElementById('auth-btn');
     const statusText = document.getElementById('dash-status');
     const statusIcon = document.getElementById('status-icon');
 
-    if (user) {
+    // ตรวจสอบว่าเป็น Admin หรือไม่ (เช็คจาก Email)
+    if (user && user.email === "admin@cougar2.com") {
         isAdmin = true;
         if(panel) panel.style.display = 'block';
         if(authBtn) {
@@ -49,32 +48,62 @@ onAuthStateChanged(auth, (user) => {
         if(statusText) statusText.innerText = "Guest Mode";
         if(statusIcon) statusIcon.style.color = "#95a5a6";
     }
-    window.renderItems(); // รีเฟรชรายการไฟล์เพื่อแสดง/ซ่อนปุ่ม Edit
+    window.renderItems();
 });
 
-// --- 🔑 ฟังก์ชัน Login ใหม่ (ใช้ admin / admin2) ---
+// --- 🔑 ฟังก์ชัน Login สำหรับ Admin (admin / admin2) ---
 window.performLogin = () => {
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
-
-    // เติมเมลเข้าไปข้างหลังอัตโนมัติ (ตามที่คุณตั้งใน Console)
-    const email = user + "@cougar2.com"; 
+    const email = user.includes('@') ? user : user + "@cougar2.com"; 
 
     signInWithEmailAndPassword(auth, email, pass)
         .then(() => {
             document.getElementById('loginModal').style.display = 'none';
-            alert("ยินดีต้อนรับ Admin!");
+            // เคลียร์ค่าในช่อง Login
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
         })
         .catch((error) => {
             alert("Username หรือ Password ไม่ถูกต้อง!");
-            console.error(error.message);
         });
+};
+
+// --- 📥 ฟังก์ชันดาวน์โหลด (ใช้ Authentication เช็ครหัสผ่าน) ---
+window.secureDownload = async (link, itemLocked) => {
+    const effectivelyLocked = isGlobalLocked || itemLocked;
+
+    if (!effectivelyLocked) {
+        window.open(link, '_blank');
+        return;
+    }
+
+    const userPass = prompt("🔒 ไฟล์นี้ถูกล็อคไว้ กรุณาใส่รหัสดาวน์โหลด:");
+    if (!userPass) return;
+
+    // บัญชีที่ใช้เช็ครหัสผ่านดาวน์โหลดใน Firebase
+    const downloadEmail = "download@cougar2.com";
+
+    try {
+        // ลอง Login ด้วยรหัสที่กรอกมา
+        await signInWithEmailAndPassword(auth, downloadEmail, userPass);
+        
+        // ถ้าผ่าน ให้เปิดลิงก์
+        window.open(link, '_blank');
+        
+        // ถ้าไม่ใช่ Admin ให้ Logout บัญชีดาวน์โหลดออกทันทีเพื่อคืนสถานะ Guest
+        if (auth.currentUser.email === downloadEmail) {
+            await signOut(auth);
+        }
+    } catch (error) {
+        alert("❌ รหัสดาวน์โหลดไม่ถูกต้อง!");
+    }
 };
 
 // --- 🚪 ฟังก์ชัน Logout ---
 window.toggleAuth = () => {
     if (auth.currentUser) {
-        if (confirm("ต้องการออกจากระบบ Admin ใช่หรือไม่?")) {
+        if (confirm("ต้องการออกจากระบบใช่หรือไม่?")) {
             signOut(auth);
         }
     } else {
@@ -82,21 +111,13 @@ window.toggleAuth = () => {
     }
 };
 
-// --- 🛡️ การรักษาความปลอดภัยหน้าบ้าน (ปิดคลิกขวา/ปุ่ม Inspect) ---
+// --- 🛡️ ความปลอดภัยหน้าบ้าน ---
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = (e) => {
     if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
         return false;
     }
 };
-
-// --- Helper: Hash Function ---
-async function hashText(text) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text);
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
 
 // --- Listeners ---
 onValue(ref(db, "cougar_data"), (snap) => {
@@ -108,13 +129,12 @@ onValue(ref(db, "cougar_data"), (snap) => {
 onValue(ref(db, "settings"), (snap) => {
     const s = snap.val() || {};
     isGlobalLocked = s.globalLock || false;
-    downloadPassHash = s.downloadPassHash || downloadPassHash;
     const lockSwitch = document.getElementById('globalLock');
     if(isAdmin && lockSwitch) lockSwitch.checked = isGlobalLocked;
     window.renderItems();
 });
 
-// --- UI Functions (คงเดิมแต่ปรับปรุงการ Render) ---
+// --- UI Functions ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -156,7 +176,7 @@ window.renderItems = () => {
     if(countEl) countEl.innerText = items.length + " รายการ";
 };
 
-// --- (ส่วนฟังก์ชันอื่นๆ เช่น saveItem, editItem, secureDownload ให้คงเดิมตามโค้ดเก่าของคุณ) ---
+// --- Admin Actions ---
 window.saveItem = async () => {
     const key = document.getElementById('editKey').value;
     const name = document.getElementById('itemName').value;
@@ -196,25 +216,9 @@ window.toggleGlobalLock = () => {
     update(ref(db, "settings"), { globalLock: isChecked });
 };
 
-window.secureDownload = async (link, itemLocked) => {
-    if (isGlobalLocked || itemLocked) {
-        const pass = prompt("ไฟล์นี้ถูกล็อคไว้ กรุณาใส่รหัสผ่าน:");
-        if (!pass) return;
-        const hashedInput = await hashText(pass);
-        if (hashedInput === downloadPassHash) window.open(link, '_blank');
-        else alert("รหัสผ่านไม่ถูกต้อง");
-    } else window.open(link, '_blank');
-};
-
-window.changeDownloadPass = async () => {
-    const newPass = prompt("กรุณากรอกรหัสผ่านดาวน์โหลดใหม่ที่คุณต้องการ:");
-    if (newPass === null) return;
-    if (newPass.trim() === "") return alert("กรุณากรอกรหัสผ่านที่ต้องการเปลี่ยน");
-    try {
-        const hash = await hashText(newPass);
-        await update(ref(db, "settings"), { downloadPassHash: hash });
-        alert("เปลี่ยนรหัสผ่านดาวน์โหลดสำเร็จ!");
-    } catch (e) { alert("เกิดข้อผิดพลาด"); }
+// ฟังก์ชันนี้ถูกยกเลิกเนื่องจากเปลี่ยนไปใช้ Password ใน Firebase Auth โดยตรง
+window.changeDownloadPass = () => {
+    alert("โปรดเปลี่ยนรหัสดาวน์โหลดผ่าน Firebase Console (Email: download@cougar2.com)");
 };
 
 window.showPage = (id, el) => {
