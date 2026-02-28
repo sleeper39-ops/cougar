@@ -73,7 +73,7 @@ window.performLogin = () => {
     });
 });
 
-// --- 📥 Download System (เพิ่มระบบนับยอด) ---
+// --- 📥 Download System (นับยอด) ---
 window.startDownload = async (idx) => {
     const item = items[idx];
     if (!item) return;
@@ -81,13 +81,9 @@ window.startDownload = async (idx) => {
     const effectivelyLocked = isGlobalLocked || item.locked;
     
     if (!effectivelyLocked) {
-        // นับยอดทันทีสำหรับไฟล์ไม่ล็อค
-        await update(ref(db, `cougar_data/${item.key}`), {
-            downloads: increment(1)
-        });
+        await update(ref(db, `cougar_data/${item.key}`), { downloads: increment(1) });
         window.open(item.link, '_blank', 'noopener,noreferrer');
     } else {
-        // เรียกใช้ระบบตรวจสอบรหัสผ่าน
         window.secureDownload(item);
     }
 };
@@ -99,10 +95,7 @@ window.secureDownload = async (item) => {
         const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20="); 
         await signInWithEmailAndPassword(auth, dEmail, userPass);
         
-        // ถ้ารหัสถูกต้องให้นับยอดก่อนเปิดลิงก์
-        await update(ref(db, `cougar_data/${item.key}`), {
-            downloads: increment(1)
-        });
+        await update(ref(db, `cougar_data/${item.key}`), { downloads: increment(1) });
 
         window.open(item.link, '_blank', 'noopener,noreferrer');
         if (auth.currentUser && auth.currentUser.email === dEmail) await signOut(auth);
@@ -134,15 +127,19 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (เพิ่ม Badge แสดงยอดโหลด) ---
+// --- 🖥️ UI Rendering (Badge + Admin Reset) ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
     list.innerHTML = '';
     
+    let totalDownloads = 0; // สำหรับคำนวณยอดรวมในระบบ
+
     items.forEach((item, index) => {
         const effectivelyLocked = isGlobalLocked || item.locked;
-        const count = item.downloads || 0; // ยอดโหลด
+        const count = item.downloads || 0;
+        totalDownloads += count;
+
         const card = document.createElement('div');
         card.className = 'download-card';
         
@@ -175,6 +172,10 @@ window.renderItems = () => {
                 <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
                     <i class="fas fa-edit"></i> Edit
                 </button>
+
+                <button onclick="window.resetDownloadCount('${item.key}')" class="btn-admin-tool" style="color:#7f8c8d;" title="Reset Download">
+                    <i class="fas fa-redo-alt"></i> Reset
+                </button>
                 
                 <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
                     <i class="fas fa-trash"></i> Delete
@@ -183,8 +184,14 @@ window.renderItems = () => {
         `;
         list.appendChild(card);
     });
+
+    // อัปเดตข้อมูล Dashboard
     const countEl = document.getElementById('dash-count');
     if(countEl) countEl.innerText = items.length + " รายการ";
+
+    // ถ้ามี ID dash-total-dl ใน HTML จะแสดงยอดดาวน์โหลดรวม
+    const totalDlEl = document.getElementById('dash-total-dl');
+    if(totalDlEl) totalDlEl.innerText = totalDownloads + " ครั้ง";
 };
 
 // --- 🛠️ Admin Actions ---
@@ -201,12 +208,18 @@ window.saveItem = async () => {
         img, 
         link, 
         locked: key ? items.find(i => i.key === key).locked : false,
-        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 // รักษายอดดาวน์โหลดเดิม
+        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 
     };
     
     if(key) await update(ref(db, `cougar_data/${key}`), data);
     else await push(ref(db, "cougar_data"), data);
     window.resetForm();
+};
+
+window.resetDownloadCount = (key) => {
+    if (isAdmin && confirm("ต้องการรีเซ็ตยอดดาวน์โหลดของรายการนี้เป็น 0?")) {
+        update(ref(db, `cougar_data/${key}`), { downloads: 0 });
+    }
 };
 
 window.resetForm = () => {
@@ -238,12 +251,7 @@ window.editItem = (key) => {
 };
 
 window.deleteItem = (key) => isAdmin && confirm("ต้องการลบรายการนี้?") && remove(ref(db, `cougar_data/${key}`));
-
-window.toggleItemLock = (key, curr) => {
-    if (!isAdmin) return;
-    update(ref(db, `cougar_data/${key}`), { locked: !curr });
-};
-
+window.toggleItemLock = (key, curr) => isAdmin && update(ref(db, `cougar_data/${key}`), { locked: !curr });
 window.toggleGlobalLock = () => {
     if (!isAdmin) return;
     const isChecked = document.getElementById('globalLock').checked;
