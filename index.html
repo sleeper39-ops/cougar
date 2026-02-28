@@ -50,6 +50,21 @@
         .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
         .btn-action { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; height: 41px; color: white; }
 
+        <div class="dash-card">
+              <i class="fas fa-users"></i>
+            <div class="dash-info">
+            <span id="dash-online">0 คน</span>
+            <p>กำลังออนไลน์</p>
+            </div>
+        </div>
+        <div class="dash-card">
+            <i class="fas fa-eye"></i>
+            <div class="dash-info">
+            <span id="dash-visits">0 ครั้ง</span>
+            <p>ผู้เข้าชมทั้งหมด</p>
+        </div>
+    </div>
+
         /* สไตล์สำหรับแสดงยอดดาวน์โหลด */
     .download-count-badge {
     position: absolute;
@@ -149,20 +164,7 @@
         <a onclick="window.showPage('esos-page', this)" id="nav-esos"><i class="fas fa-rocket"></i> ระบบ ESOS</a>
     </div>
 
-<div class="dash-card">
-              <i class="fas fa-users"></i>
-            <div class="dash-info">
-            <span id="dash-online">0 คน</span>
-            <p>กำลังออนไลน์</p>
-            </div>
-        </div>
-        <div class="dash-card">
-            <i class="fas fa-eye"></i>
-            <div class="dash-info">
-            <span id="dash-visits">0 ครั้ง</span>
-            <p>ผู้เข้าชมทั้งหมด</p>
-        </div>
-    </div>
+
     
     <div class="wrapper">
         <div class="top-nav">
@@ -227,5 +229,6 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
 
 
