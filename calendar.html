@@ -14,47 +14,38 @@
 
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); color: #1e293b; display: flex; flex-direction: column; height: 100vh; }
         
-        /* 1. ส่วนเพิ่มกิจกรรม - แถวยาวแถวเดียว */
+        /* ส่วนเพิ่มกิจกรรม */
         .header-section { 
             background: white; padding: 15px 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; justify-content: center; z-index: 10;
+            display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; justify-content: center; z-index: 10;
         }
         .input-item { display: flex; flex-direction: column; gap: 4px; }
         .input-item label { font-size: 12px; font-weight: 600; color: #64748b; }
-        input, select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; }
-        .btn-add { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 38px; }
-        .btn-add:hover { background: #15803d; }
+        
+        /* จัดกลุ่มชั่วโมงและนาที */
+        .time-group { display: flex; align-items: center; gap: 5px; }
+        
+        input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; font-size: 14px; }
+        .btn-add { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 38px; transition: 0.2s; }
+        .btn-add:hover { background: #15803d; transform: translateY(-1px); }
 
-        /* 2. ส่วนเนื้อหาหลัก */
         .main-content { display: flex; flex: 1; overflow: hidden; gap: 15px; padding: 15px; }
-
-        /* รายการกิจกรรม (ฝั่งซ้าย) */
-        .today-list { 
-            width: 320px; background: white; border-radius: 12px; padding: 20px; 
-            display: flex; flex-direction: column; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
+        .today-list { width: 320px; background: white; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .today-list h3 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
         .event-container { flex: 1; overflow-y: auto; margin-top: 10px; }
-        .event-card { 
-            background: #f8fafc; border-left: 4px solid var(--primary); padding: 12px; 
-            margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;
-        }
+        .event-card { background: #f8fafc; border-left: 4px solid var(--primary); padding: 12px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
         .event-info strong { display: block; font-size: 14px; margin-bottom: 2px; }
         .event-info span { font-size: 11px; color: #64748b; line-height: 1.5; }
-        .btn-del { 
-            background: #fee2e2; color: var(--danger); border: none; cursor: pointer; 
-            width: 30px; height: 30px; border-radius: 6px; font-weight: bold; transition: 0.2s;
-            display: flex; align-items: center; justify-content: center; font-size: 18px;
-        }
+        .btn-del { background: #fee2e2; color: var(--danger); border: none; cursor: pointer; width: 30px; height: 30px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 18px; }
         .btn-del:hover { background: var(--danger); color: white; }
 
-        /* ปฏิทิน (เน้นใหญ่) */
         .calendar-frame { flex: 1; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         iframe { width: 100%; height: 100%; border: none; }
 
         @media (max-width: 900px) {
+            .header-section { padding: 20px; }
             .main-content { flex-direction: column; overflow-y: auto; }
-            .today-list { width: auto; height: 250px; }
+            .today-list { width: auto; height: 300px; }
             .calendar-frame { height: 500px; flex: none; }
         }
     </style>
@@ -64,7 +55,7 @@
     <div class="header-section">
         <div class="input-item">
             <label>หัวข้อกิจกรรม</label>
-            <input type="text" id="title" placeholder="ระบุชื่อกิจกรรม">
+            <input type="text" id="title" placeholder="ระบุชื่อกิจกรรม" style="width: 180px;">
         </div>
         <div class="input-item">
             <label>วันที่</label>
@@ -72,33 +63,19 @@
         </div>
         
         <div class="input-item">
-            <label>เวลาเริ่ม (24 ชม.)</label>
-            <select id="startTime">
-                <script>
-                    for(let h=0; h<24; h++) {
-                        for(let m=0; m<60; m+=5) {
-                            let hh = h.toString().padStart(2, '0');
-                            let mm = m.toString().padStart(2, '0');
-                            document.write(`<option value="${hh}:${mm}">${hh}:${mm} น.</option>`);
-                        }
-                    }
-                </script>
-            </select>
+            <label>เวลาเริ่ม</label>
+            <div class="time-group">
+                <select id="startH"></select> :
+                <select id="startM"></select>
+            </div>
         </div>
 
         <div class="input-item">
-            <label>เวลาสิ้นสุด (24 ชม.)</label>
-            <select id="endTime">
-                <script>
-                    for(let h=0; h<24; h++) {
-                        for(let m=0; m<60; m+=5) {
-                            let hh = h.toString().padStart(2, '0');
-                            let mm = m.toString().padStart(2, '0');
-                            document.write(`<option value="${hh}:${mm}">${hh}:${mm} น.</option>`);
-                        }
-                    }
-                </script>
-            </select>
+            <label>เวลาสิ้นสุด</label>
+            <div class="time-group">
+                <select id="endH"></select> :
+                <select id="endM"></select>
+            </div>
         </div>
 
         <button class="btn-add" id="btnAdd" onclick="manageEvent('add')">บันทึกนัดหมาย</button>
@@ -119,9 +96,33 @@
     <script>
         const scriptUrl = "https://script.google.com/macros/s/AKfycbzJirF7Ldstah4LZepPRCGWmnoPSDnLGv0KvFb3bac-bvh8iLLxMdUH0Tc5EmIAz_c/exec";
 
-        window.onload = loadEvents;
+        // สร้างตัวเลือกเวลาใน Drop-down
+        function initTimeSelectors() {
+            const sh = document.getElementById('startH'), sm = document.getElementById('startM');
+            const eh = document.getElementById('endH'), em = document.getElementById('endM');
 
-        // ฟังก์ชันล้างค่า AM/PM ให้เป็น 24 ชม. แท้ๆ
+            // ชั่วโมง 00-23
+            let hOptions = "";
+            for(let i=0; i<24; i++) {
+                let val = i.toString().padStart(2, '0');
+                hOptions += `<option value="${val}">${val}</option>`;
+            }
+            sh.innerHTML = eh.innerHTML = hOptions;
+
+            // นาที 00-55 (ห่าง 5 นาที)
+            let mOptions = "";
+            for(let i=0; i<60; i+=5) {
+                let val = i.toString().padStart(2, '0');
+                mOptions += `<option value="${val}">${val}</option>`;
+            }
+            sm.innerHTML = em.innerHTML = mOptions;
+        }
+
+        window.onload = () => {
+            initTimeSelectors();
+            loadEvents();
+        };
+
         function formatTo24hr(timeStr) {
             if (!timeStr) return "--:--";
             return timeStr.replace(/\s?[AaPp][Mm]/g, "").trim();
@@ -141,15 +142,12 @@
                 }
 
                 data.forEach(ev => {
-                    const timeStart = formatTo24hr(ev.startTime);
-                    const timeEnd = formatTo24hr(ev.endTime);
-
                     list.innerHTML += `
                         <div class="event-card">
                             <div class="event-info">
                                 <strong>${ev.title}</strong>
                                 <span>📅 ${ev.displayDate}</span><br>
-                                <span>🕒 ${timeStart} - ${timeEnd} น.</span>
+                                <span>🕒 ${formatTo24hr(ev.startTime)} - ${formatTo24hr(ev.endTime)} น.</span>
                             </div>
                             <button class="btn-del" onclick="confirmDelete('${ev.title}', '${ev.date}')" title="ลบกิจกรรม">×</button>
                         </div>`;
@@ -168,8 +166,10 @@
         function manageEvent(action, titleDel, dateDel) {
             const title = titleDel || document.getElementById('title').value;
             const date = dateDel || document.getElementById('date').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
+            
+            // รวม ชม. และ นาที เข้าด้วยกัน
+            const startTime = document.getElementById('startH').value + ":" + document.getElementById('startM').value;
+            const endTime = document.getElementById('endH').value + ":" + document.getElementById('endM').value;
 
             if (!title || !date) return alert("กรุณาระบุชื่อและวันที่");
 
@@ -182,21 +182,9 @@
             const url = `${scriptUrl}?action=${action}&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${endTime}`;
 
             fetch(url, { mode: 'no-cors' }).then(() => {
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                setTimeout(() => { location.reload(); }, 800);
             });
         }
-
-        // ส่วนสำหรับซ่อนปุ่ม Admin หากไม่ได้อยู่หน้าหลัก
-        document.addEventListener("DOMContentLoaded", function() {
-            const adminBtn = document.getElementById('admin-nav-item');
-            const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('.html') === false;
-            
-            if (!isIndex && adminBtn) {
-                adminBtn.style.display = 'none';
-            }
-        });
     </script>
 </body>
 </html>
