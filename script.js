@@ -20,7 +20,6 @@ const auth = getAuth(app);
 let items = [];
 let isAdmin = false;
 let isGlobalLocked = false;
-
 const _d = (v) => atob(v);
 
 // --- 📊 ระบบสถิติ (Online & Total Visits) ---
@@ -30,19 +29,19 @@ const initVisitorStats = () => {
         statsDiv.id = 'visitor-stats-container';
         statsDiv.style.cssText = `
             position: fixed; top: 10px; left: 10px; z-index: 9999;
-            background: rgba(0,0,0,0.7); color: white; padding: 8px 15px;
-            border-radius: 8px; font-size: 11px; backdrop-filter: blur(5px);
-            display: flex; flex-direction: column; gap: 3px; pointer-events: none;
-            border-left: 3px solid #2ecc71;
+            background: rgba(0,0,0,0.8); color: white; padding: 10px 15px;
+            border-radius: 10px; font-size: 12px; backdrop-filter: blur(8px);
+            display: flex; flex-direction: column; gap: 5px; pointer-events: none;
+            border-left: 4px solid #2ecc71; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         `;
         statsDiv.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px;">
                 <i class="fas fa-circle" style="color:#2ecc71; font-size:8px; animation: pulse 1.5s infinite;"></i>
-                <span>Online: <b id="stat-online">1</b> คน</span>
+                <span>Online: <b id="stat-online" style="color:#2ecc71">1</b></span>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
                 <i class="fas fa-eye" style="color:#3498db; font-size:10px;"></i>
-                <span>Visits: <b id="stat-visits">0</b> ครั้ง</span>
+                <span>Visits: <b id="stat-visits" style="color:#3498db">0</b></span>
             </div>
             <style> @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } } </style>
         `;
@@ -72,7 +71,7 @@ const initVisitorStats = () => {
     });
     onValue(onlineRef, (snap) => {
         const oEl = document.getElementById('stat-online');
-        if(oEl) oEl.innerText = snap.size || 1;
+        if(oEl) oEl.innerText = (snap.size || 1).toLocaleString() + " คน";
     });
 };
 
@@ -173,26 +172,27 @@ onValue(ref(db, "settings"), (snap) => {
     isGlobalLocked = s.globalLock || false;
     const lockSwitch = document.getElementById('globalLock');
     
-    if(isAdmin && lockSwitch) {
-        lockSwitch.checked = isGlobalLocked;
+    if(isAdmin) {
+        if(lockSwitch) lockSwitch.checked = isGlobalLocked;
         
-        // --- 🔘 ย้ายปุ่ม Reset All ไปไว้หลังปุ่ม Lock All ---
-        const lockGroup = lockSwitch.closest('.admin-lock-group') || lockSwitch.parentElement;
-        if (lockGroup && !document.getElementById('btn-reset-all')) {
+        // --- 🔘 ย้ายปุ่ม Reset All ไปไว้ในแถวปุ่มกดของฟอร์ม (จัดระเบียบใหม่) ---
+        const formActions = document.querySelector('.form-actions'); // ค้นหากลุ่มปุ่ม บันทึก/ยกเลิก
+        if (formActions && !document.getElementById('btn-reset-all')) {
             const resetBtn = document.createElement('button');
             resetBtn.id = 'btn-reset-all';
+            resetBtn.type = 'button';
             resetBtn.innerHTML = '<i class="fas fa-history"></i> ล้างยอดทั้งหมด';
             resetBtn.style.cssText = `
-                background: #7f8c8d; color: white; border: none; padding: 4px 12px;
-                border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 15px;
-                font-weight: bold; display: inline-flex; align-items: center; gap: 5px;
-                vertical-align: middle; transition: 0.3s;
+                background: #e74c3c; color: white; border: none; padding: 10px 15px;
+                border-radius: 6px; cursor: pointer; font-size: 13px;
+                font-weight: bold; display: inline-flex; align-items: center; gap: 8px;
+                transition: 0.3s; margin-right: auto; /* ดันไปซ้ายสุดของแถว */
             `;
-            resetBtn.onmouseover = () => resetBtn.style.background = '#6c7a7b';
-            resetBtn.onmouseout = () => resetBtn.style.background = '#7f8c8d';
+            resetBtn.onmouseover = () => resetBtn.style.background = '#c0392b';
+            resetBtn.onmouseout = () => resetBtn.style.background = '#e74c3c';
             resetBtn.onclick = () => window.resetAllDownloads();
             
-            lockGroup.appendChild(resetBtn);
+            formActions.prepend(resetBtn); // วางไว้หน้าปุ่มบันทึก
         }
     }
     window.renderItems();
@@ -244,7 +244,7 @@ window.renderItems = () => {
     const countEl = document.getElementById('dash-count');
     if(countEl) countEl.innerText = items.length + " รายการ";
     const totalDlEl = document.getElementById('dash-total-dl');
-    if(totalDlEl) totalDlEl.innerText = totalDownloads + " ครั้ง";
+    if(totalDlEl) totalDlEl.innerText = totalDownloads.toLocaleString() + " ครั้ง";
 };
 
 // --- 🛠️ Admin Actions ---
@@ -274,7 +274,7 @@ window.resetDownloadCount = (key) => {
 
 window.resetAllDownloads = async () => {
     if (!isAdmin) return;
-    if (confirm("⚠️ ยืนยันการรีเซ็ตยอดดาวน์โหลด 'ทั้งหมด' ให้เป็น 0?")) {
+    if (confirm("⚠️ ยืนยันการรีเซ็ตยอดดาวน์โหลด 'ทั้งหมด' ให้เป็น 0?\n(ขั้นตอนนี้ไม่สามารถย้อนคืนได้)")) {
         const updates = {};
         items.forEach(item => { updates[`cougar_data/${item.key}/downloads`] = 0; });
         try {
