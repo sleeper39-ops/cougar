@@ -51,5 +51,19 @@
             initPlayer('v4', 'https://streaming.udoncity.go.th:1935/live/Axis_12_33.stream/chunklist_w34733218.m3u8');
         };
     </script>
+    <script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // ค้นหา Element ของปุ่ม Admin
+    const adminBtn = document.getElementById('admin-nav-item');
+    
+    // ตรวจสอบว่าถ้าไม่ใช่หน้า index.html ให้ลบทิ้งทันที
+    const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
+    
+    if (!isIndex && adminBtn) {
+      adminBtn.style.display = 'none'; // หรือใช้ adminBtn.remove(); เพื่อลบออกจาก Code เลย
+    }
+  });
+</script>
 </body>
+
 </html>
