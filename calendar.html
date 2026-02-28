@@ -4,18 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        .form-container { padding: 10px; background: #f4f4f4; border-bottom: 1px solid #ccc; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: #f8f9fa; }
+        .form-container { padding: 15px; background: #ffffff; border-bottom: 2px solid #dee2e6; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 12px; color: #666; font-weight: bold; }
+        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; align-self: flex-end; }
+        button:hover { background: #0056b3; }
         iframe { flex-grow: 1; width: 100%; border: 0; }
-        input, button { padding: 8px; margin: 2px; }
     </style>
 </head>
 <body>
     <div class="form-container">
-        <strong>เพิ่มกิจกรรม:</strong>
-        <input type="text" id="title" placeholder="ชื่อกิจกรรม">
-        <input type="date" id="date">
-        <button onclick="saveEvent()">บันทึก</button>
+        <div class="input-group">
+            <label>ชื่อกิจกรรม</label>
+            <input type="text" id="title" placeholder="เช่น ประชุมงาน">
+        </div>
+        <div class="input-group">
+            <label>วันที่</label>
+            <input type="date" id="date">
+        </div>
+        <div class="input-group">
+            <label>เวลาเริ่ม</label>
+            <input type="time" id="startTime">
+        </div>
+        <div class="input-group">
+            <label>เวลาสิ้นสุด</label>
+            <input type="time" id="endTime">
+        </div>
+        <button onclick="saveEvent()">บันทึกกิจกรรม</button>
     </div>
 
     <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok"></iframe>
@@ -24,15 +41,22 @@
         function saveEvent() {
             const title = document.getElementById('title').value;
             const date = document.getElementById('date').value;
-            const scriptUrl = "URL_APPS_SCRIPT_ที่_DEPLOY_แล้ว"; // นำ URL จากการ Deploy มาวางที่นี่
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
             
-            if(!title || !date) return alert("กรุณากรอกข้อมูลให้ครบ");
+            // นำ URL ที่ได้จากขั้นตอน Deploy Web App มาวางที่นี่
+            const scriptUrl = "วาง_URL_WEB_APP_ของคุณที่นี่"; 
+            
+            if(!title || !date) return alert("กรุณากรอกชื่อและวันที่");
 
-            fetch(`${scriptUrl}?title=${title}&date=${date}`, { mode: 'no-cors' })
+            const finalUrl = `${scriptUrl}?title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${endTime}`;
+
+            fetch(finalUrl, { mode: 'no-cors' })
                 .then(() => {
-                    alert("ส่งข้อมูลแล้ว! (ปฏิทินอาจใช้เวลาอัปเดตสักครู่)");
-                    location.reload();
-                });
+                    alert("บันทึกสำเร็จ! รอสักครู่แล้วหน้าเว็บจะรีโหลด");
+                    setTimeout(() => location.reload(), 2000); // รอ 2 วินาทีให้ Google อัปเดตข้อมูล
+                })
+                .catch(err => alert("เกิดข้อผิดพลาด: " + err));
         }
     </script>
 </body>
