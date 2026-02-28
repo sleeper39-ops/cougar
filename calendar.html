@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการปฏิทินอัจฉริยะ</title>
+    <title>ระบบจัดการปฏิทิน</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -17,44 +17,43 @@
         /* 1. ส่วนเพิ่มกิจกรรม - แถวยาวแถวเดียว */
         .header-section { 
             background: white; padding: 15px 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; justify-content: center;
+            display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; justify-content: center; z-index: 10;
         }
         .input-item { display: flex; flex-direction: column; gap: 4px; }
         .input-item label { font-size: 12px; font-weight: 600; color: #64748b; }
-        input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; transition: 0.2s; }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
-        .btn-add { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; height: 38px; }
-        .btn-add:hover { background: #15803d; transform: translateY(-1px); }
+        input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
+        .btn-add { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 38px; }
+        .btn-add:hover { background: #15803d; }
 
-        /* 2. ส่วนเนื้อหาหลัก - แบ่งซ้ายขวา */
+        /* 2. ส่วนเนื้อหาหลัก */
         .main-content { display: flex; flex: 1; overflow: hidden; gap: 15px; padding: 15px; }
 
-        /* กิจกรรมวันนี้ (ฝั่งซ้าย) */
+        /* รายการกิจกรรม (ฝั่งซ้าย) */
         .today-list { 
             width: 320px; background: white; border-radius: 12px; padding: 20px; 
             display: flex; flex-direction: column; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
-        .today-list h3 { margin-top: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+        .today-list h3 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
         .event-container { flex: 1; overflow-y: auto; margin-top: 10px; }
         .event-card { 
             background: #f8fafc; border-left: 4px solid var(--primary); padding: 12px; 
-            margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;
         }
-        .event-info strong { display: block; font-size: 14px; margin-bottom: 4px; }
-        .event-info span { font-size: 12px; color: #64748b; }
+        .event-info strong { display: block; font-size: 14px; }
+        .event-info span { font-size: 11px; color: #64748b; }
         .btn-del { 
-            background: none; color: #94a3b8; border: none; cursor: pointer; padding: 4px; border-radius: 4px; 
-            font-size: 18px; line-height: 1; transition: 0.2s;
+            background: #fee2e2; color: var(--danger); border: none; cursor: pointer; 
+            width: 30px; height: 30px; border-radius: 6px; font-weight: bold; transition: 0.2s;
         }
-        .btn-del:hover { color: var(--danger); background: #fee2e2; }
+        .btn-del:hover { background: var(--danger); color: white; }
 
-        /* ปฏิทิน (ฝั่งขวา - เน้นใหญ่) */
-        .calendar-frame { flex: 1; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: relative; }
+        /* ปฏิทิน (เน้นใหญ่) */
+        .calendar-frame { flex: 1; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         iframe { width: 100%; height: 100%; border: none; }
 
         @media (max-width: 900px) {
             .main-content { flex-direction: column; overflow-y: auto; }
-            .today-list { width: auto; height: 300px; }
+            .today-list { width: auto; height: 250px; }
             .calendar-frame { height: 500px; flex: none; }
         }
     </style>
@@ -64,33 +63,32 @@
     <div class="header-section">
         <div class="input-item">
             <label>หัวข้อกิจกรรม</label>
-            <input type="text" id="title" placeholder="ชื่อกิจกรรม...">
+            <input type="text" id="title" placeholder="ระบุชื่อกิจกรรม">
         </div>
         <div class="input-item">
             <label>วันที่</label>
             <input type="date" id="date">
         </div>
         <div class="input-item">
-            <label>เริ่ม (24 ชม.)</label>
+            <label>เวลาเริ่ม</label>
             <input type="time" id="startTime">
         </div>
         <div class="input-item">
-            <label>สิ้นสุด (24 ชม.)</label>
+            <label>เวลาสิ้นสุด</label>
             <input type="time" id="endTime">
         </div>
-        <button class="btn-add" onclick="manageEvent('add')">บันทึกนัดหมาย</button>
+        <button class="btn-add" id="btnAdd" onclick="manageEvent('add')">บันทึกนัดหมาย</button>
     </div>
 
     <div class="main-content">
         <div class="today-list">
-            <h3>📅 กิจกรรมเร็วๆ นี้</h3>
-            <div id="loading" style="font-size: 12px; color: #94a3b8;">กำลังดึงข้อมูล...</div>
-            <div id="eventDisplay" class="event-container">
-                </div>
+            <h3>📅 รายการกิจกรรม</h3>
+            <div id="loading" style="font-size: 12px; color: #94a3b8;">กำลังโหลดข้อมูล...</div>
+            <div id="eventDisplay" class="event-container"></div>
         </div>
 
         <div class="calendar-frame">
-            <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok&mode=WEEK&showNav=1&showPrint=0&showTabs=1&showCalendars=0"></iframe>
+            <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok&mode=MONTH&showTitle=0&showNav=1&showPrint=0&showTabs=1&showCalendars=0"></iframe>
         </div>
     </div>
 
@@ -117,14 +115,22 @@
                         <div class="event-card">
                             <div class="event-info">
                                 <strong>${ev.title}</strong>
-                                <span>${ev.displayDate}</span><br>
+                                <span>📅 ${ev.displayDate}</span><br>
                                 <span>🕒 ${ev.startTime} - ${ev.endTime}</span>
                             </div>
-                            <button class="btn-del" onclick="manageEvent('delete', '${ev.title}', '${ev.date}')" title="ลบกิจกรรม">×</button>
+                            <button class="btn-del" onclick="confirmDelete('${ev.title}', '${ev.date}')">×</button>
                         </div>`;
                 });
             } catch (err) {
                 document.getElementById('loading').innerText = 'ไม่สามารถโหลดข้อมูลได้';
+            }
+        }
+
+        // ฟังก์ชัน Popup ยืนยันก่อนลบ
+        function confirmDelete(title, date) {
+            const isConfirmed = confirm(`คุณต้องการลบกิจกรรม "${title}" ใช่หรือไม่?`);
+            if (isConfirmed) {
+                manageEvent('delete', title, date);
             }
         }
 
@@ -134,17 +140,20 @@
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
 
-            if (!title || !date) return alert("กรุณาระบุชื่อและวันที่ให้ครบ");
+            if (!title || !date) return alert("กรุณาระบุชื่อและวันที่");
+
+            const btnAdd = document.getElementById('btnAdd');
+            if(action === 'add') {
+                btnAdd.innerText = 'กำลังบันทึก...';
+                btnAdd.disabled = true;
+            }
 
             const url = `${scriptUrl}?action=${action}&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${endTime}`;
-            
-            // UI Feedback
-            if(action === 'add') document.querySelector('.btn-add').innerText = 'กำลังบันทึก...';
 
             fetch(url, { mode: 'no-cors' }).then(() => {
                 setTimeout(() => {
                     location.reload();
-                }, 1000);
+                }, 1200);
             });
         }
     </script>
