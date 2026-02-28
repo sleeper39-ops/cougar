@@ -21,7 +21,7 @@
         }
         .input-item { display: flex; flex-direction: column; gap: 4px; }
         .input-item label { font-size: 12px; font-weight: 600; color: #64748b; }
-        input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
+        input, select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; }
         .btn-add { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 38px; }
         .btn-add:hover { background: #15803d; }
 
@@ -70,14 +70,37 @@
             <label>วันที่</label>
             <input type="date" id="date">
         </div>
+        
         <div class="input-item">
             <label>เวลาเริ่ม (24 ชม.)</label>
-            <input type="time" id="startTime">
+            <select id="startTime">
+                <script>
+                    for(let h=0; h<24; h++) {
+                        for(let m=0; m<60; m+=5) {
+                            let hh = h.toString().padStart(2, '0');
+                            let mm = m.toString().padStart(2, '0');
+                            document.write(`<option value="${hh}:${mm}">${hh}:${mm} น.</option>`);
+                        }
+                    }
+                </script>
+            </select>
         </div>
+
         <div class="input-item">
             <label>เวลาสิ้นสุด (24 ชม.)</label>
-            <input type="time" id="endTime">
+            <select id="endTime">
+                <script>
+                    for(let h=0; h<24; h++) {
+                        for(let m=0; m<60; m+=5) {
+                            let hh = h.toString().padStart(2, '0');
+                            let mm = m.toString().padStart(2, '0');
+                            document.write(`<option value="${hh}:${mm}">${hh}:${mm} น.</option>`);
+                        }
+                    }
+                </script>
+            </select>
         </div>
+
         <button class="btn-add" id="btnAdd" onclick="manageEvent('add')">บันทึกนัดหมาย</button>
     </div>
 
@@ -101,7 +124,6 @@
         // ฟังก์ชันล้างค่า AM/PM ให้เป็น 24 ชม. แท้ๆ
         function formatTo24hr(timeStr) {
             if (!timeStr) return "--:--";
-            // ลบช่องว่างและคำว่า AM, PM, am, pm ออกทั้งหมด
             return timeStr.replace(/\s?[AaPp][Mm]/g, "").trim();
         }
 
@@ -165,20 +187,16 @@
                 }, 1000);
             });
         }
+
+        // ส่วนสำหรับซ่อนปุ่ม Admin หากไม่ได้อยู่หน้าหลัก
+        document.addEventListener("DOMContentLoaded", function() {
+            const adminBtn = document.getElementById('admin-nav-item');
+            const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('.html') === false;
+            
+            if (!isIndex && adminBtn) {
+                adminBtn.style.display = 'none';
+            }
+        });
     </script>
-    <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    // ค้นหา Element ของปุ่ม Admin
-    const adminBtn = document.getElementById('admin-nav-item');
-    
-    // ตรวจสอบว่าถ้าไม่ใช่หน้า index.html ให้ลบทิ้งทันที
-    const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
-    
-    if (!isIndex && adminBtn) {
-      adminBtn.style.display = 'none'; // หรือใช้ adminBtn.remove(); เพื่อลบออกจาก Code เลย
-    }
-  });
-</script>
 </body>
 </html>
-
