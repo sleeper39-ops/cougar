@@ -9,44 +9,148 @@
             --primary: #2563eb;
             --success: #16a34a;
             --danger: #dc2626;
-            --bg: #f1f5f9;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); color: #1e293b; display: flex; flex-direction: column; height: 100vh; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--text-main); 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden;
+        }
         
-        /* ส่วนเพิ่มกิจกรรม */
+        /* 1. ส่วนหัว (Header Section) */
         .header-section { 
-            background: white; padding: 15px 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; justify-content: center; z-index: 10;
+            background: white; 
+            padding: 12px 20px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 15px; 
+            align-items: flex-end; 
+            justify-content: center; 
+            z-index: 10;
+            border-bottom: 1px solid var(--border);
         }
-        .input-item { display: flex; flex-direction: column; gap: 4px; }
-        .input-item label { font-size: 12px; font-weight: 600; color: #64748b; }
-        
-        /* จัดกลุ่มชั่วโมงและนาที */
-        .time-group { display: flex; align-items: center; gap: 5px; }
-        
-        input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; font-size: 14px; }
-        .btn-add { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 38px; transition: 0.2s; }
-        .btn-add:hover { background: #15803d; transform: translateY(-1px); }
 
+        .input-item { display: flex; flex-direction: column; gap: 5px; }
+        .input-item label { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        input, select { 
+            padding: 7px 10px; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            outline: none; 
+            background: #fff; 
+            font-size: 13.5px;
+            color: var(--text-main);
+            transition: border 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--primary); }
+
+        .time-group { display: flex; align-items: center; gap: 4px; font-weight: bold; color: var(--text-sub); }
+        .time-group select { width: 55px; text-align: center; }
+        
+        .btn-add { 
+            background: var(--success); 
+            color: white; 
+            border: none; 
+            padding: 0 18px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 13.5px;
+            height: 35px; 
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .btn-add:hover { background: #15803d; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(22, 163, 74, 0.2); }
+
+        /* 2. เนื้อหาหลัก (Main Content) */
         .main-content { display: flex; flex: 1; overflow: hidden; gap: 15px; padding: 15px; }
-        .today-list { width: 320px; background: white; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .today-list h3 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
-        .event-container { flex: 1; overflow-y: auto; margin-top: 10px; }
-        .event-card { background: #f8fafc; border-left: 4px solid var(--primary); padding: 12px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .event-info strong { display: block; font-size: 14px; margin-bottom: 2px; }
-        .event-info span { font-size: 11px; color: #64748b; line-height: 1.5; }
-        .btn-del { background: #fee2e2; color: var(--danger); border: none; cursor: pointer; width: 30px; height: 30px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+        /* ฝั่งซ้าย: รายการกิจกรรม */
+        .today-list { 
+            width: 300px; 
+            background: white; 
+            border-radius: 10px; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+        .today-list h3 { 
+            margin: 0 0 12px 0; 
+            font-size: 16px; 
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .event-container { flex: 1; overflow-y: auto; padding-right: 5px; }
+        
+        /* การ์ดกิจกรรม */
+        .event-card { 
+            background: #ffffff; 
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary); 
+            padding: 10px; 
+            margin-bottom: 8px; 
+            border-radius: 6px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start;
+            transition: background 0.2s;
+        }
+        .event-card:hover { background: #f1f5f9; }
+        .event-info strong { display: block; font-size: 13.5px; color: var(--text-main); margin-bottom: 3px; line-height: 1.3; }
+        .event-info span { font-size: 11px; color: var(--text-sub); display: block; margin-top: 2px; }
+        
+        .btn-del { 
+            background: transparent; 
+            color: #94a3b8; 
+            border: none; 
+            cursor: pointer; 
+            width: 24px; 
+            height: 24px; 
+            border-radius: 4px; 
+            font-size: 18px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            transition: all 0.2s;
+        }
         .btn-del:hover { background: var(--danger); color: white; }
 
-        .calendar-frame { flex: 1; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        /* ฝั่งขวา: ปฏิทิน */
+        .calendar-frame { 
+            flex: 1; 
+            background: white; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
         iframe { width: 100%; height: 100%; border: none; }
 
+        /* Scrollbar ปรับแต่งให้เล็กลง */
+        .event-container::-webkit-scrollbar { width: 4px; }
+        .event-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
         @media (max-width: 900px) {
-            .header-section { padding: 20px; }
+            .header-section { padding: 15px; gap: 10px; }
             .main-content { flex-direction: column; overflow-y: auto; }
-            .today-list { width: auto; height: 300px; }
-            .calendar-frame { height: 500px; flex: none; }
+            .today-list { width: auto; height: 280px; }
+            .calendar-frame { height: 450px; flex: none; }
         }
     </style>
 </head>
@@ -55,7 +159,7 @@
     <div class="header-section">
         <div class="input-item">
             <label>หัวข้อกิจกรรม</label>
-            <input type="text" id="title" placeholder="ระบุชื่อกิจกรรม" style="width: 180px;">
+            <input type="text" id="title" placeholder="ระบุชื่อกิจกรรม" style="width: 200px;">
         </div>
         <div class="input-item">
             <label>วันที่</label>
@@ -65,7 +169,8 @@
         <div class="input-item">
             <label>เวลาเริ่ม</label>
             <div class="time-group">
-                <select id="startH"></select> :
+                <select id="startH"></select>
+                <span>:</span>
                 <select id="startM"></select>
             </div>
         </div>
@@ -73,7 +178,8 @@
         <div class="input-item">
             <label>เวลาสิ้นสุด</label>
             <div class="time-group">
-                <select id="endH"></select> :
+                <select id="endH"></select>
+                <span>:</span>
                 <select id="endM"></select>
             </div>
         </div>
@@ -84,7 +190,7 @@
     <div class="main-content">
         <div class="today-list">
             <h3>📅 รายการกิจกรรม</h3>
-            <div id="loading" style="font-size: 12px; color: #94a3b8;">กำลังโหลดข้อมูล...</div>
+            <div id="loading" style="font-size: 12px; color: var(--text-sub); text-align: center; margin-top: 10px;">กำลังโหลด...</div>
             <div id="eventDisplay" class="event-container"></div>
         </div>
 
@@ -96,12 +202,10 @@
     <script>
         const scriptUrl = "https://script.google.com/macros/s/AKfycbzJirF7Ldstah4LZepPRCGWmnoPSDnLGv0KvFb3bac-bvh8iLLxMdUH0Tc5EmIAz_c/exec";
 
-        // สร้างตัวเลือกเวลาใน Drop-down
         function initTimeSelectors() {
             const sh = document.getElementById('startH'), sm = document.getElementById('startM');
             const eh = document.getElementById('endH'), em = document.getElementById('endM');
 
-            // ชั่วโมง 00-23
             let hOptions = "";
             for(let i=0; i<24; i++) {
                 let val = i.toString().padStart(2, '0');
@@ -109,13 +213,16 @@
             }
             sh.innerHTML = eh.innerHTML = hOptions;
 
-            // นาที 00-55 (ห่าง 5 นาที)
             let mOptions = "";
             for(let i=0; i<60; i+=5) {
                 let val = i.toString().padStart(2, '0');
                 mOptions += `<option value="${val}">${val}</option>`;
             }
             sm.innerHTML = em.innerHTML = mOptions;
+            
+            // ตั้งค่า Default เป็นเวลาปัจจุบัน
+            const now = new Date();
+            sh.value = eh.value = now.getHours().toString().padStart(2, '0');
         }
 
         window.onload = () => {
@@ -137,7 +244,7 @@
                 list.innerHTML = '';
 
                 if (data.length === 0) {
-                    list.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:13px; margin-top:20px;">ไม่มีกิจกรรม</div>';
+                    list.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">ไม่มีกิจกรรม</div>';
                     return;
                 }
 
@@ -146,19 +253,19 @@
                         <div class="event-card">
                             <div class="event-info">
                                 <strong>${ev.title}</strong>
-                                <span>📅 ${ev.displayDate}</span><br>
+                                <span>📅 ${ev.displayDate}</span>
                                 <span>🕒 ${formatTo24hr(ev.startTime)} - ${formatTo24hr(ev.endTime)} น.</span>
                             </div>
                             <button class="btn-del" onclick="confirmDelete('${ev.title}', '${ev.date}')" title="ลบกิจกรรม">×</button>
                         </div>`;
                 });
             } catch (err) {
-                document.getElementById('loading').innerText = 'ไม่สามารถโหลดข้อมูลได้';
+                document.getElementById('loading').innerText = 'เกิดข้อผิดพลาดในการโหลด';
             }
         }
 
         function confirmDelete(title, date) {
-            if (confirm(`คุณต้องการลบกิจกรรม "${title}" ใช่หรือไม่?`)) {
+            if (confirm(`ลบกิจกรรม "${title}" ?`)) {
                 manageEvent('delete', title, date);
             }
         }
@@ -166,16 +273,14 @@
         function manageEvent(action, titleDel, dateDel) {
             const title = titleDel || document.getElementById('title').value;
             const date = dateDel || document.getElementById('date').value;
-            
-            // รวม ชม. และ นาที เข้าด้วยกัน
             const startTime = document.getElementById('startH').value + ":" + document.getElementById('startM').value;
             const endTime = document.getElementById('endH').value + ":" + document.getElementById('endM').value;
 
-            if (!title || !date) return alert("กรุณาระบุชื่อและวันที่");
+            if (!title || !date) return alert("กรุณากรอกข้อมูลให้ครบ");
 
             const btnAdd = document.getElementById('btnAdd');
             if(action === 'add') {
-                btnAdd.innerText = 'กำลังบันทึก...';
+                btnAdd.innerText = 'บันทึก...';
                 btnAdd.disabled = true;
             }
 
