@@ -124,12 +124,14 @@ onValue(ref(db, "settings"), (snap) => {
     isGlobalLocked = s.globalLock || false;
     const lockSwitch = document.getElementById('globalLock');
     
-    if(isAdmin && lockSwitch) {
-        lockSwitch.checked = isGlobalLocked;
+    // ค้นหาหัวข้อ Admin Control Panel (โดยทั่วไปคือ nav-title หรือ h2 ใน admin-panel)
+    const adminHeader = document.getElementById('nav-title') || document.querySelector('.admin-panel h2');
+    
+    if(isAdmin) {
+        if(lockSwitch) lockSwitch.checked = isGlobalLocked;
         
-        // --- 🔘 เพิ่มปุ่ม Reset All Downloads สีเทา ไว้หน้าปุ่ม Lock ---
-        const lockGroup = lockSwitch.closest('.admin-lock-group') || lockSwitch.parentElement;
-        if (lockGroup && !document.getElementById('btn-reset-all')) {
+        // --- 🔘 ย้ายปุ่ม Reset All มาวางหลังคำว่า Admin Control Panel ---
+        if (adminHeader && !document.getElementById('btn-reset-all')) {
             const resetBtn = document.createElement('button');
             resetBtn.id = 'btn-reset-all';
             resetBtn.innerHTML = '<i class="fas fa-history"></i> ล้างยอดทั้งหมด';
@@ -137,19 +139,23 @@ onValue(ref(db, "settings"), (snap) => {
                 background: #7f8c8d;
                 color: white;
                 border: none;
-                padding: 6px 12px;
-                border-radius: 6px;
+                padding: 4px 10px;
+                border-radius: 4px;
                 cursor: pointer;
                 font-size: 11px;
-                margin-right: 15px;
+                margin-left: 15px;
                 font-weight: bold;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                vertical-align: middle;
                 transition: 0.3s;
             `;
             resetBtn.onmouseover = () => resetBtn.style.background = '#6c7a7b';
             resetBtn.onmouseout = () => resetBtn.style.background = '#7f8c8d';
             resetBtn.onclick = () => window.resetAllDownloads();
             
-            lockGroup.insertBefore(resetBtn, lockGroup.firstChild);
+            adminHeader.appendChild(resetBtn);
         }
     }
     window.renderItems();
@@ -248,20 +254,20 @@ window.resetDownloadCount = (key) => {
     }
 };
 
+// 🔥 ลบยอดดาวน์โหลดทั้งหมด (ลด Pop-up เหลือเพียงครั้งเดียว)
 window.resetAllDownloads = async () => {
     if (!isAdmin) return;
     if (confirm("⚠️ ยืนยันการรีเซ็ตยอดดาวน์โหลด 'ทั้งหมด' ให้เป็น 0?")) {
-        if (confirm("ยืนยันอีกครั้ง? การกระทำนี้ไม่สามารถย้อนกลับได้!")) {
-            const updates = {};
-            items.forEach(item => {
-                updates[`cougar_data/${item.key}/downloads`] = 0;
-            });
-            try {
-                await update(ref(db), updates);
-                alert("✅ รีเซ็ตยอดดาวน์โหลดทั้งหมดเรียบร้อยแล้ว");
-            } catch (e) {
-                alert("เกิดข้อผิดพลาด: " + e.message);
-            }
+        const updates = {};
+        items.forEach(item => {
+            updates[`cougar_data/${item.key}/downloads`] = 0;
+        });
+        try {
+            await update(ref(db), updates);
+            // ไม่ใช้ Alert ซ้ำซ้อน แสดงแค่ Log หรือปล่อยให้ UI อัปเดตเอง
+            console.log("All downloads reset success.");
+        } catch (e) {
+            alert("เกิดข้อผิดพลาด: " + e.message);
         }
     }
 };
