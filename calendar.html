@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบันทึกปฏิทิน</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: #f8f9fa; }
         .form-container { padding: 15px; background: #ffffff; border-bottom: 2px solid #dee2e6; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .input-group { display: flex; flex-direction: column; }
-        label { font-size: 12px; color: #666; font-weight: bold; }
+        label { font-size: 12px; color: #666; font-weight: bold; margin-bottom: 4px; }
         input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; align-self: flex-end; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; align-self: flex-end; margin-bottom: 2px; }
         button:hover { background: #0056b3; }
         iframe { flex-grow: 1; width: 100%; border: 0; }
     </style>
@@ -44,19 +45,29 @@
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
             
-            // นำ URL ที่ได้จากขั้นตอน Deploy Web App มาวางที่นี่
-            const scriptUrl = "วาง_URL_WEB_APP_ของคุณที่นี่"; 
+            // อัปเดต URL จากที่คุณส่งมาให้แล้วครับ
+            const scriptUrl = "https://script.google.com/macros/s/AKfycbzJirF7Ldstah4LZepPRCGWmnoPSDnLGv0KvFb3bac-bvh8iLLxMdUH0Tc5EmIAz_c/exec"; 
             
-            if(!title || !date) return alert("กรุณากรอกชื่อและวันที่");
+            if(!title || !date) return alert("กรุณากรอกชื่อกิจกรรมและวันที่ให้ครบถ้วน");
 
             const finalUrl = `${scriptUrl}?title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${endTime}`;
 
+            // แสดง Loading เบื้องต้น
+            const btn = document.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = "กำลังบันทึก...";
+            btn.disabled = true;
+
             fetch(finalUrl, { mode: 'no-cors' })
                 .then(() => {
-                    alert("บันทึกสำเร็จ! รอสักครู่แล้วหน้าเว็บจะรีโหลด");
-                    setTimeout(() => location.reload(), 2000); // รอ 2 วินาทีให้ Google อัปเดตข้อมูล
+                    alert("บันทึกสำเร็จ! ข้อมูลจะปรากฏบนปฏิทินและแจ้งเตือนใน Telegram");
+                    setTimeout(() => location.reload(), 2000); // รีโหลดเพื่อให้ Google Calendar อัปเดตหน้าจอ
                 })
-                .catch(err => alert("เกิดข้อผิดพลาด: " + err));
+                .catch(err => {
+                    alert("เกิดข้อผิดพลาด: " + err);
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                });
         }
     </script>
 </body>
