@@ -22,33 +22,50 @@ let isAdmin = false;
 let isGlobalLocked = false;
 const _d = (v) => atob(v);
 
-// --- 📊 ระบบสถิติ (ย้ายไปวางหลัง Nav Title) ---
-const initVisitorStats = () => {
+// ตัวแปรเก็บค่าสถิติล่าสุด (Global)
+window._currentOnline = 1;
+window._currentVisits = 0;
+
+// --- 📊 ระบบสถิติ (Real-time & Persistence) ---
+const updateStatsUI = () => {
     const navTitle = document.getElementById('nav-title');
-    if (navTitle && !document.getElementById('stats-inline')) {
-        const statsSpan = document.createElement('span');
+    if (!navTitle) return;
+
+    // ตรวจสอบหรือสร้าง Container สำหรับสถิติ
+    let statsSpan = document.getElementById('stats-inline');
+    if (!statsSpan) {
+        statsSpan = document.createElement('span');
         statsSpan.id = 'stats-inline';
         statsSpan.style.cssText = `
-            font-size: 12px;
-            font-weight: normal;
-            margin-left: 15px;
-            display: inline-flex;
-            gap: 12px;
-            color: #7f8c8d;
-            vertical-align: middle;
-        `;
-        statsSpan.innerHTML = `
-            <span title="Online"><i class="fas fa-circle" style="color:#2ecc71; font-size:8px;"></i> Online: <b id="stat-online">1</b></span>
-            <span title="Visits"><i class="fas fa-eye"></i> Visits: <b id="stat-visits">0</b></span>
+            font-size: 13px; font-weight: 500; margin-left: 15px;
+            display: inline-flex; gap: 15px; color: #7f8c8d;
+            vertical-align: middle; background: rgba(0,0,0,0.05);
+            padding: 4px 12px; border-radius: 20px;
         `;
         navTitle.appendChild(statsSpan);
     }
 
+    statsSpan.innerHTML = `
+        <span style="display:flex; align-items:center; gap:6px;">
+            <i class="fas fa-circle" style="color:#2ecc71; font-size:7px; animation: pulse 1.5s infinite;"></i> 
+            Online: <b style="color:#2ecc71">${window._currentOnline.toLocaleString()}</b>
+        </span>
+        <span style="display:flex; align-items:center; gap:6px;">
+            <i class="fas fa-eye" style="color:#3498db;"></i> 
+            Visits: <b style="color:#3498db">${window._currentVisits.toLocaleString()}</b>
+        </span>
+        <style> @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } } </style>
+    `;
+};
+
+const initVisitorStats = () => {
     const onlineRef = ref(db, 'stats/online_users');
     const connectedRef = ref(db, '.info/connected');
 
+    // 1. เพิ่มยอดวิว
     update(ref(db, 'stats'), { total_visits: increment(1) });
 
+    // 2. จัดการ Online Status
     onValue(connectedRef, (snap) => {
         if (snap.val() === true) {
             const myStatusRef = push(onlineRef);
@@ -57,19 +74,20 @@ const initVisitorStats = () => {
         }
     });
 
+    // 3. Listen ค่าจาก Firebase แบบ Real-time
     onValue(ref(db, 'stats'), (snap) => {
-        const s = snap.val() || {};
-        const vEl = document.getElementById('stat-visits');
-        if(vEl) vEl.innerText = (s.total_visits || 0).toLocaleString();
+        window._currentVisits = snap.val()?.total_visits || 0;
+        updateStatsUI();
     });
+
     onValue(onlineRef, (snap) => {
-        const oEl = document.getElementById('stat-online');
-        if(oEl) oEl.innerText = (snap.size || 1).toLocaleString();
+        window._currentOnline = snap.size || 1;
+        updateStatsUI();
     });
 };
 
-// เรียกใช้สถิติ
-setTimeout(initVisitorStats, 500); // รอ DOM โหลดนิดหน่อย
+// เริ่มระบบสถิติ
+setTimeout(initVisitorStats, 500);
 
 // --- 🔒 ตรวจสอบสถานะ Admin ---
 onAuthStateChanged(auth, (user) => {
@@ -278,9 +296,8 @@ window.showPage = (id, el) => {
     
     const navTitle = document.getElementById('nav-title');
     if(navTitle) {
-        const stats = document.getElementById('stats-inline');
         navTitle.innerText = el ? el.innerText.trim() : "Dashboard";
-        if (stats) navTitle.appendChild(stats); // รักษา stats ไว้เสมอเมื่อเปลี่ยนหน้า
+        updateStatsUI(); // ดึงสถิติกลับมาวาดใหม่ทันที
     }
 };
 
