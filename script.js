@@ -72,6 +72,13 @@ window.performLogin = () => {
         .catch(() => alert("Username หรือ Password ไม่ถูกต้อง!"));
 };
 
+// ฟังก์ชันตรวจจับการกดปุ่ม Enter ใน Modal Login
+['loginUser', 'loginPass'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') window.performLogin();
+    });
+});
+
 // ฟังก์ชันเริ่มกระบวนการดาวน์โหลด (ซ่อนลิงก์จาก HTML)
 window.startDownload = (idx) => {
     const item = items[idx];
@@ -250,4 +257,5 @@ setInterval(() => {
     const timeEl = document.getElementById('dash-time');
     if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }, 1000);
+
 
