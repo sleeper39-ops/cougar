@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// --- Firebase Config (คงเดิม) ---
+// --- Firebase Config ---
 const firebaseConfig = {
     apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
     authDomain: "cougar2-database.firebaseapp.com",
@@ -21,22 +21,21 @@ let items = [];
 let isAdmin = false;
 let isGlobalLocked = false;
 
-// ฟังก์ชันช่วยถอดรหัส Base64 (คงเดิม)
 const _d = (v) => atob(v);
 
-// --- 🔒 ระบบตรวจสอบสถานะผู้ใช้งาน (Real-time) ---
+// --- 🔒 ตรวจสอบสถานะ Admin ---
 onAuthStateChanged(auth, (user) => {
     const panel = document.getElementById('admin-panel');
     const authBtn = document.getElementById('auth-btn');
     const statusText = document.getElementById('dash-status');
     const statusIcon = document.getElementById('status-icon');
 
-    if (user && user.email === _d("YWRtaW5AY291Z2FyMi5jb20=")) { // admin@cougar2.com
+    if (user && user.email === _d("YWRtaW5AY291Z2FyMi5jb20=")) { 
         isAdmin = true;
         if(panel) panel.style.display = 'block';
         if(authBtn) {
             authBtn.innerText = "Logout Admin";
-            authBtn.style.background = "var(--danger)"; // สีแดง = danger (CSS variable)
+            authBtn.style.background = "var(--danger)";
         }
         if(statusText) statusText.innerText = "Admin Mode";
         if(statusIcon) statusIcon.style.color = "#2ecc71";
@@ -53,14 +52,12 @@ onAuthStateChanged(auth, (user) => {
     window.renderItems();
 });
 
-// --- 🔑 ฟังก์ชัน Login สำหรับ Admin (ปรับปรุงให้รองรับ Enter) ---
+// --- 🔑 Login Function ---
 window.performLogin = () => {
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
     if (!user || !pass) return alert("กรุณากรอกข้อมูลให้ครบ");
-
-    const email = user.includes('@') ? user : user + _d("QGNvdWdhcjIuY29t"); // @cougar2.com
-
+    const email = user.includes('@') ? user : user + _d("QGNvdWdhcjIuY29t");
     signInWithEmailAndPassword(auth, email, pass)
         .then(() => {
             document.getElementById('loginModal').style.display = 'none';
@@ -70,14 +67,13 @@ window.performLogin = () => {
         .catch(() => alert("Username หรือ Password ไม่ถูกต้อง!"));
 };
 
-// --- ✅ เพิ่มฟังก์ชันกด Enter เพื่อ Login ---
 ['loginUser', 'loginPass'].forEach(id => {
     document.getElementById(id)?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') window.performLogin();
     });
 });
 
-// --- 📥 ฟังก์ชันดาวน์โหลดปลอดภัย ---
+// --- 📥 Download System ---
 window.startDownload = (idx) => {
     const item = items[idx];
     if (item) window.secureDownload(item.link, item.locked);
@@ -85,17 +81,14 @@ window.startDownload = (idx) => {
 
 window.secureDownload = async (link, itemLocked) => {
     const effectivelyLocked = isGlobalLocked || itemLocked;
-
     if (!effectivelyLocked) {
         window.open(link, '_blank', 'noopener,noreferrer');
         return;
     }
-
     const userPass = prompt("🔒 ไฟล์นี้ถูกล็อคไว้ กรุณาใส่รหัสดาวน์โหลด:");
     if (!userPass) return;
-
     try {
-        const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20="); // download@cougar2.com
+        const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20="); 
         await signInWithEmailAndPassword(auth, dEmail, userPass);
         window.open(link, '_blank', 'noopener,noreferrer');
         if (auth.currentUser && auth.currentUser.email === dEmail) await signOut(auth);
@@ -104,7 +97,6 @@ window.secureDownload = async (link, itemLocked) => {
     }
 };
 
-// --- 🚪 Logout ---
 window.toggleAuth = () => {
     if (auth.currentUser) {
         if (confirm("ต้องการออกจากระบบใช่หรือไม่?")) signOut(auth);
@@ -113,7 +105,7 @@ window.toggleAuth = () => {
     }
 };
 
-// --- 📡 Listeners (คงเดิม) ---
+// --- 📡 Firebase Real-time Sync ---
 onValue(ref(db, "cougar_data"), (snap) => {
     const data = snap.val();
     items = data ? Object.keys(data).map(k => ({ key: k, ...data[k] })) : [];
@@ -128,7 +120,7 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (ปรับปรุงให้ปุ่มตรงกันด้วย Flexbox) ---
+// --- 🖥️ UI Rendering (แก้ไขส่วนปุ่มให้เหมือนเดิมตามรูป) ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -139,7 +131,6 @@ window.renderItems = () => {
         const card = document.createElement('div');
         card.className = 'download-card';
         
-        // ใช้ index แทนการโชว์ Link ตรงๆ ใน HTML
         card.innerHTML = `
             <div class="card-img-container" onclick="window.openImage('${item.img || ''}')">
                 <img src="${item.img || 'https://via.placeholder.com/300x180?text=Cougar2'}" class="card-img">
@@ -153,18 +144,24 @@ window.renderItems = () => {
                     ${effectivelyLocked ? 'Password Required' : 'Download Now'}
                 </button>
             </div>
-            ${isAdmin ? `
-            <div class="admin-controls">
-                <div style="display:flex; align-items:center; gap:5px;">
+            
+            <div class="admin-actions" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
+                <div class="admin-lock-group">
                     <label class="switch">
                         <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
                         <span class="slider"></span>
                     </label>
-                    <span style="font-size:11px; font-weight:bold; color:#666;">Lock</span>
+                    <span>Lock</span>
                 </div>
-                <button onclick="window.editItem('${item.key}')" class="admin-btn-text" style="color:var(--primary);"><i class="fas fa-edit"></i> Edit</button>
-                <button onclick="window.deleteItem('${item.key}')" class="admin-btn-text" style="color:var(--danger);"><i class="fas fa-trash"></i> Delete</button>
-            </div>` : ''}
+                
+                <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                
+                <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
         `;
         list.appendChild(card);
     });
@@ -172,7 +169,7 @@ window.renderItems = () => {
     if(countEl) countEl.innerText = items.length + " รายการ";
 };
 
-// --- 🛠️ Admin Actions (คงเดิม) ---
+// --- 🛠️ Admin Actions ---
 window.saveItem = async () => {
     if (!isAdmin) return;
     const key = document.getElementById('editKey').value;
@@ -181,7 +178,13 @@ window.saveItem = async () => {
     const link = document.getElementById('itemLink').value;
     if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์โหลด");
 
-    const data = { name, img, link, locked: key ? items.find(i => i.key === key).locked : false };
+    const data = { 
+        name, 
+        img, 
+        link, 
+        locked: key ? items.find(i => i.key === key).locked : false 
+    };
+    
     if(key) await update(ref(db, `cougar_data/${key}`), data);
     else await push(ref(db, "cougar_data"), data);
     window.resetForm();
@@ -216,7 +219,12 @@ window.editItem = (key) => {
 };
 
 window.deleteItem = (key) => isAdmin && confirm("ต้องการลบรายการนี้?") && remove(ref(db, `cougar_data/${key}`));
-window.toggleItemLock = (key, curr) => isAdmin && update(ref(db, `cougar_data/${key}`), { locked: !curr });
+
+window.toggleItemLock = (key, curr) => {
+    if (!isAdmin) return;
+    update(ref(db, `cougar_data/${key}`), { locked: !curr });
+};
+
 window.toggleGlobalLock = () => {
     if (!isAdmin) return;
     const isChecked = document.getElementById('globalLock').checked;
@@ -243,7 +251,6 @@ window.openImage = (src) => {
     }
 };
 
-// --- ⏰ Real-time Clock (คงเดิม) ---
 setInterval(() => {
     const timeEl = document.getElementById('dash-time');
     if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
