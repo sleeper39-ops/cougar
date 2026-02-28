@@ -127,13 +127,13 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (Badge + Admin Reset) ---
+// --- 🖥️ UI Rendering ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
     list.innerHTML = '';
     
-    let totalDownloads = 0; // สำหรับคำนวณยอดรวมในระบบ
+    let totalDownloads = 0;
 
     items.forEach((item, index) => {
         const effectivelyLocked = isGlobalLocked || item.locked;
@@ -185,11 +185,9 @@ window.renderItems = () => {
         list.appendChild(card);
     });
 
-    // อัปเดตข้อมูล Dashboard
     const countEl = document.getElementById('dash-count');
     if(countEl) countEl.innerText = items.length + " รายการ";
 
-    // ถ้ามี ID dash-total-dl ใน HTML จะแสดงยอดดาวน์โหลดรวม
     const totalDlEl = document.getElementById('dash-total-dl');
     if(totalDlEl) totalDlEl.innerText = totalDownloads + " ครั้ง";
 };
@@ -216,9 +214,29 @@ window.saveItem = async () => {
     window.resetForm();
 };
 
+// ลบยอดดาวน์โหลดทีละรายการ
 window.resetDownloadCount = (key) => {
     if (isAdmin && confirm("ต้องการรีเซ็ตยอดดาวน์โหลดของรายการนี้เป็น 0?")) {
         update(ref(db, `cougar_data/${key}`), { downloads: 0 });
+    }
+};
+
+// 🔥 ลบยอดดาวน์โหลดทั้งหมด (Reset All)
+window.resetAllDownloads = async () => {
+    if (!isAdmin) return;
+    if (confirm("⚠️ ยืนยันการรีเซ็ตยอดดาวน์โหลด 'ทั้งหมด' ให้เป็น 0?")) {
+        if (confirm("ยืนยันอีกครั้ง? การกระทำนี้ไม่สามารถย้อนกลับได้!")) {
+            const updates = {};
+            items.forEach(item => {
+                updates[`cougar_data/${item.key}/downloads`] = 0;
+            });
+            try {
+                await update(ref(db), updates);
+                alert("✅ รีเซ็ตยอดดาวน์โหลดทั้งหมดเรียบร้อยแล้ว");
+            } catch (e) {
+                alert("เกิดข้อผิดพลาด: " + e.message);
+            }
+        }
     }
 };
 
