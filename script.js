@@ -29,19 +29,19 @@ const initVisitorStats = () => {
         statsDiv.id = 'visitor-stats-container';
         statsDiv.style.cssText = `
             position: fixed; top: 10px; left: 10px; z-index: 9999;
-            background: rgba(0,0,0,0.8); color: white; padding: 10px 15px;
-            border-radius: 10px; font-size: 12px; backdrop-filter: blur(8px);
-            display: flex; flex-direction: column; gap: 5px; pointer-events: none;
-            border-left: 4px solid #2ecc71; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.85); color: white; padding: 10px 15px;
+            border-radius: 12px; font-size: 12px; backdrop-filter: blur(10px);
+            display: flex; flex-direction: column; gap: 6px; pointer-events: none;
+            border-left: 4px solid #2ecc71; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
         `;
         statsDiv.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px;">
                 <i class="fas fa-circle" style="color:#2ecc71; font-size:8px; animation: pulse 1.5s infinite;"></i>
-                <span>Online: <b id="stat-online" style="color:#2ecc71">1</b></span>
+                <span>Online: <b id="stat-online" style="color:#2ecc71">1</b> คน</span>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
                 <i class="fas fa-eye" style="color:#3498db; font-size:10px;"></i>
-                <span>Visits: <b id="stat-visits" style="color:#3498db">0</b></span>
+                <span>ยอดเข้าชม: <b id="stat-visits" style="color:#3498db">0</b> ครั้ง</span>
             </div>
             <style> @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } } </style>
         `;
@@ -51,10 +51,8 @@ const initVisitorStats = () => {
     const onlineRef = ref(db, 'stats/online_users');
     const connectedRef = ref(db, '.info/connected');
 
-    // 1. นับยอดวิวสะสม
     update(ref(db, 'stats'), { total_visits: increment(1) });
 
-    // 2. จัดการคนออนไลน์
     onValue(connectedRef, (snap) => {
         if (snap.val() === true) {
             const myStatusRef = push(onlineRef);
@@ -63,7 +61,6 @@ const initVisitorStats = () => {
         }
     });
 
-    // 3. แสดงผล Real-time
     onValue(ref(db, 'stats'), (snap) => {
         const s = snap.val() || {};
         const vEl = document.getElementById('stat-visits');
@@ -71,7 +68,7 @@ const initVisitorStats = () => {
     });
     onValue(onlineRef, (snap) => {
         const oEl = document.getElementById('stat-online');
-        if(oEl) oEl.innerText = (snap.size || 1).toLocaleString() + " คน";
+        if(oEl) oEl.innerText = (snap.size || 1).toLocaleString();
     });
 };
 
@@ -121,12 +118,6 @@ window.performLogin = () => {
         .catch(() => alert("Username หรือ Password ไม่ถูกต้อง!"));
 };
 
-['loginUser', 'loginPass'].forEach(id => {
-    document.getElementById(id)?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') window.performLogin();
-    });
-});
-
 // --- 📥 Download System ---
 window.startDownload = async (idx) => {
     const item = items[idx];
@@ -156,7 +147,8 @@ window.toggleAuth = () => {
     if (auth.currentUser) {
         if (confirm("ต้องการออกจากระบบใช่หรือไม่?")) signOut(auth);
     } else {
-        document.getElementById('loginModal').style.display = 'flex';
+        const modal = document.getElementById('loginModal');
+        if(modal) modal.style.display = 'flex';
     }
 };
 
@@ -175,24 +167,26 @@ onValue(ref(db, "settings"), (snap) => {
     if(isAdmin) {
         if(lockSwitch) lockSwitch.checked = isGlobalLocked;
         
-        // --- 🔘 ย้ายปุ่ม Reset All ไปไว้ในแถวปุ่มกดของฟอร์ม (จัดระเบียบใหม่) ---
-        const formActions = document.querySelector('.form-actions'); // ค้นหากลุ่มปุ่ม บันทึก/ยกเลิก
-        if (formActions && !document.getElementById('btn-reset-all')) {
+        // --- 🔘 จัดวางปุ่ม Reset All (ปรับปรุงใหม่ ไม่หายแน่นอน) ---
+        const saveBtn = document.getElementById('btn-save'); 
+        if (saveBtn && !document.getElementById('btn-reset-all')) {
             const resetBtn = document.createElement('button');
             resetBtn.id = 'btn-reset-all';
             resetBtn.type = 'button';
             resetBtn.innerHTML = '<i class="fas fa-history"></i> ล้างยอดทั้งหมด';
             resetBtn.style.cssText = `
-                background: #e74c3c; color: white; border: none; padding: 10px 15px;
-                border-radius: 6px; cursor: pointer; font-size: 13px;
-                font-weight: bold; display: inline-flex; align-items: center; gap: 8px;
-                transition: 0.3s; margin-right: auto; /* ดันไปซ้ายสุดของแถว */
+                background: #ff4757; color: white; border: none; padding: 0 15px;
+                border-radius: 6px; cursor: pointer; font-size: 12px;
+                font-weight: bold; display: inline-flex; align-items: center; gap: 6px;
+                transition: 0.3s; height: 40px; margin-right: 10px;
+                vertical-align: middle;
             `;
-            resetBtn.onmouseover = () => resetBtn.style.background = '#c0392b';
-            resetBtn.onmouseout = () => resetBtn.style.background = '#e74c3c';
+            resetBtn.onmouseover = () => resetBtn.style.background = '#ff6b81';
+            resetBtn.onmouseout = () => resetBtn.style.background = '#ff4757';
             resetBtn.onclick = () => window.resetAllDownloads();
             
-            formActions.prepend(resetBtn); // วางไว้หน้าปุ่มบันทึก
+            // นำไปวาง "ข้างหน้า" ปุ่มบันทึกในหน้า Admin
+            saveBtn.parentNode.insertBefore(resetBtn, saveBtn);
         }
     }
     window.renderItems();
