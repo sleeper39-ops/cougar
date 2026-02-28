@@ -3,72 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกปฏิทิน</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: #f8f9fa; }
-        .form-container { padding: 15px; background: #ffffff; border-bottom: 2px solid #dee2e6; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .input-group { display: flex; flex-direction: column; }
-        label { font-size: 12px; color: #666; font-weight: bold; margin-bottom: 4px; }
-        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; align-self: flex-end; margin-bottom: 2px; }
-        button:hover { background: #0056b3; }
-        iframe { flex-grow: 1; width: 100%; border: 0; }
+        body { font-family: 'Tahoma', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: #f0f2f5; }
+        .form-container { padding: 20px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+        .input-group { display: flex; flex-direction: column; min-width: 150px; }
+        label { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #333; }
+        input { padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn-group { display: flex; gap: 10px; align-self: flex-end; }
+        .btn-save { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-delete { padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        iframe { flex-grow: 1; border: none; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <div class="input-group">
-            <label>ชื่อกิจกรรม</label>
-            <input type="text" id="title" placeholder="เช่น ประชุมงาน">
-        </div>
-        <div class="input-group">
-            <label>วันที่</label>
-            <input type="date" id="date">
-        </div>
-        <div class="input-group">
-            <label>เวลาเริ่ม</label>
-            <input type="time" id="startTime">
-        </div>
-        <div class="input-group">
-            <label>เวลาสิ้นสุด</label>
-            <input type="time" id="endTime">
-        </div>
-        <button onclick="saveEvent()">บันทึกกิจกรรม</button>
+
+<div class="form-container">
+    <div class="input-group">
+        <label>หัวข้อกิจกรรม</label>
+        <input type="text" id="title" placeholder="ระบุชื่อกิจกรรม">
     </div>
+    <div class="input-group">
+        <label>วันที่ (พ.ศ.)</label>
+        <input type="date" id="date">
+    </div>
+    <div class="input-group">
+        <label>เริ่ม</label>
+        <input type="time" id="startTime">
+    </div>
+    <div class="input-group">
+        <label>ถึง</label>
+        <input type="time" id="endTime">
+    </div>
+    <div class="btn-group">
+        <button class="btn-save" onclick="manageEvent('add')">✅ บันทึก</button>
+        <button class="btn-delete" onclick="manageEvent('delete')">🗑️ ลบ</button>
+    </div>
+</div>
 
-    <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok"></iframe>
+<iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok"></iframe>
 
-    <script>
-        function saveEvent() {
-            const title = document.getElementById('title').value;
-            const date = document.getElementById('date').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            
-            // อัปเดต URL จากที่คุณส่งมาให้แล้วครับ
-            const scriptUrl = "https://script.google.com/macros/s/AKfycbzJirF7Ldstah4LZepPRCGWmnoPSDnLGv0KvFb3bac-bvh8iLLxMdUH0Tc5EmIAz_c/exec"; 
-            
-            if(!title || !date) return alert("กรุณากรอกชื่อกิจกรรมและวันที่ให้ครบถ้วน");
+<script>
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbzJirF7Ldstah4LZepPRCGWmnoPSDnLGv0KvFb3bac-bvh8iLLxMdUH0Tc5EmIAz_c/exec";
 
-            const finalUrl = `${scriptUrl}?title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${endTime}`;
+    function manageEvent(action) {
+        const title = document.getElementById('title').value;
+        const date = document.getElementById('date').value;
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
 
-            // แสดง Loading เบื้องต้น
-            const btn = document.querySelector('button');
-            const originalText = btn.innerText;
-            btn.innerText = "กำลังบันทึก...";
-            btn.disabled = true;
+        if (!title || !date) return alert("กรุณาใส่ชื่อกิจกรรมและวันที่");
 
-            fetch(finalUrl, { mode: 'no-cors' })
-                .then(() => {
-                    alert("บันทึกสำเร็จ! ข้อมูลจะปรากฏบนปฏิทินและแจ้งเตือนใน Telegram");
-                    setTimeout(() => location.reload(), 2000); // รีโหลดเพื่อให้ Google Calendar อัปเดตหน้าจอ
-                })
-                .catch(err => {
-                    alert("เกิดข้อผิดพลาด: " + err);
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                });
-        }
-    </script>
+        const url = `${scriptUrl}?action=${action}&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${endTime}`;
+
+        // เปลี่ยนสถานะปุ่ม
+        const btn = event.target;
+        btn.innerText = "กำลังดำเนินการ...";
+        btn.disabled = true;
+
+        fetch(url, { mode: 'no-cors' })
+            .then(() => {
+                alert(action === 'add' ? "บันทึกข้อมูลเรียบร้อย!" : "ส่งคำขอลบเรียบร้อย!");
+                setTimeout(() => location.reload(), 1500);
+            })
+            .catch(err => alert("เกิดข้อผิดพลาด: " + err));
+    }
+</script>
+
 </body>
 </html>
