@@ -1,212 +1,297 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cougar2 Docks UI</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <style>
-        :root {
-            --primary: #3498db; --danger: #e74c3c; --success: #27ae60; --warning: #f39c12; --secondary: #95a5a6;
-            --bg-dark: #1a1a1a; --bg-body: #f0f2f5; --sidebar-width: 260px;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, update, remove, onValue, increment, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// --- Firebase Config ---
+const firebaseConfig = {
+    apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
+    authDomain: "cougar2-database.firebaseapp.com",
+    databaseURL: "https://cougar2-database-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "cougar2-database",
+    storageBucket: "cougar2-database.firebasestorage.app",
+    messagingSenderId: "429808185249",
+    appId: "1:429808185249:web:4afa08e0a7a973b00d25e0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+let items = [];
+let isAdmin = false;
+let isGlobalLocked = false;
+const _d = (v) => atob(v);
+
+// --- 📊 ระบบสถิติ (ย้ายไปวางหลัง Nav Title) ---
+const initVisitorStats = () => {
+    const navTitle = document.getElementById('nav-title');
+    if (navTitle && !document.getElementById('stats-inline')) {
+        const statsSpan = document.createElement('span');
+        statsSpan.id = 'stats-inline';
+        statsSpan.style.cssText = `
+            font-size: 12px;
+            font-weight: normal;
+            margin-left: 15px;
+            display: inline-flex;
+            gap: 12px;
+            color: #7f8c8d;
+            vertical-align: middle;
+        `;
+        statsSpan.innerHTML = `
+            <span title="Online"><i class="fas fa-circle" style="color:#2ecc71; font-size:8px;"></i> Online: <b id="stat-online">1</b></span>
+            <span title="Visits"><i class="fas fa-eye"></i> Visits: <b id="stat-visits">0</b></span>
+        `;
+        navTitle.appendChild(statsSpan);
+    }
+
+    const onlineRef = ref(db, 'stats/online_users');
+    const connectedRef = ref(db, '.info/connected');
+
+    update(ref(db, 'stats'), { total_visits: increment(1) });
+
+    onValue(connectedRef, (snap) => {
+        if (snap.val() === true) {
+            const myStatusRef = push(onlineRef);
+            set(myStatusRef, true);
+            onDisconnect(myStatusRef).remove();
         }
-        body { display: flex; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-body); height: 100vh; overflow: hidden; }
-        
-        /* Sidebar & Layout */
-        .sidebar { width: var(--sidebar-width); background: var(--bg-dark); color: white; padding: 25px 15px; display: flex; flex-direction: column; z-index: 10; }
-        .sidebar h2 { color: var(--primary); text-align: center; margin-bottom: 40px; font-size: 1.8rem; }
-        .sidebar a { color: #bbb; text-decoration: none; padding: 14px 20px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
-        .sidebar a:hover, .sidebar a.active { background: var(--primary); color: white; }
+    });
 
-        .wrapper { flex: 1; display: flex; flex-direction: column; position: relative; }
-        .top-nav { height: 60px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 5; }
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+    onValue(ref(db, 'stats'), (snap) => {
+        const s = snap.val() || {};
+        const vEl = document.getElementById('stat-visits');
+        if(vEl) vEl.innerText = (s.total_visits || 0).toLocaleString();
+    });
+    onValue(onlineRef, (snap) => {
+        const oEl = document.getElementById('stat-online');
+        if(oEl) oEl.innerText = (snap.size || 1).toLocaleString();
+    });
+};
 
-        /* Animation */
-        .page-content { display: none; animation: fadeIn 0.4s ease; height: 100%; }
-        .page-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+// เรียกใช้สถิติ
+setTimeout(initVisitorStats, 500); // รอ DOM โหลดนิดหน่อย
 
-        /* Modal Login */
-        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index: 9999; align-items:center; justify-content:center; }
-        .login-card { background: white; padding: 30px; border-radius: 20px; width: 350px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); animation: slideIn 0.3s ease; text-align: center; }
-        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
-        .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+// --- 🔒 ตรวจสอบสถานะ Admin ---
+onAuthStateChanged(auth, (user) => {
+    const panel = document.getElementById('admin-panel');
+    const authBtn = document.getElementById('auth-btn');
+    const statusText = document.getElementById('dash-status');
+    const statusIcon = document.getElementById('status-icon');
 
-        /* Dashboard Stats */
-        .dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-box { background: white; padding: 25px 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #eee; }
-        .stat-box i { font-size: 2.2rem; margin-bottom: 15px; }
-        .stat-value { font-size: 1.4rem; font-weight: bold; color: #000; margin-bottom: 8px; }
-        .stat-label { font-size: 13px; color: #888; }
-
-        /* Admin Panel */
-        #admin-panel { display: none; background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 20px; align-items: flex-end; }
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group label { font-size: 12px; font-weight: bold; color: #555; }
-        .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
-        .btn-action { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; height: 41px; color: white; }
-
-        /* สไตล์สำหรับแสดงยอดดาวน์โหลด */
-    .download-count-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    backdrop-filter: blur(4px);
-    z-index: 1;
-}
-
-.stat-downloads {
-    font-size: 12px;
-    color: #7f8c8d;
-    margin-top: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-}
-
-        /* Grid & Cards */
-        .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding-bottom: 40px; }
-        .download-card { 
-            background: white; border-radius: 15px; overflow: hidden; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
-            display: flex; flex-direction: column; 
-            position: relative; height: 100%; transition: transform 0.2s; 
+    if (user && user.email === _d("YWRtaW5AY291Z2FyMi5jb20=")) { 
+        isAdmin = true;
+        if(panel) panel.style.display = 'block';
+        if(authBtn) {
+            authBtn.innerText = "Logout Admin";
+            authBtn.style.background = "var(--danger)";
         }
-        .download-card:hover { transform: translateY(-5px); }
-        .card-img-container { width: 100%; height: 180px; background: #222; cursor: zoom-in; overflow: hidden; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; }
-        .download-info { padding: 20px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; }
-        .download-info h4 { margin: 0 0 15px 0; font-size: 16px; color: #333; min-height: 44px; display: flex; align-items: center; justify-content: center; }
-        .btn-download { margin-top: auto; display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
-        
-        /* --- แถบปุ่ม Admin ด้านล่างการ์ด (อัปเดตใหม่) --- */
-        .admin-actions { 
-            display: none; /* เปิดเป็น flex ผ่าน script เมื่อเป็น admin */
-            justify-content: space-around; 
-            align-items: center; 
-            padding: 12px 10px; 
-            background: #fafafa; 
-            border-top: 1px solid #eee;
-            margin-top: auto; 
+        if(statusText) statusText.innerText = "Admin Mode";
+        if(statusIcon) statusIcon.style.color = "#2ecc71";
+    } else {
+        isAdmin = false;
+        if(panel) panel.style.display = 'none';
+        if(authBtn) {
+            authBtn.innerText = "Admin Login";
+            authBtn.style.background = "var(--primary)";
         }
-        .admin-lock-group { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #666; }
-        
-        .btn-admin-tool {
-            background: none; border: none; cursor: pointer; 
-            font-size: 13px; font-weight: 600; 
-            display: flex; align-items: center; gap: 5px; 
-            transition: 0.2s;
-        }
-        .btn-edit-tool { color: var(--primary); }
-        .btn-delete-tool { color: var(--danger); }
-        .btn-admin-tool:hover { opacity: 0.7; }
+        if(statusText) statusText.innerText = "Guest Mode";
+        if(statusIcon) statusIcon.style.color = "#95a5a6";
+    }
+    window.renderItems();
+});
 
-        /* Toggles & Lightbox */
-        .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--danger); }
-        input:checked + .slider:before { transform: translateX(16px); }
-        
-        .lightbox { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
-        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
-    </style>
-</head>
-<body>
+// --- 🔑 Login Function ---
+window.performLogin = () => {
+    const user = document.getElementById('loginUser').value;
+    const pass = document.getElementById('loginPass').value;
+    if (!user || !pass) return alert("กรุณากรอกข้อมูลให้ครบ");
+    const email = user.includes('@') ? user : user + _d("QGNvdWdhcjIuY29t");
+    signInWithEmailAndPassword(auth, email, pass)
+        .then(() => {
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+        })
+        .catch(() => alert("Username หรือ Password ไม่ถูกต้อง!"));
+};
 
-    <div id="loginModal" class="modal-overlay">
-        <div class="login-card">
-            <h3><i class="fas fa-user-shield"></i> Admin Login</h3>
-            <input type="text" id="loginUser" class="login-input" placeholder="Username">
-            <input type="password" id="loginPass" class="login-input" placeholder="Password">
-            <button onclick="window.performLogin()" class="btn-login">เข้าสู่ระบบ</button>
-            <button onclick="document.getElementById('loginModal').style.display='none'" style="background:none; border:none; color:#999; margin-top:15px; cursor:pointer; display:block; width:100%;">ยกเลิก</button>
-        </div>
-    </div>
+// --- 📥 Download System ---
+window.startDownload = async (idx) => {
+    const item = items[idx];
+    if (!item) return;
+    const effectivelyLocked = isGlobalLocked || item.locked;
+    if (!effectivelyLocked) {
+        await update(ref(db, `cougar_data/${item.key}`), { downloads: increment(1) });
+        window.open(item.link, '_blank', 'noopener,noreferrer');
+    } else {
+        window.secureDownload(item);
+    }
+};
 
-    <div class="sidebar">
-        <h2>Cougar2</h2>
-        <a onclick="window.showPage('dash-page', this)" id="nav-dash" class="active"><i class="fas fa-home"></i> Obs Docks UI</a>
-        <a onclick="window.showPage('live-page', this)" id="nav-live"><i class="fas fa-video"></i> ระบบกล้องสด</a>
-        <a onclick="window.showPage('map-page', this)" id="nav-map"><i class="fas fa-map-marked-alt"></i> แผนที่ระบบ</a>
-        <a onclick="window.showPage('calendar-page', this)" id="nav-cal"><i class="fas fa-calendar-alt"></i> ปฏิทิน</a>
-        <a onclick="window.showPage('esos-page', this)" id="nav-esos"><i class="fas fa-rocket"></i> ระบบ ESOS</a>
-    </div>
-    
-    <div class="wrapper">
-        <div class="top-nav">
-            <h2 id="nav-title">Dashboard</h2>
-            <button id="auth-btn" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;" onclick="window.toggleAuth()">Admin Login</button>
-        </div>
+window.secureDownload = async (item) => {
+    const userPass = prompt("🔒 ไฟล์นี้ถูกล็อคไว้ กรุณาใส่รหัสดาวน์โหลด:");
+    if (!userPass) return;
+    try {
+        const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20="); 
+        await signInWithEmailAndPassword(auth, dEmail, userPass);
+        await update(ref(db, `cougar_data/${item.key}`), { downloads: increment(1) });
+        window.open(item.link, '_blank', 'noopener,noreferrer');
+        if (auth.currentUser && auth.currentUser.email === dEmail) await signOut(auth);
+    } catch (error) { alert("❌ รหัสดาวน์โหลดไม่ถูกต้อง!"); }
+};
 
-        <div class="main-content">
-            <div id="dash-page" class="page-content active">
-                <div class="dashboard-stats">
-                    <div class="stat-box">
-                        <i class="fas fa-clock icon-time" style="color:#2ecc71;"></i>
-                        <div class="stat-value" id="dash-time">00:00</div>
-                        <div class="stat-label">เวลาปัจจุบัน</div>
-                    </div>
-                    <div class="stat-box">
-                        <i class="fas fa-folder-open icon-folder" style="color:#3498db;"></i>
-                        <div class="stat-value" id="dash-count">0 รายการ</div>
-                        <div class="stat-label">ไฟล์ในระบบ</div>
-                    </div>
-                    <div class="stat-box">
-                        <i class="fas fa-shield-alt" id="status-icon" style="color:#95a5a6;"></i>
-                        <div class="stat-value" id="dash-status">Guest Mode</div>
-                        <div class="stat-label">โหมดการใช้งาน</div>
-                    </div>
+window.toggleAuth = () => {
+    if (auth.currentUser) {
+        if (confirm("ต้องการออกจากระบบใช่หรือไม่?")) signOut(auth);
+    } else {
+        const modal = document.getElementById('loginModal');
+        if(modal) modal.style.display = 'flex';
+    }
+};
+
+// --- 📡 Firebase Real-time Sync ---
+onValue(ref(db, "cougar_data"), (snap) => {
+    const data = snap.val();
+    items = data ? Object.keys(data).map(k => ({ key: k, ...data[k] })) : [];
+    window.renderItems();
+});
+
+onValue(ref(db, "settings"), (snap) => {
+    const s = snap.val() || {};
+    isGlobalLocked = s.globalLock || false;
+    const lockSwitch = document.getElementById('globalLock');
+    if(isAdmin && lockSwitch) lockSwitch.checked = isGlobalLocked;
+    window.renderItems();
+});
+
+// --- 🖥️ UI Rendering ---
+window.renderItems = () => {
+    const list = document.getElementById('download-list');
+    if(!list) return;
+    list.innerHTML = '';
+    let totalDownloads = 0;
+
+    items.forEach((item, index) => {
+        const effectivelyLocked = isGlobalLocked || item.locked;
+        const count = item.downloads || 0;
+        totalDownloads += count;
+
+        const card = document.createElement('div');
+        card.className = 'download-card';
+        card.innerHTML = `
+            <div class="card-img-container" onclick="window.openImage('${item.img || ''}')">
+                <div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); color:white; padding:3px 8px; border-radius:5px; font-size:11px; z-index:1; backdrop-filter:blur(4px);">
+                    <i class="fas fa-download"></i> ${count}
                 </div>
-
-                <div id="admin-panel">
-                    <div class="admin-header">
-                        <h3 style="margin:0;"><i class="fas fa-tools"></i> Admin Control Panel</h3>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="font-size:12px; font-weight:bold; color:var(--danger);">Lock all downloads</span>
-                            <label class="switch"><input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()"><span class="slider"></span></label>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <input type="hidden" id="editKey">
-                        <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="itemName" placeholder="ระบุชื่อไฟล์..."></div>
-                        <div class="input-group"><label>ลิงก์รูปภาพ</label><input type="text" id="itemImg" placeholder="URL รูปภาพ..."></div>
-                        <div class="input-group"><label>ลิงก์ดาวน์โหลด</label><input type="text" id="itemLink" placeholder="URL ดาวน์โหลด..."></div>
-                        <div style="display:flex; gap:10px;">
-                            <button onclick="window.saveItem()" id="btn-save" class="btn-action" style="background:var(--success);">บันทึก</button>
-                            <button onclick="window.resetForm()" class="btn-action" style="background:var(--secondary);"><i class="fas fa-times"></i> ยกเลิก</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="download-list" class="download-grid">
-                    </div>
+                <img src="${item.img || 'https://via.placeholder.com/300x180?text=Cougar2'}" class="card-img">
             </div>
+            <div class="download-info">
+                <h4>${item.name}</h4>
+                <button onclick="window.startDownload(${index})" class="btn-download" style="background:${effectivelyLocked ? 'var(--warning)' : 'var(--success)'}; color:white;">
+                    <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> ${effectivelyLocked ? 'Password Required' : 'Download Now'}
+                </button>
+            </div>
+            <div class="admin-actions" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
+                <div class="admin-lock-group">
+                    <label class="switch">
+                        <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Lock</span>
+                </div>
+                <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool"><i class="fas fa-edit"></i> Edit</button>
+                <button onclick="window.resetDownloadCount('${item.key}')" class="btn-admin-tool" style="color:#7f8c8d;"><i class="fas fa-redo-alt"></i> Reset</button>
+                <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
 
-            <div id="live-page" class="page-content"><iframe src="cctv.html" style="width:100%; height:100%; border:none;"></iframe></div>
-            <div id="map-page" class="page-content"><iframe src="map.html" style="width:100%; height:100%; border:none;"></iframe></div>
-            <div id="calendar-page" class="page-content"><iframe src="calendar.html" style="width:100%; height:100%; border:none;"></iframe></div>
-            <div id="esos-page" class="page-content"><iframe src="esos.html" style="width:100%; height:100%; border:none;"></iframe></div>
-        </div>
-    </div>
+    const countEl = document.getElementById('dash-count');
+    if(countEl) countEl.innerText = items.length + " รายการ";
+    const totalDlEl = document.getElementById('dash-total-dl');
+    if(totalDlEl) totalDlEl.innerText = totalDownloads.toLocaleString() + " ครั้ง";
+};
 
-    <div id="imgLightbox" class="lightbox" onclick="this.style.display='none'"><img id="lightboxImg"></div>
+// --- 🛠️ Admin Actions ---
+window.saveItem = async () => {
+    if (!isAdmin) return;
+    const key = document.getElementById('editKey').value;
+    const name = document.getElementById('itemName').value;
+    const img = document.getElementById('itemImg').value;
+    const link = document.getElementById('itemLink').value;
+    if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์โหลด");
 
-    <script type="module" src="script.js"></script>
-</body>
-</html>
+    const data = { 
+        name, img, link, 
+        locked: key ? items.find(i => i.key === key).locked : false,
+        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 
+    };
+    if(key) await update(ref(db, `cougar_data/${key}`), data);
+    else await push(ref(db, "cougar_data"), data);
+    window.resetForm();
+};
+
+window.resetDownloadCount = (key) => {
+    if (isAdmin && confirm("ต้องการรีเซ็ตยอดดาวน์โหลดของรายการนี้เป็น 0?")) {
+        update(ref(db, `cougar_data/${key}`), { downloads: 0 });
+    }
+};
+
+window.resetForm = () => {
+    document.getElementById('editKey').value = '';
+    document.getElementById('itemName').value = '';
+    document.getElementById('itemImg').value = '';
+    document.getElementById('itemLink').value = '';
+    const btn = document.getElementById('btn-save');
+    if(btn) { btn.innerText = "บันทึก"; btn.style.background = "var(--success)"; }
+};
+
+window.editItem = (key) => {
+    if (!isAdmin) return;
+    const item = items.find(i => i.key === key);
+    if (!item) return;
+    document.getElementById('itemName').value = item.name;
+    document.getElementById('itemImg').value = item.img;
+    document.getElementById('itemLink').value = item.link;
+    document.getElementById('editKey').value = key;
+    const btn = document.getElementById('btn-save');
+    if(btn) { btn.innerText = "Update"; btn.style.background = "var(--primary)"; }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.deleteItem = (key) => isAdmin && confirm("ต้องการลบรายการนี้?") && remove(ref(db, `cougar_data/${key}`));
+window.toggleItemLock = (key, curr) => isAdmin && update(ref(db, `cougar_data/${key}`), { locked: !curr });
+
+window.toggleGlobalLock = () => {
+    if (!isAdmin) return;
+    const isChecked = document.getElementById('globalLock').checked;
+    update(ref(db, "settings"), { globalLock: isChecked });
+};
+
+window.showPage = (id, el) => {
+    document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(id);
+    if(target) target.classList.add('active');
+    document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+    if(el) el.classList.add('active');
+    
+    const navTitle = document.getElementById('nav-title');
+    if(navTitle) {
+        const stats = document.getElementById('stats-inline');
+        navTitle.innerText = el ? el.innerText.trim() : "Dashboard";
+        if (stats) navTitle.appendChild(stats); // รักษา stats ไว้เสมอเมื่อเปลี่ยนหน้า
+    }
+};
+
+window.openImage = (src) => {
+    if (!src) return;
+    const lb = document.getElementById('imgLightbox');
+    const lbImg = document.getElementById('lightboxImg');
+    if(lb && lbImg) { lbImg.src = src; lb.style.display = 'flex'; }
+};
+
+setInterval(() => {
+    const timeEl = document.getElementById('dash-time');
+    if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}, 1000);
