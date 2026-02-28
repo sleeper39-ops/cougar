@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, update, remove, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // --- Firebase Config ---
 const firebaseConfig = {
@@ -16,13 +16,9 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 let items = [];
-let isAdmin = sessionStorage.getItem('authorized_session') === 'true'; // เปลี่ยนชื่อ key ให้ดูเป็นสากล
+let isAdmin = sessionStorage.getItem('sys_auth_token') === 'active'; 
 let isGlobalLocked = false;
-let downloadPassHash = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
-
-// --- Security Hash ---
-// ใช้ SHA-256 สำหรับตรวจสอบรหัสผ่าน (admin2 -> 37880...)
-const ADMIN_HASH = "37880556209353979402506692994998068706316715694769062327503794711"; // ตัวอย่าง hash เพื่อความปลอดภัย
+let downloadPassHash = "";
 
 async function hashText(text) {
     const encoder = new TextEncoder();
@@ -41,7 +37,7 @@ onValue(ref(db, "cougar_data"), (snap) => {
 onValue(ref(db, "settings"), (snap) => {
     const s = snap.val() || {};
     isGlobalLocked = s.globalLock || false;
-    downloadPassHash = s.downloadPassHash || downloadPassHash;
+    downloadPassHash = s.downloadPassHash || "";
     if(isAdmin && document.getElementById('globalLock')) {
         document.getElementById('globalLock').checked = isGlobalLocked;
     }
@@ -53,11 +49,8 @@ window.showPage = (id, el) => {
     document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
     const targetPage = document.getElementById(id);
     if(targetPage) targetPage.classList.add('active');
-    
     document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
     if(el) el.classList.add('active');
-    
-    // อัปเดต Title
     const navText = el ? el.innerText.trim() : "Dashboard";
     document.getElementById('nav-title').innerText = navText;
 };
@@ -97,46 +90,32 @@ window.renderItems = () => {
         `;
         list.appendChild(card);
     });
-    
     const countEl = document.getElementById('dash-count');
-    if(countEl) countEl.innerText = `${items.length} Items Found`;
+    if(countEl) countEl.innerText = `${items.length} Entries`;
 };
 
-// --- Auth Handling (Improved for Safety) ---
-window.performLogin = async () => {
-    const user = document.getElementById('loginUser').value;
-    const pass = document.getElementById('loginPass').value;
-    
-    // เปรียบเทียบ Hash แทนการใช้ String ตรงๆ เพื่อเลี่ยง Google Flag
-    const hashedPass = await hashText(pass);
-    const adminHash = await hashText("admin2"); 
-
-    if(user === "admin" && hashedPass === adminHash) {
-        sessionStorage.setItem('authorized_session', 'true');
-        location.reload();
-    } else {
-        alert("Authentication Failed");
-    }
-};
-
+// --- Security ---
 window.toggleAuth = () => {
     if(isAdmin) {
-        if(confirm("Sign out from system?")) {
-            sessionStorage.removeItem('authorized_session');
+        if(confirm("Terminate Session?")) {
+            sessionStorage.removeItem('sys_auth_token');
             location.reload();
         }
     } else {
-        const modal = document.getElementById('loginModal');
-        if(modal) modal.style.display='flex';
+        // เปลี่ยนจากการเปิด Modal เป็นการไปหน้าใหม่
+        window.location.href = 'login.html';
     }
 };
 
-window.forgotPassword = () => {
-    const keyword = prompt("Identify Access Code:");
-    if (keyword === "root") { // เปลี่ยน keyword ให้ดูเหมือนระบบคอมพิวเตอร์มากขึ้น
-        alert("Access Verified\nUser: admin\nPass: admin2");
-    } else if (keyword !== null) {
-        alert("Invalid Access Code");
+window.secureDownload = async (link, itemLocked) => {
+    if (isGlobalLocked || itemLocked) {
+        const pass = prompt("Credentials Required:");
+        if (!pass) return;
+        const hashedInput = await hashText(pass);
+        if (hashedInput === downloadPassHash) window.open(link, '_blank', 'noopener,noreferrer');
+        else alert("Access Denied");
+    } else {
+        window.open(link, '_blank', 'noopener,noreferrer');
     }
 };
 
@@ -146,24 +125,19 @@ window.saveItem = async () => {
     const name = document.getElementById('itemName').value;
     const img = document.getElementById('itemImg').value;
     const link = document.getElementById('itemLink').value;
-    
-    if (!name || !link) return alert("Required fields missing");
-    
+    if (!name || !link) return alert("Missing fields");
     const payload = { name, img, link, locked: false, updatedAt: Date.now() };
-    
     try {
         if(key) await update(ref(db, `cougar_data/${key}`), payload);
         else await push(ref(db, "cougar_data"), payload);
         window.resetForm();
-    } catch (e) { alert("Error saving data"); }
+    } catch (e) { alert("Write Error"); }
 };
 
 window.resetForm = () => {
-    const fields = ['editKey', 'itemName', 'itemImg', 'itemLink'];
-    fields.forEach(f => document.getElementById(f).value = '');
-    const btn = document.getElementById('btn-save');
-    btn.innerText = "Commit Changes";
-    btn.style.background = "#27ae60";
+    ['editKey', 'itemName', 'itemImg', 'itemLink'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('btn-save').innerText = "Commit Changes";
+    document.getElementById('btn-save').style.background = "#27ae60";
 };
 
 window.editItem = (key) => {
@@ -178,51 +152,34 @@ window.editItem = (key) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-window.deleteItem = (key) => confirm("Remove entry?") && remove(ref(db, `cougar_data/${key}`));
+window.deleteItem = (key) => confirm("Delete entry?") && remove(ref(db, `cougar_data/${key}`));
 window.toggleItemLock = (key, curr) => update(ref(db, `cougar_data/${key}`), { locked: !curr });
 window.toggleGlobalLock = () => {
     const isChecked = document.getElementById('globalLock').checked;
     update(ref(db, "settings"), { globalLock: isChecked });
 };
 
-window.secureDownload = async (link, itemLocked) => {
-    if (isGlobalLocked || itemLocked) {
-        const pass = prompt("Access Restricted. Enter Credentials:");
-        if (!pass) return;
-        const hashedInput = await hashText(pass);
-        if (hashedInput === downloadPassHash) window.open(link, '_blank', 'noopener,noreferrer');
-        else alert("Access Denied");
-    } else {
-        window.open(link, '_blank', 'noopener,noreferrer');
-    }
-};
-
 window.changeDownloadPass = async () => {
-    const newPass = prompt("Define New Security Hash:");
+    const newPass = prompt("Define New Access Key:");
     if (!newPass) return;
-    try {
-        const hash = await hashText(newPass);
-        await update(ref(db, "settings"), { downloadPassHash: hash });
-        alert("Security Credentials Updated");
-    } catch (e) { alert("Update failed"); }
+    const hash = await hashText(newPass);
+    update(ref(db, "settings"), { downloadPassHash: hash }).then(() => alert("Access Key Updated"));
 };
 
-// --- Lifecycle ---
+// --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
-    // สถานะเริ่มต้น
     if(isAdmin) {
         const panel = document.getElementById('admin-panel');
         if(panel) panel.style.display = 'block';
         const authBtn = document.getElementById('auth-btn');
         if(authBtn) {
-            authBtn.innerText = "Terminate Session";
+            authBtn.innerText = "Log Out";
             authBtn.style.background = "#e74c3c";
         }
         document.getElementById('dash-status').innerText = "Privileged Access";
         document.getElementById('status-icon').style.color = "#27ae60";
     }
 
-    // เวลา
     setInterval(() => {
         const timeEl = document.getElementById('dash-time');
         if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH');
