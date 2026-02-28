@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, update, remove, onValue, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // --- Firebase Config ---
@@ -73,24 +73,38 @@ window.performLogin = () => {
     });
 });
 
-// --- 📥 Download System ---
-window.startDownload = (idx) => {
+// --- 📥 Download System (เพิ่มระบบนับยอด) ---
+window.startDownload = async (idx) => {
     const item = items[idx];
-    if (item) window.secureDownload(item.link, item.locked);
+    if (!item) return;
+
+    const effectivelyLocked = isGlobalLocked || item.locked;
+    
+    if (!effectivelyLocked) {
+        // นับยอดทันทีสำหรับไฟล์ไม่ล็อค
+        await update(ref(db, `cougar_data/${item.key}`), {
+            downloads: increment(1)
+        });
+        window.open(item.link, '_blank', 'noopener,noreferrer');
+    } else {
+        // เรียกใช้ระบบตรวจสอบรหัสผ่าน
+        window.secureDownload(item);
+    }
 };
 
-window.secureDownload = async (link, itemLocked) => {
-    const effectivelyLocked = isGlobalLocked || itemLocked;
-    if (!effectivelyLocked) {
-        window.open(link, '_blank', 'noopener,noreferrer');
-        return;
-    }
+window.secureDownload = async (item) => {
     const userPass = prompt("🔒 ไฟล์นี้ถูกล็อคไว้ กรุณาใส่รหัสดาวน์โหลด:");
     if (!userPass) return;
     try {
         const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20="); 
         await signInWithEmailAndPassword(auth, dEmail, userPass);
-        window.open(link, '_blank', 'noopener,noreferrer');
+        
+        // ถ้ารหัสถูกต้องให้นับยอดก่อนเปิดลิงก์
+        await update(ref(db, `cougar_data/${item.key}`), {
+            downloads: increment(1)
+        });
+
+        window.open(item.link, '_blank', 'noopener,noreferrer');
         if (auth.currentUser && auth.currentUser.email === dEmail) await signOut(auth);
     } catch (error) {
         alert("❌ รหัสดาวน์โหลดไม่ถูกต้อง!");
@@ -120,7 +134,7 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (แก้ไขส่วนปุ่มให้เหมือนเดิมตามรูป) ---
+// --- 🖥️ UI Rendering (เพิ่ม Badge แสดงยอดโหลด) ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -128,11 +142,15 @@ window.renderItems = () => {
     
     items.forEach((item, index) => {
         const effectivelyLocked = isGlobalLocked || item.locked;
+        const count = item.downloads || 0; // ยอดโหลด
         const card = document.createElement('div');
         card.className = 'download-card';
         
         card.innerHTML = `
             <div class="card-img-container" onclick="window.openImage('${item.img || ''}')">
+                <div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); color:white; padding:3px 8px; border-radius:5px; font-size:11px; z-index:1; backdrop-filter:blur(4px);">
+                    <i class="fas fa-download"></i> ${count}
+                </div>
                 <img src="${item.img || 'https://via.placeholder.com/300x180?text=Cougar2'}" class="card-img">
             </div>
             <div class="download-info">
@@ -182,7 +200,8 @@ window.saveItem = async () => {
         name, 
         img, 
         link, 
-        locked: key ? items.find(i => i.key === key).locked : false 
+        locked: key ? items.find(i => i.key === key).locked : false,
+        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 // รักษายอดดาวน์โหลดเดิม
     };
     
     if(key) await update(ref(db, `cougar_data/${key}`), data);
