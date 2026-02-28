@@ -37,7 +37,7 @@
         .stat-value { font-size: 1.4rem; font-weight: bold; color: #000; margin-bottom: 8px; }
         .stat-label { font-size: 13px; color: #888; }
 
-        #admin-panel {  display: none;  background: white;  padding: 25px;  border-radius: 15px;  /* border: 2px dashed var(--primary);  <-- บรรทัดเดิม (ลบออก) */ border: 1px solid #eee; /* <-- เปลี่ยนเป็นเส้นทึบบางๆ แทน หรือลบทิ้งไปเลยก็ได้ */ margin-bottom: 30px;  box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* เพิ่มเงาให้นิดหน่อยเพื่อให้ดูเป็นสัดส่วน */}
+        #admin-panel { display: none; background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         .admin-settings-bar { display: flex; align-items: center; gap: 20px; }
 
@@ -75,10 +75,7 @@
             <input type="text" id="loginUser" class="login-input" placeholder="Username">
             <input type="password" id="loginPass" class="login-input" placeholder="Password">
             <button onclick="window.performLogin()" class="btn-login">เข้าสู่ระบบ</button>
-            <div style="margin-top: 15px;">
-                <a href="javascript:void(0)" onclick="window.forgotPassword()" style="color: var(--primary); text-decoration: none; font-size: 13px; font-weight: bold;">ลืมรหัสผ่าน?</a>
-            </div>
-            <button onclick="document.getElementById('loginModal').style.display='none'" style="background:none; border:none; color:#999; margin-top:15px; cursor:pointer;">ยกเลิก</button>
+            <button onclick="document.getElementById('loginModal').style.display='none'" style="background:none; border:none; color:#999; margin-top:15px; cursor:pointer; display:block; width:100%;">ยกเลิก</button>
         </div>
     </div>
 
@@ -124,11 +121,6 @@
                                 <span style="font-size:12px; font-weight:bold; color:var(--danger);">Lock all downloads</span>
                                 <label class="switch"><input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()"><span class="slider"></span></label>
                             </div>
-                            <div class="mini-pass-input" style="border-left: 2px solid #ddd; padding-left: 15px;">
-                                <button onclick="window.changeDownloadPass()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; font-size:13px; cursor:pointer; font-weight:bold;">
-                                    <i class="fas fa-key"></i> เปลี่ยนรหัสดาวน์โหลด
-                                </button>
-                            </div>
                         </div>
                     </div>
 
@@ -158,5 +150,3 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
-
-
