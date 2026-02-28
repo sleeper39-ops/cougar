@@ -22,50 +22,56 @@ let isAdmin = false;
 let isGlobalLocked = false;
 const _d = (v) => atob(v);
 
-// ตัวแปรเก็บค่าสถิติล่าสุด (Global)
-window._currentOnline = 1;
-window._currentVisits = 0;
+// ตัวแปรสำหรับเก็บค่าล่าสุดเพื่อใช้ในการวาดใหม่
+let currentOnlineCount = 1;
+let currentTotalVisits = 0;
 
-// --- 📊 ระบบสถิติ (Real-time & Persistence) ---
-const updateStatsUI = () => {
+// --- 📊 ฟังก์ชันวาดสถิติ (เรียกใช้ซ้ำได้แบบ Real-time) ---
+const renderStatsUI = () => {
     const navTitle = document.getElementById('nav-title');
     if (!navTitle) return;
 
-    // ตรวจสอบหรือสร้าง Container สำหรับสถิติ
-    let statsSpan = document.getElementById('stats-inline');
-    if (!statsSpan) {
-        statsSpan = document.createElement('span');
-        statsSpan.id = 'stats-inline';
-        statsSpan.style.cssText = `
-            font-size: 13px; font-weight: 500; margin-left: 15px;
-            display: inline-flex; gap: 15px; color: #7f8c8d;
-            vertical-align: middle; background: rgba(0,0,0,0.05);
-            padding: 4px 12px; border-radius: 20px;
-        `;
-        navTitle.appendChild(statsSpan);
-    }
+    // ลบอันเก่าออกก่อนถ้ามี เพื่อป้องกันการซ้ำซ้อน
+    const oldStats = document.getElementById('stats-inline');
+    if (oldStats) oldStats.remove();
 
+    const statsSpan = document.createElement('span');
+    statsSpan.id = 'stats-inline';
+    statsSpan.style.cssText = `
+        font-size: 13px;
+        font-weight: 500;
+        margin-left: 15px;
+        display: inline-flex;
+        gap: 15px;
+        color: #7f8c8d;
+        vertical-align: middle;
+        background: rgba(0,0,0,0.05);
+        padding: 4px 12px;
+        border-radius: 20px;
+    `;
     statsSpan.innerHTML = `
-        <span style="display:flex; align-items:center; gap:6px;">
+        <span style="display:flex; align-items:center; gap:5px;">
             <i class="fas fa-circle" style="color:#2ecc71; font-size:7px; animation: pulse 1.5s infinite;"></i> 
-            Online: <b style="color:#2ecc71">${window._currentOnline.toLocaleString()}</b>
+            Online: <b style="color:#2ecc71">${currentOnlineCount.toLocaleString()}</b>
         </span>
-        <span style="display:flex; align-items:center; gap:6px;">
+        <span style="display:flex; align-items:center; gap:5px;">
             <i class="fas fa-eye" style="color:#3498db;"></i> 
-            Visits: <b style="color:#3498db">${window._currentVisits.toLocaleString()}</b>
+            Visits: <b style="color:#3498db">${currentTotalVisits.toLocaleString()}</b>
         </span>
         <style> @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } } </style>
     `;
+    navTitle.appendChild(statsSpan);
 };
 
+// --- 📡 เริ่มระบบสถิติและ Listener ---
 const initVisitorStats = () => {
     const onlineRef = ref(db, 'stats/online_users');
     const connectedRef = ref(db, '.info/connected');
 
-    // 1. เพิ่มยอดวิว
+    // 1. บันทึกยอดการเข้าชม (เพิ่ม 1 ครั้งเมื่อโหลด)
     update(ref(db, 'stats'), { total_visits: increment(1) });
 
-    // 2. จัดการ Online Status
+    // 2. จัดการสถานะออนไลน์ (Real-time Connection)
     onValue(connectedRef, (snap) => {
         if (snap.val() === true) {
             const myStatusRef = push(onlineRef);
@@ -74,20 +80,22 @@ const initVisitorStats = () => {
         }
     });
 
-    // 3. Listen ค่าจาก Firebase แบบ Real-time
+    // 3. Listen ยอดผู้เข้าชมทั้งหมด
     onValue(ref(db, 'stats'), (snap) => {
-        window._currentVisits = snap.val()?.total_visits || 0;
-        updateStatsUI();
+        const data = snap.val() || {};
+        currentTotalVisits = data.total_visits || 0;
+        renderStatsUI(); // วาดใหม่ทันที
     });
 
+    // 4. Listen จำนวนผู้คนออนไลน์
     onValue(onlineRef, (snap) => {
-        window._currentOnline = snap.size || 1;
-        updateStatsUI();
+        currentOnlineCount = snap.size || 1;
+        renderStatsUI(); // วาดใหม่ทันที
     });
 };
 
-// เริ่มระบบสถิติ
-setTimeout(initVisitorStats, 500);
+// เรียกใช้งานสถิติ
+initVisitorStats();
 
 // --- 🔒 ตรวจสอบสถานะ Admin ---
 onAuthStateChanged(auth, (user) => {
@@ -297,7 +305,7 @@ window.showPage = (id, el) => {
     const navTitle = document.getElementById('nav-title');
     if(navTitle) {
         navTitle.innerText = el ? el.innerText.trim() : "Dashboard";
-        updateStatsUI(); // ดึงสถิติกลับมาวาดใหม่ทันที
+        renderStatsUI(); // ดึงสถิติกลับมาวาดใหม่ทันทีหลังเปลี่ยนข้อความ Header
     }
 };
 
