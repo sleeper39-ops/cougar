@@ -123,7 +123,35 @@ onValue(ref(db, "settings"), (snap) => {
     const s = snap.val() || {};
     isGlobalLocked = s.globalLock || false;
     const lockSwitch = document.getElementById('globalLock');
-    if(isAdmin && lockSwitch) lockSwitch.checked = isGlobalLocked;
+    
+    if(isAdmin && lockSwitch) {
+        lockSwitch.checked = isGlobalLocked;
+        
+        // --- 🔘 เพิ่มปุ่ม Reset All Downloads สีเทา ไว้หน้าปุ่ม Lock ---
+        const lockGroup = lockSwitch.closest('.admin-lock-group') || lockSwitch.parentElement;
+        if (lockGroup && !document.getElementById('btn-reset-all')) {
+            const resetBtn = document.createElement('button');
+            resetBtn.id = 'btn-reset-all';
+            resetBtn.innerHTML = '<i class="fas fa-history"></i> ล้างยอดทั้งหมด';
+            resetBtn.style.cssText = `
+                background: #7f8c8d;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 11px;
+                margin-right: 15px;
+                font-weight: bold;
+                transition: 0.3s;
+            `;
+            resetBtn.onmouseover = () => resetBtn.style.background = '#6c7a7b';
+            resetBtn.onmouseout = () => resetBtn.style.background = '#7f8c8d';
+            resetBtn.onclick = () => window.resetAllDownloads();
+            
+            lockGroup.insertBefore(resetBtn, lockGroup.firstChild);
+        }
+    }
     window.renderItems();
 });
 
@@ -214,14 +242,12 @@ window.saveItem = async () => {
     window.resetForm();
 };
 
-// ลบยอดดาวน์โหลดทีละรายการ
 window.resetDownloadCount = (key) => {
     if (isAdmin && confirm("ต้องการรีเซ็ตยอดดาวน์โหลดของรายการนี้เป็น 0?")) {
         update(ref(db, `cougar_data/${key}`), { downloads: 0 });
     }
 };
 
-// 🔥 ลบยอดดาวน์โหลดทั้งหมด (Reset All)
 window.resetAllDownloads = async () => {
     if (!isAdmin) return;
     if (confirm("⚠️ ยืนยันการรีเซ็ตยอดดาวน์โหลด 'ทั้งหมด' ให้เป็น 0?")) {
@@ -270,6 +296,7 @@ window.editItem = (key) => {
 
 window.deleteItem = (key) => isAdmin && confirm("ต้องการลบรายการนี้?") && remove(ref(db, `cougar_data/${key}`));
 window.toggleItemLock = (key, curr) => isAdmin && update(ref(db, `cougar_data/${key}`), { locked: !curr });
+
 window.toggleGlobalLock = () => {
     if (!isAdmin) return;
     const isChecked = document.getElementById('globalLock').checked;
