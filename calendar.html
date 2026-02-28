@@ -4,22 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden; /* ป้องกัน scrollbar ซ้ำซ้อน */
-            background-color: #ffffff;
-        }
-        iframe {
-            border: 0;
-            width: 100%;
-            height: 100%;
-        }
+        body { font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        .form-container { padding: 10px; background: #f4f4f4; border-bottom: 1px solid #ccc; }
+        iframe { flex-grow: 1; width: 100%; border: 0; }
+        input, button { padding: 8px; margin: 2px; }
     </style>
 </head>
 <body>
-    <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok" style="border-width:0" frameborder="0" scrolling="no"></iframe>
+    <div class="form-container">
+        <strong>เพิ่มกิจกรรม:</strong>
+        <input type="text" id="title" placeholder="ชื่อกิจกรรม">
+        <input type="date" id="date">
+        <button onclick="saveEvent()">บันทึก</button>
+    </div>
+
+    <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok"></iframe>
+
+    <script>
+        function saveEvent() {
+            const title = document.getElementById('title').value;
+            const date = document.getElementById('date').value;
+            const scriptUrl = "URL_APPS_SCRIPT_ที่_DEPLOY_แล้ว"; // นำ URL จากการ Deploy มาวางที่นี่
+            
+            if(!title || !date) return alert("กรุณากรอกข้อมูลให้ครบ");
+
+            fetch(`${scriptUrl}?title=${title}&date=${date}`, { mode: 'no-cors' })
+                .then(() => {
+                    alert("ส่งข้อมูลแล้ว! (ปฏิทินอาจใช้เวลาอัปเดตสักครู่)");
+                    location.reload();
+                });
+        }
+    </script>
 </body>
 </html>
