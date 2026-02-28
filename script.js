@@ -114,11 +114,7 @@ window.toggleAuth = () => {
     }
 };
 
-// --- 🛡️ ป้องกันการคัดลอกเบื้องต้น ---
-document.addEventListener('contextmenu', e => e.preventDefault());
-document.onkeydown = (e) => {
-    if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
-};
+
 
 // --- 📡 Listeners ---
 onValue(ref(db, "cougar_data"), (snap) => {
@@ -254,3 +250,4 @@ setInterval(() => {
     const timeEl = document.getElementById('dash-time');
     if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }, 1000);
+
