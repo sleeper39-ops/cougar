@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// --- Firebase Config ---
+// --- Firebase Config (คงเดิม) ---
 const firebaseConfig = {
     apiKey: "AIzaSyD1SGjQXgfQykrV-psyDDwWbuqfTlE7Zhk",
     authDomain: "cougar2-database.firebaseapp.com",
@@ -21,7 +21,7 @@ let items = [];
 let isAdmin = false;
 let isGlobalLocked = false;
 
-// ฟังก์ชันช่วยถอดรหัส (Base64)
+// ฟังก์ชันช่วยถอดรหัส Base64 (คงเดิม)
 const _d = (v) => atob(v);
 
 // --- 🔒 ระบบตรวจสอบสถานะผู้ใช้งาน (Real-time) ---
@@ -31,13 +31,12 @@ onAuthStateChanged(auth, (user) => {
     const statusText = document.getElementById('dash-status');
     const statusIcon = document.getElementById('status-icon');
 
-    // ตรวจสอบสิทธิ์ Admin โดยใช้ Base64 (YWRtaW5AY291Z2FyMi5jb20= = admin@cougar2.com)
-    if (user && user.email === _d("YWRtaW5AY291Z2FyMi5jb20=")) {
+    if (user && user.email === _d("YWRtaW5AY291Z2FyMi5jb20=")) { // admin@cougar2.com
         isAdmin = true;
         if(panel) panel.style.display = 'block';
         if(authBtn) {
             authBtn.innerText = "Logout Admin";
-            authBtn.style.background = "var(--danger)";
+            authBtn.style.background = "var(--danger)"; // สีแดง = danger (CSS variable)
         }
         if(statusText) statusText.innerText = "Admin Mode";
         if(statusIcon) statusIcon.style.color = "#2ecc71";
@@ -54,14 +53,13 @@ onAuthStateChanged(auth, (user) => {
     window.renderItems();
 });
 
-// --- 🔑 ฟังก์ชัน Login สำหรับ Admin ---
+// --- 🔑 ฟังก์ชัน Login สำหรับ Admin (ปรับปรุงให้รองรับ Enter) ---
 window.performLogin = () => {
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
     if (!user || !pass) return alert("กรุณากรอกข้อมูลให้ครบ");
 
-    // ซ่อน Domain ด้วย Base64 (QGNvdWdhcjIuY29t = @cougar2.com)
-    const email = user.includes('@') ? user : user + _d("QGNvdWdhcjIuY29t"); 
+    const email = user.includes('@') ? user : user + _d("QGNvdWdhcjIuY29t"); // @cougar2.com
 
     signInWithEmailAndPassword(auth, email, pass)
         .then(() => {
@@ -72,25 +70,24 @@ window.performLogin = () => {
         .catch(() => alert("Username หรือ Password ไม่ถูกต้อง!"));
 };
 
-// ฟังก์ชันตรวจจับการกดปุ่ม Enter ใน Modal Login
+// --- ✅ เพิ่มฟังก์ชันกด Enter เพื่อ Login ---
 ['loginUser', 'loginPass'].forEach(id => {
     document.getElementById(id)?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') window.performLogin();
     });
 });
 
-// ฟังก์ชันเริ่มกระบวนการดาวน์โหลด (ซ่อนลิงก์จาก HTML)
+// --- 📥 ฟังก์ชันดาวน์โหลดปลอดภัย ---
 window.startDownload = (idx) => {
     const item = items[idx];
     if (item) window.secureDownload(item.link, item.locked);
 };
 
-// --- 📥 ฟังก์ชันดาวน์โหลดปลอดภัย ---
 window.secureDownload = async (link, itemLocked) => {
     const effectivelyLocked = isGlobalLocked || itemLocked;
 
     if (!effectivelyLocked) {
-        window.open(link, '_blank');
+        window.open(link, '_blank', 'noopener,noreferrer');
         return;
     }
 
@@ -98,15 +95,10 @@ window.secureDownload = async (link, itemLocked) => {
     if (!userPass) return;
 
     try {
-        // ใช้ Base64 สำหรับอีเมลดาวน์โหลด (ZG93bmxvYWRAY291Z2FyMi5jb20= = download@cougar2.com)
-        const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20=");
+        const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20="); // download@cougar2.com
         await signInWithEmailAndPassword(auth, dEmail, userPass);
-        
-        window.open(link, '_blank');
-        
-        if (auth.currentUser && auth.currentUser.email === dEmail) {
-            await signOut(auth);
-        }
+        window.open(link, '_blank', 'noopener,noreferrer');
+        if (auth.currentUser && auth.currentUser.email === dEmail) await signOut(auth);
     } catch (error) {
         alert("❌ รหัสดาวน์โหลดไม่ถูกต้อง!");
     }
@@ -121,9 +113,7 @@ window.toggleAuth = () => {
     }
 };
 
-
-
-// --- 📡 Listeners ---
+// --- 📡 Listeners (คงเดิม) ---
 onValue(ref(db, "cougar_data"), (snap) => {
     const data = snap.val();
     items = data ? Object.keys(data).map(k => ({ key: k, ...data[k] })) : [];
@@ -138,7 +128,7 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering ---
+// --- 🖥️ UI Rendering (ปรับปรุงให้ปุ่มตรงกันด้วย Flexbox) ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -182,7 +172,7 @@ window.renderItems = () => {
     if(countEl) countEl.innerText = items.length + " รายการ";
 };
 
-// --- 🛠️ Admin Actions ---
+// --- 🛠️ Admin Actions (คงเดิม) ---
 window.saveItem = async () => {
     if (!isAdmin) return;
     const key = document.getElementById('editKey').value;
@@ -253,9 +243,8 @@ window.openImage = (src) => {
     }
 };
 
+// --- ⏰ Real-time Clock (คงเดิม) ---
 setInterval(() => {
     const timeEl = document.getElementById('dash-time');
     if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }, 1000);
-
-
