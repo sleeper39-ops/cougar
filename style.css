@@ -1,0 +1,44 @@
+/* ปรับแต่งแถบเครื่องมือ Admin */
+.admin-actions {
+    display: flex;
+    justify-content: space-between; /* กระจายปุ่มให้เต็มความกว้าง */
+    align-items: center;
+    padding: 12px 8px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+    gap: 5px; /* ระยะห่างระหว่างปุ่ม */
+}
+
+/* ปรับแต่งปุ่มเครื่องมือพื้นฐาน */
+.btn-admin-tool {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 6px 8px; /* เพิ่มพื้นที่ด้านข้างให้ตัวหนังสือ */
+    transition: all 0.2s;
+    flex: 1; /* ให้ทุกปุ่มกว้างเท่าๆ กัน */
+    white-space: nowrap; /* ป้องกันตัวหนังสือตกบรรทัด */
+}
+
+/* สีเฉพาะของแต่ละปุ่ม */
+.btn-edit-tool { color: #3498db; }
+.btn-edit-tool:hover { background: #3498db; color: white; border-color: #3498db; }
+
+.btn-delete-tool { color: #e74c3c; }
+.btn-delete-tool:hover { background: #e74c3c; color: white; border-color: #e74c3c; }
+
+.btn-reset-tool { color: #f39c12; border-color: #f39c12; }
+.btn-reset-tool:hover { background: #f39c12; color: white; }
+
+/* ซ่อนตัวหนังสือบนมือถือ (Optional: ถ้าจอมือถือเล็กไปจะเหลือแค่ไอคอน) */
+@media (max-width: 480px) {
+    .btn-admin-tool span { display: none; }
+    .btn-admin-tool { padding: 8px; }
+}
