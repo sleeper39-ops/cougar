@@ -171,8 +171,17 @@
                     <div class="form-row">
                         <input type="hidden" id="editKey">
                         <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="itemName" placeholder="ระบุชื่อไฟล์..."></div>
-                        <div class="input-group"><label>ลิงก์รูปภาพ</label><input type="text" id="itemImg" placeholder="URL รูปภาพ..."></div>
-                        <div class="input-group"><label>ลิงก์ดาวน์โหลด</label><input type="text" id="itemLink" placeholder="URL ดาวน์โหลด..."></div>
+                        
+<div class="input-group">
+    <label>อัปโหลดรูปภาพ </label>
+    <input type="file" id="uploadImg" accept="image/*" onchange="window.handleUpload(this, 'itemImg')">
+    <input type="hidden" id="itemImg"> </div>
+
+<div class="input-group">
+    <label>อัปโหลดไฟล์</label>
+    <input type="file" id="uploadFile" onchange="window.handleUpload(this, 'itemLink')">
+    <input type="hidden" id="itemLink"> </div>
+                        
                         <div style="display:flex; gap:10px;">
                             <button onclick="window.saveItem()" id="btn-save" class="btn-action" style="background:var(--success);">บันทึก</button>
                             <button onclick="window.resetForm()" class="btn-action" style="background:var(--secondary);"><i class="fas fa-times"></i> ยกเลิก</button>
@@ -387,3 +396,4 @@
     </script>
 </body>
 </html>
+
