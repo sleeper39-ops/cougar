@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, update, remove, onValue, increment, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, update, remove, onValue, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // --- Firebase Config ---
@@ -20,58 +20,10 @@ const auth = getAuth(app);
 let items = [];
 let isAdmin = false;
 let isGlobalLocked = false;
+
 const _d = (v) => atob(v);
 
-// --- ?? ????????? (????????????? Nav Title) ---
-const initVisitorStats = () => {
-    const navTitle = document.getElementById('nav-title');
-    if (navTitle && !document.getElementById('stats-inline')) {
-        const statsSpan = document.createElement('span');
-        statsSpan.id = 'stats-inline';
-        statsSpan.style.cssText = `
-            font-size: 12px;
-            font-weight: normal;
-            margin-left: 15px;
-            display: inline-flex;
-            gap: 12px;
-            color: #7f8c8d;
-            vertical-align: middle;
-        `;
-        statsSpan.innerHTML = `
-            <span title="Online"><i class="fas fa-circle" style="color:#2ecc71; font-size:8px;"></i> Online: <b id="stat-online">1</b></span>
-            <span title="Visits"><i class="fas fa-eye"></i> Visits: <b id="stat-visits">0</b></span>
-        `;
-        navTitle.appendChild(statsSpan);
-    }
-
-    const onlineRef = ref(db, 'stats/online_users');
-    const connectedRef = ref(db, '.info/connected');
-
-    update(ref(db, 'stats'), { total_visits: increment(1) });
-
-    onValue(connectedRef, (snap) => {
-        if (snap.val() === true) {
-            const myStatusRef = push(onlineRef);
-            set(myStatusRef, true);
-            onDisconnect(myStatusRef).remove();
-        }
-    });
-
-    onValue(ref(db, 'stats'), (snap) => {
-        const s = snap.val() || {};
-        const vEl = document.getElementById('stat-visits');
-        if(vEl) vEl.innerText = (s.total_visits || 0).toLocaleString();
-    });
-    onValue(onlineRef, (snap) => {
-        const oEl = document.getElementById('stat-online');
-        if(oEl) oEl.innerText = (snap.size || 1).toLocaleString();
-    });
-};
-
-// ?????????????
-setTimeout(initVisitorStats, 500); // ?? DOM ????????????
-
-// --- ?? ???????????? Admin ---
+// --- 🔒 ตรวจสอบสถานะ Admin ---
 onAuthStateChanged(auth, (user) => {
     const panel = document.getElementById('admin-panel');
     const authBtn = document.getElementById('auth-btn');
@@ -100,11 +52,11 @@ onAuthStateChanged(auth, (user) => {
     window.renderItems();
 });
 
-// --- ?? Login Function ---
+// --- 🔑 Login Function ---
 window.performLogin = () => {
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
-    if (!user || !pass) return alert("?????????????????????");
+    if (!user || !pass) return alert("กรุณากรอกข้อมูลให้ครบ");
     const email = user.includes('@') ? user : user + _d("QGNvdWdhcjIuY29t");
     signInWithEmailAndPassword(auth, email, pass)
         .then(() => {
@@ -112,44 +64,62 @@ window.performLogin = () => {
             document.getElementById('loginUser').value = '';
             document.getElementById('loginPass').value = '';
         })
-        .catch(() => alert("Username ???? Password ??????????!"));
+        .catch(() => alert("Username หรือ Password ไม่ถูกต้อง!"));
 };
 
-// --- ?? Download System ---
+['loginUser', 'loginPass'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') window.performLogin();
+    });
+});
+
+// --- 📥 Download System (เพิ่มระบบนับยอด) ---
 window.startDownload = async (idx) => {
     const item = items[idx];
     if (!item) return;
+
     const effectivelyLocked = isGlobalLocked || item.locked;
+    
     if (!effectivelyLocked) {
-        await update(ref(db, `cougar_data/${item.key}`), { downloads: increment(1) });
+        // นับยอดทันทีสำหรับไฟล์ไม่ล็อค
+        await update(ref(db, `cougar_data/${item.key}`), {
+            downloads: increment(1)
+        });
         window.open(item.link, '_blank', 'noopener,noreferrer');
     } else {
+        // เรียกใช้ระบบตรวจสอบรหัสผ่าน
         window.secureDownload(item);
     }
 };
 
 window.secureDownload = async (item) => {
-    const userPass = prompt("?? ????????????????? ?????????????????????:");
+    const userPass = prompt("🔒 ไฟล์นี้ถูกล็อคไว้ กรุณาใส่รหัสดาวน์โหลด:");
     if (!userPass) return;
     try {
         const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20="); 
         await signInWithEmailAndPassword(auth, dEmail, userPass);
-        await update(ref(db, `cougar_data/${item.key}`), { downloads: increment(1) });
+        
+        // ถ้ารหัสถูกต้องให้นับยอดก่อนเปิดลิงก์
+        await update(ref(db, `cougar_data/${item.key}`), {
+            downloads: increment(1)
+        });
+
         window.open(item.link, '_blank', 'noopener,noreferrer');
         if (auth.currentUser && auth.currentUser.email === dEmail) await signOut(auth);
-    } catch (error) { alert("? ???????????????????????!"); }
+    } catch (error) {
+        alert("❌ รหัสดาวน์โหลดไม่ถูกต้อง!");
+    }
 };
 
 window.toggleAuth = () => {
     if (auth.currentUser) {
-        if (confirm("????????????????????????????")) signOut(auth);
+        if (confirm("ต้องการออกจากระบบใช่หรือไม่?")) signOut(auth);
     } else {
-        const modal = document.getElementById('loginModal');
-        if(modal) modal.style.display = 'flex';
+        document.getElementById('loginModal').style.display = 'flex';
     }
 };
 
-// --- ?? Firebase Real-time Sync ---
+// --- 📡 Firebase Real-time Sync ---
 onValue(ref(db, "cougar_data"), (snap) => {
     const data = snap.val();
     items = data ? Object.keys(data).map(k => ({ key: k, ...data[k] })) : [];
@@ -164,20 +134,18 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- ??? UI Rendering ---
+// --- 🖥️ UI Rendering (เพิ่ม Badge แสดงยอดโหลด) ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
     list.innerHTML = '';
-    let totalDownloads = 0;
-
+    
     items.forEach((item, index) => {
         const effectivelyLocked = isGlobalLocked || item.locked;
-        const count = item.downloads || 0;
-        totalDownloads += count;
-
+        const count = item.downloads || 0; // ยอดโหลด
         const card = document.createElement('div');
         card.className = 'download-card';
+        
         card.innerHTML = `
             <div class="card-img-container" onclick="window.openImage('${item.img || ''}')">
                 <div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); color:white; padding:3px 8px; border-radius:5px; font-size:11px; z-index:1; backdrop-filter:blur(4px);">
@@ -187,10 +155,14 @@ window.renderItems = () => {
             </div>
             <div class="download-info">
                 <h4>${item.name}</h4>
-                <button onclick="window.startDownload(${index})" class="btn-download" style="background:${effectivelyLocked ? 'var(--warning)' : 'var(--success)'}; color:white;">
-                    <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> ${effectivelyLocked ? 'Password Required' : 'Download Now'}
+                <button onclick="window.startDownload(${index})" 
+                        class="btn-download"
+                        style="background:${effectivelyLocked ? 'var(--warning)' : 'var(--success)'}; color:white;">
+                    <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> 
+                    ${effectivelyLocked ? 'Password Required' : 'Download Now'}
                 </button>
             </div>
+            
             <div class="admin-actions" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
                 <div class="admin-lock-group">
                     <label class="switch">
@@ -199,43 +171,42 @@ window.renderItems = () => {
                     </label>
                     <span>Lock</span>
                 </div>
-                <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool"><i class="fas fa-edit"></i> Edit</button>
-                <button onclick="window.resetDownloadCount('${item.key}')" class="btn-admin-tool" style="color:#7f8c8d;"><i class="fas fa-redo-alt"></i> Reset</button>
-                <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool"><i class="fas fa-trash"></i> Delete</button>
+                
+                <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                
+                <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
             </div>
         `;
         list.appendChild(card);
     });
-
     const countEl = document.getElementById('dash-count');
-    if(countEl) countEl.innerText = items.length + " ??????";
-    const totalDlEl = document.getElementById('dash-total-dl');
-    if(totalDlEl) totalDlEl.innerText = totalDownloads.toLocaleString() + " ?????";
+    if(countEl) countEl.innerText = items.length + " รายการ";
 };
 
-// --- ??? Admin Actions ---
+// --- 🛠️ Admin Actions ---
 window.saveItem = async () => {
     if (!isAdmin) return;
     const key = document.getElementById('editKey').value;
     const name = document.getElementById('itemName').value;
     const img = document.getElementById('itemImg').value;
     const link = document.getElementById('itemLink').value;
-    if (!name || !link) return alert("?????????????????????????");
+    if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์โหลด");
 
     const data = { 
-        name, img, link, 
+        name, 
+        img, 
+        link, 
         locked: key ? items.find(i => i.key === key).locked : false,
-        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 
+        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 // รักษายอดดาวน์โหลดเดิม
     };
+    
     if(key) await update(ref(db, `cougar_data/${key}`), data);
     else await push(ref(db, "cougar_data"), data);
     window.resetForm();
-};
-
-window.resetDownloadCount = (key) => {
-    if (isAdmin && confirm("????????????????????????????????????????? 0?")) {
-        update(ref(db, `cougar_data/${key}`), { downloads: 0 });
-    }
 };
 
 window.resetForm = () => {
@@ -244,7 +215,10 @@ window.resetForm = () => {
     document.getElementById('itemImg').value = '';
     document.getElementById('itemLink').value = '';
     const btn = document.getElementById('btn-save');
-    if(btn) { btn.innerText = "??????"; btn.style.background = "var(--success)"; }
+    if(btn) {
+        btn.innerText = "บันทึก";
+        btn.style.background = "var(--success)";
+    }
 };
 
 window.editItem = (key) => {
@@ -256,12 +230,19 @@ window.editItem = (key) => {
     document.getElementById('itemLink').value = item.link;
     document.getElementById('editKey').value = key;
     const btn = document.getElementById('btn-save');
-    if(btn) { btn.innerText = "Update"; btn.style.background = "var(--primary)"; }
+    if(btn) {
+        btn.innerText = "Update";
+        btn.style.background = "var(--primary)";
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-window.deleteItem = (key) => isAdmin && confirm("???????????????????") && remove(ref(db, `cougar_data/${key}`));
-window.toggleItemLock = (key, curr) => isAdmin && update(ref(db, `cougar_data/${key}`), { locked: !curr });
+window.deleteItem = (key) => isAdmin && confirm("ต้องการลบรายการนี้?") && remove(ref(db, `cougar_data/${key}`));
+
+window.toggleItemLock = (key, curr) => {
+    if (!isAdmin) return;
+    update(ref(db, `cougar_data/${key}`), { locked: !curr });
+};
 
 window.toggleGlobalLock = () => {
     if (!isAdmin) return;
@@ -275,23 +256,22 @@ window.showPage = (id, el) => {
     if(target) target.classList.add('active');
     document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
     if(el) el.classList.add('active');
-    
     const navTitle = document.getElementById('nav-title');
-    if(navTitle) {
-        const stats = document.getElementById('stats-inline');
-        navTitle.innerText = el ? el.innerText.trim() : "Dashboard";
-        if (stats) navTitle.appendChild(stats); // ????? stats ???????????????????????
-    }
+    if(navTitle) navTitle.innerText = el ? el.innerText.trim() : "Dashboard";
 };
 
 window.openImage = (src) => {
     if (!src) return;
     const lb = document.getElementById('imgLightbox');
     const lbImg = document.getElementById('lightboxImg');
-    if(lb && lbImg) { lbImg.src = src; lb.style.display = 'flex'; }
+    if(lb && lbImg) {
+        lbImg.src = src;
+        lb.style.display = 'flex';
+    }
 };
 
 setInterval(() => {
     const timeEl = document.getElementById('dash-time');
     if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }, 1000);
+
