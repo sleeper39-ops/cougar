@@ -41,7 +41,7 @@
         .stat-value { font-size: 1.4rem; font-weight: bold; color: #000; margin-bottom: 8px; }
         .stat-label { font-size: 13px; color: #888; }
 
-        /* Admin Panel & Buttons */
+        /* Admin Panel */
         #admin-panel { display: none; background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 20px; align-items: flex-end; }
@@ -66,15 +66,45 @@
         .download-info h4 { margin: 0 0 15px 0; font-size: 16px; color: #333; min-height: 44px; display: flex; align-items: center; justify-content: center; }
         .btn-download { margin-top: auto; display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
         
-        /* Admin Actions in Card */
-        .admin-actions { display: none; justify-content: space-around; align-items: center; padding: 12px 10px; background: #fafafa; border-top: 1px solid #eee; margin-top: auto; }
-        .btn-admin-tool { background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
-        .btn-edit-tool { color: var(--primary); }
-        .btn-delete-tool { color: var(--danger); }
-        .btn-reset-tool { color: var(--warning) !important; border: 1px solid var(--warning) !important; padding: 2px 8px !important; border-radius: 4px; }
-        .btn-reset-tool:hover { background: var(--warning); color: white !important; }
+        /* --- อัปเดต Admin Actions CSS --- */
+        .admin-actions { 
+            display: none; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px 10px; 
+            background: #f9f9f9; 
+            border-top: 1px solid #eee; 
+            gap: 6px; 
+        }
+        
+        .btn-admin-tool { 
+            background: white; 
+            border: 1px solid #ddd; 
+            border-radius: 6px;
+            cursor: pointer; 
+            font-size: 11px; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 5px; 
+            padding: 6px 8px;
+            transition: 0.2s; 
+            flex: 1;
+            white-space: nowrap;
+        }
 
-        .admin-lock-group { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: #666; }
+        .btn-edit-tool { color: var(--primary); border-color: var(--primary); }
+        .btn-edit-tool:hover { background: var(--primary); color: white; }
+
+        .btn-delete-tool { color: var(--danger); border-color: var(--danger); }
+        .btn-delete-tool:hover { background: var(--danger); color: white; }
+
+        .btn-reset-tool { color: var(--warning); border-color: var(--warning); }
+        .btn-reset-tool:hover { background: var(--warning); color: white; }
+
+        .admin-lock-group { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; font-weight: 600; color: #666; min-width: 40px; }
+        
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
@@ -84,6 +114,10 @@
         
         .lightbox { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
         .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
+
+        @media (max-width: 480px) {
+            .btn-admin-tool span { display: none; } /* ซ่อนตัวหนังสือบนมือถือจอเล็กมาก */
+        }
     </style>
 </head>
 <body>
@@ -227,6 +261,7 @@
             window.renderItems();
         });
 
+        // --- อัปเดตฟังก์ชัน Rendering (เพิ่มข้อความในปุ่ม Admin) ---
         window.renderItems = () => {
             const list = document.getElementById('download-list');
             if(!list) return;
@@ -248,10 +283,17 @@
                             <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> ${effectivelyLocked ? 'Password Required' : 'Download Now'}
                         </button>
                     </div>
+                    
                     <div class="admin-actions" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
-                        <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool"><i class="fas fa-edit"></i></button>
-                        <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool"><i class="fas fa-trash"></i></button>
-                        <button onclick="window.resetSingleDownload('${item.key}')" class="btn-admin-tool btn-reset-tool"><i class="fas fa-undo"></i> Reset</button>
+                        <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
+                            <i class="fas fa-edit"></i> <span>Edit</span>
+                        </button>
+                        <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
+                            <i class="fas fa-trash"></i> <span>Delete</span>
+                        </button>
+                        <button onclick="window.resetSingleDownload('${item.key}')" class="btn-admin-tool btn-reset-tool">
+                            <i class="fas fa-undo"></i> <span>Reset</span>
+                        </button>
                         <div class="admin-lock-group">
                             <label class="switch">
                                 <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
