@@ -17,6 +17,9 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
+// --- 🔗 Google Apps Script Config ---
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAd-66w6GLXmkvZEQJZ4ZxwFp2gDlIjFvhRWRQ3vLRb_NexG7FxIwqdVmOX5DKPHH0/exec"; 
+
 let items = [];
 let isAdmin = false;
 let isGlobalLocked = false;
@@ -67,6 +70,96 @@ window.performLogin = () => {
         .catch(() => alert("Username หรือ Password ไม่ถูกต้อง!"));
 };
 
+// --- 📤 ระบบอัปโหลดไป Google Drive ---
+window.uploadToDrive = async (file) => {
+    if (!file) return null;
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async () => {
+            const base64 = reader.result.split(',')[1];
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        base64: base64,
+                        type: file.type,
+                        name: file.name
+                    })
+                });
+                const result = await response.json();
+                resolve(result);
+            } catch (err) {
+                reject(err);
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+};
+
+// --- 💾 Save Item (รวมการ Upload) ---
+window.saveItem = async () => {
+    if (!isAdmin) return;
+    
+    const key = document.getElementById('editKey').value;
+    const name = document.getElementById('itemName').value;
+    const imgText = document.getElementById('itemImg').value;
+    const linkText = document.getElementById('itemLink').value;
+    
+    const imgFile = document.getElementById('fileImg').files[0];
+    const linkFile = document.getElementById('fileLink').files[0];
+
+    if (!name) return alert("กรุณากรอกชื่อรายการ");
+
+    const btn = document.getElementById('btn-save');
+    const originalText = btn.innerText;
+    btn.innerText = "กำลังอัปโหลด... ⏳";
+    btn.disabled = true;
+
+    try {
+        let finalImg = imgText;
+        let finalLink = linkText;
+
+        // อัปโหลดรูปภาพถ้ามีการเลือกไฟล์
+        if (imgFile) {
+            const res = await window.uploadToDrive(imgFile);
+            finalImg = res.url;
+        }
+
+        // อัปโหลดไฟล์ดาวน์โหลดถ้ามีการเลือกไฟล์
+        if (linkFile) {
+            const res = await window.uploadToDrive(linkFile);
+            finalLink = res.downloadUrl;
+        }
+
+        if (!finalLink) {
+            alert("กรุณาระบุลิงก์หรืออัปโหลดไฟล์ดาวน์โหลด");
+            btn.innerText = originalText;
+            btn.disabled = false;
+            return;
+        }
+
+        const data = { 
+            name, 
+            img: finalImg, 
+            link: finalLink, 
+            locked: key ? items.find(i => i.key === key).locked : false,
+            downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 
+        };
+        
+        if(key) await update(ref(db, `cougar_data/${key}`), data);
+        else await push(ref(db, "cougar_data"), data);
+
+        alert("✅ บันทึกข้อมูลสำเร็จ");
+        window.resetForm();
+    } catch (error) {
+        console.error(error);
+        alert("❌ เกิดข้อผิดพลาดในการอัปโหลด");
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+};
+
 // --- 📥 Download System ---
 window.startDownload = async (idx) => {
     const item = items[idx];
@@ -110,7 +203,7 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (แสดงผลปุ่มพร้อมข้อความ) ---
+// --- 🖥️ UI Rendering ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -143,15 +236,12 @@ window.renderItems = () => {
                 <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
                     <i class="fas fa-edit"></i> <span>Edit</span>
                 </button>
-                
                 <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
                     <i class="fas fa-trash"></i> <span>Delete</span>
                 </button>
-
                 <button onclick="window.resetSingleDownload('${item.key}')" class="btn-admin-tool btn-reset-tool">
                     <i class="fas fa-undo"></i> <span>Reset</span>
                 </button>
-
                 <div class="admin-lock-group">
                     <label class="switch">
                         <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
@@ -178,39 +268,12 @@ window.resetSingleDownload = async (key) => {
 window.resetAllDownloads = async () => {
     if (!isAdmin) return;
     if (!confirm("⚠️ ยืนยัน: ต้องการรีเซตยอดดาวน์โหลด 'ทั้งหมด' เป็น 0 ใช่หรือไม่?")) return;
-    
     const updates = {};
-    items.forEach(item => {
-        updates[`cougar_data/${item.key}/downloads`] = 0;
-    });
-    
+    items.forEach(item => { updates[`cougar_data/${item.key}/downloads`] = 0; });
     try {
         await update(ref(db), updates);
         alert("✅ รีเซตยอดดาวน์โหลดทั้งหมดเรียบร้อยแล้ว");
-    } catch (error) {
-        alert("เกิดข้อผิดพลาดในการรีเซต");
-    }
-};
-
-window.saveItem = async () => {
-    if (!isAdmin) return;
-    const key = document.getElementById('editKey').value;
-    const name = document.getElementById('itemName').value;
-    const img = document.getElementById('itemImg').value;
-    const link = document.getElementById('itemLink').value;
-    if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์โหลด");
-
-    const data = { 
-        name, 
-        img, 
-        link, 
-        locked: key ? items.find(i => i.key === key).locked : false,
-        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 
-    };
-    
-    if(key) await update(ref(db, `cougar_data/${key}`), data);
-    else await push(ref(db, "cougar_data"), data);
-    window.resetForm();
+    } catch (error) { alert("เกิดข้อผิดพลาดในการรีเซต"); }
 };
 
 window.resetForm = () => {
@@ -218,10 +281,13 @@ window.resetForm = () => {
     document.getElementById('itemName').value = '';
     document.getElementById('itemImg').value = '';
     document.getElementById('itemLink').value = '';
+    document.getElementById('fileImg').value = '';
+    document.getElementById('fileLink').value = '';
     const btn = document.getElementById('btn-save');
     if(btn) {
         btn.innerText = "บันทึก";
         btn.style.background = "var(--success)";
+        btn.disabled = false;
     }
 };
 
@@ -242,17 +308,8 @@ window.editItem = (key) => {
 };
 
 window.deleteItem = (key) => isAdmin && confirm("ต้องการลบรายการนี้?") && remove(ref(db, `cougar_data/${key}`));
-
-window.toggleItemLock = (key, curr) => {
-    if (!isAdmin) return;
-    update(ref(db, `cougar_data/${key}`), { locked: !curr });
-};
-
-window.toggleGlobalLock = () => {
-    if (!isAdmin) return;
-    const isChecked = document.getElementById('globalLock').checked;
-    update(ref(db, "settings"), { globalLock: isChecked });
-};
+window.toggleItemLock = (key, curr) => isAdmin && update(ref(db, `cougar_data/${key}`), { locked: !curr });
+window.toggleGlobalLock = () => isAdmin && update(ref(db, "settings"), { globalLock: document.getElementById('globalLock').checked });
 
 window.toggleAuth = () => {
     if (auth.currentUser) {
