@@ -110,7 +110,7 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (เพิ่มตัวหนังสือในปุ่ม) ---
+// --- 🖥️ UI Rendering (แสดงผลปุ่มพร้อมข้อความ) ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -141,15 +141,15 @@ window.renderItems = () => {
             
             <div class="admin-actions" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
                 <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
-                    <i class="fas fa-edit"></i> Edit
+                    <i class="fas fa-edit"></i> <span>Edit</span>
                 </button>
                 
                 <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
-                    <i class="fas fa-trash"></i> Delete
+                    <i class="fas fa-trash"></i> <span>Delete</span>
                 </button>
 
-                <button onclick="window.resetSingleDownload('${item.key}')" class="btn-admin-tool btn-reset-tool" title="Reset this download count">
-                    <i class="fas fa-undo"></i> Reset
+                <button onclick="window.resetSingleDownload('${item.key}')" class="btn-admin-tool btn-reset-tool">
+                    <i class="fas fa-undo"></i> <span>Reset</span>
                 </button>
 
                 <div class="admin-lock-group">
@@ -168,7 +168,6 @@ window.renderItems = () => {
 };
 
 // --- 🛠️ Admin Actions ---
-
 window.resetSingleDownload = async (key) => {
     if (!isAdmin) return;
     if (confirm("ต้องการรีเซตยอดดาวน์โหลดของไฟล์นี้ให้เป็น 0 หรือไม่?")) {
