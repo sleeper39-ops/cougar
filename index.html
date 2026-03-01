@@ -50,32 +50,19 @@
         .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
         .btn-action { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; height: 41px; color: white; }
 
-        /* สไตล์สำหรับแสดงยอดดาวน์โหลด */
-    .download-count-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    backdrop-filter: blur(4px);
-    z-index: 1;
-}
+        /* สไตล์ปุ่มรีเซตทั้งหมดใน Admin Header */
+        .btn-reset-all { 
+            background: var(--warning); color: white; border: none; padding: 5px 12px; 
+            border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;
+            transition: 0.2s; display: flex; align-items: center; gap: 5px;
+        }
+        .btn-reset-all:hover { background: #d68910; }
 
-.stat-downloads {
-    font-size: 12px;
-    color: #7f8c8d;
-    margin-top: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-}
+        .download-count-badge {
+            position: absolute; top: 10px; left: 10px; background: rgba(0, 0, 0, 0.6);
+            color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            display: flex; align-items: center; gap: 5px; backdrop-filter: blur(4px); z-index: 1;
+        }
 
         /* Grid & Cards */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding-bottom: 40px; }
@@ -92,15 +79,11 @@
         .download-info h4 { margin: 0 0 15px 0; font-size: 16px; color: #333; min-height: 44px; display: flex; align-items: center; justify-content: center; }
         .btn-download { margin-top: auto; display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
         
-        /* --- แถบปุ่ม Admin ด้านล่างการ์ด (อัปเดตใหม่) --- */
+        /* --- แถบปุ่ม Admin --- */
         .admin-actions { 
-            display: none; /* เปิดเป็น flex ผ่าน script เมื่อเป็น admin */
-            justify-content: space-around; 
-            align-items: center; 
-            padding: 12px 10px; 
-            background: #fafafa; 
-            border-top: 1px solid #eee;
-            margin-top: auto; 
+            display: none; justify-content: space-around; 
+            align-items: center; padding: 12px 10px; 
+            background: #fafafa; border-top: 1px solid #eee; margin-top: auto; 
         }
         .admin-lock-group { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #666; }
         
@@ -112,6 +95,7 @@
         }
         .btn-edit-tool { color: var(--primary); }
         .btn-delete-tool { color: var(--danger); }
+        .btn-reset-tool { color: var(--warning); } /* สีส้มสำหรับปุ่มรีเซตรายไฟล์ */
         .btn-admin-tool:hover { opacity: 0.7; }
 
         /* Toggles & Lightbox */
@@ -176,9 +160,14 @@
                 <div id="admin-panel">
                     <div class="admin-header">
                         <h3 style="margin:0;"><i class="fas fa-tools"></i> Admin Control Panel</h3>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="font-size:12px; font-weight:bold; color:var(--danger);">Lock all downloads</span>
-                            <label class="switch"><input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()"><span class="slider"></span></label>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:12px; font-weight:bold; color:var(--danger);">Lock all downloads</span>
+                                <label class="switch"><input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()"><span class="slider"></span></label>
+                            </div>
+                            <button onclick="window.resetAllDownloads()" class="btn-reset-all">
+                                <i class="fas fa-sync-alt"></i> รีเซตทั้งหมด
+                            </button>
                         </div>
                     </div>
 
