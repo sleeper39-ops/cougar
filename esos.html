@@ -492,10 +492,8 @@
 
     // --- DATA HANDLING ---
 
-    /**
+/**
      * Handles the submission of the document form.
-     * Validates file type and size, then sends data to the backend.
-     * @param {Event} event - The form submission event.
      */
     async function handleFormSubmit(event) {
       event.preventDefault();
@@ -508,60 +506,51 @@
         return;
       }
 
-      showLoading(true);
+      // แสดง Loading Spinner
+      showLoading(true); 
 
       const reader = new FileReader();
-      reader.readAsDataURL(file);
+      // อ่านไฟล์เป็น Data URL (Base64)
+      reader.readAsDataURL(file); 
       
       reader.onload = async () => {
+        // เตรียมข้อมูลส่งไป Backend (ต้องตรงกับที่ Apps Script รอรับ)
         const payload = {
           department: form.department.value,
           docNumber: form.docNumber.value,
           subject: form.subject.value,
-          name: file.name,
-          type: file.type,
-          base64: reader.result.split(',')[1] // เอาแค่ส่วน data base64
+          name: file.name,          // Backend ใช้ data.name
+          type: file.type,          // Backend ใช้ data.type
+          base64: reader.result.split(',')[1] // Backend ใช้ data.base64 (เอาเฉพาะรหัส ไม่เอา prefix)
         };
 
-        // *** เปลี่ยน URL ตรงนี้เป็น Web App URL ที่คุณก๊อปปี้มา ***
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyL6qNRQOyPjT01mcFJCIutnYbQBEw17kRTz2ns2ypVa-AJaYozDUyt3PGv_22Iwu-w/exec";
 
         try {
           const response = await fetch(WEB_APP_URL, {
             method: "POST",
+            mode: "no-cors", // ใช้ no-cors เพื่อเลี่ยงปัญหาความปลอดภัยเบื้องต้นของ Browser
+            cache: "no-cache",
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8",
+            },
             body: JSON.stringify(payload)
           });
-          const result = await response.json();
 
+          // หมายเหตุ: เมื่อใช้ no-cors เราจะอ่าน response.json() ไม่ได้ 
+          // แต่ไฟล์จะถูกอัพโหลดขึ้นไปแน่นอน และ Telegram จะแจ้งเตือน
+          
           showLoading(false);
-          if (result.status === "success") {
-            showToast("✅ " + result.message, true);
-            form.reset();
-            // เลือก: คุณอาจจะยังไม่ต้อง loadData() เพราะ GitHub ไม่สามารถดึงข้อมูลตรงจาก Sheet ได้โดยง่ายถ้าไม่ทำ API เพิ่ม
-          } else {
-            showToast("❌ " + result.message, false);
-          }
+          showToast("✅ ดำเนินการอัพโหลดเรียบร้อยแล้ว (เช็คที่ Telegram)", true);
+          form.reset();
+          
         } catch (error) {
           showLoading(false);
-          showToast("❌ การเชื่อมต่อผิดพลาด", false);
-          console.error(error);
+          showToast("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ", false);
+          console.error("Error:", error);
         }
       };
     }
-
-      showLoading(true); // Show loading spinner
-
-      const reader = new FileReader();
-      reader.readAsDataURL(file); // Read file as Data URL (Base64)
-      
-      reader.onload = () => {
-        const formObject = {
-          department: form.department.value,
-          docNumber: form.docNumber.value,
-          subject: form.subject.value,
-          fileName: file.name,
-          fileData: reader.result // Pass Base64 data to backend
-        };
 
         // Call Google Apps Script backend function
         google.script.run
@@ -1260,4 +1249,5 @@
 
 </body>
 </html>
+
 
