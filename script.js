@@ -110,7 +110,7 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (เพิ่มปุ่มรีเซตรายไฟล์) ---
+// --- 🖥️ UI Rendering (เพิ่มตัวหนังสือในปุ่ม) ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -141,15 +141,15 @@ window.renderItems = () => {
             
             <div class="admin-actions" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
                 <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
-                    <i class="fas fa-edit"></i>
+                    <i class="fas fa-edit"></i> Edit
                 </button>
                 
                 <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
-                    <i class="fas fa-trash"></i>
+                    <i class="fas fa-trash"></i> Delete
                 </button>
 
                 <button onclick="window.resetSingleDownload('${item.key}')" class="btn-admin-tool btn-reset-tool" title="Reset this download count">
-                    <i class="fas fa-undo"></i>
+                    <i class="fas fa-undo"></i> Reset
                 </button>
 
                 <div class="admin-lock-group">
@@ -169,7 +169,6 @@ window.renderItems = () => {
 
 // --- 🛠️ Admin Actions ---
 
-// 1. รีเซตยอดดาวน์โหลดรายไฟล์
 window.resetSingleDownload = async (key) => {
     if (!isAdmin) return;
     if (confirm("ต้องการรีเซตยอดดาวน์โหลดของไฟล์นี้ให้เป็น 0 หรือไม่?")) {
@@ -177,10 +176,10 @@ window.resetSingleDownload = async (key) => {
     }
 };
 
-// 2. รีเซตยอดดาวน์โหลดทั้งหมด (Reset download all)
 window.resetAllDownloads = async () => {
     if (!isAdmin) return;
-    // (Confirm จะแสดงผ่านปุ่มใน HTML หรือตรงนี้ก็ได้ แต่ใส่ตรงนี้เพื่อความปลอดภัย 2 ชั้น)
+    if (!confirm("⚠️ ยืนยัน: ต้องการรีเซตยอดดาวน์โหลด 'ทั้งหมด' เป็น 0 ใช่หรือไม่?")) return;
+    
     const updates = {};
     items.forEach(item => {
         updates[`cougar_data/${item.key}/downloads`] = 0;
