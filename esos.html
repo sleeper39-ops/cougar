@@ -497,8 +497,8 @@
      * Validates file type and size, then sends data to the backend.
      * @param {Event} event - The form submission event.
      */
-    function handleFormSubmit(event) {
-      event.preventDefault(); // Prevent default form submission
+    async function handleFormSubmit(event) {
+      event.preventDefault();
       const form = event.target;
       const fileInput = document.getElementById('file-input');
       const file = fileInput ? fileInput.files[0] : null;
@@ -507,17 +507,47 @@
         showToast("กรุณาแนบไฟล์เอกสาร", false);
         return;
       }
-      // Check file type
-      if (file.type !== 'application/pdf') {
-        showToast("รองรับเฉพาะไฟล์ .pdf เท่านั้น", false);
-        return;
-      }
-      // Optional: Add file size validation (e.g., max 10MB)
-      const MAX_FILE_SIZE_MB = 10;
-      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-          showToast(`ไฟล์มีขนาดใหญ่เกินไป (สูงสุด ${MAX_FILE_SIZE_MB}MB)`, false);
-          return;
-      }
+
+      showLoading(true);
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      reader.onload = async () => {
+        const payload = {
+          department: form.department.value,
+          docNumber: form.docNumber.value,
+          subject: form.subject.value,
+          name: file.name,
+          type: file.type,
+          base64: reader.result.split(',')[1] // เอาแค่ส่วน data base64
+        };
+
+        // *** เปลี่ยน URL ตรงนี้เป็น Web App URL ที่คุณก๊อปปี้มา ***
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyL6qNRQOyPjT01mcFJCIutnYbQBEw17kRTz2ns2ypVa-AJaYozDUyt3PGv_22Iwu-w/exec";
+
+        try {
+          const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+
+          showLoading(false);
+          if (result.status === "success") {
+            showToast("✅ " + result.message, true);
+            form.reset();
+            // เลือก: คุณอาจจะยังไม่ต้อง loadData() เพราะ GitHub ไม่สามารถดึงข้อมูลตรงจาก Sheet ได้โดยง่ายถ้าไม่ทำ API เพิ่ม
+          } else {
+            showToast("❌ " + result.message, false);
+          }
+        } catch (error) {
+          showLoading(false);
+          showToast("❌ การเชื่อมต่อผิดพลาด", false);
+          console.error(error);
+        }
+      };
+    }
 
       showLoading(true); // Show loading spinner
 
@@ -1230,3 +1260,4 @@
 
 </body>
 </html>
+
