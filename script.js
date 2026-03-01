@@ -1,6 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, update, remove, onValue, increment, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+// นำเข้าฟังก์ชันอัพโหลดจากไฟล์ที่คุณแยกไว้
+import { handleSaveItem } from './script-upload.js';
 
 // --- Firebase Config ---
 const firebaseConfig = {
@@ -22,21 +24,13 @@ let isAdmin = false;
 let isGlobalLocked = false;
 const _d = (v) => atob(v);
 
-// --- 📊 ระบบสถิติ (ย้ายไปวางหลัง Nav Title) ---
+// --- 📊 ระบบสถิติ Real-time ---
 const initVisitorStats = () => {
     const navTitle = document.getElementById('nav-title');
     if (navTitle && !document.getElementById('stats-inline')) {
         const statsSpan = document.createElement('span');
         statsSpan.id = 'stats-inline';
-        statsSpan.style.cssText = `
-            font-size: 12px;
-            font-weight: normal;
-            margin-left: 15px;
-            display: inline-flex;
-            gap: 12px;
-            color: #7f8c8d;
-            vertical-align: middle;
-        `;
+        statsSpan.style.cssText = `font-size: 12px; font-weight: normal; margin-left: 15px; display: inline-flex; gap: 12px; color: #7f8c8d; vertical-align: middle;`;
         statsSpan.innerHTML = `
             <span title="Online"><i class="fas fa-circle" style="color:#2ecc71; font-size:8px;"></i> Online: <b id="stat-online">1</b></span>
             <span title="Visits"><i class="fas fa-eye"></i> Visits: <b id="stat-visits">0</b></span>
@@ -68,8 +62,7 @@ const initVisitorStats = () => {
     });
 };
 
-// เรียกใช้สถิติ
-setTimeout(initVisitorStats, 500); // รอ DOM โหลดนิดหน่อย
+setTimeout(initVisitorStats, 500);
 
 // --- 🔒 ตรวจสอบสถานะ Admin ---
 onAuthStateChanged(auth, (user) => {
@@ -81,19 +74,13 @@ onAuthStateChanged(auth, (user) => {
     if (user && user.email === _d("YWRtaW5AY291Z2FyMi5jb20=")) { 
         isAdmin = true;
         if(panel) panel.style.display = 'block';
-        if(authBtn) {
-            authBtn.innerText = "Logout Admin";
-            authBtn.style.background = "var(--danger)";
-        }
+        if(authBtn) { authBtn.innerText = "Logout Admin"; authBtn.style.background = "var(--danger)"; }
         if(statusText) statusText.innerText = "Admin Mode";
         if(statusIcon) statusIcon.style.color = "#2ecc71";
     } else {
         isAdmin = false;
         if(panel) panel.style.display = 'none';
-        if(authBtn) {
-            authBtn.innerText = "Admin Login";
-            authBtn.style.background = "var(--primary)";
-        }
+        if(authBtn) { authBtn.innerText = "Admin Login"; authBtn.style.background = "var(--primary)"; }
         if(statusText) statusText.innerText = "Guest Mode";
         if(statusIcon) statusIcon.style.color = "#95a5a6";
     }
@@ -213,23 +200,10 @@ window.renderItems = () => {
     if(totalDlEl) totalDlEl.innerText = totalDownloads.toLocaleString() + " ครั้ง";
 };
 
-// --- 🛠️ Admin Actions ---
+// --- 🛠️ Admin Actions (เชื่อมต่อกับ script-upload.js) ---
 window.saveItem = async () => {
-    if (!isAdmin) return;
-    const key = document.getElementById('editKey').value;
-    const name = document.getElementById('itemName').value;
-    const img = document.getElementById('itemImg').value;
-    const link = document.getElementById('itemLink').value;
-    if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์โหลด");
-
-    const data = { 
-        name, img, link, 
-        locked: key ? items.find(i => i.key === key).locked : false,
-        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 
-    };
-    if(key) await update(ref(db, `cougar_data/${key}`), data);
-    else await push(ref(db, "cougar_data"), data);
-    window.resetForm();
+    // เรียกใช้ฟังก์ชันที่รวมระบบอัพโหลดและบันทึกไว้ด้วยกัน
+    await handleSaveItem(db, ref, update, push, isAdmin, items, window.resetForm);
 };
 
 window.resetDownloadCount = (key) => {
@@ -243,6 +217,8 @@ window.resetForm = () => {
     document.getElementById('itemName').value = '';
     document.getElementById('itemImg').value = '';
     document.getElementById('itemLink').value = '';
+    const fileInput = document.getElementById('itemFile');
+    if(fileInput) fileInput.value = '';
     const btn = document.getElementById('btn-save');
     if(btn) { btn.innerText = "บันทึก"; btn.style.background = "var(--success)"; }
 };
@@ -280,7 +256,7 @@ window.showPage = (id, el) => {
     if(navTitle) {
         const stats = document.getElementById('stats-inline');
         navTitle.innerText = el ? el.innerText.trim() : "Dashboard";
-        if (stats) navTitle.appendChild(stats); // รักษา stats ไว้เสมอเมื่อเปลี่ยนหน้า
+        if (stats) navTitle.appendChild(stats);
     }
 };
 
