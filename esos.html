@@ -1228,57 +1228,5 @@
     </div>
   </script>
 
-  <div class="upload-section">
-    <input type="file" id="myFile" class="form-control">
-    <button onclick="uploadToGoogleDrive()" class="btn btn-primary">อัพโหลดและแจ้งเตือน</button>
-</div>
-
-<script>
-async function uploadToGoogleDrive() {
-    const fileInput = document.getElementById('myFile');
-    const file = fileInput.files[0];
-    
-    if (!file) {
-        alert("กรุณาเลือกไฟล์ก่อนค่ะ");
-        return;
-    }
-
-    // แสดงสถานะกำลังโหลด
-    console.log("กำลังเตรียมไฟล์...");
-    
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async function() {
-        const base64Data = reader.result.split(',')[1];
-        
-        const payload = {
-            base64: base64Data,
-            type: file.type,
-            name: file.name
-        };
-
-        try {
-            // ส่งข้อมูลไปยัง Web App URL ที่คุณให้มา
-            const response = await fetch("https://script.google.com/macros/s/AKfycbyL6qNRQOyPjT01mcFJCIutnYbQBEw17kRTz2ns2ypVa-AJaYozDUyt3PGv_22Iwu-w/exec", {
-                method: "POST",
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-
-            if (result.status === "success") {
-                alert("อัพโหลดสำเร็จ! ระบบส่งแจ้งเตือนเข้า Telegram เรียบร้อยแล้ว");
-                console.log("File URL:", result.url);
-            } else {
-                alert("เกิดข้อผิดพลาด: " + result.message);
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("ไม่สามารถเชื่อมต่อกับ Google Script ได้");
-        }
-    };
-}
-</script>
-
 </body>
 </html>
