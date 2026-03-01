@@ -50,14 +50,15 @@
         .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
         .btn-action { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; height: 41px; color: white; }
 
-        /* สไตล์ปุ่มรีเซตทั้งหมดใน Admin Header */
+        /* ปุ่ม Reset All (อัปเดตใหม่) */
         .btn-reset-all { 
-            background: var(--warning); color: white; border: none; padding: 5px 12px; 
-            border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;
-            transition: 0.2s; display: flex; align-items: center; gap: 5px;
+            background: var(--warning); color: white; border: none; padding: 8px 15px; 
+            border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: bold;
+            transition: 0.2s; display: flex; align-items: center; gap: 6px;
         }
-        .btn-reset-all:hover { background: #d68910; }
+        .btn-reset-all:hover { background: #d68910; transform: scale(1.02); }
 
+        /* Badge ยอดดาวน์โหลด */
         .download-count-badge {
             position: absolute; top: 10px; left: 10px; background: rgba(0, 0, 0, 0.6);
             color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px;
@@ -95,8 +96,15 @@
         }
         .btn-edit-tool { color: var(--primary); }
         .btn-delete-tool { color: var(--danger); }
-        .btn-reset-tool { color: var(--warning); } /* สีส้มสำหรับปุ่มรีเซตรายไฟล์ */
-        .btn-admin-tool:hover { opacity: 0.7; }
+        
+        /* ปุ่มรีเซตรายไฟล์ (สีส้ม) */
+        .btn-reset-tool { 
+            color: var(--warning); 
+            padding: 4px 8px;
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            border-radius: 5px;
+        }
+        .btn-reset-tool:hover { background: var(--warning); color: white; }
 
         /* Toggles & Lightbox */
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
@@ -160,13 +168,13 @@
                 <div id="admin-panel">
                     <div class="admin-header">
                         <h3 style="margin:0;"><i class="fas fa-tools"></i> Admin Control Panel</h3>
-                        <div style="display:flex; align-items:center; gap:15px;">
+                        <div style="display:flex; align-items:center; gap:20px;">
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <span style="font-size:12px; font-weight:bold; color:var(--danger);">Lock all downloads</span>
                                 <label class="switch"><input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()"><span class="slider"></span></label>
                             </div>
-                            <button onclick="window.resetAllDownloads()" class="btn-reset-all">
-                                <i class="fas fa-sync-alt"></i> รีเซตทั้งหมด
+                            <button onclick="if(confirm('ยืนยันการรีเซตยอดดาวน์โหลดทั้งหมดเป็น 0?')) window.resetAllDownloads()" class="btn-reset-all">
+                                <i class="fas fa-sync-alt"></i> Reset download all
                             </button>
                         </div>
                     </div>
