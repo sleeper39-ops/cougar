@@ -1,7 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, update, remove, onValue, increment, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-// นำเข้าฟังก์ชันอัพโหลดจากไฟล์ที่คุณแยกไว้
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+// นำเข้าฟังก์ชันจากไฟล์อัปโหลด
 import { handleSaveItem } from './script-upload.js';
 
 // --- Firebase Config ---
@@ -18,6 +20,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
+const storage = getStorage(app); // เพิ่ม storage สำหรับส่งให้ script-upload
 
 let items = [];
 let isAdmin = false;
@@ -38,10 +41,10 @@ const initVisitorStats = () => {
         navTitle.appendChild(statsSpan);
     }
 
+    update(ref(db, 'stats'), { total_visits: increment(1) });
+
     const onlineRef = ref(db, 'stats/online_users');
     const connectedRef = ref(db, '.info/connected');
-
-    update(ref(db, 'stats'), { total_visits: increment(1) });
 
     onValue(connectedRef, (snap) => {
         if (snap.val() === true) {
@@ -56,9 +59,13 @@ const initVisitorStats = () => {
         const vEl = document.getElementById('stat-visits');
         if(vEl) vEl.innerText = (s.total_visits || 0).toLocaleString();
     });
+    
     onValue(onlineRef, (snap) => {
         const oEl = document.getElementById('stat-online');
-        if(oEl) oEl.innerText = (snap.size || 1).toLocaleString();
+        if(oEl) {
+            const count = snap.exists() ? Object.keys(snap.val()).length : 1;
+            oEl.innerText = count.toLocaleString();
+        }
     });
 };
 
@@ -200,10 +207,10 @@ window.renderItems = () => {
     if(totalDlEl) totalDlEl.innerText = totalDownloads.toLocaleString() + " ครั้ง";
 };
 
-// --- 🛠️ Admin Actions (เชื่อมต่อกับ script-upload.js) ---
+// --- 🛠️ Admin Actions ---
 window.saveItem = async () => {
-    // เรียกใช้ฟังก์ชันที่รวมระบบอัพโหลดและบันทึกไว้ด้วยกัน
-    await handleSaveItem(db, ref, update, push, isAdmin, items, window.resetForm);
+    // ส่งทั้ง db และ storage ให้กับ script-upload
+    await handleSaveItem(db, storage, isAdmin, window.resetForm);
 };
 
 window.resetDownloadCount = (key) => {
@@ -219,8 +226,11 @@ window.resetForm = () => {
     document.getElementById('itemLink').value = '';
     const fileInput = document.getElementById('itemFile');
     if(fileInput) fileInput.value = '';
+    const nameDisplay = document.getElementById('fileNameDisplay');
+    if(nameDisplay) nameDisplay.innerText = "คลิกเพื่อเลือกไฟล์";
+    
     const btn = document.getElementById('btn-save');
-    if(btn) { btn.innerText = "บันทึก"; btn.style.background = "var(--success)"; }
+    if(btn) { btn.innerText = "บันทึกข้อมูล"; btn.style.background = "var(--success)"; }
 };
 
 window.editItem = (key) => {
@@ -229,10 +239,10 @@ window.editItem = (key) => {
     if (!item) return;
     document.getElementById('itemName').value = item.name;
     document.getElementById('itemImg').value = item.img;
-    document.getElementById('itemLink').value = item.link;
+    document.getElementById('itemLink').value = item.link || '';
     document.getElementById('editKey').value = key;
     const btn = document.getElementById('btn-save');
-    if(btn) { btn.innerText = "Update"; btn.style.background = "var(--primary)"; }
+    if(btn) { btn.innerText = "Update Data"; btn.style.background = "var(--primary)"; }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
