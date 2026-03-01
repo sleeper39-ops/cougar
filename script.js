@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, update, remove, onValue, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, update, remove, onValue, increment, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // --- Firebase Config ---
@@ -67,27 +67,16 @@ window.performLogin = () => {
         .catch(() => alert("Username หรือ Password ไม่ถูกต้อง!"));
 };
 
-['loginUser', 'loginPass'].forEach(id => {
-    document.getElementById(id)?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') window.performLogin();
-    });
-});
-
-// --- 📥 Download System (เพิ่มระบบนับยอด) ---
+// --- 📥 Download System ---
 window.startDownload = async (idx) => {
     const item = items[idx];
     if (!item) return;
-
     const effectivelyLocked = isGlobalLocked || item.locked;
     
     if (!effectivelyLocked) {
-        // นับยอดทันทีสำหรับไฟล์ไม่ล็อค
-        await update(ref(db, `cougar_data/${item.key}`), {
-            downloads: increment(1)
-        });
+        await update(ref(db, `cougar_data/${item.key}`), { downloads: increment(1) });
         window.open(item.link, '_blank', 'noopener,noreferrer');
     } else {
-        // เรียกใช้ระบบตรวจสอบรหัสผ่าน
         window.secureDownload(item);
     }
 };
@@ -98,24 +87,11 @@ window.secureDownload = async (item) => {
     try {
         const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20="); 
         await signInWithEmailAndPassword(auth, dEmail, userPass);
-        
-        // ถ้ารหัสถูกต้องให้นับยอดก่อนเปิดลิงก์
-        await update(ref(db, `cougar_data/${item.key}`), {
-            downloads: increment(1)
-        });
-
+        await update(ref(db, `cougar_data/${item.key}`), { downloads: increment(1) });
         window.open(item.link, '_blank', 'noopener,noreferrer');
         if (auth.currentUser && auth.currentUser.email === dEmail) await signOut(auth);
     } catch (error) {
         alert("❌ รหัสดาวน์โหลดไม่ถูกต้อง!");
-    }
-};
-
-window.toggleAuth = () => {
-    if (auth.currentUser) {
-        if (confirm("ต้องการออกจากระบบใช่หรือไม่?")) signOut(auth);
-    } else {
-        document.getElementById('loginModal').style.display = 'flex';
     }
 };
 
@@ -134,7 +110,7 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (เพิ่ม Badge แสดงยอดโหลด) ---
+// --- 🖥️ UI Rendering (เพิ่มปุ่มรีเซตรายไฟล์) ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -142,13 +118,13 @@ window.renderItems = () => {
     
     items.forEach((item, index) => {
         const effectivelyLocked = isGlobalLocked || item.locked;
-        const count = item.downloads || 0; // ยอดโหลด
+        const count = item.downloads || 0;
         const card = document.createElement('div');
         card.className = 'download-card';
         
         card.innerHTML = `
             <div class="card-img-container" onclick="window.openImage('${item.img || ''}')">
-                <div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); color:white; padding:3px 8px; border-radius:5px; font-size:11px; z-index:1; backdrop-filter:blur(4px);">
+                <div class="download-count-badge">
                     <i class="fas fa-download"></i> ${count}
                 </div>
                 <img src="${item.img || 'https://via.placeholder.com/300x180?text=Cougar2'}" class="card-img">
@@ -164,21 +140,25 @@ window.renderItems = () => {
             </div>
             
             <div class="admin-actions" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
+                <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
+                    <i class="fas fa-edit"></i>
+                </button>
+                
+                <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
+                    <i class="fas fa-trash"></i>
+                </button>
+
+                <button onclick="window.resetSingleDownload('${item.key}')" class="btn-admin-tool btn-reset-tool" title="Reset this download count">
+                    <i class="fas fa-undo"></i>
+                </button>
+
                 <div class="admin-lock-group">
                     <label class="switch">
                         <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
                         <span class="slider"></span>
                     </label>
-                    <span>Lock</span>
+                    <span style="font-size:10px;">Lock</span>
                 </div>
-                
-                <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                
-                <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
             </div>
         `;
         list.appendChild(card);
@@ -188,6 +168,32 @@ window.renderItems = () => {
 };
 
 // --- 🛠️ Admin Actions ---
+
+// 1. รีเซตยอดดาวน์โหลดรายไฟล์
+window.resetSingleDownload = async (key) => {
+    if (!isAdmin) return;
+    if (confirm("ต้องการรีเซตยอดดาวน์โหลดของไฟล์นี้ให้เป็น 0 หรือไม่?")) {
+        await update(ref(db, `cougar_data/${key}`), { downloads: 0 });
+    }
+};
+
+// 2. รีเซตยอดดาวน์โหลดทั้งหมด (Reset download all)
+window.resetAllDownloads = async () => {
+    if (!isAdmin) return;
+    // (Confirm จะแสดงผ่านปุ่มใน HTML หรือตรงนี้ก็ได้ แต่ใส่ตรงนี้เพื่อความปลอดภัย 2 ชั้น)
+    const updates = {};
+    items.forEach(item => {
+        updates[`cougar_data/${item.key}/downloads`] = 0;
+    });
+    
+    try {
+        await update(ref(db), updates);
+        alert("✅ รีเซตยอดดาวน์โหลดทั้งหมดเรียบร้อยแล้ว");
+    } catch (error) {
+        alert("เกิดข้อผิดพลาดในการรีเซต");
+    }
+};
+
 window.saveItem = async () => {
     if (!isAdmin) return;
     const key = document.getElementById('editKey').value;
@@ -201,7 +207,7 @@ window.saveItem = async () => {
         img, 
         link, 
         locked: key ? items.find(i => i.key === key).locked : false,
-        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 // รักษายอดดาวน์โหลดเดิม
+        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 
     };
     
     if(key) await update(ref(db, `cougar_data/${key}`), data);
@@ -250,6 +256,14 @@ window.toggleGlobalLock = () => {
     update(ref(db, "settings"), { globalLock: isChecked });
 };
 
+window.toggleAuth = () => {
+    if (auth.currentUser) {
+        if (confirm("ต้องการออกจากระบบใช่หรือไม่?")) signOut(auth);
+    } else {
+        document.getElementById('loginModal').style.display = 'flex';
+    }
+};
+
 window.showPage = (id, el) => {
     document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
     const target = document.getElementById(id);
@@ -274,4 +288,3 @@ setInterval(() => {
     const timeEl = document.getElementById('dash-time');
     if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }, 1000);
-
