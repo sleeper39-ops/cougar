@@ -492,11 +492,13 @@
 
     // --- DATA HANDLING ---
 
-/**
+    /**
      * Handles the submission of the document form.
+     * Validates file type and size, then sends data to the backend.
+     * @param {Event} event - The form submission event.
      */
-    async function handleFormSubmit(event) {
-      event.preventDefault();
+    function handleFormSubmit(event) {
+      event.preventDefault(); // Prevent default form submission
       const form = event.target;
       const fileInput = document.getElementById('file-input');
       const file = fileInput ? fileInput.files[0] : null;
@@ -505,52 +507,31 @@
         showToast("กรุณาแนบไฟล์เอกสาร", false);
         return;
       }
+      // Check file type
+      if (file.type !== 'application/pdf') {
+        showToast("รองรับเฉพาะไฟล์ .pdf เท่านั้น", false);
+        return;
+      }
+      // Optional: Add file size validation (e.g., max 10MB)
+      const MAX_FILE_SIZE_MB = 10;
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+          showToast(`ไฟล์มีขนาดใหญ่เกินไป (สูงสุด ${MAX_FILE_SIZE_MB}MB)`, false);
+          return;
+      }
 
-      // แสดง Loading Spinner
-      showLoading(true); 
+      showLoading(true); // Show loading spinner
 
       const reader = new FileReader();
-      // อ่านไฟล์เป็น Data URL (Base64)
-      reader.readAsDataURL(file); 
+      reader.readAsDataURL(file); // Read file as Data URL (Base64)
       
-      reader.onload = async () => {
-        // เตรียมข้อมูลส่งไป Backend (ต้องตรงกับที่ Apps Script รอรับ)
-        const payload = {
+      reader.onload = () => {
+        const formObject = {
           department: form.department.value,
           docNumber: form.docNumber.value,
           subject: form.subject.value,
-          name: file.name,          // Backend ใช้ data.name
-          type: file.type,          // Backend ใช้ data.type
-          base64: reader.result.split(',')[1] // Backend ใช้ data.base64 (เอาเฉพาะรหัส ไม่เอา prefix)
+          fileName: file.name,
+          fileData: reader.result // Pass Base64 data to backend
         };
-
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyL6qNRQOyPjT01mcFJCIutnYbQBEw17kRTz2ns2ypVa-AJaYozDUyt3PGv_22Iwu-w/exec";
-
-        try {
-          const response = await fetch(WEB_APP_URL, {
-            method: "POST",
-            mode: "no-cors", // ใช้ no-cors เพื่อเลี่ยงปัญหาความปลอดภัยเบื้องต้นของ Browser
-            cache: "no-cache",
-            headers: {
-              "Content-Type": "text/plain;charset=utf-8",
-            },
-            body: JSON.stringify(payload)
-          });
-
-          // หมายเหตุ: เมื่อใช้ no-cors เราจะอ่าน response.json() ไม่ได้ 
-          // แต่ไฟล์จะถูกอัพโหลดขึ้นไปแน่นอน และ Telegram จะแจ้งเตือน
-          
-          showLoading(false);
-          showToast("✅ ดำเนินการอัพโหลดเรียบร้อยแล้ว (เช็คที่ Telegram)", true);
-          form.reset();
-          
-        } catch (error) {
-          showLoading(false);
-          showToast("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ", false);
-          console.error("Error:", error);
-        }
-      };
-    }
 
         // Call Google Apps Script backend function
         google.script.run
@@ -1249,5 +1230,3 @@
 
 </body>
 </html>
-
-
