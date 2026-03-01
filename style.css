@@ -1,44 +1,93 @@
-/* ปรับแต่งแถบเครื่องมือ Admin */
+/* --- อัปเดตแถบเครื่องมือ Admin (Admin Actions Bar) --- */
 .admin-actions {
     display: flex;
-    justify-content: space-between; /* กระจายปุ่มให้เต็มความกว้าง */
+    justify-content: space-around; /* กระจายปุ่มให้สมดุล */
     align-items: center;
-    padding: 12px 8px;
-    background: #f9f9f9;
+    padding: 12px 10px;
+    background: #fdfdfd; /* สีพื้นหลังอ่อนๆ ให้ดูแยกจากส่วนข้อมูล */
     border-top: 1px solid #eee;
-    gap: 5px; /* ระยะห่างระหว่างปุ่ม */
+    gap: 8px; /* เพิ่มระยะห่างระหว่างปุ่มเล็กน้อย */
 }
 
-/* ปรับแต่งปุ่มเครื่องมือพื้นฐาน */
+/* --- ปรับแต่งปุ่มเครื่องมือ (Admin Buttons) --- */
 .btn-admin-tool {
     background: white;
     border: 1px solid #ddd;
     border-radius: 6px;
     cursor: pointer;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700; /* เพิ่มความหนาให้ตัวหนังสืออ่านง่าย */
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    padding: 6px 8px; /* เพิ่มพื้นที่ด้านข้างให้ตัวหนังสือ */
-    transition: all 0.2s;
-    flex: 1; /* ให้ทุกปุ่มกว้างเท่าๆ กัน */
-    white-space: nowrap; /* ป้องกันตัวหนังสือตกบรรทัด */
+    gap: 6px; /* ระยะห่างระหว่างไอคอนกับตัวหนังสือ */
+    padding: 6px 10px;
+    transition: all 0.2s ease-in-out;
+    flex: 1; /* บังคับให้ทุกปุ่มขยายกว้างเท่ากัน */
+    white-space: nowrap; /* ห้ามตัวหนังสือตัดขึ้นบรรทัดใหม่ */
+    min-width: fit-content; /* ปรับขนาดตามเนื้อหาขั้นต่ำ */
 }
 
-/* สีเฉพาะของแต่ละปุ่ม */
-.btn-edit-tool { color: #3498db; }
-.btn-edit-tool:hover { background: #3498db; color: white; border-color: #3498db; }
+/* บังคับให้ span (ตัวหนังสือ) แสดงผล */
+.btn-admin-tool span {
+    display: inline-block;
+}
 
-.btn-delete-tool { color: #e74c3c; }
-.btn-delete-tool:hover { background: #e74c3c; color: white; border-color: #e74c3c; }
+/* --- สีและ Effect ของแต่ละปุ่ม --- */
 
-.btn-reset-tool { color: #f39c12; border-color: #f39c12; }
-.btn-reset-tool:hover { background: #f39c12; color: white; }
+/* ปุ่ม Edit (สีฟ้า) */
+.btn-edit-tool { 
+    color: #3498db; 
+    border-color: #3498db;
+}
+.btn-edit-tool:hover { 
+    background: #3498db; 
+    color: white !important; 
+}
 
-/* ซ่อนตัวหนังสือบนมือถือ (Optional: ถ้าจอมือถือเล็กไปจะเหลือแค่ไอคอน) */
-@media (max-width: 480px) {
-    .btn-admin-tool span { display: none; }
-    .btn-admin-tool { padding: 8px; }
+/* ปุ่ม Delete (สีแดง) */
+.btn-delete-tool { 
+    color: #e74c3c; 
+    border-color: #e74c3c;
+}
+.btn-delete-tool:hover { 
+    background: #e74c3c; 
+    color: white !important; 
+}
+
+/* ปุ่ม Reset (สีส้ม) */
+.btn-reset-tool { 
+    color: #f39c12; 
+    border: 1px solid #f39c12 !important; /* บังคับสไตล์ตามที่คุณต้องการ */
+}
+.btn-reset-tool:hover { 
+    background: #f39c12; 
+    color: white !important; 
+}
+
+/* --- ส่วนของสวิตซ์ Lock --- */
+.admin-lock-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 40px;
+    flex: 0.5; /* ให้พื้นที่ส่วน Lock น้อยกว่าปุ่มกด */
+}
+
+/* --- การตอบสนองบนมือถือ (Responsive) --- */
+@media (max-width: 576px) {
+    .admin-actions {
+        padding: 8px 5px;
+        gap: 4px;
+    }
+    .btn-admin-tool {
+        padding: 6px 4px;
+        font-size: 10px;
+        gap: 3px;
+    }
+    /* ถ้าหน้าจอเล็กมากจริงๆ ให้ซ่อนตัวหนังสือเหลือแค่ไอคอนเพื่อไม่ให้ปุ่มเบียดกัน */
+    /* @media (max-width: 400px) {
+        .btn-admin-tool span { display: none; }
+    } */
 }
