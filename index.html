@@ -27,8 +27,15 @@
         .page-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Modal Login */
+        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index: 9999; align-items:center; justify-content:center; }
+        .login-card { background: white; padding: 30px; border-radius: 20px; width: 350px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); animation: slideIn 0.3s ease; text-align: center; }
+        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
+        .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
         /* Dashboard Stats */
-        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
         .stat-box { background: white; padding: 25px 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #eee; }
         .stat-box i { font-size: 2.2rem; margin-bottom: 15px; }
         .stat-value { font-size: 1.4rem; font-weight: bold; color: #000; margin-bottom: 8px; }
@@ -41,37 +48,97 @@
         .input-group { display: flex; flex-direction: column; gap: 8px; }
         .input-group label { font-size: 12px; font-weight: bold; color: #555; }
         .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
-        
-        /* สไตล์พิเศษสำหรับปุ่มอัปโหลดไฟล์ให้ดูเหมือนช่อง Input เดิม */
-        .file-upload-wrapper { position: relative; }
-        .file-upload-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
-        .file-custom-btn { padding: 10px; border: 1px dashed var(--primary); border-radius: 8px; font-size: 13px; color: var(--primary); text-align: center; background: #f0f7ff; transition: 0.3s; }
-        .file-upload-wrapper:hover .file-custom-btn { background: var(--primary); color: white; }
-
         .btn-action { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; height: 41px; color: white; }
+
+        <div class="dash-card">
+              <i class="fas fa-users"></i>
+            <div class="dash-info">
+            <span id="dash-online">0 ??</span>
+            <p>????????????</p>
+            </div>
+        </div>
+        <div class="dash-card">
+            <i class="fas fa-eye"></i>
+            <div class="dash-info">
+            <span id="dash-visits">0 ?????</span>
+            <p>????????????????</p>
+        </div>
+    </div>
+
+        /* ??????????????????????????? */
+    .download-count-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    backdrop-filter: blur(4px);
+    z-index: 1;
+}
+
+         
+
+.stat-downloads {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
 
         /* Grid & Cards */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding-bottom: 40px; }
-        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; height: 100%; transition: transform 0.2s; }
+        .download-card { 
+            background: white; border-radius: 15px; overflow: hidden; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+            display: flex; flex-direction: column; 
+            position: relative; height: 100%; transition: transform 0.2s; 
+        }
         .download-card:hover { transform: translateY(-5px); }
         .card-img-container { width: 100%; height: 180px; background: #222; cursor: zoom-in; overflow: hidden; }
         .card-img { width: 100%; height: 100%; object-fit: cover; }
-        .download-info { padding: 20px; text-align: center; flex-grow: 1; }
+        .download-info { padding: 20px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; }
+        .download-info h4 { margin: 0 0 15px 0; font-size: 16px; color: #333; min-height: 44px; display: flex; align-items: center; justify-content: center; }
         .btn-download { margin-top: auto; display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
-
-        /* Lightbox & Modal */
-        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index: 9999; align-items:center; justify-content:center; }
-        .login-card { background: white; padding: 30px; border-radius: 20px; width: 350px; text-align: center; }
-        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; outline: none; }
-        .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
+        /* --- ??????? Admin ????????????? (??????????) --- */
+        .admin-actions { 
+            display: none; /* ???????? flex ???? script ????????? admin */
+            justify-content: space-around; 
+            align-items: center; 
+            padding: 12px 10px; 
+            background: #fafafa; 
+            border-top: 1px solid #eee;
+            margin-top: auto; 
+        }
+        .admin-lock-group { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #666; }
+        
+        .btn-admin-tool {
+            background: none; border: none; cursor: pointer; 
+            font-size: 13px; font-weight: 600; 
+            display: flex; align-items: center; gap: 5px; 
+            transition: 0.2s;
+        }
+        .btn-edit-tool { color: var(--primary); }
+        .btn-delete-tool { color: var(--danger); }
+        .btn-admin-tool:hover { opacity: 0.7; }
+
+        /* Toggles & Lightbox */
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--danger); }
         input:checked + .slider:before { transform: translateX(16px); }
-
+        
         .lightbox { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
         .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
     </style>
@@ -83,20 +150,22 @@
             <h3><i class="fas fa-user-shield"></i> Admin Login</h3>
             <input type="text" id="loginUser" class="login-input" placeholder="Username">
             <input type="password" id="loginPass" class="login-input" placeholder="Password">
-            <button onclick="window.performLogin()" class="btn-login">เข้าสู่ระบบ</button>
-            <button onclick="document.getElementById('loginModal').style.display='none'" style="background:none; border:none; color:#999; margin-top:15px; cursor:pointer; display:block; width:100%;">ยกเลิก</button>
+            <button onclick="window.performLogin()" class="btn-login">???????????</button>
+            <button onclick="document.getElementById('loginModal').style.display='none'" style="background:none; border:none; color:#999; margin-top:15px; cursor:pointer; display:block; width:100%;">??????</button>
         </div>
     </div>
 
     <div class="sidebar">
         <h2>Cougar2</h2>
         <a onclick="window.showPage('dash-page', this)" id="nav-dash" class="active"><i class="fas fa-home"></i> Obs Docks UI</a>
-        <a onclick="window.showPage('live-page', this)" id="nav-live"><i class="fas fa-video"></i> ระบบกล้องสด</a>
-        <a onclick="window.showPage('map-page', this)" id="nav-map"><i class="fas fa-map-marked-alt"></i> แผนที่ระบบ</a>
-        <a onclick="window.showPage('calendar-page', this)" id="nav-cal"><i class="fas fa-calendar-alt"></i> ปฏิทิน</a>
-        <a onclick="window.showPage('esos-page', this)" id="nav-esos"><i class="fas fa-rocket"></i> ระบบ ESOS</a>
+        <a onclick="window.showPage('live-page', this)" id="nav-live"><i class="fas fa-video"></i> ???????????</a>
+        <a onclick="window.showPage('map-page', this)" id="nav-map"><i class="fas fa-map-marked-alt"></i> ??????????</a>
+        <a onclick="window.showPage('calendar-page', this)" id="nav-cal"><i class="fas fa-calendar-alt"></i> ??????</a>
+        <a onclick="window.showPage('esos-page', this)" id="nav-esos"><i class="fas fa-rocket"></i> ???? ESOS</a>
     </div>
 
+
+    
     <div class="wrapper">
         <div class="top-nav">
             <h2 id="nav-title">Dashboard</h2>
@@ -107,29 +176,19 @@
             <div id="dash-page" class="page-content active">
                 <div class="dashboard-stats">
                     <div class="stat-box">
-                        <i class="fas fa-clock" style="color:#2ecc71;"></i>
+                        <i class="fas fa-clock icon-time" style="color:#2ecc71;"></i>
                         <div class="stat-value" id="dash-time">00:00</div>
-                        <div class="stat-label">เวลาปัจจุบัน</div>
+                        <div class="stat-label">????????????</div>
                     </div>
                     <div class="stat-box">
-                        <i class="fas fa-users" style="color:#e67e22;"></i>
-                        <div class="stat-value" id="dash-online">0 คน</div>
-                        <div class="stat-label">กำลังออนไลน์</div>
-                    </div>
-                    <div class="stat-box">
-                        <i class="fas fa-eye" style="color:#9b59b6;"></i>
-                        <div class="stat-value" id="dash-visits">0 ครั้ง</div>
-                        <div class="stat-label">ผู้เข้าชมทั้งหมด</div>
-                    </div>
-                    <div class="stat-box">
-                        <i class="fas fa-folder-open" style="color:#3498db;"></i>
-                        <div class="stat-value" id="dash-count">0 รายการ</div>
-                        <div class="stat-label">ไฟล์ในระบบ</div>
+                        <i class="fas fa-folder-open icon-folder" style="color:#3498db;"></i>
+                        <div class="stat-value" id="dash-count">0 ??????</div>
+                        <div class="stat-label">??????????</div>
                     </div>
                     <div class="stat-box">
                         <i class="fas fa-shield-alt" id="status-icon" style="color:#95a5a6;"></i>
                         <div class="stat-value" id="dash-status">Guest Mode</div>
-                        <div class="stat-label">โหมดการใช้งาน</div>
+                        <div class="stat-label">?????????????</div>
                     </div>
                 </div>
 
@@ -144,29 +203,18 @@
 
                     <div class="form-row">
                         <input type="hidden" id="editKey">
-                        <div class="input-group">
-                            <label>ชื่อไฟล์</label>
-                            <input type="text" id="itemName" placeholder="ระบุชื่อไฟล์...">
-                        </div>
-                        <div class="input-group">
-                            <label>ลิงก์รูปภาพหน้าปก</label>
-                            <input type="text" id="itemImg" placeholder="URL รูปภาพ...">
-                        </div>
-                        <div class="input-group">
-                            <label>อัปโหลดไฟล์ดาวน์โหลด</label>
-                            <div class="file-upload-wrapper">
-                                <div class="file-custom-btn" id="fileNameDisplay">คลิกเพื่อเลือกไฟล์</div>
-                                <input type="file" id="itemFile" onchange="document.getElementById('fileNameDisplay').innerText = this.files[0].name">
-                            </div>
-                        </div>
+                        <div class="input-group"><label>????????</label><input type="text" id="itemName" placeholder="????????????..."></div>
+                        <div class="input-group"><label>???????????</label><input type="text" id="itemImg" placeholder="URL ??????..."></div>
+                        <div class="input-group"><label>??????????????</label><input type="text" id="itemLink" placeholder="URL ?????????..."></div>
                         <div style="display:flex; gap:10px;">
-                            <button onclick="window.saveItem()" id="btn-save" class="btn-action" style="background:var(--success);">บันทึกข้อมูล</button>
-                            <button onclick="window.resetForm()" class="btn-action" style="background:var(--secondary);"><i class="fas fa-times"></i> ยกเลิก</button>
+                            <button onclick="window.saveItem()" id="btn-save" class="btn-action" style="background:var(--success);">??????</button>
+                            <button onclick="window.resetForm()" class="btn-action" style="background:var(--secondary);"><i class="fas fa-times"></i> ??????</button>
                         </div>
                     </div>
                 </div>
 
-                <div id="download-list" class="download-grid"></div>
+                <div id="download-list" class="download-grid">
+                    </div>
             </div>
 
             <div id="live-page" class="page-content"><iframe src="cctv.html" style="width:100%; height:100%; border:none;"></iframe></div>
@@ -181,3 +229,5 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
+
