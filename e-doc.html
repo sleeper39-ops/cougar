@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Document Management</title>
+    <title>E-Document System</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -11,130 +11,124 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
-        body { font-family: 'Sarabun', sans-serif; background: #f0f2f5; }
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: #f4f7fa; 
+        }
         
-        /* สไตล์การ์ดแบบในรูปภาพ */
-        .doc-card-row {
-            transition: all 0.2s ease;
-            border-left: 5px solid #3b82f6; /* เพิ่มเส้นสีฟ้าด้านซ้ายให้ดูเด่น */
+        .doc-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
         }
-        .doc-card-row:hover {
-            transform: scale(1.01);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+
+        .doc-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
         }
-        .btn-action {
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            display: inline-flex;
+
+        .icon-box {
+            width: 45px;
+            height: 45px;
+            display: flex;
             align-items: center;
-            gap: 6px;
-            transition: 0.2s;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 1.25rem;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
     </style>
 </head>
-<body class="text-slate-700">
+<body class="text-slate-800">
 
-<nav class="bg-white shadow-sm border-b sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <i class="fas fa-file-invoice text-blue-600 text-2xl"></i>
-            <span class="text-xl font-bold tracking-tight">E-DOCUMENT</span>
+<nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-2 rounded-lg text-white shadow-md shadow-blue-200">
+                <i class="fas fa-file-shield text-xl"></i>
+            </div>
+            <h1 class="text-xl font-bold text-slate-800 tracking-tight">E-DOC <span class="text-blue-600 uppercase text-xs tracking-widest ml-1">Enterprise</span></h1>
         </div>
-        <button onclick="adminLogin()" class="text-slate-400 hover:text-blue-600 transition">
-            <i class="fas fa-user-circle text-2xl"></i>
-        </button>
+        <div class="flex gap-4">
+            <button class="text-slate-500 hover:text-blue-600 transition"><i class="fas fa-bell"></i></button>
+            <button onclick="adminLogin()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition">แผงควบคุม</button>
+        </div>
     </div>
 </nav>
 
-<section class="max-w-6xl mx-auto px-4 mt-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div class="bg-blue-100 text-blue-600 w-12 h-12 rounded-lg flex items-center justify-center text-xl">
-                <i class="fas fa-copy"></i>
-            </div>
-            <div>
-                <p class="text-slate-400 text-xs font-bold uppercase">เอกสารทั้งหมด</p>
-                <h3 id="totalDocs" class="text-2xl font-black">0</h3>
-            </div>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div class="bg-indigo-100 text-indigo-600 w-12 h-12 rounded-lg flex items-center justify-center text-xl">
-                <i class="fas fa-folder"></i>
-            </div>
-            <div>
-                <p class="text-slate-400 text-xs font-bold uppercase">หมวดหมู่</p>
-                <h3 id="totalCats" class="text-2xl font-black">0</h3>
+<main class="max-w-7xl mx-auto px-6 py-10">
+    
+    <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
+        <div class="w-full md:w-2/3">
+            <label class="block text-sm font-bold text-slate-500 mb-2 ml-1">ค้นหาเอกสาร</label>
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="searchInput" placeholder="พิมพ์ชื่อเอกสารหรือรหัส..." 
+                    class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition shadow-sm">
             </div>
         </div>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div class="bg-emerald-100 text-emerald-600 w-12 h-12 rounded-lg flex items-center justify-center text-xl">
-                <i class="fas fa-calendar-check"></i>
-            </div>
-            <div>
-                <p class="text-slate-400 text-xs font-bold uppercase">อัปเดตล่าสุด</p>
-                <h3 id="lastDate" class="text-lg font-bold">--/--/--</h3>
-            </div>
+        <div class="w-full md:w-1/3">
+            <label class="block text-sm font-bold text-slate-500 mb-2 ml-1">หมวดหมู่</label>
+            <select id="filterCategory" class="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none cursor-pointer shadow-sm font-medium">
+                <option value="">ทั้งหมด</option>
+            </select>
         </div>
     </div>
-</section>
 
-<section class="max-w-6xl mx-auto px-4 py-6">
-    <div class="bg-white p-3 rounded-xl shadow-sm flex flex-col md:flex-row gap-3 border border-slate-100">
-        <div class="relative flex-1">
-            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="searchInput" placeholder="ค้นหาเอกสาร..." 
-                class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border-none rounded-lg focus:ring-2 focus:ring-blue-400 transition outline-none">
+    <div id="docList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         </div>
-        <select id="filterCategory" class="bg-slate-50 border-none rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-400 outline-none cursor-pointer font-medium text-sm">
-            <option value="">ทุกหมวดหมู่</option>
-        </select>
-    </div>
-</section>
 
-<section id="docList" class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-    </section>
+    <div id="pagination" class="mt-12 flex justify-center gap-2"></div>
 
-<div id="pagination" class="max-w-6xl mx-auto px-4 py-10 flex justify-center gap-2"></div>
+</main>
 
-<footer class="text-center py-6 text-slate-400 text-xs">
-    &copy; 2026 E-Document Service | Powered by ESOS
+<footer class="border-t border-slate-200 py-10 text-center">
+    <p class="text-slate-400 text-sm font-medium">ระบบบริหารจัดการเอกสารดิจิทัล &copy; 2026</p>
 </footer>
 
 <script>
 /* ======================
-    DATA
+    DATA & ICON MAPPING
 ====================== */
 const documents = [
-    { name: "รายงานประจำปี 2565", category: "เอกสารราชการ", date: "2026-03-01", fileUrl: "#" },
-    { name: "ใบเสนอราคาจองสินค้า", category: "การเงิน", date: "2026-02-28", fileUrl: "#" },
-    { name: "สรุปงานทีม", category: "ทั่วไป", date: "2026-02-25", fileUrl: "#" },
-    { name: "ระเบียบการจัดซื้อจัดจ้าง 2569", category: "พัสดุ", date: "2026-02-15", fileUrl: "#" },
-    { name: "แผนการดำเนินงานไตรมาส 1", category: "แผนงาน", date: "2026-02-10", fileUrl: "#" },
-    { name: "คู่มือการใช้งานระบบใหม่", category: "ทั่วไป", date: "2026-02-01", fileUrl: "#" },
+    { name: "รายงานการประชุมประจำปี 2568", category: "เอกสารราชการ", date: "02 มี.ค. 2569", type: "pdf" },
+    { name: "ใบเสนอราคาระบบบริหารจัดการฐานข้อมูล", category: "การเงิน", date: "28 ก.พ. 2569", type: "xlsx" },
+    { name: "สรุปผลการดำเนินงานไตรมาสที่ 4", category: "ทั่วไป", date: "25 ก.พ. 2569", type: "doc" },
+    { name: "แผนผังโครงสร้างองค์กร (ฉบับปรับปรุง)", category: "ทรัพยากรบุคคล", date: "20 ก.พ. 2569", type: "pdf" },
+    { name: "ประกาศมาตรการรักษาความปลอดภัยไอที", category: "ไอที", date: "15 ก.พ. 2569", type: "pdf" },
+    { name: "บันทึกข้อความขออนุมัติจัดซื้อวัสดุสำนักงาน", category: "พัสดุ", date: "10 ก.พ. 2569", type: "doc" },
 ];
+
+const typeStyle = {
+    pdf: { icon: 'fa-file-pdf', color: 'bg-red-50 text-red-600' },
+    xlsx: { icon: 'fa-file-excel', color: 'bg-emerald-50 text-emerald-600' },
+    doc: { icon: 'fa-file-word', color: 'bg-blue-50 text-blue-600' },
+    default: { icon: 'fa-file-lines', color: 'bg-slate-50 text-slate-600' }
+};
 
 let currentPage = 1;
 const perPage = 6;
 let filteredDocs = [...documents];
 
 /* ======================
-    CORE FUNCTIONS
+    FUNCTIONS
 ====================== */
 function init() {
-    // Stats
-    document.getElementById("totalDocs").innerText = documents.length;
     const cats = [...new Set(documents.map(d => d.category))];
-    document.getElementById("totalCats").innerText = cats.length;
-    document.getElementById("lastDate").innerText = documents[0].date;
-
-    // Filter Dropdown
     const select = document.getElementById("filterCategory");
     cats.forEach(c => {
         select.innerHTML += `<option value="${c}">${c}</option>`;
     });
-
     renderList();
 }
 
@@ -146,21 +140,36 @@ function renderList() {
     const subset = filteredDocs.slice(start, start + perPage);
 
     subset.forEach(doc => {
+        const style = typeStyle[doc.type] || typeStyle.default;
         container.innerHTML += `
-            <div class="doc-card-row bg-white p-5 rounded-xl shadow-sm flex flex-col justify-between border border-slate-100">
-                <div class="flex flex-col">
-                    <h4 class="font-bold text-slate-800 text-lg mb-1">${doc.name}</h4>
-                    <p class="text-slate-400 text-sm mb-1">${doc.category}</p>
-                    <p class="text-slate-300 text-[11px]">${doc.date}</p>
+            <div class="doc-card bg-white p-6 rounded-2xl">
+                <div class="flex items-start gap-4 mb-5">
+                    <div class="icon-box ${style.color}">
+                        <i class="fas ${style.icon}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-slate-800 text-base leading-snug line-clamp-2 mb-1">${doc.name}</h4>
+                        <div class="flex items-center gap-2">
+                             <span class="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider">${doc.category}</span>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="flex gap-2 mt-4 justify-end">
-                    <button onclick="previewDoc('${doc.name}')" class="btn-action bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-100">
-                        <i class="fas fa-file-alt"></i> ดูเอกสาร
-                    </button>
-                    <button onclick="downloadDoc('${doc.name}')" class="btn-action bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200">
-                        <i class="fas fa-download"></i> ดาวน์โหลด
-                    </button>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
+                    <div class="text-slate-400">
+                        <p class="text-[10px] uppercase font-bold tracking-tighter">วันที่อัปโหลด</p>
+                        <p class="text-xs font-semibold text-slate-600">${doc.date}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="previewDoc('${doc.name}')" title="เปิดดู"
+                            class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-blue-600 hover:text-white transition shadow-sm">
+                            <i class="fas fa-eye text-sm"></i>
+                        </button>
+                        <button onclick="downloadDoc('${doc.name}')"
+                            class="px-4 h-10 flex items-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition shadow-md shadow-emerald-100">
+                            <i class="fas fa-download"></i> ดาวน์โหลด
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -169,17 +178,10 @@ function renderList() {
     renderPagination();
 }
 
-/* ======================
-    LOGIC
-====================== */
 function filterData() {
     const search = document.getElementById("searchInput").value.toLowerCase();
     const cat = document.getElementById("filterCategory").value;
-
-    filteredDocs = documents.filter(d => {
-        return d.name.toLowerCase().includes(search) && (cat === "" || d.category === cat);
-    });
-
+    filteredDocs = documents.filter(d => d.name.toLowerCase().includes(search) && (cat === "" || d.category === cat));
     currentPage = 1;
     renderList();
 }
@@ -188,24 +190,18 @@ function renderPagination() {
     const totalPages = Math.ceil(filteredDocs.length / perPage);
     const container = document.getElementById("pagination");
     container.innerHTML = "";
-
     if (totalPages <= 1) return;
 
     for (let i = 1; i <= totalPages; i++) {
         container.innerHTML += `
             <button onclick="goPage(${i})" 
-                class="w-9 h-9 rounded-lg text-sm font-bold transition ${i === currentPage ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-400 border hover:bg-slate-50'}">
+                class="w-10 h-10 rounded-xl font-bold transition-all ${i === currentPage ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}">
                 ${i}
-            </button>
-        `;
+            </button>`;
     }
 }
 
-function goPage(p) {
-    currentPage = p;
-    renderList();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+function goPage(p) { currentPage = p; renderList(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 document.getElementById("searchInput").addEventListener("input", filterData);
 document.getElementById("filterCategory").addEventListener("change", filterData);
@@ -215,31 +211,21 @@ document.getElementById("filterCategory").addEventListener("change", filterData)
 ====================== */
 function previewDoc(name) {
     Swal.fire({
-        title: name,
-        html: '<div class="py-10 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200 text-slate-400"><i class="fas fa-file-pdf text-4xl mb-2"></i><br>ระบบจำลองการเปิดไฟล์ PDF</div>',
-        confirmButtonText: 'ปิดหน้าต่าง',
+        title: 'กำลังเปิดไฟล์',
+        text: name,
+        icon: 'info',
+        confirmButtonText: 'ตกลง',
         confirmButtonColor: '#3b82f6'
     });
 }
 
 function downloadDoc(name) {
-    Swal.fire({
-        title: 'ดาวน์โหลดสำเร็จ',
-        text: 'กำลังเตรียมไฟล์: ' + name,
-        icon: 'success',
-        timer: 1500,
-        showConfirmButton: false
-    });
+    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true });
+    Toast.fire({ icon: 'success', title: 'เริ่มการดาวน์โหลด: ' + name });
 }
 
 function adminLogin() {
-    Swal.fire({
-        title: 'Admin Login',
-        input: 'password',
-        inputPlaceholder: 'ใส่รหัสผ่าน...',
-        confirmButtonText: 'เข้าสู่ระบบ',
-        confirmButtonColor: '#3b82f6'
-    });
+    Swal.fire({ title: 'สิทธิ์การใช้งาน', text: 'กรุณาเข้าสู่ระบบเพื่อจัดการเอกสาร', icon: 'lock', confirmButtonColor: '#3b82f6' });
 }
 
 init();
