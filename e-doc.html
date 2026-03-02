@@ -43,7 +43,6 @@
 </nav>
 
 <main class="w-full px-6 py-8">
-    
     <div class="flex flex-col lg:flex-row gap-4 mb-8 items-end">
         <div class="flex-1 w-full">
             <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">ค้นหาเอกสาร</label>
@@ -66,20 +65,15 @@
         </div>
     </div>
 
-    <div id="docList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
-        </div>
+    <div id="docList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5"></div>
 
     <div id="emptyState" class="hidden py-20 text-center">
         <i class="fas fa-folder-open text-slate-200 text-6xl mb-4"></i>
         <p class="text-slate-400 font-medium">ไม่พบข้อมูลเอกสาร</p>
     </div>
-
 </main>
 
 <script>
-/* ======================
-    CONFIG & STYLES
-====================== */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCemLCIZ1_G3MXmimKAo5FNe6ifhLbrAAT1VzLMD9N9T8GCqFpz3YwYLtLc2ey7XE/exec";
 
 let documents = [];
@@ -102,9 +96,6 @@ const typeStyle = {
     default: { icon: 'fa-file-lines', color: 'text-slate-500', bg: 'bg-slate-50' }
 };
 
-/* ======================
-    CORE LOGIC (API)
-====================== */
 async function init() {
     await loadDataFromSheet();
 }
@@ -121,9 +112,7 @@ async function loadDataFromSheet() {
             updateCategoryDropdown();
             renderList();
         }
-    } catch (err) {
-        console.error("Fetch Error:", err);
-    }
+    } catch (err) { console.error("Fetch Error:", err); }
 }
 
 function renderList() {
@@ -133,8 +122,7 @@ function renderList() {
     const cat = document.getElementById("filterCategory").value;
 
     const filtered = documents.filter(d => 
-        (d.name.toLowerCase().includes(search)) && 
-        (cat === "" || d.category === cat)
+        (d.name.toLowerCase().includes(search)) && (cat === "" || d.category === cat)
     );
 
     container.innerHTML = "";
@@ -155,17 +143,17 @@ function renderList() {
                             <span class="inline-block text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider border border-blue-100">${doc.category}</span>
                         </div>
                     </div>
-                    <div class="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+                    <div class="mt-auto pt-4 border-t border-slate-50 flex flex-col gap-3">
                         <div>
                             <p class="text-[9px] uppercase font-bold text-slate-400 tracking-tight">อัปโหลดเมื่อ</p>
                             <p class="text-[11px] font-semibold text-slate-600">${doc.date}</p>
                         </div>
-                        <div class="flex gap-2">
-                            <a href="${doc.url}" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition border border-slate-100">
-                                <i class="fas fa-eye text-sm"></i>
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="${doc.url}" target="_blank" class="flex items-center justify-center gap-2 py-2 rounded-xl bg-slate-50 text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition border border-slate-100 text-[11px] font-bold">
+                                <i class="fas fa-eye"></i> ดูตัวอย่าง
                             </a>
-                            <a href="${doc.url}" target="_blank" class="px-3 h-8 flex items-center gap-2 rounded-lg bg-emerald-500 text-white text-[11px] font-bold hover:bg-emerald-600 transition shadow-sm">
-                                <i class="fas fa-download"></i>
+                            <a href="${doc.url}" target="_blank" class="flex items-center justify-center gap-2 py-2 rounded-xl bg-emerald-500 text-white text-[11px] font-bold hover:bg-emerald-600 transition shadow-md">
+                                <i class="fas fa-download"></i> ดาวน์โหลด
                             </a>
                         </div>
                     </div>
@@ -178,17 +166,17 @@ function renderList() {
 function updateCategoryDropdown() {
     const select = document.getElementById("filterCategory");
     const currentVal = select.value;
-    const cats = [...new Set(documents.map(d => d.category))];
+    let defaultCats = ["เอกสาร", "รูปภาพ", "มัลติมีเดีย"];
+    const dynamicCats = [...new Set(documents.map(d => d.category))];
+    const allCats = [...new Set([...defaultCats, ...dynamicCats])];
+    
     select.innerHTML = '<option value="">ทั้งหมด</option>';
-    cats.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
+    allCats.forEach(c => { if(c) select.innerHTML += `<option value="${c}">${c}</option>`; });
     select.value = currentVal;
 }
 
 function filterData() { renderList(); }
 
-/* ======================
-    ADMIN FUNCTIONS
-====================== */
 function toggleAdmin() {
     if (!isAdmin) {
         Swal.fire({
@@ -197,16 +185,8 @@ function toggleAdmin() {
             icon: 'shield-alt',
             showCancelButton: true,
             confirmButtonText: 'ตกลง',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                isAdmin = true;
-                applyAdminUI();
-            }
-        });
-    } else {
-        isAdmin = false;
-        applyAdminUI();
-    }
+        }).then((result) => { if (result.isConfirmed) { isAdmin = true; applyAdminUI(); } });
+    } else { isAdmin = false; applyAdminUI(); }
 }
 
 function applyAdminUI() {
@@ -218,63 +198,115 @@ function applyAdminUI() {
 }
 
 async function addDocument() {
+    let uploadType = 'file';
     const { value: formValues } = await Swal.fire({
-        title: 'อัปโหลดไฟล์ใหม่',
+        title: 'เพิ่มเอกสารใหม่',
         html: `
-            <div class="text-left mt-4">
-                <label class="text-[11px] font-bold text-slate-400 uppercase">1. เลือกไฟล์</label>
-                <input id="swal-file" type="file" class="swal2-file !m-0 !mt-1 !w-full !text-sm border-slate-200">
-            </div>
-            <div class="text-left mt-4">
-                <label class="text-[11px] font-bold text-slate-400 uppercase">2. หมวดหมู่</label>
-                <select id="swal-cat" class="swal2-input !m-0 !mt-1 !w-full !text-sm">
-                    <option value="เอกสาร">เอกสาร</option>
-                    <option value="รูปภาพ">รูปภาพ</option>
-                    <option value="มัลติมีเดีย">มัลติมีเดีย</option>
-                </select>
+            <div id="swal-container" class="text-left mt-4">
+                <div class="flex justify-between items-center mb-2">
+                    <label id="input-label" class="text-[11px] font-bold text-slate-400 uppercase">1. เลือกไฟล์ (ไม่เกิน 20MB)</label>
+                    <button type="button" id="toggle-method" class="text-[10px] text-blue-600 font-bold hover:underline">สลับไปวางลิงก์แทน</button>
+                </div>
+                <div id="file-input-area"><input id="swal-file" type="file" class="swal2-file !m-0 !w-full !text-sm border-slate-200"></div>
+                <div id="link-input-area" class="hidden"><input id="swal-link" class="swal2-input !m-0 !w-full !text-sm" placeholder="วางลิงก์ Google Drive..."></div>
+                <div class="mt-4">
+                    <label class="text-[11px] font-bold text-slate-400 uppercase">2. หมวดหมู่</label>
+                    <select id="swal-cat" class="swal2-input !m-0 !mt-1 !w-full !text-sm">
+                        <option value="เอกสาร">เอกสาร</option>
+                        <option value="รูปภาพ">รูปภาพ</option>
+                        <option value="มัลติมีเดีย">มัลติมีเดีย</option>
+                    </select>
+                </div>
             </div>
         `,
         showCancelButton: true,
-        confirmButtonText: 'เริ่มอัปโหลด',
+        confirmButtonText: 'บันทึกข้อมูล',
+        didOpen: () => {
+            const toggleBtn = document.getElementById('toggle-method');
+            toggleBtn.onclick = () => {
+                uploadType = (uploadType === 'file') ? 'link' : 'file';
+                document.getElementById('file-input-area').classList.toggle('hidden');
+                document.getElementById('link-input-area').classList.toggle('hidden');
+                document.getElementById('input-label').innerText = (uploadType === 'file') ? '1. เลือกไฟล์ (ไม่เกิน 20MB)' : '1. วางลิงก์เอกสาร';
+                toggleBtn.innerText = (uploadType === 'file') ? 'สลับไปวางลิงก์แทน' : 'สลับไปอัปโหลดไฟล์';
+            };
+        },
         preConfirm: () => {
-            const file = document.getElementById('swal-file').files[0];
-            if (!file) return Swal.showValidationMessage('กรุณาเลือกไฟล์');
-            return { file: file, category: document.getElementById('swal-cat').value };
+            const cat = document.getElementById('swal-cat').value;
+            if (uploadType === 'file') {
+                const file = document.getElementById('swal-file').files[0];
+                if (!file) return Swal.showValidationMessage('กรุณาเลือกไฟล์');
+                if (file.size > 20 * 1024 * 1024) return Swal.showValidationMessage('ไฟล์ใหญ่เกิน 20MB กรุณาใช้ลิงก์แทน');
+                return { type: 'file', file: file, category: cat };
+            } else {
+                const link = document.getElementById('swal-link').value;
+                if (!link || !link.includes('http')) return Swal.showValidationMessage('กรุณาวางลิงก์ที่ถูกต้อง');
+                return { type: 'link', link: link, category: cat };
+            }
         }
     });
 
     if (formValues) {
-        Swal.fire({ title: 'กำลังอัปโหลด...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-        const reader = new FileReader();
-        reader.readAsDataURL(formValues.file);
-        reader.onload = async () => {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'upload',
-                        base64: reader.result,
-                        fileName: formValues.file.name,
-                        category: formValues.category
-                    })
-                });
-                const res = await response.json();
-                if (res.status === 'success') {
-                    Swal.fire('สำเร็จ', 'อัปโหลดไฟล์เรียบร้อย', 'success');
-                    await loadDataFromSheet();
-                } else {
-                    throw new Error(res.message);
-                }
-            } catch (err) {
-                Swal.fire('ผิดพลาด', err.message, 'error');
-            }
-        };
+        if (formValues.type === 'file') { uploadProcess(formValues.file, formValues.category); }
+        else { saveLinkProcess(formValues.link, formValues.category); }
     }
+}
+
+async function uploadProcess(file, category) {
+    let timerInterval;
+    Swal.fire({
+        title: 'กำลังอัปโหลดไฟล์...',
+        html: `<div class="mt-3"><div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden"><div id="upload-progress-bar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div></div><p id="upload-text" class="text-sm font-bold mt-2 text-slate-600">0%</p></div>`,
+        allowOutsideClick: false, showConfirmButton: false,
+        didOpen: () => {
+            let progress = 0;
+            timerInterval = setInterval(() => {
+                if (progress < 90) { progress += 5; document.getElementById('upload-progress-bar').style.width = progress + '%'; document.getElementById('upload-text').innerText = progress + '%'; }
+            }, 400);
+        }
+    });
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'upload', base64: reader.result, fileName: file.name, category: category })
+            });
+            const res = await response.json();
+            finishProcess(res, timerInterval);
+        } catch (e) { finishProcess({status: 'error', message: e.message}, timerInterval); }
+    };
+}
+
+async function saveLinkProcess(link, category) {
+    Swal.fire({ title: 'กำลังบันทึกข้อมูล...', didOpen: () => Swal.showLoading() });
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'upload', base64: "link", fileName: link, category: category })
+        });
+        const res = await response.json();
+        finishProcess(res);
+    } catch (e) { finishProcess({status: 'error', message: e.message}); }
+}
+
+function finishProcess(res, interval = null) {
+    if (interval) clearInterval(interval);
+    if (res.status === 'success') {
+        if(document.getElementById('upload-progress-bar')) {
+            document.getElementById('upload-progress-bar').style.width = '100%';
+            document.getElementById('upload-text').innerText = '100%';
+        }
+        setTimeout(() => {
+            Swal.fire({ icon: 'success', title: 'สำเร็จ!', timer: 1500, showConfirmButton: false });
+            loadDataFromSheet();
+        }, 500);
+    } else { Swal.fire('ผิดพลาด', res.message, 'error'); }
 }
 
 init();
 </script>
-
 </body>
 </html>
