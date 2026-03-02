@@ -115,44 +115,6 @@
 
   </div>
 
-// 1. วาง URL ที่ได้จาก Web App ของคุณที่นี่
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxufH1Z5IBHXqhVJWvaiEQ4qKWTtHWpVBfOrTcvdNMrEHqbu84AlD1A1syagyIvbHo/exec"; 
-
-/**
- * ฟังก์ชันส่งข้อมูลแบบเชื่อมต่อภายนอก (ใช้งานแทน google.script.run)
- */
-async function sendToGoogleScript(recordData, adminFileObject) {
-    showLoading(true);
-
-    // รวมข้อมูลที่จะส่ง
-    const payload = {
-        recordData: recordData,
-        adminFileObject: adminFileObject
-    };
-
-    try {
-        const response = await fetch(WEB_APP_URL, {
-            method: "POST",
-            mode: "no-cors", // สำคัญมากสำหรับการส่งจาก Domain อื่นไปยัง Google
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        // เนื่องด้วยโหมด no-cors เราจะไม่สามารถอ่าน Response JSON ได้ตรงๆ 
-        // แต่ข้อมูลจะถูกส่งเข้าไปบันทึกใน Google Sheets เรียบร้อยแล้ว
-        showLoading(false);
-        showToast("ส่งข้อมูลเรียบร้อยแล้ว (กำลังประมวลผล)", true);
-        
-        setTimeout(() => {
-            if (typeof loadData === "function") loadData(); // รีโหลดตาราง
-            if (typeof closeEditModal === "function") closeEditModal();
-        }, 2000);
-
-    } catch (error) {
-        showLoading(false);
-        showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error.message, false);
-    }
-}
 
   
   <script>
@@ -273,6 +235,48 @@ async function sendToGoogleScript(recordData, adminFileObject) {
         };
     }
 
+
+    // 1. วาง URL ที่ได้จาก Web App ของคุณที่นี่
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxufH1Z5IBHXqhVJWvaiEQ4qKWTtHWpVBfOrTcvdNMrEHqbu84AlD1A1syagyIvbHo/exec"; 
+
+/**
+ * ฟังก์ชันส่งข้อมูลแบบเชื่อมต่อภายนอก (ใช้งานแทน google.script.run)
+ */
+async function sendToGoogleScript(recordData, adminFileObject) {
+    showLoading(true);
+
+    // รวมข้อมูลที่จะส่ง
+    const payload = {
+        recordData: recordData,
+        adminFileObject: adminFileObject
+    };
+
+    try {
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors", // สำคัญมากสำหรับการส่งจาก Domain อื่นไปยัง Google
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        // เนื่องด้วยโหมด no-cors เราจะไม่สามารถอ่าน Response JSON ได้ตรงๆ 
+        // แต่ข้อมูลจะถูกส่งเข้าไปบันทึกใน Google Sheets เรียบร้อยแล้ว
+        showLoading(false);
+        showToast("ส่งข้อมูลเรียบร้อยแล้ว (กำลังประมวลผล)", true);
+        
+        setTimeout(() => {
+            if (typeof loadData === "function") loadData(); // รีโหลดตาราง
+            if (typeof closeEditModal === "function") closeEditModal();
+        }, 2000);
+
+    } catch (error) {
+        showLoading(false);
+        showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error.message, false);
+    }
+}
+
+
+    
     // ===============================================================
     // ESOS - EASY SUBMIT ONLINE SYSTEM
     // FRONTEND JAVASCRIPT LOGIC
@@ -1274,4 +1278,5 @@ function showCustomConfirm(message, onConfirm) {
 
 </body>
 </html>
+
 
