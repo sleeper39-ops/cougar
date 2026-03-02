@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Document Enterprise - Full Suite</title>
+    <title>E-Document Enterprise - GitHub Edition</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -14,7 +14,7 @@
         body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
         .doc-card { transition: all 0.2s; border: 1px solid #e2e8f0; }
         .doc-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .swal2-input { font-family: 'Sarabun', sans-serif !important; }
+        .swal2-input, .swal2-file { font-family: 'Sarabun', sans-serif !important; border-radius: 12px !important; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -49,7 +49,7 @@
             <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">ค้นหาเอกสาร</label>
             <div class="relative">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" oninput="filterData()" placeholder="พิมพ์ชื่อเอกสารเพื่อค้นหา (ระบบตรวจจับนามสกุลให้อัตโนมัติ)..." 
+                <input type="text" id="searchInput" oninput="filterData()" placeholder="ค้นหาชื่อไฟล์ หรือคำสำคัญ..." 
                     class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition">
             </div>
         </div>
@@ -61,7 +61,7 @@
         </div>
         <div id="addBtnArea" class="hidden">
             <button onclick="addDocument()" class="bg-emerald-500 hover:bg-emerald-600 text-white h-[50px] px-6 rounded-2xl font-bold transition flex items-center gap-2 shadow-lg shadow-emerald-100">
-                <i class="fas fa-plus"></i> เพิ่มเอกสาร
+                <i class="fas fa-cloud-arrow-up"></i> อัปโหลดไฟล์
             </button>
         </div>
     </div>
@@ -71,23 +71,18 @@
 
     <div id="emptyState" class="hidden py-20 text-center">
         <i class="fas fa-folder-open text-slate-200 text-6xl mb-4"></i>
-        <p class="text-slate-400 font-medium">ไม่พบข้อมูลเอกสารที่ค้นหา</p>
+        <p class="text-slate-400 font-medium">ไม่พบข้อมูลเอกสาร</p>
     </div>
 
 </main>
 
 <script>
 /* ======================
-    CORE DATA & STYLES
+    CONFIG & STYLES
 ====================== */
-let documents = [
-    { id: 1, name: "รายงานการประชุม.pdf", category: "เอกสาร", date: "02 มี.ค. 2569", type: "pdf" },
-    { id: 2, name: "งบประมาณปี69.xlsx", category: "เอกสาร", date: "28 ก.พ. 2569", type: "xlsx" },
-    { id: 3, name: "คู่มือการใช้งาน.docx", category: "เอกสาร", date: "25 ก.พ. 2569", type: "docx" },
-    { id: 4, name: "พรีเซนต์งานบริหาร.pptx", category: "เอกสาร", date: "20 ก.พ. 2569", type: "pptx" },
-    { id: 5, name: "วิดีโอแนะนำบริษัท.mp4", category: "มัลติมีเดีย", date: "15 ก.พ. 2569", type: "mp4" },
-];
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCemLCIZ1_G3MXmimKAo5FNe6ifhLbrAAT1VzLMD9N9T8GCqFpz3YwYLtLc2ey7XE/exec";
 
+let documents = [];
 let isAdmin = false;
 
 const typeStyle = {
@@ -101,20 +96,34 @@ const typeStyle = {
     rar: { icon: 'fa-file-zipper', color: 'text-purple-600', bg: 'bg-purple-50' },
     zip: { icon: 'fa-file-zipper', color: 'text-purple-600', bg: 'bg-purple-50' },
     mp4: { icon: 'fa-file-video', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    mov: { icon: 'fa-file-video', color: 'text-indigo-600', bg: 'bg-indigo-50' },
     mp3: { icon: 'fa-file-audio', color: 'text-cyan-600', bg: 'bg-cyan-50' },
     jpg: { icon: 'fa-file-image', color: 'text-pink-500', bg: 'bg-pink-50' },
     png: { icon: 'fa-file-image', color: 'text-pink-500', bg: 'bg-pink-50' },
-    jpeg: { icon: 'fa-file-image', color: 'text-pink-500', bg: 'bg-pink-50' },
     default: { icon: 'fa-file-lines', color: 'text-slate-500', bg: 'bg-slate-50' }
 };
 
 /* ======================
-    LOGIC
+    CORE LOGIC (API)
 ====================== */
-function init() {
-    updateCategoryDropdown();
-    renderList();
+async function init() {
+    await loadDataFromSheet();
+}
+
+async function loadDataFromSheet() {
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'getList' })
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+            documents = result.data;
+            updateCategoryDropdown();
+            renderList();
+        }
+    } catch (err) {
+        console.error("Fetch Error:", err);
+    }
 }
 
 function renderList() {
@@ -129,7 +138,6 @@ function renderList() {
     );
 
     container.innerHTML = "";
-    
     if (filtered.length === 0) {
         empty.classList.remove('hidden');
     } else {
@@ -138,8 +146,6 @@ function renderList() {
             const style = typeStyle[doc.type] || typeStyle.default;
             container.innerHTML += `
                 <div class="doc-card bg-white p-5 rounded-2xl flex flex-col h-full relative overflow-hidden">
-                    ${isAdmin ? `<button onclick="deleteDoc(${doc.id})" class="absolute top-2 right-2 w-7 h-7 bg-red-100 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition z-10 text-xs shadow-sm"><i class="fas fa-trash"></i></button>` : ''}
-                    
                     <div class="flex items-start gap-4 mb-6">
                         <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl ${style.bg} ${style.color} text-xl border border-white shadow-sm">
                             <i class="fas ${style.icon}"></i>
@@ -149,19 +155,18 @@ function renderList() {
                             <span class="inline-block text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider border border-blue-100">${doc.category}</span>
                         </div>
                     </div>
-
                     <div class="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
                         <div>
-                            <p class="text-[9px] uppercase font-bold text-slate-400 tracking-tight">วันที่อัปโหลด</p>
+                            <p class="text-[9px] uppercase font-bold text-slate-400 tracking-tight">อัปโหลดเมื่อ</p>
                             <p class="text-[11px] font-semibold text-slate-600">${doc.date}</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="previewDoc('${doc.name}')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition border border-slate-100">
+                            <a href="${doc.url}" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition border border-slate-100">
                                 <i class="fas fa-eye text-sm"></i>
-                            </button>
-                            <button onclick="downloadDoc('${doc.name}')" class="px-3 h-8 flex items-center gap-2 rounded-lg bg-emerald-500 text-white text-[11px] font-bold hover:bg-emerald-600 transition shadow-sm">
+                            </a>
+                            <a href="${doc.url}" target="_blank" class="px-3 h-8 flex items-center gap-2 rounded-lg bg-emerald-500 text-white text-[11px] font-bold hover:bg-emerald-600 transition shadow-sm">
                                 <i class="fas fa-download"></i>
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -188,12 +193,10 @@ function toggleAdmin() {
     if (!isAdmin) {
         Swal.fire({
             title: 'โหมดจัดการระบบ',
-            text: "คุณจะสามารถเพิ่ม แก้ไข และลบข้อมูลเอกสารได้",
+            text: "คุณจะสามารถอัปโหลดไฟล์ใหม่ได้",
             icon: 'shield-alt',
             showCancelButton: true,
-            confirmButtonColor: '#3b82f6',
             confirmButtonText: 'ตกลง',
-            cancelButtonText: 'ยกเลิก'
         }).then((result) => {
             if (result.isConfirmed) {
                 isAdmin = true;
@@ -207,100 +210,68 @@ function toggleAdmin() {
 }
 
 function applyAdminUI() {
-    const badge = document.getElementById("adminBadge");
-    const addBtn = document.getElementById("addBtnArea");
+    document.getElementById("adminBadge").classList.toggle('hidden', !isAdmin);
+    document.getElementById("addBtnArea").classList.toggle('hidden', !isAdmin);
     const mainBtn = document.getElementById("adminBtn");
-
-    if (isAdmin) {
-        badge.classList.remove('hidden');
-        addBtn.classList.remove('hidden');
-        mainBtn.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i>ปิดโหมดแอดมิน';
-        mainBtn.classList.replace('bg-slate-800', 'bg-orange-500');
-    } else {
-        badge.classList.add('hidden');
-        addBtn.classList.add('hidden');
-        mainBtn.innerHTML = '<i class="fas fa-cog mr-2"></i>จัดการระบบ';
-        mainBtn.classList.replace('bg-orange-500', 'bg-slate-800');
-    }
-    renderList();
+    mainBtn.innerHTML = isAdmin ? '<i class="fas fa-sign-out-alt mr-2"></i>ปิดโหมดแอดมิน' : '<i class="fas fa-cog mr-2"></i>จัดการระบบ';
+    mainBtn.className = isAdmin ? 'bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-xl text-sm font-semibold transition shadow-md' : 'bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition shadow-md';
 }
 
 async function addDocument() {
     const { value: formValues } = await Swal.fire({
-        title: '<span class="text-lg">เพิ่มข้อมูลเข้าสู่ระบบ</span>',
+        title: 'อัปโหลดไฟล์ใหม่',
         html: `
             <div class="text-left mt-4">
-                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">ชื่อเอกสาร (เช่น สรุปงาน.pptx, รูป.jpg)</label>
-                <input id="swal-name" class="swal2-input !m-0 !mt-1 !w-full !rounded-xl !text-sm border-slate-200" placeholder="พิมพ์ชื่อและนามสกุลไฟล์ที่นี่...">
+                <label class="text-[11px] font-bold text-slate-400 uppercase">1. เลือกไฟล์</label>
+                <input id="swal-file" type="file" class="swal2-file !m-0 !mt-1 !w-full !text-sm border-slate-200">
             </div>
             <div class="text-left mt-4">
-                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">เลือกหมวดหมู่</label>
-                <select id="swal-cat" class="swal2-input !m-0 !mt-1 !w-full !rounded-xl !text-sm border-slate-200">
+                <label class="text-[11px] font-bold text-slate-400 uppercase">2. หมวดหมู่</label>
+                <select id="swal-cat" class="swal2-input !m-0 !mt-1 !w-full !text-sm">
                     <option value="เอกสาร">เอกสาร</option>
                     <option value="รูปภาพ">รูปภาพ</option>
                     <option value="มัลติมีเดีย">มัลติมีเดีย</option>
                 </select>
             </div>
         `,
-        focusConfirm: false,
         showCancelButton: true,
-        confirmButtonText: 'บันทึกข้อมูล',
-        confirmButtonColor: '#10b981',
-        cancelButtonText: 'ยกเลิก',
+        confirmButtonText: 'เริ่มอัปโหลด',
         preConfirm: () => {
-            const fullName = document.getElementById('swal-name').value;
-            if (!fullName) {
-                Swal.showValidationMessage('กรุณากรอกชื่อเอกสาร');
-                return false;
-            }
-            // Auto detect extension
-            const parts = fullName.split('.');
-            const ext = parts.length > 1 ? parts.pop().toLowerCase() : 'default';
-            
-            return {
-                name: fullName,
-                cat: document.getElementById('swal-cat').value,
-                type: ext
-            }
+            const file = document.getElementById('swal-file').files[0];
+            if (!file) return Swal.showValidationMessage('กรุณาเลือกไฟล์');
+            return { file: file, category: document.getElementById('swal-cat').value };
         }
     });
 
     if (formValues) {
-        const newDoc = {
-            id: Date.now(),
-            name: formValues.name,
-            category: formValues.cat,
-            date: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' }),
-            type: formValues.type
+        Swal.fire({ title: 'กำลังอัปโหลด...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        const reader = new FileReader();
+        reader.readAsDataURL(formValues.file);
+        reader.onload = async () => {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'upload',
+                        base64: reader.result,
+                        fileName: formValues.file.name,
+                        category: formValues.category
+                    })
+                });
+                const res = await response.json();
+                if (res.status === 'success') {
+                    Swal.fire('สำเร็จ', 'อัปโหลดไฟล์เรียบร้อย', 'success');
+                    await loadDataFromSheet();
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch (err) {
+                Swal.fire('ผิดพลาด', err.message, 'error');
+            }
         };
-        documents.unshift(newDoc);
-        updateCategoryDropdown();
-        renderList();
-        Swal.fire({ icon: 'success', title: 'เพิ่มสำเร็จ', timer: 1500, showConfirmButton: false });
     }
 }
-
-function deleteDoc(id) {
-    Swal.fire({
-        title: 'ยืนยันการลบ?',
-        text: "ข้อมูลนี้จะหายไปจากรายการถาวร",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        confirmButtonText: 'ลบเลย',
-        cancelButtonText: 'ยกเลิก'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            documents = documents.filter(d => d.id !== id);
-            updateCategoryDropdown();
-            renderList();
-            Swal.fire('ลบสำเร็จ!', '', 'success');
-        }
-    });
-}
-
-function previewDoc(n) { Swal.fire({ title: 'กำลังเปิดดูไฟล์', text: n, icon: 'info', confirmButtonColor: '#3b82f6' }); }
-function downloadDoc(n) { Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'เริ่มการดาวน์โหลด: ' + n, showConfirmButton: false, timer: 2000 }); }
 
 init();
 </script>
