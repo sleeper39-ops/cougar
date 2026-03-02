@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, update, remove, onValue, increment, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, update, remove, onValue, increment, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // --- Firebase Config ---
@@ -30,12 +30,11 @@ onAuthStateChanged(auth, (user) => {
     const statusText = document.getElementById('dash-status');
     const statusIcon = document.getElementById('status-icon');
 
-    // ตรวจสอบว่าเป็น Email Admin หรือไม่
     if (user && user.email === _d("YWRtaW5AY291Z2FyMi5jb20=")) { 
         isAdmin = true;
         if(panel) panel.style.display = 'block';
         if(authBtn) {
-            authBtn.innerText = "Logout Admin";
+            authBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout Admin';
             authBtn.style.background = "var(--danger)";
         }
         if(statusText) statusText.innerText = "Admin Mode";
@@ -44,7 +43,7 @@ onAuthStateChanged(auth, (user) => {
         isAdmin = false;
         if(panel) panel.style.display = 'none';
         if(authBtn) {
-            authBtn.innerText = "Admin Login";
+            authBtn.innerHTML = '<i class="fas fa-user-lock"></i> Admin Login';
             authBtn.style.background = "var(--primary)";
         }
         if(statusText) statusText.innerText = "Guest Mode";
@@ -58,9 +57,7 @@ window.performLogin = () => {
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
     if (!user || !pass) return alert("กรุณากรอกข้อมูลให้ครบ");
-    
     const email = user.includes('@') ? user : user + _d("QGNvdWdhcjIuY29t");
-    
     signInWithEmailAndPassword(auth, email, pass)
         .then(() => {
             document.getElementById('loginModal').style.display = 'none';
@@ -77,22 +74,16 @@ window.performLogin = () => {
 window.startDownload = async (idx) => {
     const item = items[idx];
     if (!item) return;
-
     const effectivelyLocked = isGlobalLocked || item.locked;
     
     if (!effectivelyLocked) {
-        // กรณีไม่ล็อค: นับยอดและเปิดลิงก์
         try {
-            await update(ref(db, `cougar_data/${item.key}`), {
-                downloads: increment(1)
-            });
+            await update(ref(db, `cougar_data/${item.key}`), { downloads: increment(1) });
             window.open(item.link, '_blank', 'noopener,noreferrer');
         } catch (e) {
-            // ถ้า Database ไม่อนุญาตให้ Guest เขียน (Permission Denied) ให้เปิดลิงก์เลย
             window.open(item.link, '_blank', 'noopener,noreferrer');
         }
     } else {
-        // กรณีล็อค: เรียกหน้าต่างใส่รหัส
         window.secureDownload(item);
     }
 };
@@ -100,23 +91,12 @@ window.startDownload = async (idx) => {
 window.secureDownload = async (item) => {
     const userPass = prompt("🔒 ไฟล์นี้ถูกล็อคไว้ กรุณาใส่รหัสดาวน์โหลด:");
     if (!userPass) return;
-
     try {
         const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20="); 
-        // ตรวจสอบรหัสผ่านผ่าน Firebase Auth
         await signInWithEmailAndPassword(auth, dEmail, userPass);
-        
-        // ถ้ารหัสถูกต้อง: นับยอด
-        await update(ref(db, `cougar_data/${item.key}`), {
-            downloads: increment(1)
-        });
-
-        // เปิดลิงก์
+        await update(ref(db, `cougar_data/${item.key}`), { downloads: increment(1) });
         window.open(item.link, '_blank', 'noopener,noreferrer');
-        
-        // Logout ออกจาก User ดาวน์โหลดทันที (เพื่อไม่ให้ค้างสถานะ)
         await signOut(auth);
-        
     } catch (error) {
         alert("❌ รหัสดาวน์โหลดไม่ถูกต้อง!");
     }
@@ -137,7 +117,7 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering ---
+// --- 🖥️ UI Rendering (อัปเดตเป็น 4 ปุ่ม) ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -165,17 +145,20 @@ window.renderItems = () => {
                     ${effectivelyLocked ? 'Password Required' : 'Download Now'}
                 </button>
             </div>
+            
             <div class="admin-actions" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
-                <div class="admin-lock-group">
-                    <label class="switch">
-                        <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
-                        <span class="slider"></span>
-                    </label>
-                    <span>Lock</span>
-                </div>
                 <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
                     <i class="fas fa-edit"></i> Edit
                 </button>
+                
+                <button onclick="window.resetSingleCount('${item.key}')" class="btn-admin-tool btn-reset-tool">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+
+                <button onclick="window.toggleItemLock('${item.key}', ${item.locked})" class="btn-admin-tool btn-lock-tool ${item.locked ? 'active' : ''}">
+                    <i class="fas ${item.locked ? 'fa-lock' : 'fa-lock-open'}"></i> ${item.locked ? 'Unlock' : 'Lock'}
+                </button>
+
                 <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
                     <i class="fas fa-trash"></i> Delete
                 </button>
@@ -210,7 +193,32 @@ window.saveItem = async () => {
     window.resetForm();
 };
 
-// --- ฟังก์ชันอื่นๆ คงเดิม ---
+// --- New: Reset Functions ---
+window.resetSingleCount = async (key) => {
+    if (isAdmin && confirm("ต้องการรีเซ็ตจำนวนดาวน์โหลดของไฟล์นี้เป็น 0 ใช่หรือไม่?")) {
+        await update(ref(db, `cougar_data/${key}`), { downloads: 0 });
+    }
+};
+
+window.resetAllCounts = async () => {
+    if (isAdmin && confirm("⚠️ คำเตือน: ต้องการรีเซ็ตจำนวนดาวน์โหลดของทุกไฟล์เป็น 0 ใช่หรือไม่?")) {
+        try {
+            const snap = await get(ref(db, "cougar_data"));
+            if (snap.exists()) {
+                const updates = {};
+                snap.forEach((child) => {
+                    updates[`cougar_data/${child.key}/downloads`] = 0;
+                });
+                await update(ref(db), updates);
+                alert("รีเซ็ตทั้งหมดเรียบร้อยแล้ว");
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+};
+
+// --- ⚙️ Helper Functions ---
 window.toggleAuth = () => {
     if (auth.currentUser) {
         if (confirm("ต้องการออกจากระบบใช่หรือไม่?")) signOut(auth);
