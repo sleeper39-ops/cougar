@@ -38,22 +38,23 @@
         .stat-value { font-size: 1.2rem; font-weight: bold; color: #000; }
         .stat-label { font-size: 11px; color: #888; margin-top: 5px; }
 
-        /* 🔑 Admin Auth Button (ปรับขนาดลงตามคำขอ) */
+        /* 🔑 Admin Auth Button (ลดขนาดลงเป็นพิเศษ) */
         #auth-btn {
             background: var(--primary); 
             color: white; 
             border: none; 
-            padding: 6px 14px; 
+            padding: 4px 12px; /* ลด padding จาก 6px 14px */
             border-radius: 6px; 
             cursor: pointer; 
             font-weight: 600; 
-            font-size: 12px;
+            font-size: 11px;    /* ลดขนาดตัวอักษรลงเหลือ 11px */
             display: inline-flex; 
             align-items: center; 
             justify-content: center; 
-            gap: 6px;
+            gap: 5px;
             transition: 0.2s;
             margin-bottom: 2px;
+            height: 28px;      /* คุมความสูงไม่ให้โดดจากตัวหนังสือ */
         }
         #auth-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
@@ -83,15 +84,44 @@
         
         .btn-download { margin-top: auto; display: block; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; color: white; background: var(--primary); text-decoration: none; }
 
-        /* Admin Action Buttons (อัปเดตตาม CSS เดิมของคุณ) */
-        .admin-actions { display: none; justify-content: space-around; align-items: center; padding: 12px 10px; background: #fdfdfd; border-top: 1px solid #eee; gap: 8px; }
-        .btn-admin-tool { background: white; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px; transition: all 0.2s ease-in-out; flex: 1; white-space: nowrap; min-width: fit-content; text-decoration: none; }
+        /* 🛠️ Admin Action Buttons (ปรับให้เล็กลงเพื่อไม่ให้ล้นการ์ด) */
+        .admin-actions { 
+            display: none; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 8px 6px;  /* ลด padding รอบแถบปุ่ม */
+            background: #fdfdfd; 
+            border-top: 1px solid #eee;
+            gap: 4px;          /* ลดระยะห่างระหว่างปุ่มลง */
+        }
+        .btn-admin-tool { 
+            background: white; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 10px;    /* ลดขนาดตัวอักษรลงเหลือ 10px */
+            font-weight: 700; 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 3px;          /* ลดช่องว่างระหว่างไอคอนกับข้อความ */
+            padding: 5px 2px;  /* ลด padding ในตัวปุ่มให้ผอมลง */
+            transition: all 0.2s ease-in-out; 
+            flex: 1; 
+            white-space: nowrap; 
+            min-width: 0;       /* อนุญาตให้ปุ่มยืดหยุ่นได้เต็มที่ */
+            text-decoration: none; 
+        }
+        
         .btn-edit-tool { color: #3498db; border-color: #3498db; }
         .btn-reset-tool { color: #f39c12; border: 1px solid #f39c12 !important; }
         .btn-lock-tool { color: #7f8c8d; border-color: #7f8c8d; }
         .btn-lock-tool.active { color: #e74c3c; border-color: #e74c3c; background: #fff5f5; }
         .btn-delete-tool { color: #e74c3c; border-color: #e74c3c; }
         
+        .btn-admin-tool:hover { filter: brightness(0.95); background: #f9f9f9; }
+
         /* สวิตซ์ Global Lock */
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
