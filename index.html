@@ -98,6 +98,7 @@
     <div class="sidebar">
         <h2>Cougar2</h2>
         <a onclick="window.showPage('dash-page', this)" id="nav-dash" class="active"><i class="fas fa-home"></i> Obs Docks UI</a>
+        <a onclick="window.showPage('edoc-page', this)" id="nav-edoc"><i class="fas fa-file-alt"></i> ระบบ E-doc</a>
         <a onclick="window.showPage('live-page', this)" id="nav-live"><i class="fas fa-video"></i> ระบบกล้องสด</a>
         <a onclick="window.showPage('map-page', this)" id="nav-map"><i class="fas fa-map-marked-alt"></i> แผนที่ระบบ</a>
         <a onclick="window.showPage('calendar-page', this)" id="nav-cal"><i class="fas fa-calendar-alt"></i> ปฏิทิน</a>
@@ -129,7 +130,6 @@
                         <div class="stat-label">โหมดการใช้งาน</div>
                     </div>
                      <div class="stat-box">
-                        <i class="fas fa-shield-alt" id="status-icon" style="color:#95a5a6;"></i>
                      <button id="auth-btn" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;" onclick="window.toggleAuth()">Admin Login</button>
                     </div>
                 </div>
@@ -174,4 +174,5 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
 
