@@ -43,7 +43,7 @@ onAuthStateChanged(auth, (user) => {
         isAdmin = false;
         if(panel) panel.style.display = 'none';
         if(authBtn) {
-            authBtn.innerHTML = '<i class="fas fa-user-lock"></i> Admin Login';
+            authBtn.innerHTML = 'Admin Login';
             authBtn.style.background = "var(--primary)";
         }
         if(statusText) statusText.innerText = "Guest Mode";
@@ -275,3 +275,4 @@ setInterval(() => {
     const timeEl = document.getElementById('dash-time');
     if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH');
 }, 1000);
+
