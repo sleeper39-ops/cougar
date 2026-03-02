@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Document System</title>
+    <title>E-Document System - Full Screen</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -16,29 +16,22 @@
             background-color: #f4f7fa; 
         }
         
+        /* ปรับแต่ง Scrollbar ให้ดูทันสมัย */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         .doc-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
             height: 100%;
         }
 
         .doc-card:hover {
             border-color: #3b82f6;
             box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .icon-box {
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            font-size: 1.25rem;
+            transform: translateY(-4px);
         }
 
         .line-clamp-2 {
@@ -49,57 +42,71 @@
         }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-800 flex min-h-screen">
 
-<nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div class="bg-blue-600 p-2 rounded-lg text-white shadow-md shadow-blue-200">
-                <i class="fas fa-file-shield text-xl"></i>
+    <aside class="w-64 bg-[#0f172a] text-slate-300 hidden xl:flex flex-col sticky top-0 h-screen">
+        <div class="p-6 text-white text-2xl font-bold border-b border-slate-700/50">
+            Cougar2
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="#" class="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition"><i class="fas fa-home w-5 text-center"></i> Obs Docks UI</a>
+            <a href="#" class="flex items-center gap-3 p-3 bg-blue-600 text-white rounded-lg transition"><i class="fas fa-file-alt w-5 text-center"></i> ระบบ E-doc</a>
+            <a href="#" class="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition"><i class="fas fa-video w-5 text-center"></i> ระบบกล้องสด</a>
+            <a href="#" class="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition"><i class="fas fa-map w-5 text-center"></i> แผนที่ระบบ</a>
+            <a href="#" class="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition"><i class="fas fa-calendar w-5 text-center"></i> ปฏิทิน</a>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0">
+        <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+            <div class="w-full px-8 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-600 p-2 rounded-lg text-white shadow-md shadow-blue-200">
+                        <i class="fas fa-file-shield text-xl"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">E-DOC <span class="text-blue-600 uppercase text-xs tracking-widest ml-1">Enterprise</span></h1>
+                </div>
+                <div class="flex items-center gap-6">
+                    <button class="text-slate-500 hover:text-blue-600 transition relative">
+                        <i class="fas fa-bell text-lg"></i>
+                        <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    <button onclick="adminLogin()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-semibold transition">แผงควบคุม</button>
+                </div>
             </div>
-            <h1 class="text-xl font-bold text-slate-800 tracking-tight">E-DOC <span class="text-blue-600 uppercase text-xs tracking-widest ml-1">Enterprise</span></h1>
-        </div>
-        <div class="flex gap-4">
-            <button class="text-slate-500 hover:text-blue-600 transition"><i class="fas fa-bell"></i></button>
-            <button onclick="adminLogin()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition">แผงควบคุม</button>
-        </div>
-    </div>
-</nav>
+        </nav>
 
-<main class="max-w-7xl mx-auto px-6 py-10">
-    
-    <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
-        <div class="w-full md:w-2/3">
-            <label class="block text-sm font-bold text-slate-500 mb-2 ml-1">ค้นหาเอกสาร</label>
-            <div class="relative">
-                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" placeholder="พิมพ์ชื่อเอกสารหรือรหัส..." 
-                    class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition shadow-sm">
+        <main class="flex-1 p-8 w-full">
+            <div class="flex flex-col lg:flex-row justify-between items-end gap-6 mb-8">
+                <div class="w-full lg:w-2/3">
+                    <label class="block text-sm font-bold text-slate-500 mb-2 ml-1">ค้นหาเอกสาร</label>
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="searchInput" placeholder="พิมพ์ชื่อเอกสารหรือรหัส..." 
+                            class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition shadow-sm">
+                    </div>
+                </div>
+                <div class="w-full lg:w-1/3">
+                    <label class="block text-sm font-bold text-slate-500 mb-2 ml-1">หมวดหมู่</label>
+                    <select id="filterCategory" class="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none cursor-pointer shadow-sm font-medium">
+                        <option value="">ทั้งหมด</option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="w-full md:w-1/3">
-            <label class="block text-sm font-bold text-slate-500 mb-2 ml-1">หมวดหมู่</label>
-            <select id="filterCategory" class="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none cursor-pointer shadow-sm font-medium">
-                <option value="">ทั้งหมด</option>
-            </select>
-        </div>
+
+            <div id="docList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                </div>
+
+            <div id="pagination" class="mt-12 flex justify-center gap-2"></div>
+        </main>
+
+        <footer class="border-t border-slate-200 py-6 text-center bg-white/50">
+            <p class="text-slate-400 text-sm font-medium">ระบบบริหารจัดการเอกสารดิจิทัล &copy; 2026</p>
+        </footer>
     </div>
-
-    <div id="docList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        </div>
-
-    <div id="pagination" class="mt-12 flex justify-center gap-2"></div>
-
-</main>
-
-<footer class="border-t border-slate-200 py-10 text-center">
-    <p class="text-slate-400 text-sm font-medium">ระบบบริหารจัดการเอกสารดิจิทัล &copy; 2026</p>
-</footer>
 
 <script>
-/* ======================
-    DATA & ICON MAPPING
-====================== */
+// (ใช้ข้อมูลและฟังก์ชันเดิมของคุณทั้งหมด)
 const documents = [
     { name: "รายงานการประชุมประจำปี 2568", category: "เอกสารราชการ", date: "02 มี.ค. 2569", type: "pdf" },
     { name: "ใบเสนอราคาระบบบริหารจัดการฐานข้อมูล", category: "การเงิน", date: "28 ก.พ. 2569", type: "xlsx" },
@@ -117,12 +124,9 @@ const typeStyle = {
 };
 
 let currentPage = 1;
-const perPage = 6;
+const perPage = 10; // เพิ่มจำนวนต่อหน้าเพื่อให้เต็มจอมากขึ้น
 let filteredDocs = [...documents];
 
-/* ======================
-    FUNCTIONS
-====================== */
 function init() {
     const cats = [...new Set(documents.map(d => d.category))];
     const select = document.getElementById("filterCategory");
@@ -135,49 +139,43 @@ function init() {
 function renderList() {
     const container = document.getElementById("docList");
     container.innerHTML = "";
-
     const start = (currentPage - 1) * perPage;
     const subset = filteredDocs.slice(start, start + perPage);
 
     subset.forEach(doc => {
         const style = typeStyle[doc.type] || typeStyle.default;
         container.innerHTML += `
-            <div class="doc-card bg-white p-6 rounded-2xl">
+            <div class="doc-card bg-white p-6 rounded-2xl flex flex-col">
                 <div class="flex items-start gap-4 mb-5">
-                    <div class="icon-box ${style.color}">
+                    <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl ${style.color} text-xl font-bold">
                         <i class="fas ${style.icon}"></i>
                     </div>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-slate-800 text-base leading-snug line-clamp-2 mb-1">${doc.name}</h4>
-                        <div class="flex items-center gap-2">
-                             <span class="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider">${doc.category}</span>
-                        </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-slate-800 text-base leading-snug line-clamp-2 mb-1" title="${doc.name}">${doc.name}</h4>
+                        <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider">${doc.category}</span>
                     </div>
                 </div>
-
                 <div class="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
-                    <div class="text-slate-400">
-                        <p class="text-[10px] uppercase font-bold tracking-tighter">วันที่อัปโหลด</p>
+                    <div>
+                        <p class="text-[10px] uppercase font-bold text-slate-400 tracking-tighter">วันที่อัปโหลด</p>
                         <p class="text-xs font-semibold text-slate-600">${doc.date}</p>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="previewDoc('${doc.name}')" title="เปิดดู"
-                            class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-blue-600 hover:text-white transition shadow-sm">
+                        <button onclick="previewDoc('${doc.name}')" class="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-50 text-slate-500 hover:bg-blue-600 hover:text-white transition">
                             <i class="fas fa-eye text-sm"></i>
                         </button>
-                        <button onclick="downloadDoc('${doc.name}')"
-                            class="px-4 h-10 flex items-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition shadow-md shadow-emerald-100">
-                            <i class="fas fa-download"></i> ดาวน์โหลด
+                        <button onclick="downloadDoc('${doc.name}')" class="px-3 h-9 flex items-center gap-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition">
+                            <i class="fas fa-download"></i>
                         </button>
                     </div>
                 </div>
             </div>
         `;
     });
-
     renderPagination();
 }
 
+// ... ส่วนฟังก์ชันอื่นๆ (filterData, renderPagination, goPage, previewDoc) ใช้โค้ดเดิมของคุณได้เลยครับ ...
 function filterData() {
     const search = document.getElementById("searchInput").value.toLowerCase();
     const cat = document.getElementById("filterCategory").value;
@@ -191,45 +189,20 @@ function renderPagination() {
     const container = document.getElementById("pagination");
     container.innerHTML = "";
     if (totalPages <= 1) return;
-
     for (let i = 1; i <= totalPages; i++) {
-        container.innerHTML += `
-            <button onclick="goPage(${i})" 
-                class="w-10 h-10 rounded-xl font-bold transition-all ${i === currentPage ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}">
-                ${i}
-            </button>`;
+        container.innerHTML += `<button onclick="goPage(${i})" class="w-10 h-10 rounded-xl font-bold transition-all ${i === currentPage ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}">${i}</button>`;
     }
 }
 
 function goPage(p) { currentPage = p; renderList(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-
 document.getElementById("searchInput").addEventListener("input", filterData);
 document.getElementById("filterCategory").addEventListener("change", filterData);
 
-/* ======================
-    UI ACTIONS
-====================== */
-function previewDoc(name) {
-    Swal.fire({
-        title: 'กำลังเปิดไฟล์',
-        text: name,
-        icon: 'info',
-        confirmButtonText: 'ตกลง',
-        confirmButtonColor: '#3b82f6'
-    });
-}
-
-function downloadDoc(name) {
-    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true });
-    Toast.fire({ icon: 'success', title: 'เริ่มการดาวน์โหลด: ' + name });
-}
-
-function adminLogin() {
-    Swal.fire({ title: 'สิทธิ์การใช้งาน', text: 'กรุณาเข้าสู่ระบบเพื่อจัดการเอกสาร', icon: 'lock', confirmButtonColor: '#3b82f6' });
-}
+function previewDoc(name) { Swal.fire({ title: 'กำลังเปิดไฟล์', text: name, icon: 'info', confirmButtonColor: '#3b82f6' }); }
+function downloadDoc(name) { const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true }); Toast.fire({ icon: 'success', title: 'เริ่มการดาวน์โหลด: ' + name }); }
+function adminLogin() { Swal.fire({ title: 'สิทธิ์การใช้งาน', text: 'กรุณาเข้าสู่ระบบเพื่อจัดการเอกสาร', icon: 'lock', confirmButtonColor: '#3b82f6' }); }
 
 init();
 </script>
-
 </body>
 </html>
