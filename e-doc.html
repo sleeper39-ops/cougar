@@ -12,7 +12,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
         body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
-        .doc-card { transition: all 0.2s; border: 1px solid #e2e8f0; }
+        .doc-card { transition: all 0.2s; border: 1px solid #e2e8f0; position: relative; }
         .doc-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .swal2-input, .swal2-file { font-family: 'Sarabun', sans-serif !important; border-radius: 12px !important; }
     </style>
@@ -60,7 +60,7 @@
         </div>
         <div id="addBtnArea" class="hidden">
             <button onclick="addDocument()" class="bg-emerald-500 hover:bg-emerald-600 text-white h-[50px] px-6 rounded-2xl font-bold transition flex items-center gap-2 shadow-lg shadow-emerald-100">
-                <i class="fas fa-cloud-arrow-up"></i> อัปโหลดไฟล์
+                <i class="fas fa-cloud-arrow-up"></i> เพิ่มข้อมูล
             </button>
         </div>
     </div>
@@ -93,6 +93,7 @@ const typeStyle = {
     mp3: { icon: 'fa-file-audio', color: 'text-cyan-600', bg: 'bg-cyan-50' },
     jpg: { icon: 'fa-file-image', color: 'text-pink-500', bg: 'bg-pink-50' },
     png: { icon: 'fa-file-image', color: 'text-pink-500', bg: 'bg-pink-50' },
+    link: { icon: 'fa-link', color: 'text-blue-600', bg: 'bg-blue-50' },
     default: { icon: 'fa-file-lines', color: 'text-slate-500', bg: 'bg-slate-50' }
 };
 
@@ -132,20 +133,29 @@ function renderList() {
         empty.classList.add('hidden');
         filtered.forEach(doc => {
             const style = typeStyle[doc.type] || typeStyle.default;
+            
+            // ปุ่มลบสำหรับแอดมิน
+            const deleteBtn = isAdmin ? `
+                <button onclick="deleteDoc('${doc.id}')" class="absolute top-2 right-2 w-7 h-7 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-full transition flex items-center justify-center border border-red-100 shadow-sm z-10">
+                    <i class="fas fa-trash-can text-[10px]"></i>
+                </button>
+            ` : '';
+
             container.innerHTML += `
-                <div class="doc-card bg-white p-5 rounded-2xl flex flex-col h-full relative overflow-hidden">
+                <div class="doc-card bg-white p-5 rounded-2xl flex flex-col h-full overflow-hidden">
+                    ${deleteBtn}
                     <div class="flex items-start gap-4 mb-6">
                         <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl ${style.bg} ${style.color} text-xl border border-white shadow-sm">
                             <i class="fas ${style.icon}"></i>
                         </div>
-                        <div class="min-w-0">
+                        <div class="min-w-0 pr-4">
                             <h4 class="font-bold text-slate-800 text-sm leading-snug mb-1 line-clamp-2" title="${doc.name}">${doc.name}</h4>
                             <span class="inline-block text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider border border-blue-100">${doc.category}</span>
                         </div>
                     </div>
                     <div class="mt-auto pt-4 border-t border-slate-50 flex flex-col gap-3">
                         <div>
-                            <p class="text-[9px] uppercase font-bold text-slate-400 tracking-tight">อัปโหลดเมื่อ</p>
+                            <p class="text-[9px] uppercase font-bold text-slate-400 tracking-tight">บันทึกเมื่อ</p>
                             <p class="text-[11px] font-semibold text-slate-600">${doc.date}</p>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
@@ -177,16 +187,38 @@ function updateCategoryDropdown() {
 
 function filterData() { renderList(); }
 
-function toggleAdmin() {
+async function toggleAdmin() {
     if (!isAdmin) {
-        Swal.fire({
-            title: 'โหมดจัดการระบบ',
-            text: "คุณจะสามารถอัปโหลดไฟล์ใหม่ได้",
-            icon: 'shield-alt',
+        const { value: password } = await Swal.fire({
+            title: 'รหัสผ่านแอดมิน',
+            input: 'password',
+            inputPlaceholder: 'กรอกรหัสผ่านเพื่อจัดการระบบ',
             showCancelButton: true,
-            confirmButtonText: 'ตกลง',
-        }).then((result) => { if (result.isConfirmed) { isAdmin = true; applyAdminUI(); } });
-    } else { isAdmin = false; applyAdminUI(); }
+            confirmButtonText: 'ยืนยัน',
+            confirmButtonColor: '#3b82f6'
+        });
+
+        if (password) {
+            Swal.fire({ title: 'กำลังตรวจสอบ...', didOpen: () => Swal.showLoading() });
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'checkAuth', password: password })
+                });
+                const res = await response.json();
+                if (res.status === 'success') {
+                    isAdmin = true;
+                    applyAdminUI();
+                    Swal.fire({ icon: 'success', title: 'เข้าสู่โหมดแอดมิน', timer: 1000, showConfirmButton: false });
+                } else {
+                    Swal.fire('ล้มเหลว', 'รหัสผ่านไม่ถูกต้อง', 'error');
+                }
+            } catch (e) { Swal.fire('Error', 'การเชื่อมต่อผิดพลาด', 'error'); }
+        }
+    } else {
+        isAdmin = false;
+        applyAdminUI();
+    }
 }
 
 function applyAdminUI() {
@@ -195,12 +227,13 @@ function applyAdminUI() {
     const mainBtn = document.getElementById("adminBtn");
     mainBtn.innerHTML = isAdmin ? '<i class="fas fa-sign-out-alt mr-2"></i>ปิดโหมดแอดมิน' : '<i class="fas fa-cog mr-2"></i>จัดการระบบ';
     mainBtn.className = isAdmin ? 'bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-xl text-sm font-semibold transition shadow-md' : 'bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition shadow-md';
+    renderList(); // โหลดรายการใหม่เพื่อแสดง/ซ่อนปุ่มลบ
 }
 
 async function addDocument() {
     let uploadType = 'file';
     const { value: formValues } = await Swal.fire({
-        title: 'เพิ่มเอกสารใหม่',
+        title: 'เพิ่มข้อมูลใหม่',
         html: `
             <div id="swal-container" class="text-left mt-4">
                 <div class="flex justify-between items-center mb-2">
@@ -236,7 +269,7 @@ async function addDocument() {
             if (uploadType === 'file') {
                 const file = document.getElementById('swal-file').files[0];
                 if (!file) return Swal.showValidationMessage('กรุณาเลือกไฟล์');
-                if (file.size > 20 * 1024 * 1024) return Swal.showValidationMessage('ไฟล์ใหญ่เกิน 20MB กรุณาใช้ลิงก์แทน');
+                if (file.size > 20 * 1024 * 1024) return Swal.showValidationMessage('ไฟล์ใหญ่เกิน 20MB');
                 return { type: 'file', file: file, category: cat };
             } else {
                 const link = document.getElementById('swal-link').value;
@@ -281,7 +314,7 @@ async function uploadProcess(file, category) {
 }
 
 async function saveLinkProcess(link, category) {
-    Swal.fire({ title: 'กำลังบันทึกข้อมูล...', didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
     try {
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
@@ -290,6 +323,34 @@ async function saveLinkProcess(link, category) {
         const res = await response.json();
         finishProcess(res);
     } catch (e) { finishProcess({status: 'error', message: e.message}); }
+}
+
+async function deleteDoc(id) {
+    const result = await Swal.fire({
+        title: 'ยืนยันการลบ?',
+        text: "ข้อมูลนี้จะถูกลบออกจากระบบอย่างถาวร",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'ใช่, ลบเลย!',
+        cancelButtonText: 'ยกเลิก'
+    });
+
+    if (result.isConfirmed) {
+        Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'delete', id: id })
+            });
+            const res = await response.json();
+            if (res.status === 'success') {
+                Swal.fire({ icon: 'success', title: 'ลบสำเร็จ', timer: 1000, showConfirmButton: false });
+                loadDataFromSheet();
+            } else { throw new Error(res.message); }
+        } catch (e) { Swal.fire('ล้มเหลว', e.message, 'error'); }
+    }
 }
 
 function finishProcess(res, interval = null) {
