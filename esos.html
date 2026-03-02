@@ -121,7 +121,109 @@
     if (typeof window.google === 'undefined') {
         console.warn("Running outside of Google Apps Script environment. Mocking 'google.script.run'.");
 
-      
+        // Simulate a "sheet" in memory for the mock backend
+        let mockSheetData = [
+            {id: '1', timestamp: '2025-06-25 10:00:00', department: 'ฝสส.ฯ', docNumber: 'กค 0405.6/1', subject: 'เรื่องทดสอบที่ 1', userFileUrl: 'https://www.africau.edu/images/default/sample.pdf', adminFileUrl: '', status: 'รอตรวจ'},
+            {id: '2', timestamp: '2025-06-25 10:05:00', department: 'ฝขว.ฯ', docNumber: 'กค 0405.6/2', subject: 'เรื่องทดสอบที่ 2 เกี่ยวกับการเงิน', userFileUrl: 'https://www.africau.edu/images/default/sample.pdf', adminFileUrl: 'https://www.africau.edu/images/default/sample.pdf', status: 'อนุมัติ'},
+            {id: '3', timestamp: '2025-06-25 10:10:00', department: 'ฝสส.ฯ', docNumber: 'กค 0405.6/3', subject: 'รายงานประจำเดือน', userFileUrl: 'https://www.africau.edu/images/default/sample.pdf', adminFileUrl: '', status: 'ไปแก้มาใหม่'},
+            {id: '4', timestamp: '2025-06-25 10:15:00', department: 'ฝยก.ฯ', docNumber: 'กค 0405.6/4', subject: 'การประชุมคณะกรรมการ', userFileUrl: 'https://www.africau.edu/images/default/sample.pdf', adminFileUrl: '', status: 'รอตรวจ'},
+            {id: '5', timestamp: '2025-06-25 10:20:00', department: 'ศสน.ฯ', docNumber: 'กค 0405.6/5', subject: 'บันทึกข้อความขออนุมัติ', userFileUrl: 'https://www.africau.edu/images/default/sample.pdf', adminFileUrl: 'https://www.africau.edu/images/default/sample.pdf', status: 'ไม่อนุมัติ'},
+        ];
+
+        const createMockRunner = () => {
+            let successCallback = () => {};
+            let failureCallback = console.error;
+
+            const runner = {
+                withSuccessHandler(callback) {
+                    successCallback = callback;
+                    return this; // Return the runner itself for chaining
+                },
+                withFailureHandler(callback) {
+                    failureCallback = callback;
+                    return this; // Return the runner itself for chaining
+                }
+            };
+
+            // Use a proxy to catch the actual server function call at the end of the chain
+            return new Proxy(runner, {
+                get(target, prop) {
+                    if (prop in target) {
+                        return target[prop]; // This handles withSuccessHandler and withFailureHandler
+                    }
+
+                    // This handles the server function calls like getSheetData
+                    return (...args) => {
+                        console.log(`Mocked server call: ${prop} with args:`, args);
+                        setTimeout(() => {
+                            try {
+                                if (prop === 'getSheetData') {
+                                    successCallback([...mockSheetData]); // Return a copy to prevent external modification
+                                } else if (prop === 'uploadFileAndSaveData') {
+                                    const newData = args[0];
+                                    const newId = (mockSheetData.length > 0 ? Math.max(...mockSheetData.map(item => parseInt(item.id))) + 1 : 1).toString();
+                                    const timestamp = new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+                                        year: 'numeric', month: '2-digit', day: '2-digit',
+                                        hour: '2-digit', minute: '2-digit', second: '2-digit',
+                                        timeZone: 'Asia/Bangkok'
+                                    }).format(new Date());
+
+                                    mockSheetData.push({
+                                        id: newId,
+                                        timestamp: timestamp,
+                                        department: newData.department,
+                                        docNumber: newData.docNumber,
+                                        subject: newData.subject,
+                                        userFileUrl: newData.fileData.startsWith('data:') ? 'mock-user-file-url-' + newId : '', // Simulate file URL for base64
+                                        adminFileUrl: '',
+                                        status: 'รอตรวจ'
+                                    });
+                                    successCallback({ success: true, message: 'ส่งเอกสาร (จำลอง) เรียบร้อยแล้ว' });
+                                } else if (prop === 'updateRecord') {
+                                    const [recordData, adminFileObject] = args;
+                                    const index = mockSheetData.findIndex(item => item.id === recordData.id);
+                                    if (index !== -1) {
+                                        mockSheetData[index].status = recordData.status;
+                                        if (adminFileObject && adminFileObject.fileData) {
+                                            mockSheetData[index].adminFileUrl = 'mock-admin-file-url-' + recordData.id; // Simulate admin file URL
+                                        } else if (recordData.adminFileUrl === '') { // Explicitly cleared by user
+                                            mockSheetData[index].adminFileUrl = '';
+                                        }
+                                        successCallback({ success: true, message: 'อัปเดตข้อมูล (จำลอง) สำเร็จ' });
+                                    } else {
+                                        failureCallback(new Error('Record not found for update.'));
+                                    }
+                                } else if (prop === 'deleteRecord') {
+                                    const recordId = args[0];
+                                    const initialLength = mockSheetData.length;
+                                    mockSheetData = mockSheetData.filter(item => item.id !== recordId);
+                                    if (mockSheetData.length < initialLength) {
+                                        successCallback({ success: true, message: 'ลบข้อมูล (จำลอง) สำเร็จ' });
+                                    } else {
+                                        failureCallback(new Error('Record not found for deletion.'));
+                                    }
+                                } else if (prop === 'deleteMultipleRecords') { // This mock is no longer needed but kept for completeness of mock runner
+                                    const idsToDelete = args[0];
+                                    const initialLength = mockSheetData.length;
+                                    mockSheetData = mockSheetData.filter(item => !idsToDelete.includes(item.id));
+                                    if (mockSheetData.length < initialLength) {
+                                        successCallback({ success: true, message: `ลบ ${initialLength - mockSheetData.length} รายการ (จำลอง) สำเร็จ` });
+                                    } else {
+                                        failureCallback(new Error('ไม่พบรายการที่จะลบ (จำลอง)'));
+                                    }
+                                }
+                                else {
+                                    successCallback({ success: true, message: 'การดำเนินการ (จำลอง) สำเร็จ' });
+                                }
+                            } catch (e) {
+                                failureCallback(e);
+                            }
+                        }, 500);
+                    };
+                }
+            });
+        };
+
         window.google = {
             script: {
                 get run() {
@@ -1128,4 +1230,3 @@
 
 </body>
 </html>
-
