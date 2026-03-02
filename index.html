@@ -64,12 +64,14 @@
         
         .btn-download { margin-top: auto; display: block; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; color: white; background: var(--primary); text-decoration: none; }
 
-        /* Admin Action Buttons (แก้ไขส่วนนี้) */
-        .admin-actions { display: none; justify-content: space-around; align-items: center; padding: 10px; background: #fafafa; border-top: 1px solid #eee; flex-wrap: wrap; gap: 5px; }
-        .btn-admin-tool { background: none; border: none; cursor: pointer; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; padding: 5px; transition: 0.2s; }
+        /* Admin Action Buttons (4 ปุ่ม) */
+        .admin-actions { display: none; justify-content: space-between; align-items: center; padding: 10px; background: #fafafa; border-top: 1px solid #eee; gap: 5px; }
+        .btn-admin-tool { background: none; border: none; cursor: pointer; font-size: 10px; font-weight: 600; display: flex; align-items: center; flex-direction: column; gap: 2px; flex: 1; transition: 0.2s; }
         .btn-edit-tool { color: var(--primary); }
         .btn-delete-tool { color: var(--danger); }
-        .btn-reset-tool { color: var(--warning); } /* สีส้มสำหรับปุ่มรีเซต */
+        .btn-reset-tool { color: var(--warning); }
+        .btn-lock-tool { color: #555; }
+        .btn-lock-tool.active { color: var(--danger); }
 
         /* Lightbox & Switch */
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
@@ -145,15 +147,17 @@
                 <div id="admin-panel">
                     <div class="admin-header">
                         <h3 style="margin:0;"><i class="fas fa-tools"></i> Admin Control Panel</h3>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <button onclick="window.resetAllCounts()" style="background:var(--warning); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px; cursor:pointer; font-weight:bold;">
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:12px; font-weight:bold; color:var(--danger);">Lock Downloads</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <button onclick="window.resetAllCounts()" style="background:var(--warning); color:white; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:5px;">
                                 <i class="fas fa-sync-alt"></i> รีเซ็ตจำนวนทั้งหมด
                             </button>
-                            <span style="font-size:12px; font-weight:bold; color:var(--danger);">Lock Downloads</span>
-                            <label class="switch">
-                                <input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()">
-                                <span class="slider"></span>
-                            </label>
                         </div>
                     </div>
                     <div class="form-row">
