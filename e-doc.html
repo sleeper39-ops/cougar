@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>e-doc | ?????????????????</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+body { background:#f1f5f9; }
+.card:hover { transform: translateY(-4px); transition:0.3s; }
+.btn-primary { background:#2563eb; color:white; }
+.btn-primary:hover { background:#1d4ed8; }
+</style>
+</head>
+<body class="font-sans">
+
+<!-- NAVBAR -->
+<nav class="bg-white shadow-md">
+<div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+<h1 class="text-xl font-bold text-blue-600">?? e-doc</h1>
+<div>
+<button onclick="openLogin()" class="btn-primary px-4 py-2 rounded-lg text-sm">Admin</button>
+</div>
+</div>
+</nav>
+
+<!-- FILTER -->
+<div class="max-w-7xl mx-auto px-6 py-6 flex gap-4 flex-wrap">
+<input id="search" placeholder="?????..."
+class="border p-3 rounded-lg w-full md:w-1/3">
+<select id="categoryFilter"
+class="border p-3 rounded-lg w-full md:w-1/4">
+<option value="">???????</option>
+</select>
+</div>
+
+<!-- DOCUMENT GRID -->
+<div id="docGrid"
+class="max-w-7xl mx-auto px-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+</div>
+
+<!-- PAGINATION -->
+<div id="pagination"
+class="flex justify-center gap-2 py-6">
+</div>
+
+<script>
+const WEB_APP_URL = "PUT_WEB_APP_URL";
+let documents = [];
+let currentPage = 1;
+const perPage = 8;
+let adminSession = false;
+
+/* ================= LOAD DATA ================= */
+async function loadData(){
+const res = await fetch(WEB_APP_URL,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body: JSON.stringify({action:"list"})
+});
+const result = await res.json();
+documents = result.data;
+initUI();
+}
+
+function initUI(){
+const cats = [...new Set(documents.map(d=>d.category))];
+document.getElementById("categoryFilter").innerHTML =
+'<option value="">???????</option>' +
+cats.map(c=>`<option>${c}</option>`).join("");
+
+render();
+}
+
+/* ================= RENDER ================= */
+function render(){
+const search = document.getElementById("search").value.toLowerCase();
+const cat = document.getElementById("categoryFilter").value;
+
+let filtered = documents.filter(d=>
+d.name.toLowerCase().includes(search) &&
+(cat==="" || d.category===cat)
+);
+
+const start=(currentPage-1)*perPage;
+const pageData=filtered.slice(start,start+perPage);
+
+const grid=document.getElementById("docGrid");
+grid.innerHTML="";
+
+pageData.forEach(doc=>{
+grid.innerHTML+=`
+<div class="card bg-white rounded-xl shadow p-5">
+<h3 class="font-semibold text-gray-800">${doc.name}</h3>
+<p class="text-sm text-gray-500">${doc.category}</p>
+<p class="text-xs text-gray-400 mb-3">${doc.date}</p>
+
+<div class="flex gap-2">
+<a href="${doc.url}" target="_blank"
+class="btn-primary px-3 py-2 text-sm rounded-lg">
+?????????
+</a>
+
+${adminSession ? `
+<button onclick="deleteDoc('${doc.id}')"
+class="bg-red-500 text-white px-3 py-2 text-sm rounded-lg">
+??
+</button>`:""}
+
+</div>
+</div>`;
+});
+
+renderPagination(filtered.length);
+}
+
+function renderPagination(total){
+const pages=Math.ceil(total/perPage);
+const pagination=document.getElementById("pagination");
+pagination.innerHTML="";
+for(let i=1;i<=pages;i++){
+pagination.innerHTML+=`
+<button onclick="goPage(${i})"
+class="px-3 py-2 border rounded-lg ${
+i===currentPage?'bg-blue-600 text-white':'bg-white'
+}">
+${i}
+</button>`;
+}
+}
+
+function goPage(p){
+currentPage=p;
+render();
+}
+
+/* ================= FILTER ================= */
+document.getElementById("search").addEventListener("input",render);
+document.getElementById("categoryFilter").addEventListener("change",render);
+
+/* ================= ADMIN ================= */
+function openLogin(){
+Swal.fire({
+title:"Admin Login",
+input:"password",
+inputPlaceholder:"???????????",
+showCancelButton:true
+}).then(async result=>{
+if(result.value){
+const res=await fetch(WEB_APP_URL,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body: JSON.stringify({action:"login",password:result.value})
+});
+const data=await res.json();
+if(data.status==="success"){
+adminSession=true;
+Swal.fire("?????????????????","","success");
+render();
+}else{
+Swal.fire("??????????????????","","error");
+}
+}
+});
+}
+
+async function deleteDoc(id){
+Swal.fire({
+title:"?????????",
+showCancelButton:true
+}).then(async result=>{
+if(result.isConfirmed){
+await fetch(WEB_APP_URL,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body: JSON.stringify({action:"delete",id})
+});
+loadData();
+}
+});
+}
+
+loadData();
+</script>
+
+</body>
+</html>
