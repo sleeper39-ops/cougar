@@ -3,187 +3,198 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>e-doc | ?????????????????</title>
+<title>ระบบจัดเก็บเอกสาร</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-body { background:#f1f5f9; }
-.card:hover { transform: translateY(-4px); transition:0.3s; }
-.btn-primary { background:#2563eb; color:white; }
-.btn-primary:hover { background:#1d4ed8; }
+body {
+  background: #F3F4F6;
+}
+.btn-primary {
+  background: #3B82F6;
+  color: white;
+}
+.btn-primary:hover {
+  background: #2563EB;
+}
+.card:hover {
+  transform: translateY(-4px);
+  transition: 0.3s;
+}
 </style>
 </head>
 <body class="font-sans">
 
 <!-- NAVBAR -->
 <nav class="bg-white shadow-md">
-<div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-<h1 class="text-xl font-bold text-blue-600">?? e-doc</h1>
-<div>
-<button onclick="openLogin()" class="btn-primary px-4 py-2 rounded-lg text-sm">Admin</button>
-</div>
-</div>
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <a href="#" class="text-xl font-bold text-blue-600">📁 ESOS Document</a>
+    <div class="flex items-center gap-4">
+      <button class="btn-primary px-4 py-2 rounded-lg">Login Admin</button>
+    </div>
+  </div>
 </nav>
 
-<!-- FILTER -->
-<div class="max-w-7xl mx-auto px-6 py-6 flex gap-4 flex-wrap">
-<input id="search" placeholder="?????..."
-class="border p-3 rounded-lg w-full md:w-1/3">
-<select id="categoryFilter"
-class="border p-3 rounded-lg w-full md:w-1/4">
-<option value="">???????</option>
-</select>
-</div>
+<!-- HERO SUMMARY -->
+<section class="bg-white shadow-inner py-8 mt-4">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-6">
+    <div class="bg-gradient-to-tr from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow-lg">
+      <h3 class="text-xl font-semibold">📄 เอกสารทั้งหมด</h3>
+      <p id="totalDocs" class="text-4xl font-bold my-2">0</p>
+    </div>
+    <div class="bg-gradient-to-tr from-indigo-500 to-indigo-700 text-white p-6 rounded-xl shadow-lg">
+      <h3 class="text-xl font-semibold">📂 หมวดเอกสาร</h3>
+      <p id="totalCats" class="text-4xl font-bold my-2">0</p>
+    </div>
+    <div class="bg-gradient-to-tr from-green-500 to-green-700 text-white p-6 rounded-xl shadow-lg">
+      <h3 class="text-xl font-semibold">📤 อัปโหลดล่าสุด</h3>
+      <p id="lastUpload" class="text-4xl font-bold my-2">--</p>
+    </div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<section class="max-w-7xl mx-auto px-6 py-6">
+  <div class="flex flex-col md:flex-row gap-4 justify-between">
+    <input type="text" id="searchInput" placeholder="🔍 ค้นหาเอกสาร..."
+      class="border rounded-lg p-3 w-full md:w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+    <select id="filterCategory"
+      class="border rounded-lg p-3 w-full md:w-1/4 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <option value="">ทุกหมวด</option>
+    </select>
+  </div>
+</section>
 
 <!-- DOCUMENT GRID -->
-<div id="docGrid"
-class="max-w-7xl mx-auto px-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-</div>
+<section class="max-w-7xl mx-auto px-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+</section>
 
 <!-- PAGINATION -->
-<div id="pagination"
-class="flex justify-center gap-2 py-6">
-</div>
+<section class="max-w-7xl mx-auto px-6 py-6">
+  <div id="pagination" class="flex gap-2 justify-center"></div>
+</section>
+
+<!-- FOOTER -->
+<footer class="text-center text-gray-500 py-4">
+  &copy; 2026 ESOS Enterprise | All Rights Reserved
+</footer>
+
 
 <script>
-const WEB_APP_URL = "PUT_WEB_APP_URL";
-let documents = [];
+/* ======================
+   DATA SAMPLE
+   Replace with fetch from API
+====================== */
+const documents = [
+  { name:"รายงานประจำปี 2565", category:"เอกสารราชการ", date:"2026-03-01" },
+  { name:"ใบเสนอราคาจองสินค้า", category:"การเงิน", date:"2026-02-28" },
+  { name:"สรุปงานทีม", category:"ทั่วไป", date:"2026-02-25" },
+];
+
 let currentPage = 1;
-const perPage = 8;
-let adminSession = false;
+const perPage = 6;
 
-/* ================= LOAD DATA ================= */
-async function loadData(){
-const res = await fetch(WEB_APP_URL,{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body: JSON.stringify({action:"list"})
-});
-const result = await res.json();
-documents = result.data;
-initUI();
+/* ======================
+   LOAD INITIAL UI
+====================== */
+
+function init(){
+  document.getElementById("totalDocs").innerText = documents.length;
+  const cats = [...new Set(documents.map(d=>d.category))];
+  document.getElementById("totalCats").innerText = cats.length;
+  document.getElementById("filterCategory").innerHTML +=
+    cats.map(c=>`<option value="${c}">${c}</option>`).join("");
+
+  renderGrid(documents);
+}
+init();
+
+/* ======================
+   RENDER DOCUMENT GRID
+====================== */
+
+function renderGrid(data){
+  const container = document.querySelector("section:nth-of-type(3)");
+  container.innerHTML = "";
+
+  const start = (currentPage-1) * perPage;
+  const subset = data.slice(start, start+perPage);
+
+  subset.forEach(doc=>{
+    container.innerHTML += `
+    <div class="card bg-white rounded-xl shadow-md p-5 hover:shadow-xl">
+      <h4 class="font-semibold text-lg text-gray-800">${doc.name}</h4>
+      <p class="text-sm text-gray-500 mt-1">${doc.category}</p>
+      <p class="text-xs text-gray-400 mt-1">${doc.date}</p>
+      <button onclick="previewDoc('${doc.name}')" 
+        class="btn-primary px-3 py-2 text-sm rounded-lg mt-3">
+        📄 ดูเอกสาร
+      </button>
+    </div>
+    `;
+  });
+
+  renderPagination(data.length);
 }
 
-function initUI(){
-const cats = [...new Set(documents.map(d=>d.category))];
-document.getElementById("categoryFilter").innerHTML =
-'<option value="">???????</option>' +
-cats.map(c=>`<option>${c}</option>`).join("");
-
-render();
-}
-
-/* ================= RENDER ================= */
-function render(){
-const search = document.getElementById("search").value.toLowerCase();
-const cat = document.getElementById("categoryFilter").value;
-
-let filtered = documents.filter(d=>
-d.name.toLowerCase().includes(search) &&
-(cat==="" || d.category===cat)
-);
-
-const start=(currentPage-1)*perPage;
-const pageData=filtered.slice(start,start+perPage);
-
-const grid=document.getElementById("docGrid");
-grid.innerHTML="";
-
-pageData.forEach(doc=>{
-grid.innerHTML+=`
-<div class="card bg-white rounded-xl shadow p-5">
-<h3 class="font-semibold text-gray-800">${doc.name}</h3>
-<p class="text-sm text-gray-500">${doc.category}</p>
-<p class="text-xs text-gray-400 mb-3">${doc.date}</p>
-
-<div class="flex gap-2">
-<a href="${doc.url}" target="_blank"
-class="btn-primary px-3 py-2 text-sm rounded-lg">
-?????????
-</a>
-
-${adminSession ? `
-<button onclick="deleteDoc('${doc.id}')"
-class="bg-red-500 text-white px-3 py-2 text-sm rounded-lg">
-??
-</button>`:""}
-
-</div>
-</div>`;
-});
-
-renderPagination(filtered.length);
-}
+/* ======================
+   PAGINATION
+====================== */
 
 function renderPagination(total){
-const pages=Math.ceil(total/perPage);
-const pagination=document.getElementById("pagination");
-pagination.innerHTML="";
-for(let i=1;i<=pages;i++){
-pagination.innerHTML+=`
-<button onclick="goPage(${i})"
-class="px-3 py-2 border rounded-lg ${
-i===currentPage?'bg-blue-600 text-white':'bg-white'
-}">
-${i}
-</button>`;
-}
+  const pages = Math.ceil(total / perPage);
+  const pagination = document.getElementById("pagination");
+
+  pagination.innerHTML = "";
+  for(let i=1; i<=pages; i++){
+    pagination.innerHTML += `
+    <button onclick="goPage(${i})"
+      class="px-3 py-2 border rounded-lg text-sm ${
+        i===currentPage ? 'bg-blue-500 text-white' : 'bg-white'
+      }">
+      ${i}
+    </button>`;
+  }
 }
 
 function goPage(p){
-currentPage=p;
-render();
+  currentPage = p;
+  filterData();
 }
 
-/* ================= FILTER ================= */
-document.getElementById("search").addEventListener("input",render);
-document.getElementById("categoryFilter").addEventListener("change",render);
+/* ======================
+   FILTER LOGIC
+====================== */
 
-/* ================= ADMIN ================= */
-function openLogin(){
-Swal.fire({
-title:"Admin Login",
-input:"password",
-inputPlaceholder:"???????????",
-showCancelButton:true
-}).then(async result=>{
-if(result.value){
-const res=await fetch(WEB_APP_URL,{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body: JSON.stringify({action:"login",password:result.value})
-});
-const data=await res.json();
-if(data.status==="success"){
-adminSession=true;
-Swal.fire("?????????????????","","success");
-render();
-}else{
-Swal.fire("??????????????????","","error");
-}
-}
-});
+function filterData(){
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const cat = document.getElementById("filterCategory").value;
+
+  const filtered = documents.filter(d=>{
+    return d.name.toLowerCase().includes(search)
+      && (cat==="" || d.category === cat);
+  });
+
+  renderGrid(filtered);
 }
 
-async function deleteDoc(id){
-Swal.fire({
-title:"?????????",
-showCancelButton:true
-}).then(async result=>{
-if(result.isConfirmed){
-await fetch(WEB_APP_URL,{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body: JSON.stringify({action:"delete",id})
-});
-loadData();
-}
-});
-}
+document.getElementById("searchInput").addEventListener("input",filterData);
+document.getElementById("filterCategory").addEventListener("change",filterData);
 
-loadData();
+/* ======================
+   PREVIEW FUNCTION
+====================== */
+
+function previewDoc(name){
+  Swal.fire({
+    title: name,
+    html:`<p class="text-sm text-gray-600">Preview ยังไม่มีระบบไฟล์จริง</p>`,
+    confirmButtonText:"ปิด"
+  });
+}
 </script>
 
 </body>
