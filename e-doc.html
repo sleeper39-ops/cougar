@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESOS Document Management</title>
+    <title>E-Document Management System</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -11,338 +11,267 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
-        
-        body {
-            font-family: 'Sarabun', sans-serif;
-            background: #F8FAFC;
-        }
-        .glass-nav {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-        }
-        .doc-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .doc-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-        .status-badge {
-            padding: 2px 8px;
-            border-radius: 9999px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
+        body { font-family: 'Sarabun', sans-serif; background: #f8fafc; }
+        .card-doc { transition: all 0.2s ease-in-out; border: 1px solid #e2e8f0; }
+        .card-doc:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #3b82f6; }
+        .status-pill { padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-700">
 
-<nav class="glass-nav sticky top-0 z-50 shadow-sm border-b border-slate-200">
-    <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <div class="bg-blue-600 p-2 rounded-lg text-white">
-                <i class="fas fa-folder-open text-xl"></i>
-            </div>
-            <span class="text-xl font-bold tracking-tight text-slate-800">ESOS <span class="text-blue-600">E-DOC</span></span>
-        </div>
+<nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <button onclick="adminLogin()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg transition font-medium text-sm">
-                <i class="fas fa-user-shield"></i>
-                <span class="hidden sm:inline">ผู้ดูแลระบบ</span>
-            </button>
+            <div class="bg-blue-600 text-white p-2 rounded-lg">
+                <i class="fas fa-file-invoice text-xl"></i>
+            </div>
+            <span class="text-xl font-bold text-slate-800 tracking-tight">E-DOCUMENT <span class="text-blue-600 text-sm font-medium ml-1">v2.0</span></span>
         </div>
+        <button onclick="adminLogin()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+            <i class="fas fa-lock text-xs"></i> สำหรับเจ้าหน้าที่
+        </button>
     </div>
 </nav>
 
-<section class="max-w-7xl mx-auto px-6 pt-8">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 flex items-center gap-4">
-            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
-                <i class="fas fa-file-alt"></i>
+<header class="bg-white border-b border-slate-100 py-10 mb-8">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="flex items-center gap-5 p-6 rounded-2xl bg-blue-50 border border-blue-100">
+            <div class="bg-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg shadow-blue-200">
+                <i class="fas fa-copy"></i>
             </div>
             <div>
-                <p class="text-slate-500 text-xs font-medium uppercase">เอกสารทั้งหมด</p>
-                <h3 id="totalDocs" class="text-2xl font-bold">0</h3>
+                <p class="text-blue-600 text-sm font-bold uppercase tracking-wider">เอกสารทั้งหมด</p>
+                <h3 id="totalDocs" class="text-3xl font-black text-slate-800">0</h3>
             </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 flex items-center gap-4">
-            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
-                <i class="fas fa-layer-group"></i>
+        <div class="flex items-center gap-5 p-6 rounded-2xl bg-emerald-50 border border-emerald-100">
+            <div class="bg-emerald-500 text-white w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg shadow-emerald-200">
+                <i class="fas fa-folder-tree"></i>
             </div>
             <div>
-                <p class="text-slate-500 text-xs font-medium uppercase">หมวดหมู่</p>
-                <h3 id="totalCats" class="text-2xl font-bold">0</h3>
+                <p class="text-emerald-600 text-sm font-bold uppercase tracking-wider">หมวดหมู่</p>
+                <h3 id="totalCats" class="text-3xl font-black text-slate-800">0</h3>
             </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 flex items-center gap-4">
-            <div class="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-xl">
-                <i class="fas fa-check-circle"></i>
+        <div class="flex items-center gap-5 p-6 rounded-2xl bg-amber-50 border border-amber-100">
+            <div class="bg-amber-500 text-white w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg shadow-amber-200">
+                <i class="fas fa-clock-rotate-left"></i>
             </div>
             <div>
-                <p class="text-slate-500 text-xs font-medium uppercase">อนุมัติแล้ว</p>
-                <h3 class="text-2xl font-bold">128</h3>
-            </div>
-        </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 flex items-center gap-4">
-            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div>
-                <p class="text-slate-500 text-xs font-medium uppercase">อัปเดตล่าสุด</p>
-                <h3 id="lastDate" class="text-lg font-bold">--/--/--</h3>
+                <p class="text-amber-600 text-sm font-bold uppercase tracking-wider">อัปโหลดล่าสุด</p>
+                <h3 id="lastDate" class="text-xl font-black text-slate-800">--/--/--</h3>
             </div>
         </div>
     </div>
-</section>
+</header>
 
-<section class="max-w-7xl mx-auto px-6 py-8">
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
-        <div class="relative flex-grow">
+<section class="max-w-7xl mx-auto px-6 mb-8">
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
+        <div class="relative flex-1">
             <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="searchInput" placeholder="ค้นหาชื่อเอกสาร หรือเลขที่อ้างอิง..."
-                class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition">
+            <input type="text" id="searchInput" placeholder="ค้นหาชื่อเอกสาร หรือรหัสเอกสาร..." 
+                class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition">
         </div>
-        <div class="flex gap-2">
-            <select id="filterCategory"
-                class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer font-medium text-sm">
-                <option value="">ทุกหมวดหมู่</option>
-            </select>
-            <button onclick="filterData()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition font-bold shadow-lg shadow-blue-200">
-                <i class="fas fa-filter mr-2"></i> กรองข้อมูล
-            </button>
-        </div>
+        <select id="filterCategory" class="border border-slate-200 rounded-lg px-4 py-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-[200px] cursor-pointer">
+            <option value="">ทุกหมวดหมู่</option>
+        </select>
     </div>
 </section>
 
-<section id="docGrid" class="max-w-7xl mx-auto px-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+<section id="docGrid" class="max-w-7xl mx-auto px-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 mb-12">
     </section>
 
 <div id="emptyState" class="hidden text-center py-20">
-    <i class="fas fa-file-circle-xmark text-6xl text-slate-200 mb-4"></i>
-    <p class="text-slate-500 font-medium">ไม่พบเอกสารที่คุณกำลังค้นหา</p>
+    <i class="fas fa-file-circle-xmark text-6xl text-slate-300 mb-4"></i>
+    <p class="text-slate-500 text-lg">ไม่พบเอกสารที่ค้นหา</p>
 </div>
 
-<div class="max-w-7xl mx-auto px-6 py-12 flex justify-center">
-    <div id="pagination" class="inline-flex items-center bg-white border border-slate-200 rounded-2xl p-1 gap-1 shadow-sm">
-        </div>
-</div>
+<div id="pagination" class="max-w-7xl mx-auto px-6 pb-20 flex justify-center gap-2"></div>
 
-<footer class="bg-white border-t border-slate-200 py-8">
-    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p class="text-slate-500 text-sm">© 2026 <strong>ESOS Enterprise</strong>. All Rights Reserved.</p>
-        <div class="flex gap-6 text-slate-400 text-sm">
-            <a href="#" class="hover:text-blue-600 transition">คู่มือการใช้งาน</a>
-            <a href="#" class="hover:text-blue-600 transition">นโยบายความเป็นส่วนตัว</a>
-            <a href="#" class="hover:text-blue-600 transition">ติดต่อสอบถาม</a>
-        </div>
-    </div>
+<footer class="bg-white border-t border-slate-200 py-8 text-center">
+    <p class="text-slate-400 text-sm">© 2026 ระบบจัดการเอกสารอิเล็กทรอนิกส์ | All Rights Reserved</p>
 </footer>
 
 <script>
 /* ======================
-   DATABASE SAMPLE
+    DATA & CONFIG
 ====================== */
 const documents = [
-    { id: "DOC-66001", name: "รายงานการประชุมประจำปี 2568", category: "เอกสารราชการ", date: "2026-03-01", status: "Approved", icon: "fa-file-pdf", color: "text-red-500" },
-    { id: "DOC-66002", name: "ใบเสนอราคาโครงการ Smart Office", category: "การเงิน", date: "2026-02-28", status: "Pending", icon: "fa-file-invoice-dollar", color: "text-emerald-500" },
-    { id: "DOC-66003", name: "ระเบียบการลาและวันหยุดบริษัท", category: "ทรัพยากรบุคคล", date: "2026-02-25", status: "Approved", icon: "fa-file-lines", color: "text-blue-500" },
-    { id: "DOC-66004", name: "คู่มือการติดตั้งระบบเครือข่าย", category: "ไอที", date: "2026-02-20", status: "Draft", icon: "fa-file-code", color: "text-amber-500" },
-    { id: "DOC-66005", name: "สัญญาว่าจ้างที่ปรึกษาภายนอก", category: "เอกสารราชการ", date: "2026-02-15", status: "Approved", icon: "fa-file-contract", color: "text-indigo-500" },
-    { id: "DOC-66006", name: "สรุปงบประมาณไตรมาสที่ 1", category: "การเงิน", date: "2026-02-10", status: "Approved", icon: "fa-chart-pie", color: "text-emerald-600" },
-    { id: "DOC-66007", name: "แผนการดำเนินงาน ESOS 2026", category: "ทั่วไป", date: "2026-02-01", status: "Approved", icon: "fa-rocket", color: "text-purple-500" },
+    { id: "ED-001", name: "รายงานการประชุมคณะกรรมการชุดที่ 1", category: "เอกสารราชการ", date: "2026-03-01", status: "อนุมัติแล้ว" },
+    { id: "ED-002", name: "ใบเสนอราคาระบบคลาวด์เซิร์ฟเวอร์", category: "การเงิน", date: "2026-02-28", status: "รอตรวจสอบ" },
+    { id: "ED-003", name: "คู่มือการปฏิบัติงานพนักงานใหม่", category: "ทั่วไป", date: "2026-02-25", status: "ร่าง" },
+    { id: "ED-004", name: "บันทึกข้อความภายใน เรื่อง การลาหยุด", category: "เอกสารราชการ", date: "2026-02-20", status: "อนุมัติแล้ว" },
+    { id: "ED-005", name: "สรุปงบประมาณไตรมาส 1/2569", category: "การเงิน", date: "2026-02-15", status: "อนุมัติแล้ว" },
+    { id: "ED-006", name: "แผนผังองค์กรประจำปี 2026", category: "ทั่วไป", date: "2026-02-10", status: "อนุมัติแล้ว" },
+    { id: "ED-007", name: "นโยบายความปลอดภัยสารสนเทศ", category: "ไอที", date: "2026-02-05", status: "อนุมัติแล้ว" },
 ];
 
 let currentPage = 1;
 const perPage = 6;
-let currentFilteredData = [...documents];
+let filteredDocs = [...documents];
 
 /* ======================
-   INITIALIZATION
+    CORE FUNCTIONS
 ====================== */
 function init() {
-    // Set Dashboard Stats
-    document.getElementById("totalDocs").innerText = documents.length;
+    updateStats();
+    
+    // Setup Filter
     const cats = [...new Set(documents.map(d => d.category))];
-    document.getElementById("totalCats").innerText = cats.length;
-    document.getElementById("lastDate").innerText = documents[0].date;
-
-    // Set Category Dropdown
-    const catSelect = document.getElementById("filterCategory");
+    const select = document.getElementById("filterCategory");
     cats.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c;
-        opt.innerText = c;
-        catSelect.appendChild(opt);
+        select.innerHTML += `<option value="${c}">${c}</option>`;
     });
 
     renderGrid();
 }
 
-/* ======================
-   RENDER LOGIC
-====================== */
+function updateStats() {
+    document.getElementById("totalDocs").innerText = documents.length;
+    document.getElementById("totalCats").innerText = new Set(documents.map(d => d.category)).size;
+    document.getElementById("lastDate").innerText = documents[0].date;
+}
+
 function renderGrid() {
     const container = document.getElementById("docGrid");
-    const emptyState = document.getElementById("emptyState");
+    const empty = document.getElementById("emptyState");
     container.innerHTML = "";
 
     const start = (currentPage - 1) * perPage;
-    const subset = currentFilteredData.slice(start, start + perPage);
+    const subset = filteredDocs.slice(start, start + perPage);
 
     if (subset.length === 0) {
-        emptyState.classList.remove("hidden");
+        empty.classList.remove("hidden");
     } else {
-        emptyState.classList.add("hidden");
+        empty.classList.add("hidden");
         subset.forEach(doc => {
+            const statusClass = getStatusStyle(doc.status);
             container.innerHTML += `
-            <div class="doc-card bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col h-full">
-                <div class="p-6 flex-grow">
+                <div class="card-doc bg-white rounded-2xl p-6 flex flex-col shadow-sm">
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center ${doc.color} text-2xl shadow-inner">
-                            <i class="fas ${doc.icon}"></i>
-                        </div>
-                        <span class="status-badge ${getStatusClass(doc.status)}">${doc.status}</span>
+                        <span class="text-[10px] font-bold text-slate-400 tracking-tighter uppercase">${doc.id}</span>
+                        <span class="status-pill ${statusClass}">${doc.status}</span>
                     </div>
-                    <p class="text-[10px] font-bold text-slate-400 mb-1 tracking-widest uppercase">${doc.id}</p>
-                    <h4 class="font-bold text-lg text-slate-800 leading-tight mb-2 line-clamp-2">${doc.name}</h4>
-                    <div class="flex items-center gap-2 text-slate-500 text-xs mb-4">
-                        <i class="fas fa-tag"></i> <span>${doc.category}</span>
+                    <h4 class="font-bold text-slate-800 text-lg mb-2 leading-tight h-14 overflow-hidden">${doc.name}</h4>
+                    <div class="flex items-center gap-2 text-slate-500 text-xs mb-6 italic">
+                        <i class="fas fa-folder text-blue-400"></i> ${doc.category}
                         <span class="text-slate-300">|</span>
-                        <i class="fas fa-calendar"></i> <span>${doc.date}</span>
+                        <i class="fas fa-calendar-alt"></i> ${doc.date}
+                    </div>
+                    <div class="mt-auto grid grid-cols-2 gap-2">
+                        <button onclick="previewDoc('${doc.name}')" class="bg-slate-50 hover:bg-blue-600 hover:text-white text-slate-600 py-2 rounded-lg text-sm font-bold transition">
+                             <i class="fas fa-eye mr-1"></i> ดู
+                        </button>
+                        <button onclick="downloadDoc()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-bold transition">
+                             <i class="fas fa-download mr-1"></i> โหลด
+                        </button>
                     </div>
                 </div>
-                <div class="p-4 bg-slate-50 border-t border-slate-100 flex gap-2">
-                    <button onclick="previewDoc('${doc.name}', '${doc.id}')" 
-                        class="flex-grow bg-white hover:bg-blue-600 hover:text-white text-blue-600 border border-blue-200 py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 shadow-sm">
-                        <i class="fas fa-eye"></i> เปิดอ่าน
-                    </button>
-                    <button onclick="downloadDoc('${doc.name}')" 
-                        class="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg transition shadow-sm">
-                        <i class="fas fa-download"></i>
-                    </button>
-                </div>
-            </div>
             `;
         });
     }
-
     renderPagination();
 }
 
-function getStatusClass(status) {
-    switch (status) {
-        case 'Approved': return 'bg-green-100 text-green-700';
-        case 'Pending': return 'bg-amber-100 text-amber-700';
-        case 'Draft': return 'bg-slate-100 text-slate-600';
-        default: return 'bg-slate-100 text-slate-600';
-    }
+function getStatusStyle(status) {
+    if (status === "อนุมัติแล้ว") return "bg-emerald-100 text-emerald-700";
+    if (status === "รอตรวจสอบ") return "bg-amber-100 text-amber-700";
+    return "bg-slate-100 text-slate-600";
 }
 
 /* ======================
-   SEARCH & FILTER
+    FILTERS & PAGINATION
 ====================== */
 function filterData() {
     const search = document.getElementById("searchInput").value.toLowerCase();
     const cat = document.getElementById("filterCategory").value;
 
-    currentFilteredData = documents.filter(d => {
-        const matchSearch = d.name.toLowerCase().includes(search) || d.id.toLowerCase().includes(search);
-        const matchCat = cat === "" || d.category === cat;
-        return matchSearch && matchCat;
+    filteredDocs = documents.filter(d => {
+        return (d.name.toLowerCase().includes(search) || d.id.toLowerCase().includes(search)) 
+            && (cat === "" || d.category === cat);
     });
 
     currentPage = 1;
     renderGrid();
 }
 
-// Live Search
-document.getElementById("searchInput").addEventListener("keyup", filterData);
-document.getElementById("filterCategory").addEventListener("change", filterData);
-
-/* ======================
-   PAGINATION
-====================== */
 function renderPagination() {
-    const pages = Math.ceil(currentFilteredData.length / perPage);
+    const totalPages = Math.ceil(filteredDocs.length / perPage);
     const container = document.getElementById("pagination");
     container.innerHTML = "";
 
-    if (pages <= 1) return;
+    if (totalPages <= 1) return;
 
-    for (let i = 1; i <= pages; i++) {
+    for (let i = 1; i <= totalPages; i++) {
         container.innerHTML += `
-        <button onclick="goPage(${i})"
-            class="w-10 h-10 flex items-center justify-center rounded-xl text-sm font-bold transition ${
-                i === currentPage 
-                ? 'bg-blue-600 text-white shadow-md' 
-                : 'text-slate-600 hover:bg-slate-100'
-            }">
-            ${i}
-        </button>`;
+            <button onclick="goPage(${i})" 
+                class="w-10 h-10 rounded-lg font-bold transition ${i === currentPage ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}">
+                ${i}
+            </button>
+        `;
     }
 }
 
 function goPage(p) {
     currentPage = p;
     renderGrid();
-    window.scrollTo({ top: 300, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+document.getElementById("searchInput").addEventListener("input", filterData);
+document.getElementById("filterCategory").addEventListener("change", filterData);
+
 /* ======================
-   INTERACTION FUNCTIONS
+    UI ACTIONS
 ====================== */
-function previewDoc(name, id) {
+function previewDoc(name) {
     Swal.fire({
-        title: 'กำลังเปิดเอกสาร',
-        text: `${id}: ${name}`,
+        title: 'กำลังเปิดดูเอกสาร',
+        text: name,
         icon: 'info',
-        html: `
-            <div class="mt-4 p-8 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300">
-                <i class="fas fa-file-pdf text-5xl text-red-400 mb-2"></i>
-                <p class="text-slate-500">ระบบจำลองการแสดงผล PDF</p>
-            </div>
-        `,
-        showCloseButton: true,
-        confirmButtonText: '<i class="fas fa-check mr-2"></i> เข้าใจแล้ว',
-        confirmButtonColor: '#2563EB'
+        confirmButtonText: 'รับทราบ',
+        confirmButtonColor: '#3b82f6'
     });
 }
 
-function downloadDoc(name) {
+function downloadDoc() {
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 3000,
+        timer: 2000,
         timerProgressBar: true
     });
     Toast.fire({
         icon: 'success',
-        title: `เริ่มการดาวน์โหลด: ${name}`
+        title: 'เริ่มการดาวน์โหลดไฟล์...'
     });
 }
 
 function adminLogin() {
     Swal.fire({
-        title: 'เข้าสู่ระบบผู้ดูแล',
-        input: 'password',
-        inputAttributes: { autocapitalize: 'off' },
-        showCancelButton: true,
-        confirmButtonText: 'Login',
-        confirmButtonColor: '#2563EB',
-        showLoaderOnConfirm: true,
-        preConfirm: (login) => {
-            if(login === "admin123") return true;
-            Swal.showValidationMessage('รหัสผ่านไม่ถูกต้อง');
+        title: 'เจ้าหน้าที่เข้าสู่ระบบ',
+        html: `
+            <input type="text" id="swal-user" class="swal2-input" placeholder="ชื่อผู้ใช้งาน">
+            <input type="password" id="swal-pass" class="swal2-input" placeholder="รหัสผ่าน">
+        `,
+        confirmButtonText: 'เข้าสู่ระบบ',
+        focusConfirm: false,
+        preConfirm: () => {
+            const user = Swal.getPopup().querySelector('#swal-user').value;
+            const pass = Swal.getPopup().querySelector('#swal-pass').value;
+            if (!user || !pass) {
+                Swal.showValidationMessage(`กรุณากรอกข้อมูลให้ครบ`);
+            }
+            return { user: user, pass: pass }
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            Swal.fire('ยินดีต้อนรับ', 'เข้าสู่ระบบจัดการเอกสารเรียบร้อย', 'success');
+            Swal.fire('ยินดีต้อนรับ', 'เข้าสู่ระบบหลังบ้านเรียบร้อย', 'success');
         }
     });
 }
 
-// Run Init
 init();
 </script>
 
