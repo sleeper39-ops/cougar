@@ -117,7 +117,7 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (อัปเดตเป็น 4 ปุ่ม) ---
+// --- 🖥️ UI Rendering (4 Buttons with Spans for CSS) ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -148,19 +148,19 @@ window.renderItems = () => {
             
             <div class="admin-actions" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
                 <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
-                    <i class="fas fa-edit"></i> Edit
+                    <i class="fas fa-edit"></i> <span>Edit</span>
                 </button>
                 
                 <button onclick="window.resetSingleCount('${item.key}')" class="btn-admin-tool btn-reset-tool">
-                    <i class="fas fa-redo"></i> Reset
+                    <i class="fas fa-redo"></i> <span>Reset</span>
                 </button>
 
                 <button onclick="window.toggleItemLock('${item.key}', ${item.locked})" class="btn-admin-tool btn-lock-tool ${item.locked ? 'active' : ''}">
-                    <i class="fas ${item.locked ? 'fa-lock' : 'fa-lock-open'}"></i> ${item.locked ? 'Unlock' : 'Lock'}
+                    <i class="fas ${item.locked ? 'fa-lock' : 'fa-lock-open'}"></i> <span>${item.locked ? 'Unlock' : 'Lock'}</span>
                 </button>
 
                 <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
-                    <i class="fas fa-trash"></i> Delete
+                    <i class="fas fa-trash"></i> <span>Delete</span>
                 </button>
             </div>
         `;
@@ -193,7 +193,6 @@ window.saveItem = async () => {
     window.resetForm();
 };
 
-// --- New: Reset Functions ---
 window.resetSingleCount = async (key) => {
     if (isAdmin && confirm("ต้องการรีเซ็ตจำนวนดาวน์โหลดของไฟล์นี้เป็น 0 ใช่หรือไม่?")) {
         await update(ref(db, `cougar_data/${key}`), { downloads: 0 });
