@@ -50,57 +50,28 @@
         .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
         .btn-action { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; height: 41px; color: white; }
 
-        /* Badge แสดงยอดดาวน์โหลด (ตำแหน่งบนรูปภาพ) */
+        /* Badge สไตล์ */
         .download-count-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.65);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            backdrop-filter: blur(5px);
-            z-index: 2;
-            border: 1px solid rgba(255,255,255,0.1);
+            position: absolute; top: 10px; left: 10px; background: rgba(0, 0, 0, 0.6);
+            color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            display: flex; align-items: center; gap: 5px; backdrop-filter: blur(4px); z-index: 1;
         }
 
         /* Grid & Cards */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding-bottom: 40px; }
-        .download-card { 
-            background: white; border-radius: 15px; overflow: hidden; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
-            display: flex; flex-direction: column; 
-            position: relative; height: 100%; transition: 0.3s ease; 
-        }
-        .download-card:hover { transform: translateY(-8px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); }
+        .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; height: 100%; transition: transform 0.2s; }
+        .download-card:hover { transform: translateY(-5px); }
         .card-img-container { width: 100%; height: 180px; background: #222; cursor: zoom-in; overflow: hidden; position: relative; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .download-card:hover .card-img { transform: scale(1.1); }
-        
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
         .download-info { padding: 20px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; }
-        .download-info h4 { margin: 0 0 15px 0; font-size: 16px; color: #333; min-height: 44px; display: flex; align-items: center; justify-content: center; line-height: 1.4; }
-        .btn-download { margin-top: auto; display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
+        .download-info h4 { margin: 0 0 15px 0; font-size: 16px; color: #333; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+        .btn-download { margin-top: auto; display: block; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; color: white; }
         
-        /* Admin Actions ในการ์ด */
-        .admin-actions { 
-            display: none;
-            justify-content: space-around; 
-            align-items: center; 
-            padding: 12px; 
-            background: #fdfdfd; 
-            border-top: 1px solid #eee;
-        }
-        .admin-lock-group { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #666; }
-        .btn-admin-tool { background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .admin-actions { display: none; justify-content: space-around; align-items: center; padding: 12px 10px; background: #fafafa; border-top: 1px solid #eee; }
+        .btn-admin-tool { background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
         .btn-edit-tool { color: var(--primary); }
         .btn-delete-tool { color: var(--danger); }
 
-        /* Toggles & Lightbox */
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
@@ -108,8 +79,8 @@
         input:checked + .slider { background-color: var(--danger); }
         input:checked + .slider:before { transform: translateX(16px); }
         
-        .lightbox { display: none; position: fixed; z-index: 10000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
-        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        .lightbox { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -136,9 +107,7 @@
     <div class="wrapper">
         <div class="top-nav">
             <h2 id="nav-title">Obs Docks UI</h2>
-            <button id="auth-btn" onclick="window.toggleAuth()" style="background:var(--primary); color:white; border:none; padding:8px 18px; border-radius:8px; cursor:pointer; font-weight:bold; transition:0.3s;">
-                Admin Login
-            </button>
+            <button id="auth-btn" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;" onclick="window.toggleAuth()">Admin Login</button>
         </div>
 
         <div class="main-content">
@@ -146,16 +115,16 @@
                 <div class="dashboard-stats">
                     <div class="stat-box">
                         <i class="fas fa-clock" style="color:#2ecc71;"></i>
-                        <div class="stat-value" id="dash-time">00:00:00</div>
+                        <div class="stat-value" id="dash-time">00:00</div>
                         <div class="stat-label">เวลาปัจจุบัน</div>
                     </div>
                     <div class="stat-box">
                         <i class="fas fa-folder-open" style="color:#3498db;"></i>
                         <div class="stat-value" id="dash-count">0 รายการ</div>
-                        <div class="stat-label">ไฟล์ทั้งหมดในระบบ</div>
+                        <div class="stat-label">ไฟล์ในระบบ</div>
                     </div>
                     <div class="stat-box">
-                        <i class="fas fa-user" id="status-icon" style="color:#95a5a6;"></i>
+                        <i class="fas fa-shield-alt" id="status-icon" style="color:#95a5a6;"></i>
                         <div class="stat-value" id="dash-status">Guest Mode</div>
                         <div class="stat-label">โหมดการใช้งาน</div>
                     </div>
@@ -164,8 +133,8 @@
                 <div id="admin-panel">
                     <div class="admin-header">
                         <h3 style="margin:0;"><i class="fas fa-tools"></i> Admin Control Panel</h3>
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <span style="font-size:13px; font-weight:bold; color:var(--danger);">Lock All Downloads</span>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:12px; font-weight:bold; color:var(--danger);">Lock all downloads</span>
                             <label class="switch">
                                 <input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()">
                                 <span class="slider"></span>
@@ -175,25 +144,12 @@
 
                     <div class="form-row">
                         <input type="hidden" id="editKey">
-                        <div class="input-group">
-                            <label>ชื่อไฟล์ / รายการ</label>
-                            <input type="text" id="itemName" placeholder="ระบุชื่อไฟล์...">
-                        </div>
-                        <div class="input-group">
-                            <label>ลิงก์รูปภาพตัวอย่าง</label>
-                            <input type="text" id="itemImg" placeholder="https://...">
-                        </div>
-                        <div class="input-group">
-                            <label>ลิงก์ดาวน์โหลด</label>
-                            <input type="text" id="itemLink" placeholder="https://...">
-                        </div>
+                        <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="itemName" placeholder="ระบุชื่อไฟล์..."></div>
+                        <div class="input-group"><label>ลิงก์รูปภาพ</label><input type="text" id="itemImg" placeholder="URL รูปภาพ..."></div>
+                        <div class="input-group"><label>ลิงก์ดาวน์โหลด</label><input type="text" id="itemLink" placeholder="URL ดาวน์โหลด..."></div>
                         <div style="display:flex; gap:10px;">
-                            <button onclick="window.saveItem()" id="btn-save" class="btn-action" style="background:var(--success);">
-                                <i class="fas fa-save"></i> บันทึก
-                            </button>
-                            <button onclick="window.resetForm()" class="btn-action" style="background:var(--secondary);">
-                                ยกเลิก
-                            </button>
+                            <button onclick="window.saveItem()" id="btn-save" class="btn-action" style="background:var(--success);">บันทึก</button>
+                            <button onclick="window.resetForm()" class="btn-action" style="background:var(--secondary);"><i class="fas fa-times"></i> ยกเลิก</button>
                         </div>
                     </div>
                 </div>
@@ -202,16 +158,14 @@
                     </div>
             </div>
 
-            <div id="live-page" class="page-content"><iframe src="cctv.html" style="width:100%; height:100%; border:none; border-radius:15px; background:white;"></iframe></div>
-            <div id="map-page" class="page-content"><iframe src="map.html" style="width:100%; height:100%; border:none; border-radius:15px; background:white;"></iframe></div>
-            <div id="calendar-page" class="page-content"><iframe src="calendar.html" style="width:100%; height:100%; border:none; border-radius:15px; background:white;"></iframe></div>
-            <div id="esos-page" class="page-content"><iframe src="esos.html" style="width:100%; height:100%; border:none; border-radius:15px; background:white;"></iframe></div>
+            <div id="live-page" class="page-content"><iframe src="cctv.html" style="width:100%; height:100%; border:none;"></iframe></div>
+            <div id="map-page" class="page-content"><iframe src="map.html" style="width:100%; height:100%; border:none;"></iframe></div>
+            <div id="calendar-page" class="page-content"><iframe src="calendar.html" style="width:100%; height:100%; border:none;"></iframe></div>
+            <div id="esos-page" class="page-content"><iframe src="esos.html" style="width:100%; height:100%; border:none;"></iframe></div>
         </div>
     </div>
 
-    <div id="imgLightbox" class="lightbox" onclick="this.style.display='none'">
-        <img id="lightboxImg" src="">
-    </div>
+    <div id="imgLightbox" class="lightbox" onclick="this.style.display='none'"><img id="lightboxImg"></div>
 
     <script type="module" src="script.js"></script>
 </body>
