@@ -490,94 +490,92 @@
         }
     }
 
-    // --- DATA HANDLING ---
-
-    /**
-     * Handles the submission of the document form.
-     * Validates file type and size, then sends data to the backend.
-     * @param {Event} event - The form submission event.
+   /**
+     * จัดการการส่งฟอร์ม (ปรับปรุงให้ลื่นไหลและไม่ค้าง)
      */
     function handleFormSubmit(event) {
-      event.preventDefault(); // Prevent default form submission
+      event.preventDefault();
       const form = event.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
       const fileInput = document.getElementById('file-input');
-      const file = fileInput ? fileInput.files[0] : null;
+      const file = fileInput?.files[0];
 
-      if (!file) {
-        showToast("กรุณาแนบไฟล์เอกสาร", false);
-        return;
-      }
-      // Check file type
-      if (file.type !== 'application/pdf') {
-        showToast("รองรับเฉพาะไฟล์ .pdf เท่านั้น", false);
-        return;
-      }
-      // Optional: Add file size validation (e.g., max 10MB)
-      const MAX_FILE_SIZE_MB = 10;
-      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-          showToast(`ไฟล์มีขนาดใหญ่เกินไป (สูงสุด ${MAX_FILE_SIZE_MB}MB)`, false);
-          return;
-      }
+      if (!file) return showToast("กรุณาแนบไฟล์เอกสาร", false);
+      if (file.type !== 'application/pdf') return showToast("รองรับเฉพาะไฟล์ .pdf เท่านั้น", false);
+      
+      const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+      if (file.size > MAX_SIZE) return showToast("ไฟล์ใหญ่เกินไป (สูงสุด 10MB)", false);
 
-      showLoading(true); // Show loading spinner
+      // เริ่มกระบวนการส่ง: ปิดปุ่มและแสดง Loading
+      if (submitBtn) submitBtn.disabled = true;
+      showLoading(true);
 
       const reader = new FileReader();
-      reader.readAsDataURL(file); // Read file as Data URL (Base64)
-      
       reader.onload = () => {
         const formObject = {
           department: form.department.value,
           docNumber: form.docNumber.value,
           subject: form.subject.value,
           fileName: file.name,
-          fileData: reader.result // Pass Base64 data to backend
+          fileData: reader.result // Base64
         };
 
-        // Call Google Apps Script backend function
         google.script.run
           .withSuccessHandler(response => {
-            showLoading(false); // Hide loading spinner
+            showLoading(false);
+            if (submitBtn) submitBtn.disabled = false;
+
             if (response.success) {
               showToast(response.message, true);
-              form.reset(); // Clear all form fields after successful submission.
-              isDataLoaded = false; // Mark data as not loaded to force refresh on next tab switch
-              loadData(); // Explicitly reload data after successful submission
-              showTab('status-tab'); // Switch to status tab
+              form.reset();
+              isDataLoaded = false; 
+              // ใช้การหน่วงเวลาเล็กน้อยก่อนเปลี่ยนหน้า เพื่อให้ User เห็น Toast
+              setTimeout(() => {
+                showTab('status-tab');
+                loadData(); 
+              }, 500);
             } else {
               showToast(response.message, false);
             }
           })
           .withFailureHandler(error => {
-            showLoading(false); // Hide loading spinner on error
-            showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error.message, false);
+            showLoading(false);
+            if (submitBtn) submitBtn.disabled = false;
+            showToast("Error: " + error.message, false);
           })
-          .uploadFileAndSaveData(formObject); // Call backend function
+          .uploadFileAndSaveData(formObject);
       };
+
       reader.onerror = () => {
-        showLoading(false); // Hide loading spinner on read error
+        showLoading(false);
+        if (submitBtn) submitBtn.disabled = false;
         showToast("ไม่สามารถอ่านไฟล์ได้", false);
       };
+      reader.readAsDataURL(file);
     }
 
     /**
-     * Loads data from the Google Sheet via Apps Script backend.
-     * Updates `allData` and re-renders tables.
+     * โหลดข้อมูลจาก Google Sheet
      */
     function loadData() {
+      // ป้องกันการโหลดซ้อนถ้ากำลังโหลดอยู่
+      if (document.getElementById('loading-spinner')?.classList.contains('hidden') === false) return;
+      
       showLoading(true);
       google.script.run
         .withSuccessHandler(data => {
-          allData = data.reverse(); // Store data, reverse for latest first
-          currentPage = 1; // Reset to first page
-          isDataLoaded = true; // Mark data as loaded
-          renderTables(); // Render tables with new data
+          // ใน Code.gs เรา reverse มาแล้ว หรือจะ reverse ที่นี่ก็ได้
+          allData = data; 
+          currentPage = 1;
+          isDataLoaded = true;
+          renderTables();
           showLoading(false);
         })
         .withFailureHandler(error => {
           showLoading(false);
-          showToast("ไม่สามารถโหลดข้อมูลได้: " + error.message, false);
+          showToast("โหลดข้อมูลล้มเหลว: " + error.message, false);
         })
-        .getSheetData(); // Call backend to get all sheet data
+        .getSheetData();
     }
     
     /**
@@ -909,143 +907,149 @@
         }
     }
 
-    /**
-     * Calls the backend Apps Script function to update a record.
-     * @param {Object} recordData - The data for the record to update.
-     * @param {Object|null} adminFileObject - Object containing admin file data (fileData, fileName) or null if no file.
+   /**
+     * อัปเดตข้อมูลไปยัง Google Apps Script
      */
     function runUpdateScript(recordData, adminFileObject) {
         google.script.run
-            .withSuccessHandler(response => {
+            .withSuccessHandler(res => {
                 showLoading(false);
-                if(response.success){
-                    showToast(response.message, true);
+                showToast(res.message, res.success);
+                if(res.success){
                     closeEditModal();
-                    isDataLoaded = false; // Mark data as not loaded to force refresh
-                    loadData(); // Reload data to show updated record
-                } else {
-                    showToast(response.message, false);
+                    loadData(); // รีโหลดข้อมูลใหม่จาก Sheet
                 }
             })
-            .withFailureHandler(error => {
+            .withFailureHandler(err => {
                 showLoading(false);
-                showToast("เกิดข้อผิดพลาดในการอัปเดต: " + error.message, false);
+                showToast("เกิดข้อผิดพลาด: " + err.message, false);
             })
             .updateRecord(recordData, adminFileObject);
     }
-    
-    /**
-     * Handles the deletion of a single record after confirmation.
-     * @param {string} recordId - The ID of the record to delete.
+
+   /**
+     * ระบบลบรายการ: แก้ไขให้กดครั้งเดียวติด
      */
     function handleDeleteRecord(recordId) {
-        showCustomConfirm('คุณต้องการลบรายการนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้', () => {
+        // ใช้ event.stopPropagation() เพื่อไม่ให้สัญญาณหลุดไปโดนตาราง
+        if (window.event) window.event.stopPropagation();
+
+        showCustomConfirm('คุณต้องการลบรายการนี้ใช่หรือไม่?', () => {
             showLoading(true);
             google.script.run
-              .withSuccessHandler(response => {
-                showLoading(false);
-                if(response.success) {
-                  showToast(response.message, true);
-                  isDataLoaded = false; // Mark data as not loaded to force refresh
-                  loadData(); // Reload data after deletion
-                } else {
-                  showToast(response.message, false);
-                }
-              })
-              .withFailureHandler(error => {
-                showLoading(false);
-                showToast("เกิดข้อผิดพลาดในการลบ: " + error.message, false);
-              })
-              .deleteRecord(recordId);
+                .withSuccessHandler(res => {
+                    showLoading(false);
+                    showToast(res.message, res.success);
+                    if(res.success) {
+                        // แทนที่จะ loadData() ใหม่ทั้งหมด ให้ลบแถวนั้นออกจากตัวแปร allData เลย (เร็วมาก)
+                        allData = allData.filter(item => item.id !== recordId);
+                        renderTables(); 
+                    }
+                })
+                .withFailureHandler(err => {
+                    showLoading(false);
+                    showToast("ล้มเหลว: " + err.message, false);
+                })
+                .deleteRecord(recordId);
         });
     }
-    
     /**
-     * Handles the deletion of all records after a stern confirmation.
+ * แก้ไขฟังก์ชัน showCustomConfirm ให้ทำงานแม่นยำขึ้น
+ */
+function showCustomConfirm(message, onConfirm) {
+        const container = document.getElementById('modal-container');
+        const existing = document.getElementById('custom-confirm-modal');
+        if (existing) existing.remove(); // ลบของเก่าทิ้งทันที
+
+        const html = `
+            <div id="custom-confirm-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4">
+                <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full animate-in zoom-in duration-150">
+                    <p class="text-gray-700 text-center mb-6 font-medium">${message}</p>
+                    <div class="flex space-x-3">
+                        <button onclick="this.closest('#custom-confirm-modal').remove()" class="flex-1 px-4 py-2 bg-gray-100 rounded-lg">ยกเลิก</button>
+                        <button id="real-confirm-btn" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-bold">ยืนยัน</button>
+                    </div>
+                </div>
+            </div>`;
+        
+        container.insertAdjacentHTML('beforeend', html);
+
+        document.getElementById('real-confirm-btn').onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // หยุดสัญญาณไม่ให้ส่งต่อไป Layer อื่น
+            onConfirm();
+            document.getElementById('custom-confirm-modal').remove();
+        };
+    }
+    /**
+     * ระบบลบข้อมูลทั้งหมด (Admin Only)
      */
     function handleDeleteAll() {
-        showCustomConfirm("!! คำเตือน !!\nคุณต้องการลบข้อมูลทั้งหมดในระบบใช่หรือไม่?\nการกระทำนี้ไม่สามารถย้อนกลับได้", () => {
+        showCustomConfirm("!! คำเตือน !!\nคุณต้องการลบข้อมูลทั้งหมดใช่หรือไม่?\nข้อมูลจะหายถาวร", () => {
             showLoading(true);
             google.script.run
-              .withSuccessHandler(response => {
-                showLoading(false);
-                if(response.success) {
-                  showToast(response.message, true);
-                  allData = []; // Clear local cache immediately
-                  isDataLoaded = false; // Mark data as not loaded to force refresh
-                  renderTables(); // Re-render tables (will show empty)
-                } else {
-                  showToast(response.message, false);
-                }
-              })
-              .withFailureHandler(error => {
-                showLoading(false);
-                showToast("เกิดข้อผิดพลาด: " + error.message, false);
-              })
-              .deleteAllRecords();
+                .withSuccessHandler(res => {
+                    showLoading(false);
+                    showToast(res.message, res.success);
+                    if(res.success) {
+                        allData = [];
+                        renderTables();
+                    }
+                })
+                .withFailureHandler(err => {
+                    showLoading(false);
+                    showToast("ผิดพลาด: " + err.message, false);
+                })
+                .deleteAllRecords();
         });
     }
 
     /**
-     * Custom confirmation dialog (replaces native alert/confirm).
-     * @param {string} message - The message to display.
-     * @param {function} onConfirm - Callback function to execute if confirmed.
-     * @param {function} [onCancel] - Optional callback function to execute if cancelled.
+     * กล่องยืนยันแบบ Custom (รองรับ Mobile และ Desktop)
+    /**
+     * แก้ไข: Custom Confirm ให้กดครั้งเดียวทำงานทันที
      */
     function showCustomConfirm(message, onConfirm, onCancel = () => {}) {
         const modalContainer = document.getElementById('modal-container');
-        if (!modalContainer) {
-            console.error("Modal container not found.");
-            return;
-        }
+        if (!modalContainer) return;
 
-        let modalHtml = `
-            <div id="custom-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-                <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
-                    <p class="text-gray-800 text-lg mb-6 whitespace-pre-wrap">${message}</p>
-                    <div class="flex justify-end space-x-3">
-                        <button id="confirm-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">ยกเลิก</button>
-                        <button id="confirm-ok-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400">ยืนยัน</button>
+        // 1. ล้าง Modal เดิมที่ค้างอยู่ใน DOM ทันที (ป้องกัน Event ซ้อน)
+        const existingModal = document.getElementById('custom-confirm-modal');
+        if (existingModal) existingModal.remove();
+
+        // 2. สร้าง HTML Modal ใหม่
+        const modalHtml = `
+            <div id="custom-confirm-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100] p-4">
+                <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all scale-100">
+                    <div class="text-red-500 mb-3 text-center"><i class="fa-solid fa-triangle-exclamation text-3xl"></i></div>
+                    <p class="text-gray-700 text-center mb-6 font-medium whitespace-pre-wrap">${message}</p>
+                    <div class="flex space-x-3">
+                        <button id="confirm-cancel-btn" class="flex-1 px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">ยกเลิก</button>
+                        <button id="confirm-ok-btn" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold shadow-md shadow-red-200 transition-all active:scale-95">ยืนยันลบ</button>
                     </div>
                 </div>
-            </div>
-        `;
+            </div>`;
+        
         modalContainer.insertAdjacentHTML('beforeend', modalHtml);
 
         const confirmModal = document.getElementById('custom-confirm-modal');
         const okBtn = document.getElementById('confirm-ok-btn');
         const cancelBtn = document.getElementById('confirm-cancel-btn');
 
-        const closeModal = () => {
-            if (confirmModal) confirmModal.remove();
+        // 3. ผูกเหตุการณ์คลิก (ใช้ onclick ตรงๆ เพื่อไม่ให้เกิดการสะสม Listener)
+        okBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // หยุดการส่งต่อ Event ไปยัง Layer ล่าง
+            onConfirm(); // รันฟังก์ชันลบ
+            confirmModal.remove(); // ปิด Modal ทันที
         };
 
-        if (okBtn) {
-            okBtn.onclick = () => {
-                onConfirm();
-                closeModal();
-            };
-        }
-
-        if (cancelBtn) {
-            cancelBtn.onclick = () => {
-                onCancel();
-                closeModal();
-            };
-        }
-
-        // Close on outside click, but not for touch devices to avoid accidental dismissal
-        if (confirmModal) {
-            confirmModal.addEventListener('click', (e) => {
-                if (e.target === confirmModal && !('ontouchstart' in window)) {
-                    onCancel();
-                    closeModal();
-                }
-            });
-        }
+        cancelBtn.onclick = (e) => {
+            e.preventDefault();
+            onCancel();
+            confirmModal.remove();
+        };
     }
-
-
   </script>
 
   <!-- HTML Partials (Templates) -->
