@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Document System - Full Screen</title>
+    <title>E-Document Enterprise</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -11,198 +11,261 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
-        body { 
-            font-family: 'Sarabun', sans-serif; 
-            background-color: #f4f7fa; 
-        }
-        
-        /* ปรับแต่ง Scrollbar ให้ดูทันสมัย */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        .doc-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid #e5e7eb;
-            height: 100%;
-        }
-
-        .doc-card:hover {
-            border-color: #3b82f6;
-            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1);
-            transform: translateY(-4px);
-        }
-
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
+        .doc-card { transition: all 0.2s; border: 1px solid #e2e8f0; }
+        .doc-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
-<body class="text-slate-800 flex min-h-screen">
+<body class="text-slate-800">
 
-    <aside class="w-64 bg-[#0f172a] text-slate-300 hidden xl:flex flex-col sticky top-0 h-screen">
-        <div class="p-6 text-white text-2xl font-bold border-b border-slate-700/50">
-            Cougar2
+<nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="w-full px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-2 rounded-lg text-white shadow-lg shadow-blue-200">
+                <i class="fas fa-file-shield text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-800 leading-none">E-DOC</h1>
+                <p class="text-[10px] text-blue-600 font-bold tracking-[0.2em] uppercase">Enterprise System</p>
+            </div>
         </div>
-        <nav class="flex-1 p-4 space-y-2">
-            <a href="#" class="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition"><i class="fas fa-home w-5 text-center"></i> Obs Docks UI</a>
-            <a href="#" class="flex items-center gap-3 p-3 bg-blue-600 text-white rounded-lg transition"><i class="fas fa-file-alt w-5 text-center"></i> ระบบ E-doc</a>
-            <a href="#" class="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition"><i class="fas fa-video w-5 text-center"></i> ระบบกล้องสด</a>
-            <a href="#" class="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition"><i class="fas fa-map w-5 text-center"></i> แผนที่ระบบ</a>
-            <a href="#" class="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition"><i class="fas fa-calendar w-5 text-center"></i> ปฏิทิน</a>
-        </nav>
-    </aside>
-
-    <div class="flex-1 flex flex-col min-w-0">
-        <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
-            <div class="w-full px-8 py-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="bg-blue-600 p-2 rounded-lg text-white shadow-md shadow-blue-200">
-                        <i class="fas fa-file-shield text-xl"></i>
-                    </div>
-                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">E-DOC <span class="text-blue-600 uppercase text-xs tracking-widest ml-1">Enterprise</span></h1>
-                </div>
-                <div class="flex items-center gap-6">
-                    <button class="text-slate-500 hover:text-blue-600 transition relative">
-                        <i class="fas fa-bell text-lg"></i>
-                        <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
-                    <button onclick="adminLogin()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-semibold transition">แผงควบคุม</button>
-                </div>
+        
+        <div class="flex items-center gap-4">
+            <div id="adminBadge" class="hidden bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold border border-orange-200">
+                <i class="fas fa-user-shield mr-1"></i> โหมดแอดมิน
             </div>
-        </nav>
+            <button onclick="toggleAdmin()" id="adminBtn" class="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition shadow-md">
+                <i class="fas fa-cog mr-2"></i>จัดการระบบ
+            </button>
+        </div>
+    </div>
+</nav>
 
-        <main class="flex-1 p-8 w-full">
-            <div class="flex flex-col lg:flex-row justify-between items-end gap-6 mb-8">
-                <div class="w-full lg:w-2/3">
-                    <label class="block text-sm font-bold text-slate-500 mb-2 ml-1">ค้นหาเอกสาร</label>
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="searchInput" placeholder="พิมพ์ชื่อเอกสารหรือรหัส..." 
-                            class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition shadow-sm">
-                    </div>
-                </div>
-                <div class="w-full lg:w-1/3">
-                    <label class="block text-sm font-bold text-slate-500 mb-2 ml-1">หมวดหมู่</label>
-                    <select id="filterCategory" class="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none cursor-pointer shadow-sm font-medium">
-                        <option value="">ทั้งหมด</option>
-                    </select>
-                </div>
+<main class="w-full px-6 py-8">
+    
+    <div class="flex flex-col lg:flex-row gap-4 mb-8 items-end">
+        <div class="flex-1 w-full">
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">ค้นหาเอกสาร</label>
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="searchInput" oninput="filterData()" placeholder="ชื่อเอกสาร, รหัส หรือคำสำคัญ..." 
+                    class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition">
             </div>
-
-            <div id="docList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                </div>
-
-            <div id="pagination" class="mt-12 flex justify-center gap-2"></div>
-        </main>
-
-        <footer class="border-t border-slate-200 py-6 text-center bg-white/50">
-            <p class="text-slate-400 text-sm font-medium">ระบบบริหารจัดการเอกสารดิจิทัล &copy; 2026</p>
-        </footer>
+        </div>
+        <div class="w-full lg:w-64">
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">หมวดหมู่</label>
+            <select id="filterCategory" onchange="filterData()" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl outline-none cursor-pointer">
+                <option value="">ทั้งหมด</option>
+            </select>
+        </div>
+        <div id="addBtnArea" class="hidden">
+            <button onclick="addDocument()" class="bg-emerald-500 hover:bg-emerald-600 text-white h-[50px] px-6 rounded-2xl font-bold transition flex items-center gap-2">
+                <i class="fas fa-plus"></i> เพิ่มเอกสาร
+            </button>
+        </div>
     </div>
 
+    <div id="docList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+        </div>
+
+    <div id="emptyState" class="hidden py-20 text-center">
+        <i class="fas fa-folder-open text-slate-200 text-6xl mb-4"></i>
+        <p class="text-slate-400 font-medium">ไม่พบข้อมูลเอกสารที่ค้นหา</p>
+    </div>
+
+</main>
+
 <script>
-// (ใช้ข้อมูลและฟังก์ชันเดิมของคุณทั้งหมด)
-const documents = [
-    { name: "รายงานการประชุมประจำปี 2568", category: "เอกสารราชการ", date: "02 มี.ค. 2569", type: "pdf" },
-    { name: "ใบเสนอราคาระบบบริหารจัดการฐานข้อมูล", category: "การเงิน", date: "28 ก.พ. 2569", type: "xlsx" },
-    { name: "สรุปผลการดำเนินงานไตรมาสที่ 4", category: "ทั่วไป", date: "25 ก.พ. 2569", type: "doc" },
-    { name: "แผนผังโครงสร้างองค์กร (ฉบับปรับปรุง)", category: "ทรัพยากรบุคคล", date: "20 ก.พ. 2569", type: "pdf" },
-    { name: "ประกาศมาตรการรักษาความปลอดภัยไอที", category: "ไอที", date: "15 ก.พ. 2569", type: "pdf" },
-    { name: "บันทึกข้อความขออนุมัติจัดซื้อวัสดุสำนักงาน", category: "พัสดุ", date: "10 ก.พ. 2569", type: "doc" },
+/* ======================
+    CORE DATA
+====================== */
+let documents = [
+    { id: 1, name: "รายงานการประชุมประจำปี 2568", category: "เอกสารราชการ", date: "02 มี.ค. 2569", type: "pdf" },
+    { id: 2, name: "ใบเสนอราคาระบบบริหารจัดการฐานข้อมูล", category: "การเงิน", date: "28 ก.พ. 2569", type: "xlsx" },
+    { id: 3, name: "สรุปผลการดำเนินงานไตรมาสที่ 4", category: "ทั่วไป", date: "25 ก.พ. 2569", type: "doc" },
+    { id: 4, name: "แผนผังโครงสร้างองค์กร (ฉบับปรับปรุง)", category: "ทรัพยากรบุคคล", date: "20 ก.พ. 2569", type: "pdf" },
+    { id: 5, name: "ประกาศมาตรการรักษาความปลอดภัยไอที", category: "ไอที", date: "15 ก.พ. 2569", type: "pdf" },
+    { id: 6, name: "บันทึกข้อความขออนุมัติจัดซื้อวัสดุสำนักงาน", category: "พัสดุ", date: "10 ก.พ. 2569", type: "doc" },
 ];
 
+let isAdmin = false;
 const typeStyle = {
-    pdf: { icon: 'fa-file-pdf', color: 'bg-red-50 text-red-600' },
-    xlsx: { icon: 'fa-file-excel', color: 'bg-emerald-50 text-emerald-600' },
-    doc: { icon: 'fa-file-word', color: 'bg-blue-50 text-blue-600' },
-    default: { icon: 'fa-file-lines', color: 'bg-slate-50 text-slate-600' }
+    pdf: { icon: 'fa-file-pdf', color: 'text-red-500', bg: 'bg-red-50' },
+    xlsx: { icon: 'fa-file-excel', color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    doc: { icon: 'fa-file-word', color: 'text-blue-500', bg: 'bg-blue-50' },
+    default: { icon: 'fa-file-lines', color: 'text-slate-500', bg: 'bg-slate-50' }
 };
 
-let currentPage = 1;
-const perPage = 10; // เพิ่มจำนวนต่อหน้าเพื่อให้เต็มจอมากขึ้น
-let filteredDocs = [...documents];
-
+/* ======================
+    LOGIC
+====================== */
 function init() {
-    const cats = [...new Set(documents.map(d => d.category))];
-    const select = document.getElementById("filterCategory");
-    cats.forEach(c => {
-        select.innerHTML += `<option value="${c}">${c}</option>`;
-    });
+    updateCategoryDropdown();
     renderList();
 }
 
 function renderList() {
     const container = document.getElementById("docList");
-    container.innerHTML = "";
-    const start = (currentPage - 1) * perPage;
-    const subset = filteredDocs.slice(start, start + perPage);
-
-    subset.forEach(doc => {
-        const style = typeStyle[doc.type] || typeStyle.default;
-        container.innerHTML += `
-            <div class="doc-card bg-white p-6 rounded-2xl flex flex-col">
-                <div class="flex items-start gap-4 mb-5">
-                    <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl ${style.color} text-xl font-bold">
-                        <i class="fas ${style.icon}"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-slate-800 text-base leading-snug line-clamp-2 mb-1" title="${doc.name}">${doc.name}</h4>
-                        <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider">${doc.category}</span>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
-                    <div>
-                        <p class="text-[10px] uppercase font-bold text-slate-400 tracking-tighter">วันที่อัปโหลด</p>
-                        <p class="text-xs font-semibold text-slate-600">${doc.date}</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="previewDoc('${doc.name}')" class="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-50 text-slate-500 hover:bg-blue-600 hover:text-white transition">
-                            <i class="fas fa-eye text-sm"></i>
-                        </button>
-                        <button onclick="downloadDoc('${doc.name}')" class="px-3 h-9 flex items-center gap-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition">
-                            <i class="fas fa-download"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    renderPagination();
-}
-
-// ... ส่วนฟังก์ชันอื่นๆ (filterData, renderPagination, goPage, previewDoc) ใช้โค้ดเดิมของคุณได้เลยครับ ...
-function filterData() {
+    const empty = document.getElementById("emptyState");
     const search = document.getElementById("searchInput").value.toLowerCase();
     const cat = document.getElementById("filterCategory").value;
-    filteredDocs = documents.filter(d => d.name.toLowerCase().includes(search) && (cat === "" || d.category === cat));
-    currentPage = 1;
-    renderList();
-}
 
-function renderPagination() {
-    const totalPages = Math.ceil(filteredDocs.length / perPage);
-    const container = document.getElementById("pagination");
+    const filtered = documents.filter(d => 
+        (d.name.toLowerCase().includes(search)) && 
+        (cat === "" || d.category === cat)
+    );
+
     container.innerHTML = "";
-    if (totalPages <= 1) return;
-    for (let i = 1; i <= totalPages; i++) {
-        container.innerHTML += `<button onclick="goPage(${i})" class="w-10 h-10 rounded-xl font-bold transition-all ${i === currentPage ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}">${i}</button>`;
+    
+    if (filtered.length === 0) {
+        empty.classList.remove('hidden');
+    } else {
+        empty.classList.add('hidden');
+        filtered.forEach(doc => {
+            const style = typeStyle[doc.type] || typeStyle.default;
+            container.innerHTML += `
+                <div class="doc-card bg-white p-5 rounded-2xl flex flex-col h-full relative overflow-hidden">
+                    ${isAdmin ? `<button onclick="deleteDoc(${doc.id})" class="absolute top-2 right-2 w-7 h-7 bg-red-100 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition z-10 text-xs"><i class="fas fa-trash"></i></button>` : ''}
+                    
+                    <div class="flex items-start gap-4 mb-6">
+                        <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl ${style.bg} ${style.color} text-xl">
+                            <i class="fas ${style.icon}"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="font-bold text-slate-800 text-sm leading-snug mb-1 line-clamp-2" title="${doc.name}">${doc.name}</h4>
+                            <span class="inline-block text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider">${doc.category}</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+                        <div>
+                            <p class="text-[9px] uppercase font-bold text-slate-400">วันที่อัปโหลด</p>
+                            <p class="text-xs font-semibold text-slate-600">${doc.date}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="previewDoc('${doc.name}')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 transition">
+                                <i class="fas fa-eye text-sm"></i>
+                            </button>
+                            <button onclick="downloadDoc('${doc.name}')" class="px-3 h-8 flex items-center gap-2 rounded-lg bg-emerald-500 text-white text-[11px] font-bold hover:bg-emerald-600 transition shadow-sm">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
     }
 }
 
-function goPage(p) { currentPage = p; renderList(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-document.getElementById("searchInput").addEventListener("input", filterData);
-document.getElementById("filterCategory").addEventListener("change", filterData);
+function updateCategoryDropdown() {
+    const cats = [...new Set(documents.map(d => d.category))];
+    const select = document.getElementById("filterCategory");
+    select.innerHTML = '<option value="">ทั้งหมด</option>';
+    cats.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
+}
 
-function previewDoc(name) { Swal.fire({ title: 'กำลังเปิดไฟล์', text: name, icon: 'info', confirmButtonColor: '#3b82f6' }); }
-function downloadDoc(name) { const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true }); Toast.fire({ icon: 'success', title: 'เริ่มการดาวน์โหลด: ' + name }); }
-function adminLogin() { Swal.fire({ title: 'สิทธิ์การใช้งาน', text: 'กรุณาเข้าสู่ระบบเพื่อจัดการเอกสาร', icon: 'lock', confirmButtonColor: '#3b82f6' }); }
+function filterData() { renderList(); }
+
+/* ======================
+    ADMIN FUNCTIONS
+====================== */
+function toggleAdmin() {
+    if (!isAdmin) {
+        Swal.fire({
+            title: 'เข้าสู่โหมดแอดมิน?',
+            text: "คุณจะสามารถเพิ่มและลบข้อมูลเอกสารได้",
+            icon: 'shield-alt',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            confirmButtonText: 'ตกลง',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                isAdmin = true;
+                applyAdminUI();
+            }
+        });
+    } else {
+        isAdmin = false;
+        applyAdminUI();
+    }
+}
+
+function applyAdminUI() {
+    const badge = document.getElementById("adminBadge");
+    const addBtn = document.getElementById("addBtnArea");
+    const mainBtn = document.getElementById("adminBtn");
+
+    if (isAdmin) {
+        badge.classList.remove('hidden');
+        addBtn.classList.remove('hidden');
+        mainBtn.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i>ออกจากโหมดแอดมิน';
+        mainBtn.classList.replace('bg-slate-800', 'bg-orange-500');
+    } else {
+        badge.classList.add('hidden');
+        addBtn.classList.add('hidden');
+        mainBtn.innerHTML = '<i class="fas fa-cog mr-2"></i>จัดการระบบ';
+        mainBtn.classList.replace('bg-orange-500', 'bg-slate-800');
+    }
+    renderList();
+}
+
+async function addDocument() {
+    const { value: formValues } = await Swal.fire({
+        title: 'เพิ่มเอกสารใหม่',
+        html:
+            '<input id="swal-name" class="swal2-input" placeholder="ชื่อเอกสาร">' +
+            '<input id="swal-cat" class="swal2-input" placeholder="หมวดหมู่">' +
+            '<select id="swal-type" class="swal2-input"><option value="pdf">PDF</option><option value="xlsx">Excel</option><option value="doc">Word</option></select>',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'บันทึก',
+        preConfirm: () => {
+            return {
+                name: document.getElementById('swal-name').value,
+                cat: document.getElementById('swal-cat').value,
+                type: document.getElementById('swal-type').value
+            }
+        }
+    });
+
+    if (formValues && formValues.name) {
+        const newDoc = {
+            id: Date.now(),
+            name: formValues.name,
+            category: formValues.cat || "ทั่วไป",
+            date: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' }),
+            type: formValues.type
+        };
+        documents.unshift(newDoc);
+        updateCategoryDropdown();
+        renderList();
+        Swal.fire('สำเร็จ', 'เพิ่มข้อมูลเรียบร้อยแล้ว', 'success');
+    }
+}
+
+function deleteDoc(id) {
+    Swal.fire({
+        title: 'ยืนยันการลบ?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'ลบเลย',
+        cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            documents = documents.filter(d => d.id !== id);
+            renderList();
+            Swal.fire('ลบแล้ว!', 'ข้อมูลถูกนำออกจากระบบ', 'success');
+        }
+    });
+}
+
+function previewDoc(n) { Swal.fire({ title: 'Preview', text: n, icon: 'info' }); }
+function downloadDoc(n) { Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'ดาวน์โหลด: ' + n, showConfirmButton: false, timer: 1500 }); }
 
 init();
 </script>
+
 </body>
 </html>
