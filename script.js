@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, update, remove, onValue, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, update, remove, onValue, increment, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // --- Firebase Config ---
@@ -38,7 +38,10 @@ onAuthStateChanged(auth, (user) => {
             authBtn.style.background = "var(--danger)";
         }
         if(statusText) statusText.innerText = "Admin Mode";
-        if(statusIcon) statusIcon.style.color = "#2ecc71";
+        if(statusIcon) {
+            statusIcon.style.color = "#2ecc71";
+            statusIcon.className = "fas fa-user-shield";
+        }
     } else {
         isAdmin = false;
         if(panel) panel.style.display = 'none';
@@ -47,7 +50,10 @@ onAuthStateChanged(auth, (user) => {
             authBtn.style.background = "var(--primary)";
         }
         if(statusText) statusText.innerText = "Guest Mode";
-        if(statusIcon) statusIcon.style.color = "#95a5a6";
+        if(statusIcon) {
+            statusIcon.style.color = "#95a5a6";
+            statusIcon.className = "fas fa-user";
+        }
     }
     window.renderItems();
 });
@@ -67,13 +73,7 @@ window.performLogin = () => {
         .catch(() => alert("Username หรือ Password ไม่ถูกต้อง!"));
 };
 
-['loginUser', 'loginPass'].forEach(id => {
-    document.getElementById(id)?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') window.performLogin();
-    });
-});
-
-// --- 📥 Download System (เพิ่มระบบนับยอด) ---
+// --- 📥 Download System ---
 window.startDownload = async (idx) => {
     const item = items[idx];
     if (!item) return;
@@ -81,13 +81,12 @@ window.startDownload = async (idx) => {
     const effectivelyLocked = isGlobalLocked || item.locked;
     
     if (!effectivelyLocked) {
-        // นับยอดทันทีสำหรับไฟล์ไม่ล็อค
+        // อัปเดตยอดดาวน์โหลดใน Firebase
         await update(ref(db, `cougar_data/${item.key}`), {
             downloads: increment(1)
         });
         window.open(item.link, '_blank', 'noopener,noreferrer');
     } else {
-        // เรียกใช้ระบบตรวจสอบรหัสผ่าน
         window.secureDownload(item);
     }
 };
@@ -97,15 +96,16 @@ window.secureDownload = async (item) => {
     if (!userPass) return;
     try {
         const dEmail = _d("ZG93bmxvYWRAY291Z2FyMi5jb20="); 
+        // ตรวจสอบรหัสผ่านผ่าน Firebase Auth (ชั่วคราว)
         await signInWithEmailAndPassword(auth, dEmail, userPass);
         
-        // ถ้ารหัสถูกต้องให้นับยอดก่อนเปิดลิงก์
         await update(ref(db, `cougar_data/${item.key}`), {
             downloads: increment(1)
         });
 
         window.open(item.link, '_blank', 'noopener,noreferrer');
-        if (auth.currentUser && auth.currentUser.email === dEmail) await signOut(auth);
+        // ออกจากระบบดาวน์โหลดทันที เพื่อไม่ให้กระทบสิทธิ์ Admin
+        await signOut(auth); 
     } catch (error) {
         alert("❌ รหัสดาวน์โหลดไม่ถูกต้อง!");
     }
@@ -130,11 +130,11 @@ onValue(ref(db, "settings"), (snap) => {
     const s = snap.val() || {};
     isGlobalLocked = s.globalLock || false;
     const lockSwitch = document.getElementById('globalLock');
-    if(isAdmin && lockSwitch) lockSwitch.checked = isGlobalLocked;
+    if(lockSwitch) lockSwitch.checked = isGlobalLocked;
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (เพิ่ม Badge แสดงยอดโหลด) ---
+// --- 🖥️ UI Rendering ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -142,24 +142,24 @@ window.renderItems = () => {
     
     items.forEach((item, index) => {
         const effectivelyLocked = isGlobalLocked || item.locked;
-        const count = item.downloads || 0; // ยอดโหลด
+        const count = item.downloads || 0;
         const card = document.createElement('div');
         card.className = 'download-card';
         
         card.innerHTML = `
             <div class="card-img-container" onclick="window.openImage('${item.img || ''}')">
-                <div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); color:white; padding:3px 8px; border-radius:5px; font-size:11px; z-index:1; backdrop-filter:blur(4px);">
-                    <i class="fas fa-download"></i> ${count}
+                <div class="download-count-badge">
+                    <i class="fas fa-eye"></i> ${count}
                 </div>
-                <img src="${item.img || 'https://via.placeholder.com/300x180?text=Cougar2'}" class="card-img">
+                <img src="${item.img || 'https://via.placeholder.com/300x180?text=Cougar2'}" class="card-img" onerror="this.src='https://via.placeholder.com/300x180?text=No+Image'">
             </div>
             <div class="download-info">
                 <h4>${item.name}</h4>
                 <button onclick="window.startDownload(${index})" 
                         class="btn-download"
-                        style="background:${effectivelyLocked ? 'var(--warning)' : 'var(--success)'}; color:white;">
+                        style="background:${effectivelyLocked ? 'var(--warning)' : 'var(--primary)'}; color:white;">
                     <i class="fas ${effectivelyLocked ? 'fa-lock' : 'fa-download'}"></i> 
-                    ${effectivelyLocked ? 'Password Required' : 'Download Now'}
+                    ${effectivelyLocked ? 'ระบุรหัสผ่าน' : 'ดาวน์โหลดตอนนี้'}
                 </button>
             </div>
             
@@ -169,15 +169,15 @@ window.renderItems = () => {
                         <input type="checkbox" ${item.locked ? 'checked' : ''} onchange="window.toggleItemLock('${item.key}', ${item.locked})">
                         <span class="slider"></span>
                     </label>
-                    <span>Lock</span>
+                    <span>ล็อคไฟล์</span>
                 </div>
                 
                 <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
-                    <i class="fas fa-edit"></i> Edit
+                    <i class="fas fa-edit"></i> แก้ไข
                 </button>
                 
                 <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
-                    <i class="fas fa-trash"></i> Delete
+                    <i class="fas fa-trash"></i> ลบ
                 </button>
             </div>
         `;
@@ -194,19 +194,29 @@ window.saveItem = async () => {
     const name = document.getElementById('itemName').value;
     const img = document.getElementById('itemImg').value;
     const link = document.getElementById('itemLink').value;
-    if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์โหลด");
 
+    if (!name || !link) return alert("กรุณากรอกชื่อและลิงก์ดาวน์โหลด");
+
+    const currentItem = key ? items.find(i => i.key === key) : null;
+    
     const data = { 
-        name, 
-        img, 
-        link, 
-        locked: key ? items.find(i => i.key === key).locked : false,
-        downloads: key ? (items.find(i => i.key === key).downloads || 0) : 0 // รักษายอดดาวน์โหลดเดิม
+        name: name, 
+        img: img, 
+        link: link, 
+        locked: currentItem ? currentItem.locked : false,
+        downloads: currentItem ? (currentItem.downloads || 0) : 0 
     };
     
-    if(key) await update(ref(db, `cougar_data/${key}`), data);
-    else await push(ref(db, "cougar_data"), data);
-    window.resetForm();
+    try {
+        if(key) {
+            await update(ref(db, `cougar_data/${key}`), data);
+        } else {
+            await push(ref(db, "cougar_data"), data);
+        }
+        window.resetForm();
+    } catch (e) {
+        alert("เกิดข้อผิดพลาดในการบันทึก: " + e.message);
+    }
 };
 
 window.resetForm = () => {
@@ -226,36 +236,43 @@ window.editItem = (key) => {
     const item = items.find(i => i.key === key);
     if (!item) return;
     document.getElementById('itemName').value = item.name;
-    document.getElementById('itemImg').value = item.img;
+    document.getElementById('itemImg').value = item.img || '';
     document.getElementById('itemLink').value = item.link;
     document.getElementById('editKey').value = key;
     const btn = document.getElementById('btn-save');
     if(btn) {
-        btn.innerText = "Update";
+        btn.innerText = "อัปเดตข้อมูล";
         btn.style.background = "var(--primary)";
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-window.deleteItem = (key) => isAdmin && confirm("ต้องการลบรายการนี้?") && remove(ref(db, `cougar_data/${key}`));
+window.deleteItem = (key) => {
+    if (isAdmin && confirm("คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?")) {
+        remove(ref(db, `cougar_data/${key}`));
+    }
+};
 
-window.toggleItemLock = (key, curr) => {
+window.toggleItemLock = (key, currStatus) => {
     if (!isAdmin) return;
-    update(ref(db, `cougar_data/${key}`), { locked: !curr });
+    update(ref(db, `cougar_data/${key}`), { locked: !currStatus });
 };
 
 window.toggleGlobalLock = () => {
     if (!isAdmin) return;
     const isChecked = document.getElementById('globalLock').checked;
-    update(ref(db, "settings"), { globalLock: isChecked });
+    set(ref(db, "settings/globalLock"), isChecked);
 };
 
+// --- UI Navigation & Helpers ---
 window.showPage = (id, el) => {
     document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
     const target = document.getElementById(id);
     if(target) target.classList.add('active');
+    
     document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
     if(el) el.classList.add('active');
+    
     const navTitle = document.getElementById('nav-title');
     if(navTitle) navTitle.innerText = el ? el.innerText.trim() : "Dashboard";
 };
@@ -270,8 +287,13 @@ window.openImage = (src) => {
     }
 };
 
+// Clock
 setInterval(() => {
     const timeEl = document.getElementById('dash-time');
-    if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    if(timeEl) {
+        const now = new Date();
+        timeEl.innerText = now.getHours().toString().padStart(2, '0') + ":" + 
+                           now.getMinutes().toString().padStart(2, '0') + ":" + 
+                           now.getSeconds().toString().padStart(2, '0');
+    }
 }, 1000);
-
