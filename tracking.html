@@ -89,7 +89,7 @@
         }
         .btn-big:active { transform: scale(0.97); opacity: 0.9; }
         .btn-start { background: linear-gradient(135deg,#3b82f6,#1d4ed8); color: white; box-shadow: 0 6px 18px rgba(59,130,246,0.3); }
-        .btn-stop  { background: linear-gradient(135deg,#ef4444,#b91c1c); color: white; box-shadow: 0 6px 18px rgba(239,68,68,0.3); display: none; }
+        .btn-stop  { background: linear-gradient(135deg,#ef4444,#b91c1c); color: white; box-shadow: 0 6px 18px rgba(239,68,68,0.3); }
 
         #driver-status {
             border-radius: 12px; padding: 14px 16px;
@@ -101,18 +101,32 @@
         #driver-status.sending { background: #ecfdf5; color: #065f46; border: 1px solid #bbf7d0; }
         #driver-status.error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 
-        /* ── MY LOCATION BTN ─────────────────── */
-        #btn-my-location {
+        /* ── FAB BUTTONS (RIGHT SIDE) ────────── */
+        #fab-group {
             position: fixed;
             bottom: calc(env(safe-area-inset-bottom,0px) + 90px);
-            right: 14px; z-index: 50;
+            right: 14px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .fab-btn {
             width: 44px; height: 44px; border-radius: 50%;
             background: white; border: none; cursor: pointer;
             box-shadow: 0 2px 12px rgba(0,0,0,0.22);
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px; transition: transform 0.15s;
+            font-size: 20px; transition: transform 0.15s, box-shadow 0.15s;
+            flex-shrink: 0;
         }
-        #btn-my-location:active { transform: scale(0.9); }
+        .fab-btn:active { transform: scale(0.9); }
+
+        /* North button — rotates its inner compass icon */
+        #btn-north { overflow: hidden; }
+        #btn-north svg {
+            width: 22px; height: 22px;
+            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
 
         /* ── LAST UPDATE ─────────────────────── */
         #last-update-text {
@@ -124,13 +138,13 @@
             z-index: 50; pointer-events: none;
         }
 
-        /* ── TRUCK MARKER ────────────────────── */
-        .truck-dot {
-            border-radius: 50%; border: 3px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 800; color: white;
+        /* ── GOOGLE-MAP STYLE MARKER ─────────── */
+        /* Pin shape: teardrop SVG inline, scaled like Google's */
+        .gmap-pin-wrapper {
+            /* anchor is set in JS: iconAnchor=[13,38] */
+            position: relative;
         }
+
         .truck-label {
             background: white; border-radius: 6px;
             padding: 2px 8px; font-size: 11px; font-weight: 700;
@@ -151,6 +165,10 @@
         .leaflet-popup-content-wrapper { border-radius:14px!important; }
         .leaflet-popup-content { margin:14px 16px!important; font-size:13px!important; line-height:1.7!important; }
         .leaflet-popup-tip-container { display:none; }
+
+        /* Rotate cursor on map when rotation is active */
+        .leaflet-grab { cursor: grab; }
+        .leaflet-dragging .leaflet-grab { cursor: grabbing; }
     </style>
 </head>
 <body>
@@ -185,7 +203,7 @@
         </select>
         <p class="hint-text">📡 ระบบจะส่งตำแหน่งแบบ Real-time ผ่าน GPS อัตโนมัติ</p>
         <button id="start-btn" class="btn-big btn-start" onclick="startTracking()">▶ เริ่มส่งตำแหน่ง</button>
-        <button id="stop-btn"  class="btn-big btn-stop"  onclick="stopTracking()">⏹ หยุดส่งตำแหน่ง</button>
+        <button id="stop-btn"  class="btn-big btn-stop"  onclick="stopTracking()" style="display:none;">⏹ หยุดส่งตำแหน่ง</button>
     </div>
     <div class="track-card">
         <div class="card-title"><span class="card-title-bar" style="background:#10b981;"></span> สถานะการส่ง</div>
@@ -193,55 +211,98 @@
     </div>
 </div>
 
-<!-- MY LOCATION -->
-<button id="btn-my-location" title="ตำแหน่งของฉัน">📍</button>
+<!-- FAB BUTTONS (map view only) -->
+<div id="fab-group">
+    <!-- North/Compass button -->
+    <button id="btn-north" class="fab-btn" title="หันไปทางทิศเหนือ" onclick="resetNorth()">
+        <!-- Compass SVG: N arrow red, S gray, rotates opposite to map bearing -->
+        <svg id="compass-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="white" stroke="#d1d5db" stroke-width="1.2"/>
+            <!-- North tip (red) -->
+            <polygon points="12,3 9.5,12 14.5,12" fill="#e53e3e"/>
+            <!-- South tip (gray) -->
+            <polygon points="12,21 9.5,12 14.5,12" fill="#9ca3af"/>
+            <!-- Center dot -->
+            <circle cx="12" cy="12" r="1.5" fill="#374151"/>
+        </svg>
+    </button>
+    <!-- My Location button -->
+    <button id="btn-my-location" class="fab-btn" title="ตำแหน่งของฉัน" onclick="goMyLocation()">📍</button>
+</div>
+
 <div id="last-update-text"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet.rotate plugin for map rotation -->
+<script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
+
 <script>
-// ── CONFIG ────────────────────────────────────────────
+// ── CONFIG ─────────────────────────────────────────────
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxoTRvHgyzatOutguyf7oVetSAxI5dRqy8ariDaUzsUNdiYOeqVdQc2vBpoTFECK7Xg/exec";
 
-// ── STATE ─────────────────────────────────────────────
+// ── STATE ──────────────────────────────────────────────
 let map, watchId = null, activeMarker = null, activeTruckId = null;
+let currentBearing = 0;  // current map rotation angle
 
-// ── TAB SWITCH ────────────────────────────────────────
+// ── GOOGLE-MAP STYLE PIN ICON ──────────────────────────
+// Creates a teardrop pin similar to Google Maps, with truck number inside
+const COLORS = ['#e53e3e','#3182ce','#38a169','#d69e2e','#805ad5','#dd6b20','#00b5d8','#e53e9e','#2d3748','#b7791f'];
+
+function getColor(id) {
+    const m = id.match(/(\d+)$/);
+    return COLORS[((m ? parseInt(m[1]) : 1) - 1) % COLORS.length];
+}
+
+function makeGmapIcon(color, id) {
+    const num = (id.match(/(\d+)$/) || ['','?'])[1];
+    // SVG pin: width=26, height=38 → same proportions as Google Maps pin
+    const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="38" viewBox="0 0 26 38">
+      <defs>
+        <filter id="sh" x="-30%" y="-10%" width="160%" height="140%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.35)"/>
+        </filter>
+      </defs>
+      <!-- Pin body -->
+      <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 25 13 25s13-15.25 13-25C26 5.82 20.18 0 13 0z"
+            fill="${color}" filter="url(#sh)"/>
+      <!-- White circle background for number -->
+      <circle cx="13" cy="13" r="8" fill="white" opacity="0.92"/>
+      <!-- Truck number -->
+      <text x="13" y="17" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+            font-size="10" font-weight="800" fill="${color}">${num}</text>
+    </svg>`;
+    return L.divIcon({
+        className: '',
+        html: svg,
+        iconSize:   [26, 38],
+        iconAnchor: [13, 38],   // tip of pin
+        popupAnchor:[0, -42]
+    });
+}
+
+// ── TAB SWITCH ─────────────────────────────────────────
 window.switchTab = function(tab) {
     const isDriver = tab === 'driver';
     document.getElementById('tab-viewer').classList.toggle('active', !isDriver);
     document.getElementById('tab-driver').classList.toggle('active',  isDriver);
     document.getElementById('view-map').classList.toggle('hidden', isDriver);
     document.getElementById('view-tracking').classList.toggle('show', isDriver);
-    document.getElementById('btn-my-location').style.display = isDriver ? 'none' : '';
+    document.getElementById('fab-group').style.display = isDriver ? 'none' : '';
     document.getElementById('last-update-text').style.display = isDriver ? 'none' : '';
     if (!isDriver && map) setTimeout(() => map.invalidateSize(), 50);
 };
 
-// ── TRUCK COLORS & ICON ───────────────────────────────
-const COLORS = ['#e53e3e','#3182ce','#38a169','#d69e2e','#805ad5','#dd6b20','#00b5d8','#e53e9e','#2d3748','#b7791f'];
-function getColor(id) {
-    const m = id.match(/(\d+)$/);
-    return COLORS[((m ? parseInt(m[1]) : 1) - 1) % COLORS.length];
-}
-function makeIcon(color, id) {
-    const num = (id.match(/(\d+)$/) || ['','?'])[1];
-    return L.divIcon({
-        className: '',
-        html: `<div class="truck-dot" style="width:34px;height:34px;background:${color};">${num}</div>`,
-        iconSize: [34,34], iconAnchor: [17,17], popupAnchor: [0,-20]
-    });
-}
-
-// ── GPS: ส่งตำแหน่ง ───────────────────────────────────
+// ── GPS: ส่งตำแหน่ง ────────────────────────────────────
 function sendLocation(truckId, lat, lng) {
-    // อัปเดต marker บนแผนที่ทันที (ไม่ต้องรอ GAS)
+    // อัปเดต marker ตัวเอง
     if (map) {
         const color = getColor(truckId);
         if (!activeMarker) {
-            activeMarker = L.marker([lat, lng], { icon: makeIcon(color, truckId) }).addTo(map);
+            activeMarker = L.marker([lat, lng], { icon: makeGmapIcon(color, truckId) }).addTo(map);
             activeMarker.bindTooltip(
                 `<div class="truck-label" style="border-color:${color};color:${color};">${truckId}</div>`,
-                { permanent:true, direction:'top', className:'leaflet-tooltip-plain', offset:[0,-20] }
+                { permanent:true, direction:'top', className:'leaflet-tooltip-plain', offset:[0,-44] }
             );
             map.setView([lat, lng], 16);
         } else {
@@ -249,10 +310,10 @@ function sendLocation(truckId, lat, lng) {
         }
     }
 
-    // ส่งไป GAS บันทึก
+    // ส่งไป GAS
     fetch(`${GAS_URL}?action=save&truckId=${encodeURIComponent(truckId)}&lat=${lat}&lng=${lng}`)
         .then(r => r.json())
-        .then(res => {
+        .then(() => {
             const el = document.getElementById('driver-status');
             el.className = 'sending';
             el.innerHTML = `✅ <b>กำลังส่งตำแหน่ง</b><br>📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}<br>🕐 ${new Date().toLocaleTimeString('th-TH')}`;
@@ -284,21 +345,13 @@ window.startTracking = function() {
     );
 };
 
-// ── หยุดส่ง + ลบจุดออกจากแผนที่ + ลบออกจาก GAS ─────
 window.stopTracking = function() {
-    // หยุด GPS
     if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-
-    // ลบ marker ออกจากแผนที่
     if (activeMarker && map) { map.removeLayer(activeMarker); activeMarker = null; }
-
-    // ลบออกจาก GAS ด้วย (action=delete)
     if (activeTruckId) {
-        fetch(`${GAS_URL}?action=delete&truckId=${encodeURIComponent(activeTruckId)}`)
-            .catch(() => {}); // ไม่ต้องแจ้งเตือน
+        fetch(`${GAS_URL}?action=delete&truckId=${encodeURIComponent(activeTruckId)}`).catch(()=>{});
         activeTruckId = null;
     }
-
     document.getElementById('truck-id').disabled = false;
     document.getElementById('start-btn').style.display = '';
     document.getElementById('stop-btn').style.display = 'none';
@@ -306,41 +359,101 @@ window.stopTracking = function() {
     el.className = ''; el.innerHTML = '⏹ หยุดส่งตำแหน่งแล้ว';
 };
 
-// ── ปิดหน้าเว็บ → ลบจุดออก ────────────────────────────
+// ── UNLOAD → ลบออก ─────────────────────────────────────
 window.addEventListener('beforeunload', () => {
-    if (activeTruckId) {
-        // ใช้ sendBeacon เพราะ fetch ถูก cancel ตอนปิดหน้า
-        navigator.sendBeacon(`${GAS_URL}?action=delete&truckId=${encodeURIComponent(activeTruckId)}`);
-    }
+    if (activeTruckId) navigator.sendBeacon(`${GAS_URL}?action=delete&truckId=${encodeURIComponent(activeTruckId)}`);
 });
 window.addEventListener('pagehide', () => {
-    if (activeTruckId) {
-        navigator.sendBeacon(`${GAS_URL}?action=delete&truckId=${encodeURIComponent(activeTruckId)}`);
-    }
+    if (activeTruckId) navigator.sendBeacon(`${GAS_URL}?action=delete&truckId=${encodeURIComponent(activeTruckId)}`);
 });
 
-// ── MAP ───────────────────────────────────────────────
+// ── MY LOCATION ─────────────────────────────────────────
+window.goMyLocation = function() {
+    if (!navigator.geolocation) return;
+    const btn = document.getElementById('btn-my-location');
+    btn.innerHTML = '⏳';
+    navigator.geolocation.getCurrentPosition(
+        pos => { map.flyTo([pos.coords.latitude, pos.coords.longitude], 16, {duration:1}); btn.innerHTML='📍'; },
+        ()  => { btn.innerHTML = '📍'; }
+    );
+};
+
+// ── NORTH RESET ─────────────────────────────────────────
+window.resetNorth = function() {
+    if (!map) return;
+    // Animate bearing back to 0 (north)
+    const steps = 20;
+    const start = currentBearing > 180 ? currentBearing - 360 : currentBearing;
+    const step  = -start / steps;
+    let i = 0;
+    const anim = setInterval(() => {
+        i++;
+        currentBearing = (currentBearing + step + 360) % 360;
+        applyBearing(currentBearing);
+        if (i >= steps) {
+            clearInterval(anim);
+            currentBearing = 0;
+            applyBearing(0);
+            updateCompass(0);
+        }
+    }, 16);
+};
+
+function applyBearing(deg) {
+    // Rotate the map tile container
+    const container = map.getContainer().querySelector('.leaflet-map-pane');
+    if (container) container.style.transform = '';
+
+    // Use leaflet-rotate API if available, else CSS on pane
+    if (map.setBearing) {
+        map.setBearing(deg);
+    } else {
+        // Fallback: rotate map pane
+        const pane = map.getContainer();
+        const mapEl = pane.querySelector('#map');
+        if (mapEl) {
+            mapEl.style.transformOrigin = 'center center';
+            mapEl.style.transform = `rotate(${deg}deg)`;
+        }
+    }
+    updateCompass(deg);
+}
+
+function updateCompass(deg) {
+    // Compass needle rotates OPPOSITE to map bearing so it always points north
+    const svg = document.getElementById('compass-svg');
+    if (svg) svg.style.transform = `rotate(${-deg}deg)`;
+}
+
+// ── MAP INIT ────────────────────────────────────────────
 window.addEventListener('load', function() {
     const scale = window.devicePixelRatio >= 2 ? 2 : 1;
     const hybrid    = L.tileLayer(`https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&scale=${scale}`, { attribution:'Map data © Google', maxZoom:21, maxNativeZoom:20, tileSize:256, detectRetina:true });
     const satellite = L.tileLayer(`https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}&scale=${scale}`, { attribution:'Map data © Google', maxZoom:21, maxNativeZoom:20, tileSize:256, detectRetina:true });
     const street    = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',                { attribution:'© OpenStreetMap',   maxZoom:19,  tileSize:256, detectRetina:true });
 
-    map = L.map('map', { center:[13.7563,100.5018], zoom:13, layers:[hybrid], tap:true, tapTolerance:15 });
+    // ── MAP with rotation support ──────────────────────
+    const mapOptions = {
+        center: [13.7563, 100.5018], zoom: 13,
+        layers: [hybrid],
+        tap: true, tapTolerance: 15,
+        rotate: true,          // leaflet-rotate plugin
+        touchRotate: true,     // two-finger rotate gesture
+        rotateControl: false,  // we use our own button
+        bearing: 0
+    };
+    map = L.map('map', mapOptions);
     L.control.layers({ "🛰 ดาวเทียม+ถนน":hybrid, "🛰 ดาวเทียม":satellite, "🗺 แผนที่ถนน":street }).addTo(map);
 
-    // ปุ่ม My Location
-    document.getElementById('btn-my-location').addEventListener('click', function() {
-        if (!navigator.geolocation) return;
-        this.innerHTML = '⏳';
-        navigator.geolocation.getCurrentPosition(
-            pos => { map.flyTo([pos.coords.latitude, pos.coords.longitude], 16, {duration:1}); this.innerHTML = '📍'; },
-            ()  => { this.innerHTML = '📍'; }
-        );
+    // Track bearing changes from gesture
+    map.on('rotate', function(e) {
+        currentBearing = (e.bearing + 360) % 360;
+        updateCompass(currentBearing);
     });
 
-    // ── ดึงตำแหน่งรถทุกคันจาก GAS (เฉพาะคันที่ยังส่งอยู่) ──
+    // ── FETCH & DISPLAY OTHER TRUCKS ──────────────────
     let otherMarkers = {}, otherPolylines = {}, otherPaths = {};
+    let firstLoad = true;
 
     function updateMap() {
         fetch(`${GAS_URL}?action=getAll`)
@@ -348,7 +461,7 @@ window.addEventListener('load', function() {
             .then(arr => {
                 if (!arr || !arr.length) return;
 
-                // ลบ marker เก่าของรถคันอื่นก่อน
+                // Remove old markers
                 Object.keys(otherMarkers).forEach(id => {
                     map.removeLayer(otherMarkers[id]);
                     delete otherMarkers[id];
@@ -364,34 +477,44 @@ window.addEventListener('load', function() {
                     const lng = parseFloat(data.lng);
                     const id  = data.truckId;
                     if (isNaN(lat) || isNaN(lng)) return;
-                    if (id === activeTruckId) return; // รถของตัวเองจัดการเองแล้ว
+                    if (id === activeTruckId) return;
 
-                    const color = getColor(id);
+                    const color   = getColor(id);
                     const timeStr = new Date(data.timestamp).toLocaleTimeString('th-TH');
 
-                    // path
+                    // Path trail
                     if (!otherPaths[id]) otherPaths[id] = [];
                     const last = otherPaths[id][otherPaths[id].length-1];
                     if (!last || last[0]!==lat || last[1]!==lng) {
                         otherPaths[id].push([lat,lng]);
                         if (otherPaths[id].length > 200) otherPaths[id].shift();
                     }
-
                     otherPolylines[id] = L.polyline(otherPaths[id], { color, weight:3, opacity:0.6, dashArray:'8 5' }).addTo(map);
 
-                    const m = L.marker([lat,lng], { icon: makeIcon(color, id) }).addTo(map);
+                    // Marker with Google-style pin
+                    const m = L.marker([lat,lng], { icon: makeGmapIcon(color, id) }).addTo(map);
                     m.bindTooltip(
                         `<div class="truck-label" style="border-color:${color};color:${color};">${id}</div>`,
-                        { permanent:true, direction:'top', className:'leaflet-tooltip-plain', offset:[0,-20] }
+                        { permanent:true, direction:'top', className:'leaflet-tooltip-plain', offset:[0,-44] }
                     );
                     m.bindPopup(`<b style="color:${color}">${id}</b><br>📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}<br>🕐 ${timeStr}`);
                     otherMarkers[id] = m;
                     bounds.push([lat,lng]);
                 });
 
+                // ── หน้า location วิ่งไปที่ตำแหน่งรถคันแรกเมื่อโหลด ──
+                if (firstLoad && bounds.length > 0) {
+                    firstLoad = false;
+                    if (bounds.length === 1) {
+                        map.flyTo(bounds[0], 15, { duration: 1.2 });
+                    } else {
+                        map.flyToBounds(L.latLngBounds(bounds), { padding:[40,40], duration:1.2, maxZoom:16 });
+                    }
+                }
+
                 document.getElementById('last-update-text').innerText = '🕐 ' + new Date().toLocaleTimeString('th-TH');
             })
-            .catch(() => {});
+            .catch(()=>{});
     }
 
     updateMap();
