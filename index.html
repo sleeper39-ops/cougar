@@ -126,12 +126,8 @@
         <a onclick="window.showPage('map-page', this)" id="nav-map"><i class="fas fa-map-marked-alt"></i> แผนที่ระบบ</a>
         <a onclick="window.showPage('calendar-page', this)" id="nav-cal"><i class="fas fa-calendar-alt"></i> ปฏิทิน</a>
         <a onclick="window.showPage('esos-page', this)" id="nav-esos"><i class="fas fa-rocket"></i> ระบบ ESOS</a>
-
-        <!-- Location Tracking — เปิด tab ใหม่ -->
-        <a href="location-tracking.html" target="_blank" class="external-link">
-            <i class="fas fa-map-pin"></i> Location Tracking
-            <i class="fas fa-external-link-alt" style="margin-left:auto; font-size:10px; opacity:0.6;"></i>
-        </a>
+        <a onclick="window.showPage('esos-page', this)" id="nav-esos"><i class="fas fa-rocket"></i> Location Tracking</a>
+        
     </div>
     
     <div class="wrapper">
@@ -200,6 +196,7 @@
             <div id="map-page" class="page-content"><iframe src="map.html" style="width:100%; height:100%; border:none;"></iframe></div>
             <div id="calendar-page" class="page-content"><iframe src="calendar.html" style="width:100%; height:100%; border:none;"></iframe></div>
             <div id="esos-page" class="page-content"><iframe src="esos.html" style="width:100%; height:100%; border:none;"></iframe></div>
+            <div id="esos-page" class="page-content"><iframe src="location-tracking.html" style="width:100%; height:100%; border:none;"></iframe></div>
         </div>
     </div>
 
@@ -208,3 +205,4 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
