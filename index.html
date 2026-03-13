@@ -57,22 +57,15 @@
         .nav-item:hover { color: white; background: rgba(255,255,255,0.06); }
         .nav-item.active { color: white; border-bottom-color: var(--accent); background: rgba(52,152,219,0.1); }
 
-        /* ── AUTH ZONE: ปุ่มเดียว ไม่มีนาฬิกา ไม่มี dot ── */
-        .topbar-auth {
-            display: flex; align-items: center;
-            padding-left: 16px; margin-left: 8px;
-            border-left: 1px solid rgba(255,255,255,0.1);
-            flex-shrink: 0;
-        }
+        /* ── ปุ่ม Login/Logout ใน stat-box ที่ 4 ── */
         #auth-btn {
-            background: var(--accent); color: white; border: none;
-            padding: 6px 14px; border-radius: 6px; cursor: pointer;
-            font-weight: 700; font-size: 12px;
-            display: inline-flex; align-items: center; gap: 6px;
-            transition: 0.2s; white-space: nowrap;
-            font-family: 'Sarabun', sans-serif;
+            background: var(--primary); color: white; border: none;
+            padding: 5px 14px; border-radius: 6px; cursor: pointer;
+            font-weight: 700; font-size: 11px;
+            display: inline-flex; align-items: center; gap: 5px;
+            transition: 0.2s; font-family: 'Sarabun', sans-serif;
         }
-        #auth-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+        #auth-btn:hover { filter: brightness(1.1); }
 
         /* ── CONTENT ── */
         .content-wrap { flex: 1; overflow: hidden; position: relative; }
@@ -105,16 +98,6 @@
         .stat-box i { font-size: 1.6rem; }
         .stat-value { font-size: 1.15rem; font-weight: 700; color: #111; }
         .stat-label { font-size: 11px; color: #999; }
-
-        /* ── ปุ่มใน stat-box สลับ Login/Logout ── */
-        #auth-btn-stat {
-            background: var(--primary); color: white; border: none;
-            padding: 5px 14px; border-radius: 6px; cursor: pointer;
-            font-weight: 700; font-size: 11px;
-            display: inline-flex; align-items: center; gap: 5px;
-            transition: 0.2s; font-family: 'Sarabun', sans-serif;
-        }
-        #auth-btn-stat:hover { filter: brightness(1.1); }
 
         #admin-panel {
             display: none; background: white; padding: 22px; border-radius: 14px;
@@ -221,12 +204,6 @@
         <div class="nav-item"        id="nav-tracking" onclick="window.showPage('tracking-page', this)"><i class="fas fa-location-dot"></i> Location Tracking</div>
     </div>
 
-    <!-- มีแค่ปุ่มเดียว ไม่มีนาฬิกา ไม่มี dot ไม่มี Guest label -->
-    <div class="topbar-auth">
-        <button id="auth-btn" onclick="window.toggleAuth()">
-            <i class="fas fa-user-shield"></i> Admin Login
-        </button>
-    </div>
 </nav>
 
 <!-- CONTENT -->
@@ -251,8 +228,7 @@
             </div>
             <div class="stat-box">
                 <i class="fas fa-user-cog" style="color:var(--primary);"></i>
-                <!-- ปุ่มนี้สลับ Login ↔ Logout เหมือน topbar -->
-                <button id="auth-btn-stat" onclick="window.toggleAuth()">
+                <button id="auth-btn" onclick="window.toggleAuth()">
                     <i class="fas fa-sign-in-alt"></i> Admin Login
                 </button>
                 <div class="stat-label">ระบบแอดมิน</div>
@@ -296,21 +272,13 @@
 <div id="imgLightbox" class="lightbox" onclick="this.style.display='none'"><img id="lightboxImg"></div>
 
 <script>
-    // ── sync ทั้ง 2 ปุ่มพร้อมกัน ──────────────────────────
+    // ── sync ปุ่มเดียว (stat-box ที่ 4) ──────────────────
     window.syncAuthBtns = function(isAdmin) {
-        // Topbar
-        const topBtn = document.getElementById('auth-btn');
-        if (topBtn) {
-            topBtn.innerHTML  = isAdmin ? '<i class="fas fa-sign-out-alt"></i> Logout' : '<i class="fas fa-user-shield"></i> Admin Login';
-            topBtn.style.background = isAdmin ? 'var(--danger)' : 'var(--accent)';
+        const btn = document.getElementById('auth-btn');
+        if (btn) {
+            btn.innerHTML       = isAdmin ? '<i class="fas fa-sign-out-alt"></i> Logout' : '<i class="fas fa-sign-in-alt"></i> Admin Login';
+            btn.style.background = isAdmin ? 'var(--danger)' : 'var(--primary)';
         }
-        // Stat-box
-        const statBtn = document.getElementById('auth-btn-stat');
-        if (statBtn) {
-            statBtn.innerHTML  = isAdmin ? '<i class="fas fa-sign-out-alt"></i> Logout' : '<i class="fas fa-sign-in-alt"></i> Admin Login';
-            statBtn.style.background = isAdmin ? 'var(--danger)' : 'var(--primary)';
-        }
-        // Status text + icon
         const statusEl   = document.getElementById('dash-status');
         const statusIcon = document.getElementById('status-icon');
         if (statusEl)   statusEl.innerText      = isAdmin ? 'Admin Mode' : 'Guest Mode';
