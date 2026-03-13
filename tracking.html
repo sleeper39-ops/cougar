@@ -441,13 +441,30 @@ window.startTracking = function() {
     );
 };
 
+// ── STATE: รถที่กำลัง "หยุด" (รอ GAS ลบเสร็จ) ──────────
+let stoppingTruckId = null;
+
 window.stopTracking = function() {
+    // 1. หยุด GPS ทันที
     if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+
+    // 2. ลบ marker ออกจากแผนที่ทันที
     if (activeMarker && map) { map.removeLayer(activeMarker); activeMarker = null; }
+
+    // 3. เก็บไว้ใน stoppingTruckId เพื่อให้ updateMap กรองออก ระหว่างรอ GAS
     if (activeTruckId) {
-        fetch(`${GAS_URL}?action=delete&truckId=${encodeURIComponent(activeTruckId)}`).catch(()=>{});
+        stoppingTruckId = activeTruckId;
         activeTruckId = null;
+
+        // ส่ง delete ไป GAS — รอจนเสร็จแล้วค่อยล้าง stoppingTruckId
+        fetch(`${GAS_URL}?action=delete&truckId=${encodeURIComponent(stoppingTruckId)}`)
+            .finally(() => {
+                stoppingTruckId = null;
+                // force updateMap ทันทีหลัง GAS ลบเสร็จ เพื่อลบ marker ที่อาจค้าง
+                if (typeof triggerUpdateMap === 'function') triggerUpdateMap();
+            });
     }
+
     setTruckGridDisabled(false);
     document.getElementById('start-btn').style.display = '';
     document.getElementById('stop-btn').style.display = 'none';
@@ -592,16 +609,28 @@ window.addEventListener('load', function() {
         fetch(`${GAS_URL}?action=getAll`)
             .then(r => r.json())
             .then(arr => {
-                if (!arr || !arr.length) return;
+                if (!arr || !arr.length) {
+                    // ไม่มีรถเลย → ลบ marker ที่ค้างทั้งหมด
+                    Object.keys(otherMarkers).forEach(id => { map.removeLayer(otherMarkers[id]); delete otherMarkers[id]; });
+                    Object.keys(otherPolylines).forEach(id => { map.removeLayer(otherPolylines[id]); delete otherPolylines[id]; });
+                    return;
+                }
 
-                // Remove old markers
+                // ids ที่ยังอยู่ใน response จริง
+                const liveIds = new Set(arr.map(d => d.truckId));
+
+                // ลบ marker ของรถที่ไม่อยู่ใน response แล้ว (รวมถึงรถที่เพิ่งหยุด)
                 Object.keys(otherMarkers).forEach(id => {
-                    map.removeLayer(otherMarkers[id]);
-                    delete otherMarkers[id];
+                    if (!liveIds.has(id)) {
+                        map.removeLayer(otherMarkers[id]);
+                        delete otherMarkers[id];
+                    }
                 });
                 Object.keys(otherPolylines).forEach(id => {
-                    map.removeLayer(otherPolylines[id]);
-                    delete otherPolylines[id];
+                    if (!liveIds.has(id)) {
+                        map.removeLayer(otherPolylines[id]);
+                        delete otherPolylines[id];
+                    }
                 });
 
                 let bounds = [];
@@ -610,7 +639,8 @@ window.addEventListener('load', function() {
                     const lng = parseFloat(data.lng);
                     const id  = data.truckId;
                     if (isNaN(lat) || isNaN(lng)) return;
-                    if (id === activeTruckId) return;
+                    // กรองรถของตัวเองออก + รถที่กำลังอยู่ระหว่าง delete
+                    if (id === activeTruckId || id === stoppingTruckId) return;
 
                     const color   = getColor(id);
                     const timeStr = new Date(data.timestamp).toLocaleTimeString('th-TH');
@@ -652,6 +682,9 @@ window.addEventListener('load', function() {
 
     updateMap();
     setInterval(updateMap, 10000);
+
+    // expose เพื่อให้ stopTracking เรียก force-refresh ได้
+    window.triggerUpdateMap = updateMap;
 });
 </script>
 </body>
