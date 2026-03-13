@@ -18,210 +18,95 @@
             --nav-h: 58px;
             --accent: #3498db;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         body {
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             font-family: 'Sarabun', sans-serif;
             background: var(--bg-body);
-            height: 100vh;
-            overflow: hidden;
+            height: 100vh; overflow: hidden;
         }
 
-        /* ============================================================
-           TOP NAV BAR
-        ============================================================ */
+        /* ── TOPBAR ── */
         .topbar {
-            height: var(--nav-h);
-            background: var(--nav-bg);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            gap: 0;
-            flex-shrink: 0;
-            box-shadow: 0 2px 16px rgba(0,0,0,0.35);
-            position: relative;
-            z-index: 100;
+            height: var(--nav-h); background: var(--nav-bg);
+            display: flex; align-items: center; padding: 0 20px; gap: 0;
+            flex-shrink: 0; box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+            position: relative; z-index: 100;
         }
-
-        /* Logo */
         .topbar-logo {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-            letter-spacing: 2px;
-            padding-right: 24px;
-            margin-right: 8px;
-            border-right: 1px solid rgba(255,255,255,0.1);
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; font-weight: 700;
+            color: white; letter-spacing: 2px; padding-right: 24px; margin-right: 8px;
+            border-right: 1px solid rgba(255,255,255,0.1); white-space: nowrap;
+            display: flex; align-items: center; gap: 8px;
         }
         .topbar-logo span { color: var(--accent); }
-
-        /* Nav links */
         .topbar-nav {
-            display: flex;
-            align-items: center;
-            flex: 1;
-            height: 100%;
-            overflow-x: auto;
-            scrollbar-width: none;
+            display: flex; align-items: center; flex: 1; height: 100%;
+            overflow-x: auto; scrollbar-width: none;
         }
         .topbar-nav::-webkit-scrollbar { display: none; }
-
         .nav-item {
-            height: var(--nav-h);
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 0 16px;
-            color: rgba(255,255,255,0.55);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
+            height: var(--nav-h); display: flex; align-items: center; gap: 7px;
+            padding: 0 16px; color: rgba(255,255,255,0.55); font-size: 13px;
+            font-weight: 600; cursor: pointer; white-space: nowrap;
             border-bottom: 3px solid transparent;
             transition: color 0.2s, border-color 0.2s, background 0.2s;
-            position: relative;
-            letter-spacing: 0.3px;
-            user-select: none;
+            letter-spacing: 0.3px; user-select: none;
         }
         .nav-item i { font-size: 14px; }
-        .nav-item:hover {
-            color: white;
-            background: rgba(255,255,255,0.06);
-        }
-        .nav-item.active {
-            color: white;
-            border-bottom-color: var(--accent);
-            background: rgba(52,152,219,0.1);
-        }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.06); }
+        .nav-item.active { color: white; border-bottom-color: var(--accent); background: rgba(52,152,219,0.1); }
 
-        /* Auth zone */
+        /* ── AUTH ZONE: ปุ่มเดียว ไม่มีนาฬิกา ไม่มี dot ── */
         .topbar-auth {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-left: 16px;
-            margin-left: 8px;
+            display: flex; align-items: center;
+            padding-left: 16px; margin-left: 8px;
             border-left: 1px solid rgba(255,255,255,0.1);
             flex-shrink: 0;
         }
-        #dash-status-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: #95a5a6;
-            transition: background 0.3s;
-            flex-shrink: 0;
-        }
-        #dash-status-dot.admin { background: #2ecc71; box-shadow: 0 0 6px #2ecc71; }
-        #dash-status-label {
-            font-size: 11px; color: rgba(255,255,255,0.5);
-            white-space: nowrap;
-        }
         #auth-btn {
-            background: var(--accent);
-            color: white; border: none;
-            padding: 6px 14px; border-radius: 6px;
-            cursor: pointer; font-weight: 700;
-            font-size: 12px; display: inline-flex;
-            align-items: center; gap: 6px;
+            background: var(--accent); color: white; border: none;
+            padding: 6px 14px; border-radius: 6px; cursor: pointer;
+            font-weight: 700; font-size: 12px;
+            display: inline-flex; align-items: center; gap: 6px;
             transition: 0.2s; white-space: nowrap;
             font-family: 'Sarabun', sans-serif;
         }
         #auth-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
 
-        /* Time badge */
-        .time-badge {
-            display: flex; align-items: center; gap: 6px;
-            font-size: 12px; font-weight: 700;
-            color: rgba(255,255,255,0.7);
-            background: rgba(255,255,255,0.07);
-            padding: 4px 10px; border-radius: 6px;
-            white-space: nowrap;
-        }
-        .time-badge i { color: #2ecc71; font-size: 11px; }
-
-        /* ============================================================
-           CONTENT AREA
-        ============================================================ */
-        .content-wrap {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .page-content {
-            display: none;
-            height: 100%;
-            animation: fadeUp 0.3s ease;
-        }
+        /* ── CONTENT ── */
+        .content-wrap { flex: 1; overflow: hidden; position: relative; }
+        .page-content { display: none; height: 100%; animation: fadeUp 0.3s ease; }
         .page-content.active { display: flex; flex-direction: column; }
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(8px); }
             to   { opacity: 1; transform: translateY(0); }
         }
+        .page-content iframe { flex: 1; border: none; width: 100%; height: 100%; }
 
-        /* iframe pages */
-        .page-content iframe {
-            flex: 1; border: none; width: 100%; height: 100%;
-        }
-
-        /* ============================================================
-           DASHBOARD PAGE
-        ============================================================ */
-        #dash-page {
-            padding: 28px 30px;
-            overflow-y: auto;
-            display: none;
-        }
+        /* ── DASHBOARD ── */
+        #dash-page { padding: 28px 30px; overflow-y: auto; display: none; }
         #dash-page.active { display: block; }
-
-        /* Page title */
         .page-title {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #1a2a3a;
-            letter-spacing: 1px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 700;
+            color: #1a2a3a; letter-spacing: 1px; margin-bottom: 22px;
+            display: flex; align-items: center; gap: 10px;
         }
-        .page-title::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(to right, #ddd, transparent);
-        }
-
-        /* Stats */
+        .page-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, #ddd, transparent); }
         .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 28px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px; margin-bottom: 28px;
         }
         .stat-box {
-            background: white;
-            padding: 20px 18px;
-            border-radius: 14px;
-            text-align: center;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-            border: 1px solid #eee;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            gap: 6px;
+            background: white; padding: 20px 18px; border-radius: 14px; text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05); border: 1px solid #eee;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px;
         }
         .stat-box i { font-size: 1.6rem; }
         .stat-value { font-size: 1.15rem; font-weight: 700; color: #111; }
         .stat-label { font-size: 11px; color: #999; }
 
+        /* ── ปุ่มใน stat-box สลับ Login/Logout ── */
         #auth-btn-stat {
             background: var(--primary); color: white; border: none;
             padding: 5px 14px; border-radius: 6px; cursor: pointer;
@@ -231,95 +116,61 @@
         }
         #auth-btn-stat:hover { filter: brightness(1.1); }
 
-        /* Admin panel */
         #admin-panel {
-            display: none;
-            background: white; padding: 22px;
-            border-radius: 14px; border: 1px solid #eee;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            display: none; background: white; padding: 22px; border-radius: 14px;
+            border: 1px solid #eee; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
         }
         .admin-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 18px; border-bottom: 1px solid #f0f0f0; padding-bottom: 14px;
         }
         .admin-header h3 { font-size: 15px; color: #222; }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr auto;
-            gap: 12px; align-items: flex-end;
-        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: flex-end; }
         .input-group { display: flex; flex-direction: column; gap: 5px; }
         .input-group label { font-size: 11px; font-weight: 700; color: #666; }
         .input-group input {
-            padding: 8px 10px; border: 1px solid #e0e0e0;
-            border-radius: 8px; outline: none; font-size: 13px;
-            transition: border-color 0.2s;
+            padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 8px;
+            outline: none; font-size: 13px; transition: border-color 0.2s;
         }
         .input-group input:focus { border-color: var(--primary); }
         .btn-action {
-            padding: 9px 16px; border-radius: 8px;
-            border: none; font-weight: 700; cursor: pointer;
-            color: white; height: 36px; font-size: 13px;
+            padding: 9px 16px; border-radius: 8px; border: none; font-weight: 700;
+            cursor: pointer; color: white; height: 36px; font-size: 13px;
             font-family: 'Sarabun', sans-serif;
         }
-
-        /* Download grid */
-        .download-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px; padding-bottom: 40px;
-        }
+        .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding-bottom: 40px; }
         .download-card {
             background: white; border-radius: 14px; overflow: hidden;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-            display: flex; flex-direction: column;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06); display: flex; flex-direction: column;
             position: relative; transition: transform 0.2s, box-shadow 0.2s;
         }
         .download-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
-
         .download-count-badge {
-            position: absolute; top: 10px; left: 10px;
-            background: rgba(0,0,0,0.6); color: white;
+            position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white;
             padding: 3px 8px; border-radius: 6px; font-size: 11px;
-            display: flex; align-items: center; gap: 4px;
-            backdrop-filter: blur(4px); z-index: 1;
+            display: flex; align-items: center; gap: 4px; backdrop-filter: blur(4px); z-index: 1;
         }
-        .card-img-container {
-            width: 100%; height: 160px; background: #222;
-            cursor: zoom-in; overflow: hidden;
-        }
+        .card-img-container { width: 100%; height: 160px; background: #222; cursor: zoom-in; overflow: hidden; }
         .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
         .card-img-container:hover .card-img { transform: scale(1.04); }
-
-        .download-info {
-            padding: 14px; text-align: center;
-            flex-grow: 1; display: flex; flex-direction: column;
-        }
-        .download-info h4 {
-            margin: 0 0 12px 0; font-size: 14px; color: #333;
-            min-height: 38px; display: flex; align-items: center; justify-content: center;
-        }
+        .download-info { padding: 14px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; }
+        .download-info h4 { margin: 0 0 12px 0; font-size: 14px; color: #333; min-height: 38px; display: flex; align-items: center; justify-content: center; }
         .btn-download {
-            margin-top: auto; display: block; width: 100%; padding: 10px;
-            border-radius: 8px; font-weight: 700; border: none; cursor: pointer;
-            transition: 0.2s; color: white; background: var(--primary);
-            text-decoration: none; font-family: 'Sarabun', sans-serif; font-size: 13px;
+            margin-top: auto; display: block; width: 100%; padding: 10px; border-radius: 8px;
+            font-weight: 700; border: none; cursor: pointer; transition: 0.2s; color: white;
+            background: var(--primary); text-decoration: none;
+            font-family: 'Sarabun', sans-serif; font-size: 13px;
         }
         .btn-download:hover { filter: brightness(1.1); }
-
         .admin-actions {
             display: none; justify-content: space-between; align-items: center;
-            padding: 7px 6px; background: #fafafa;
-            border-top: 1px solid #f0f0f0; gap: 4px;
+            padding: 7px 6px; background: #fafafa; border-top: 1px solid #f0f0f0; gap: 4px;
         }
         .btn-admin-tool {
-            background: white; border: 1px solid #ddd; border-radius: 5px;
-            cursor: pointer; font-size: 10px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center;
-            gap: 3px; padding: 5px 4px;
-            transition: all 0.2s; flex: 1; white-space: nowrap;
-            text-decoration: none; font-family: 'Sarabun', sans-serif;
+            background: white; border: 1px solid #ddd; border-radius: 5px; cursor: pointer;
+            font-size: 10px; font-weight: 700; display: flex; align-items: center;
+            justify-content: center; gap: 3px; padding: 5px 4px; transition: all 0.2s;
+            flex: 1; white-space: nowrap; text-decoration: none; font-family: 'Sarabun', sans-serif;
         }
         .btn-edit-tool  { color: #3498db; border-color: #3498db; }
         .btn-reset-tool { color: #f39c12; border-color: #f39c12 !important; }
@@ -327,46 +178,18 @@
         .btn-lock-tool.active { color: #e74c3c; border-color: #e74c3c; background: #fff5f5; }
         .btn-delete-tool { color: #e74c3c; border-color: #e74c3c; }
         .btn-admin-tool:hover { background: #f5f5f5; }
-
-        /* Toggle switch */
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; inset: 0;
-            background: #ccc; transition: .4s; border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute; content: "";
-            height: 12px; width: 12px; left: 3px; bottom: 3px;
-            background: white; transition: .4s; border-radius: 50%;
-        }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background: var(--danger); }
         input:checked + .slider:before { transform: translateX(16px); }
-
-        /* Lightbox & Modal */
-        .lightbox {
-            display: none; position: fixed; z-index: 9999;
-            inset: 0; background: rgba(0,0,0,0.92);
-            align-items: center; justify-content: center;
-        }
+        .lightbox { display: none; position: fixed; z-index: 9999; inset: 0; background: rgba(0,0,0,0.92); align-items: center; justify-content: center; }
         .lightbox img { max-width: 90%; max-height: 90%; border-radius: 12px; }
-        .modal-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.65); z-index: 9999;
-            align-items: center; justify-content: center;
-        }
-        .login-card {
-            background: white; padding: 32px 28px;
-            border-radius: 18px; width: 320px; text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9999; align-items: center; justify-content: center; }
+        .login-card { background: white; padding: 32px 28px; border-radius: 18px; width: 320px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         .login-card h3 { margin-bottom: 20px; font-size: 17px; }
-        .login-card input {
-            width: 100%; padding: 11px 12px; margin: 6px 0;
-            border: 1px solid #e0e0e0; border-radius: 9px;
-            font-size: 14px; outline: none;
-            font-family: 'Sarabun', sans-serif;
-        }
+        .login-card input { width: 100%; padding: 11px 12px; margin: 6px 0; border: 1px solid #e0e0e0; border-radius: 9px; font-size: 14px; outline: none; font-family: 'Sarabun', sans-serif; }
     </style>
 </head>
 <body>
@@ -384,58 +207,32 @@
 
 <!-- TOP NAV BAR -->
 <nav class="topbar">
-    <!-- Logo -->
     <div class="topbar-logo">
         <i class="fas fa-dog" style="color:var(--accent);font-size:1.1rem;"></i>
         COUGAR<span>2</span>
     </div>
-
-    <!-- Nav items -->
     <div class="topbar-nav">
-        <div class="nav-item active" id="nav-dash" onclick="window.showPage('dash-page', this)">
-            <i class="fas fa-home"></i> Obs Docks UI
-        </div>
-        <div class="nav-item" id="nav-edoc" onclick="window.showPage('edoc-page', this)">
-            <i class="fas fa-file-alt"></i> E-doc
-        </div>
-        <div class="nav-item" id="nav-live" onclick="window.showPage('live-page', this)">
-            <i class="fas fa-video"></i> กล้องสด
-        </div>
-        <div class="nav-item" id="nav-map" onclick="window.showPage('map-page', this)">
-            <i class="fas fa-map-marked-alt"></i> แผนที่
-        </div>
-        <div class="nav-item" id="nav-cal" onclick="window.showPage('calendar-page', this)">
-            <i class="fas fa-calendar-alt"></i> ปฏิทิน
-        </div>
-        <div class="nav-item" id="nav-esos" onclick="window.showPage('esos-page', this)">
-            <i class="fas fa-rocket"></i> ESOS
-        </div>
-        <div class="nav-item" id="nav-tracking" onclick="window.showPage('tracking-page', this)">
-            <i class="fas fa-location-dot"></i> Location Tracking
-        </div>
+        <div class="nav-item active" id="nav-dash"     onclick="window.showPage('dash-page', this)"><i class="fas fa-home"></i> Obs Docks UI</div>
+        <div class="nav-item"        id="nav-edoc"     onclick="window.showPage('edoc-page', this)"><i class="fas fa-file-alt"></i> E-doc</div>
+        <div class="nav-item"        id="nav-live"     onclick="window.showPage('live-page', this)"><i class="fas fa-video"></i> กล้องสด</div>
+        <div class="nav-item"        id="nav-map"      onclick="window.showPage('map-page', this)"><i class="fas fa-map-marked-alt"></i> แผนที่</div>
+        <div class="nav-item"        id="nav-cal"      onclick="window.showPage('calendar-page', this)"><i class="fas fa-calendar-alt"></i> ปฏิทิน</div>
+        <div class="nav-item"        id="nav-esos"     onclick="window.showPage('esos-page', this)"><i class="fas fa-rocket"></i> ESOS</div>
+        <div class="nav-item"        id="nav-tracking" onclick="window.showPage('tracking-page', this)"><i class="fas fa-location-dot"></i> Location Tracking</div>
     </div>
 
-    <!-- Auth zone -->
+    <!-- มีแค่ปุ่มเดียว ไม่มีนาฬิกา ไม่มี dot ไม่มี Guest label -->
     <div class="topbar-auth">
-        <div class="time-badge">
-            <i class="fas fa-circle"></i>
-            <span id="dash-time">00:00</span>
-        </div>
-        <div id="dash-status-dot"></div>
-        <span id="dash-status-label">Guest</span>
         <button id="auth-btn" onclick="window.toggleAuth()">
-            <i class="fas fa-user-shield"></i> Login
+            <i class="fas fa-user-shield"></i> Admin Login
         </button>
     </div>
 </nav>
 
 <!-- CONTENT -->
 <div class="content-wrap">
-
-    <!-- DASHBOARD -->
     <div id="dash-page" class="page-content active">
         <div class="page-title"><i class="fas fa-home" style="color:var(--primary);"></i> Obs Docks UI</div>
-
         <div class="dashboard-stats">
             <div class="stat-box">
                 <i class="fas fa-clock" style="color:#2ecc71;"></i>
@@ -454,6 +251,7 @@
             </div>
             <div class="stat-box">
                 <i class="fas fa-user-cog" style="color:var(--primary);"></i>
+                <!-- ปุ่มนี้สลับ Login ↔ Logout เหมือน topbar -->
                 <button id="auth-btn-stat" onclick="window.toggleAuth()">
                     <i class="fas fa-sign-in-alt"></i> Admin Login
                 </button>
@@ -461,21 +259,15 @@
             </div>
         </div>
 
-        <!-- Admin panel -->
         <div id="admin-panel">
             <div class="admin-header">
                 <h3><i class="fas fa-tools" style="color:var(--warning);margin-right:8px;"></i>Admin Control Panel</h3>
                 <div style="display:flex;align-items:center;gap:14px;">
                     <div style="display:flex;align-items:center;gap:8px;">
                         <span style="font-size:11px;font-weight:700;color:var(--danger);">Lock Downloads</span>
-                        <label class="switch">
-                            <input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()">
-                            <span class="slider"></span>
-                        </label>
+                        <label class="switch"><input type="checkbox" id="globalLock" onchange="window.toggleGlobalLock()"><span class="slider"></span></label>
                     </div>
-                    <button onclick="window.resetAllCounts()" style="background:var(--warning);color:white;border:none;padding:6px 12px;border-radius:7px;font-size:11px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:5px;font-family:'Sarabun',sans-serif;">
-                        <i class="fas fa-sync-alt"></i> รีเซ็ตทั้งหมด
-                    </button>
+                    <button onclick="window.resetAllCounts()" style="background:var(--warning);color:white;border:none;padding:6px 12px;border-radius:7px;font-size:11px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:5px;font-family:'Sarabun',sans-serif;"><i class="fas fa-sync-alt"></i> รีเซ็ตทั้งหมด</button>
                 </div>
             </div>
             <div class="form-row">
@@ -493,7 +285,6 @@
         <div id="download-list" class="download-grid"></div>
     </div>
 
-    <!-- IFRAME PAGES -->
     <div id="edoc-page"     class="page-content"><iframe src="e-doc.html"></iframe></div>
     <div id="live-page"     class="page-content"><iframe src="cctv.html"></iframe></div>
     <div id="map-page"      class="page-content"><iframe src="map.html"></iframe></div>
@@ -505,40 +296,58 @@
 <div id="imgLightbox" class="lightbox" onclick="this.style.display='none'"><img id="lightboxImg"></div>
 
 <script>
-    // sync auth-btn และ auth-btn-stat
-    function syncAuthBtns(isAdmin) {
-        const label = isAdmin ? '<i class="fas fa-sign-out-alt"></i> Logout' : '<i class="fas fa-user-shield"></i> Login';
-        const bg    = isAdmin ? 'var(--danger)' : 'var(--primary)';
-        ['auth-btn','auth-btn-stat'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) { el.innerHTML = label; el.style.background = bg; }
-        });
-        const dot   = document.getElementById('dash-status-dot');
-        const label2 = document.getElementById('dash-status-label');
-        if (dot)   { dot.className   = isAdmin ? 'admin' : ''; }
-        if (label2) label2.innerText = isAdmin ? 'Admin' : 'Guest';
-    }
+    // ── sync ทั้ง 2 ปุ่มพร้อมกัน ──────────────────────────
+    window.syncAuthBtns = function(isAdmin) {
+        // Topbar
+        const topBtn = document.getElementById('auth-btn');
+        if (topBtn) {
+            topBtn.innerHTML  = isAdmin ? '<i class="fas fa-sign-out-alt"></i> Logout' : '<i class="fas fa-user-shield"></i> Admin Login';
+            topBtn.style.background = isAdmin ? 'var(--danger)' : 'var(--accent)';
+        }
+        // Stat-box
+        const statBtn = document.getElementById('auth-btn-stat');
+        if (statBtn) {
+            statBtn.innerHTML  = isAdmin ? '<i class="fas fa-sign-out-alt"></i> Logout' : '<i class="fas fa-sign-in-alt"></i> Admin Login';
+            statBtn.style.background = isAdmin ? 'var(--danger)' : 'var(--primary)';
+        }
+        // Status text + icon
+        const statusEl   = document.getElementById('dash-status');
+        const statusIcon = document.getElementById('status-icon');
+        if (statusEl)   statusEl.innerText      = isAdmin ? 'Admin Mode' : 'Guest Mode';
+        if (statusIcon) { statusIcon.style.color = isAdmin ? '#2ecc71' : '#95a5a6'; statusIcon.className = isAdmin ? 'fas fa-user-shield' : 'fas fa-shield-alt'; }
+    };
 
-    // override window.showPage ให้ตรงกับ nav-item
-    window._origShowPage = window.showPage;
+    // showPage
     window.showPage = function(id, el) {
         document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-        const pg = document.getElementById(id);
-        if (pg) pg.classList.add('active');
+        const pg = document.getElementById(id); if (pg) pg.classList.add('active');
         document.querySelectorAll('.nav-item').forEach(a => a.classList.remove('active'));
         if (el) el.classList.add('active');
     };
 
-    // clock
+    // Clock (stat-box เท่านั้น)
     function tick() {
-        const t = new Date().toLocaleTimeString('th-TH');
-        const el  = document.getElementById('dash-time');
-        const el2 = document.getElementById('dash-time2');
-        if (el)  el.innerText  = t;
-        if (el2) el2.innerText = t;
+        const el = document.getElementById('dash-time2');
+        if (el) el.innerText = new Date().toLocaleTimeString('th-TH');
     }
-    tick();
-    setInterval(tick, 1000);
+    tick(); setInterval(tick, 1000);
+
+    // Patch toggleAuth + performLogin ของ script.js ให้เรียก syncAuthBtns
+    window.addEventListener('load', function() {
+        function patchFn(name) {
+            const orig = window[name];
+            if (!orig) return;
+            window[name] = function() {
+                orig.apply(this, arguments);
+                setTimeout(() => {
+                    const adminPanel = document.getElementById('admin-panel');
+                    window.syncAuthBtns(adminPanel && adminPanel.style.display !== 'none');
+                }, 80);
+            };
+        }
+        patchFn('toggleAuth');
+        patchFn('performLogin');
+    });
 </script>
 <script type="module" src="script.js"></script>
 </body>
