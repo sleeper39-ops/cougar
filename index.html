@@ -18,6 +18,10 @@
         .sidebar a { color: #bbb; text-decoration: none; padding: 14px 20px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
         .sidebar a:hover, .sidebar a.active { background: var(--primary); color: white; }
 
+        /* ---- Location Tracking link (เปิด tab ใหม่) ---- */
+        .sidebar a.external-link { border: 1px solid rgba(52,152,219,0.3); }
+        .sidebar a.external-link:hover { background: #27ae60; border-color: transparent; }
+
         .wrapper { flex: 1; display: flex; flex-direction: column; position: relative; }
         .top-nav { height: 60px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 5; }
         .main-content { flex: 1; padding: 30px; overflow-y: auto; }
@@ -38,27 +42,15 @@
         .stat-value { font-size: 1.2rem; font-weight: bold; color: #000; }
         .stat-label { font-size: 11px; color: #888; margin-top: 5px; }
 
-        /* 🔑 Admin Auth Button (ลดขนาดลงเป็นพิเศษ) */
         #auth-btn {
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            padding: 4px 12px; /* ลด padding จาก 6px 14px */
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            font-size: 11px;    /* ลดขนาดตัวอักษรลงเหลือ 11px */
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 5px;
-            transition: 0.2s;
-            margin-bottom: 2px;
-            height: 28px;      /* คุมความสูงไม่ให้โดดจากตัวหนังสือ */
+            background: var(--primary); color: white; border: none; 
+            padding: 4px 12px; border-radius: 6px; cursor: pointer; 
+            font-weight: 600; font-size: 11px; display: inline-flex; 
+            align-items: center; justify-content: center; gap: 5px;
+            transition: 0.2s; margin-bottom: 2px; height: 28px;
         }
         #auth-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
-        /* Admin Panel Control */
         #admin-panel { display: none; background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end; }
@@ -67,12 +59,11 @@
         .input-group input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; outline: none; font-size: 13px; }
         .btn-action { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; height: 38px; }
 
-        /* Grid & Cards */
         .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding-bottom: 40px; }
         .download-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; height: 100%; transition: 0.2s; }
         
         .download-count-badge {
-            position: absolute; top: 10px; left: 10px; background: rgba(0, 0, 0, 0.6);
+            position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6);
             color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px;
             display: flex; align-items: center; gap: 5px; backdrop-filter: blur(4px); z-index: 1;
         }
@@ -84,45 +75,23 @@
         
         .btn-download { margin-top: auto; display: block; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; color: white; background: var(--primary); text-decoration: none; }
 
-        /* 🛠️ Admin Action Buttons (ปรับให้เล็กลงเพื่อไม่ให้ล้นการ์ด) */
         .admin-actions { 
-            display: none; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 8px 6px;  /* ลด padding รอบแถบปุ่ม */
-            background: #fdfdfd; 
-            border-top: 1px solid #eee;
-            gap: 4px;          /* ลดระยะห่างระหว่างปุ่มลง */
+            display: none; justify-content: space-between; align-items: center; 
+            padding: 8px 6px; background: #fdfdfd; border-top: 1px solid #eee; gap: 4px;
         }
         .btn-admin-tool { 
-            background: white; 
-            border: 1px solid #ddd; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 10px;    /* ลดขนาดตัวอักษรลงเหลือ 10px */
-            font-weight: 700; 
-            display: flex; 
-            flex-direction: row; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 3px;          /* ลดช่องว่างระหว่างไอคอนกับข้อความ */
-            padding: 5px 2px;  /* ลด padding ในตัวปุ่มให้ผอมลง */
-            transition: all 0.2s ease-in-out; 
-            flex: 1; 
-            white-space: nowrap; 
-            min-width: 0;       /* อนุญาตให้ปุ่มยืดหยุ่นได้เต็มที่ */
-            text-decoration: none; 
+            background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; 
+            font-size: 10px; font-weight: 700; display: flex; flex-direction: row; 
+            align-items: center; justify-content: center; gap: 3px; padding: 5px 2px;
+            transition: all 0.2s ease-in-out; flex: 1; white-space: nowrap; min-width: 0; text-decoration: none; 
         }
-        
         .btn-edit-tool { color: #3498db; border-color: #3498db; }
         .btn-reset-tool { color: #f39c12; border: 1px solid #f39c12 !important; }
         .btn-lock-tool { color: #7f8c8d; border-color: #7f8c8d; }
         .btn-lock-tool.active { color: #e74c3c; border-color: #e74c3c; background: #fff5f5; }
         .btn-delete-tool { color: #e74c3c; border-color: #e74c3c; }
-        
         .btn-admin-tool:hover { filter: brightness(0.95); background: #f9f9f9; }
 
-        /* สวิตซ์ Global Lock */
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
@@ -157,6 +126,12 @@
         <a onclick="window.showPage('map-page', this)" id="nav-map"><i class="fas fa-map-marked-alt"></i> แผนที่ระบบ</a>
         <a onclick="window.showPage('calendar-page', this)" id="nav-cal"><i class="fas fa-calendar-alt"></i> ปฏิทิน</a>
         <a onclick="window.showPage('esos-page', this)" id="nav-esos"><i class="fas fa-rocket"></i> ระบบ ESOS</a>
+
+        <!-- Location Tracking — เปิด tab ใหม่ -->
+        <a href="location-tracking.html" target="_blank" class="external-link">
+            <i class="fas fa-map-pin"></i> Location Tracking
+            <i class="fas fa-external-link-alt" style="margin-left:auto; font-size:10px; opacity:0.6;"></i>
+        </a>
     </div>
     
     <div class="wrapper">
@@ -233,7 +208,3 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
-
-
-
-
