@@ -107,8 +107,8 @@
             transition: transform 0.18s;
         }
         .truck-chip-label {
-            font-size: 10px; font-weight: 700; color: #6b7280;
-            transition: color 0.18s;
+            font-size: 9px; font-weight: 700; color: #6b7280;
+            transition: color 0.18s; text-align: center; line-height: 1.2;
         }
         /* selected state */
         .truck-chip input:checked + .truck-chip-inner {
@@ -321,7 +321,7 @@ function buildTruckGrid() {
             <input type="radio" name="truck-pick" value="${val}"${i===1?' checked':''}>
             <div class="truck-chip-inner" style="${i===1?`border-color:${color};background:white;`:''}">
                 <div class="truck-chip-dot" style="background:${color};">${i}</div>
-                <span class="truck-chip-label">${i===10?'10':'0'+i}</span>
+                <span class="truck-chip-label">คันที่ ${i}</span>
             </div>`;
         // Update border on change
         label.querySelector('input').addEventListener('change', function() {
