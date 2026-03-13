@@ -276,3 +276,5 @@ setInterval(() => {
     if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH');
 }, 1000);
 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxoTRvHgyzatOutguyf7oVetSAxI5dRqy8ariDaUzsUNdiYOeqVdQc2vBpoTFECK7Xg/exec";
+
