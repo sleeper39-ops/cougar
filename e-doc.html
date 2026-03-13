@@ -97,15 +97,36 @@ const typeStyle = {
     default: { icon: 'fa-file-lines', color: 'text-slate-500', bg: 'bg-slate-50' }
 };
 
-// ── แปลงวันที่เป็น พ.ศ. รูปแบบ DD-MM-YYYY ─────────────
+// ── แปลงวันที่เป็น พ.ศ. รูปแบบ D-M-YYYY ──────────────
 function toThaiDate(raw) {
     if (!raw) return '-';
-    // รองรับทั้ง ISO string (2025-03-13T17:00:00.000Z) และรูปแบบอื่นๆ
-    const d = new Date(raw);
-    if (isNaN(d.getTime())) return raw; // ถ้าแปลงไม่ได้ คืนค่าเดิม
-    const day   = d.getDate();
-    const month = d.getMonth() + 1;       // เดือน 1-12
-    const year  = d.getFullYear() + 543;  // ค.ศ. → พ.ศ.
+
+    // กรณี Google Sheet ส่งมาเป็น string เช่น "2569-03-01T17:00:00.000Z"
+    // หรือ "1/3/2569" หรือ "2025-03-01" ฯลฯ
+    let day, month, year;
+
+    // ลอง parse จาก ISO string ก่อน
+    const isoMatch = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+        year  = parseInt(isoMatch[1]);
+        month = parseInt(isoMatch[2]);
+        day   = parseInt(isoMatch[3]);
+    } else {
+        // ลอง new Date() สำหรับรูปแบบอื่น
+        const d = new Date(raw);
+        if (!isNaN(d.getTime())) {
+            day   = d.getDate();
+            month = d.getMonth() + 1;
+            year  = d.getFullYear();
+        } else {
+            return String(raw); // แปลงไม่ได้ คืนค่าเดิม
+        }
+    }
+
+    // ถ้าปีน้อยกว่า 2500 = ค.ศ. → บวก 543
+    // ถ้าปีมากกว่าหรือเท่ากับ 2500 = พ.ศ. แล้ว → ไม่บวก
+    if (year < 2500) year += 543;
+
     return `${day}-${month}-${year}`;
 }
 
