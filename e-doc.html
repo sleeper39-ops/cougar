@@ -26,13 +26,7 @@
         #lightbox-close:hover { background:rgba(255,255,255,0.3); }
 
         /* Image thumb */
-        .img-thumb-wrap { width:100%; aspect-ratio:16/9; overflow:hidden; border-radius:10px; margin-bottom:12px; cursor:pointer; background:#f1f5f9; display:flex; align-items:center; justify-content:center; position:relative; }
-        .img-thumb-wrap img { width:100%; height:100%; object-fit:cover; transition:transform 0.3s; }
-        .img-thumb-wrap:hover img { transform:scale(1.04); }
-        .img-thumb-wrap .zoom-icon { position:absolute; inset:0; background:rgba(0,0,0,0); display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
-        .img-thumb-wrap:hover .zoom-icon { background:rgba(0,0,0,0.28); }
-        .img-thumb-wrap .zoom-icon i { color:#fff; font-size:22px; opacity:0; transition:opacity 0.2s; }
-        .img-thumb-wrap:hover .zoom-icon i { opacity:1; }
+
     </style>
 </head>
 <body class="text-slate-800">
@@ -176,8 +170,18 @@ function toTimestamp(raw) {
     return isNaN(d.getTime()) ? 0 : d.getTime();
 }
 
+function toDriveDirectUrl(url) {
+    // Google Drive: https://drive.google.com/file/d/FILE_ID/view?...
+    const m = url.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+    if (m) return 'https://drive.google.com/uc?export=view&id=' + m[1];
+    // Google Drive open?id=
+    const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+    if (m2) return 'https://drive.google.com/uc?export=view&id=' + m2[1];
+    return url;
+}
 function openLightbox(url) {
-    document.getElementById('lightbox-img').src = url;
+    const directUrl = toDriveDirectUrl(url);
+    document.getElementById('lightbox-img').src = directUrl;
     document.getElementById('lightbox').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
@@ -228,18 +232,14 @@ function renderList() {
                     <i class="fas fa-trash-can text-[10px]"></i>
                 </button>` : '';
 
-            const imagePreview = isImage ? `
-                <div class="img-thumb-wrap" onclick="openLightbox('${doc.url}')">
-                    <img src="${doc.url}" alt="${doc.name}" loading="lazy">
-                    <div class="zoom-icon"><i class="fas fa-magnifying-glass-plus"></i></div>
-                </div>` : '';
+            const imagePreview = ''; // thumbnail removed
 
             const actionButtons = isImage ? `
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="openLightbox('${doc.url}')" class="flex items-center justify-center gap-2 py-2 rounded-xl bg-slate-50 text-slate-500 hover:text-pink-600 hover:bg-pink-50 transition border border-slate-100 text-[11px] font-bold">
+                    <button onclick="openLightbox('${doc.url}')" class="flex items-center justify-center gap-2 py-2 rounded-xl bg-pink-50 text-pink-600 hover:bg-pink-100 transition border border-pink-100 text-[11px] font-bold">
                         <i class="fas fa-image"></i> ดูรูป
                     </button>
-                    <a href="${doc.url}" target="_blank" download class="flex items-center justify-center gap-2 py-2 rounded-xl bg-emerald-500 text-white text-[11px] font-bold hover:bg-emerald-600 transition shadow-md">
+                    <a href="${doc.url}" target="_blank" class="flex items-center justify-center gap-2 py-2 rounded-xl bg-emerald-500 text-white text-[11px] font-bold hover:bg-emerald-600 transition shadow-md">
                         <i class="fas fa-download"></i> ดาวน์โหลด
                     </a>
                 </div>` : `
@@ -253,7 +253,7 @@ function renderList() {
                 </div>`;
 
             container.innerHTML += `
-                <div class="doc-card bg-white p-5 rounded-2xl flex flex-col h-full overflow-hidden">
+                <div class="doc-card bg-white p-5 rounded-2xl flex flex-col overflow-hidden">
                     ${deleteBtn}
                     ${imagePreview}
                     <div class="flex items-start gap-4 mb-6">
@@ -263,7 +263,7 @@ function renderList() {
                             <span class="inline-block text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider border border-blue-100">${doc.category}</span>
                         </div>
                     </div>
-                    <div class="mt-auto pt-4 border-t border-slate-50 flex flex-col gap-3">
+                    <div class="pt-4 border-t border-slate-50 flex flex-col gap-3">
                         <div>
                             <p class="text-[9px] uppercase font-bold text-slate-400 tracking-tight">บันทึกเมื่อ</p>
                             <p class="text-[11px] font-semibold text-slate-600">${displayDate}</p>
