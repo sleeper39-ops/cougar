@@ -117,7 +117,7 @@ onValue(ref(db, "settings"), (snap) => {
     window.renderItems();
 });
 
-// --- 🖥️ UI Rendering (4 Buttons with Spans for CSS) ---
+// --- 🖥️ UI Rendering ---
 window.renderItems = () => {
     const list = document.getElementById('download-list');
     if(!list) return;
@@ -150,15 +150,12 @@ window.renderItems = () => {
                 <button onclick="window.editItem('${item.key}')" class="btn-admin-tool btn-edit-tool">
                     <i class="fas fa-edit"></i> <span>Edit</span>
                 </button>
-                
                 <button onclick="window.resetSingleCount('${item.key}')" class="btn-admin-tool btn-reset-tool">
                     <i class="fas fa-redo"></i> <span>Reset</span>
                 </button>
-
                 <button onclick="window.toggleItemLock('${item.key}', ${item.locked})" class="btn-admin-tool btn-lock-tool ${item.locked ? 'active' : ''}">
                     <i class="fas ${item.locked ? 'fa-lock' : 'fa-lock-open'}"></i> <span>${item.locked ? 'Unlock' : 'Lock'}</span>
                 </button>
-
                 <button onclick="window.deleteItem('${item.key}')" class="btn-admin-tool btn-delete-tool">
                     <i class="fas fa-trash"></i> <span>Delete</span>
                 </button>
@@ -255,10 +252,11 @@ window.toggleGlobalLock = () => {
     isAdmin && update(ref(db, "settings"), { globalLock: isChecked });
 };
 
+// ✅ แก้แล้ว: เปลี่ยน .sidebar a → .nav-item
 window.showPage = (id, el) => {
     document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
     document.getElementById(id)?.classList.add('active');
-    document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(a => a.classList.remove('active')); // ← แก้ตรงนี้
     if(el) el.classList.add('active');
     const navTitle = document.getElementById('nav-title');
     if(navTitle) navTitle.innerText = el ? el.innerText.trim() : "Dashboard";
@@ -275,7 +273,3 @@ setInterval(() => {
     const timeEl = document.getElementById('dash-time');
     if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('th-TH');
 }, 1000);
-
-
-
-
