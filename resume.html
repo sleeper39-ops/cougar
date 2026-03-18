@@ -255,49 +255,31 @@
     .form-grid { grid-template-columns: 1fr 1fr; }
   }
 
-  /* BREADCRUMB */
   .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
   .breadcrumb span { color: var(--text-secondary); }
   .breadcrumb .sep { color: var(--army-border); }
-
-  /* PAGE HEADER */
   .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
   .page-header h2 { font-size: 20px; font-weight: 700; color: var(--text-primary); font-family: 'Chakra Petch', sans-serif; }
   .page-header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-
-  /* PROGRESS */
   .progress-bar { background: var(--army-border); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 4px; }
   .progress-fill { height: 100%; border-radius: 4px; background: var(--army-green); }
-
-  /* TAG */
   .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: var(--army-pale); color: var(--text-secondary); border: 1px solid var(--army-border); margin: 2px; }
-
-  /* GOOGLE SHEET BANNER */
   .gs-banner { background: linear-gradient(135deg, #1a2332 0%, #2d5016 100%); color: #fff; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
   .gs-banner .gs-icon { font-size: 28px; }
   .gs-banner h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
   .gs-banner p { font-size: 12px; opacity: 0.75; }
   .gs-banner .gs-btn { margin-left: auto; padding: 8px 16px; border-radius: var(--radius); background: var(--army-gold); color: var(--army-dark); border: none; font-weight: 600; font-size: 13px; cursor: pointer; font-family: 'Sarabun', sans-serif; white-space: nowrap; }
-
-  /* TOGGLE */
   .toggle-row { display: flex; gap: 0; background: var(--bg-light); border: 1px solid var(--army-border); border-radius: var(--radius); padding: 3px; }
   .toggle-btn { flex: 1; padding: 6px 12px; border: none; background: none; border-radius: 6px; font-size: 12px; font-family: 'Sarabun', sans-serif; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
   .toggle-btn.active { background: var(--bg-white); color: var(--text-primary); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
-  /* EMPTY STATE */
   .empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
   .empty-state .es-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
   .empty-state p { font-size: 14px; }
-
-  /* PHOTO UPLOAD */
   .photo-upload { width: 100px; height: 120px; border: 2px dashed var(--army-border); border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: var(--army-pale); }
   .photo-upload:hover { border-color: var(--army-green); }
   .photo-upload span { font-size: 28px; margin-bottom: 6px; }
   .photo-upload p { font-size: 11px; color: var(--text-muted); text-align: center; padding: 0 8px; }
-
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 12px; background: var(--army-pale); border: 1px solid var(--army-border); color: var(--text-secondary); }
-
-  /* DOCS */
   .doc-cat-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
   .doc-cat-tab { padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--army-border); background: var(--bg-white); font-size: 12.5px; font-family: 'Sarabun', sans-serif; cursor: pointer; color: var(--text-secondary); font-weight: 500; transition: all 0.15s; }
   .doc-cat-tab:hover { border-color: var(--army-green); color: var(--army-green); }
@@ -338,18 +320,10 @@
   .doc-modal-body { padding: 20px; }
   .doc-modal-close { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 20px; cursor: pointer; }
   .doc-modal-close:hover { color: #fff; }
-  .doc-list-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--army-border); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; transition: background 0.1s; }
-  .doc-list-row:hover { background: var(--bg-light); }
-  .doc-list-row .dlr-icon { font-size: 22px; }
-  .doc-list-row .dlr-info { flex: 1; }
-  .doc-list-row .dlr-name { font-size: 13px; font-weight: 600; }
-  .doc-list-row .dlr-meta { font-size: 11px; color: var(--text-muted); }
   .chip.green { background: #e8f5e8; border-color: #b5d8b5; color: var(--status-active); }
   .chip.gold { background: #fff8e1; border-color: #f0d070; color: #7a5a00; }
   .chip.blue { background: #e8f0ff; border-color: #b0c8f0; color: #2a56a0; }
-
   .divider { border: none; border-top: 1px solid var(--army-border); margin: 16px 0; }
-
   .salary-step-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
   .step-box { background: var(--bg-light); border: 1px solid var(--army-border); border-radius: 6px; padding: 8px; text-align: center; }
   .step-box.current-step { background: var(--army-dark); color: var(--army-gold); border-color: var(--army-dark); }
@@ -357,13 +331,11 @@
   .step-box .sb-val { font-size: 13px; font-weight: 700; font-family: 'Chakra Petch', sans-serif; }
   .step-box.current-step .sb-step { color: rgba(255,255,255,0.6); }
   .step-box.current-step .sb-val { color: var(--army-gold); }
-
   .alert-box { padding: 12px 16px; border-radius: var(--radius); display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
   .alert-box.warn { background: #fff8e1; border: 1px solid #f0d070; }
   .alert-box.success { background: #e8f5e8; border: 1px solid #b5d8b5; }
   .alert-box .ab-icon { font-size: 16px; margin-top: 1px; }
   .alert-box p { font-size: 13px; color: var(--text-primary); }
-
   .ops-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .ops-card { background: var(--bg-card); border: 1px solid var(--army-border); border-radius: var(--radius); padding: 14px 16px; }
   .ops-card .oc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
@@ -404,8 +376,6 @@
   .btn-login { width: 100%; padding: 11px; background: var(--army-green); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 600; font-family: 'Sarabun', sans-serif; cursor: pointer; transition: background 0.15s; margin-top: 4px; }
   .btn-login:hover { background: var(--army-light-green); }
   .login-footer { font-size: 11px; color: var(--text-muted); margin-top: 20px; }
-
-  /* LOCK overlay for non-admin */
   .lock-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.01); z-index: 80; cursor: default; }
   body.locked .lock-overlay { display: block; }
   body.locked .btn-primary, body.locked .btn-gold { opacity: 0.45; pointer-events: none; cursor: not-allowed; }
@@ -413,7 +383,6 @@
   .admin-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(200,168,75,0.2); color: var(--army-gold); border: 1px solid rgba(200,168,75,0.3); }
   .logout-btn { background: none; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); border-radius: var(--radius); padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: 'Sarabun', sans-serif; transition: all 0.15s; }
   .logout-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.4); }
-
 </style>
 </head>
 <body class="locked">
@@ -438,7 +407,6 @@
   </div>
 </div>
 
-<!-- Lock overlay (prevents editing when not logged in) -->
 <div class="lock-overlay"></div>
 
 <!-- SIDEBAR -->
@@ -452,53 +420,25 @@
   </div>
   <div class="nav-section">
     <div class="nav-label">หลัก</div>
-    <div class="nav-item active" onclick="showPanel('dashboard')">
-      <span class="nav-icon">📊</span> ภาพรวมระบบ
-    </div>
-    <div class="nav-item" onclick="showPanel('list')">
-      <span class="nav-icon">👥</span> รายชื่อกำลังพล
-    </div>
-    <div class="nav-item" onclick="showPanel('search')">
-      <span class="nav-icon">🔍</span> ค้นหาขั้นสูง
-    </div>
-    <div class="nav-item" onclick="showPanel('add')">
-      <span class="nav-icon">➕</span> เพิ่มกำลังพลใหม่
-    </div>
-
+    <div class="nav-item active" onclick="showPanel('dashboard')"><span class="nav-icon">📊</span> ภาพรวมระบบ</div>
+    <div class="nav-item" onclick="showPanel('list')"><span class="nav-icon">👥</span> รายชื่อกำลังพล</div>
+    <div class="nav-item" onclick="showPanel('search')"><span class="nav-icon">🔍</span> ค้นหาขั้นสูง</div>
+    <div class="nav-item" onclick="showPanel('add')"><span class="nav-icon">➕</span> เพิ่มกำลังพลใหม่</div>
     <div class="nav-label" style="margin-top:8px;">การบริหาร</div>
-    <div class="nav-item" onclick="showPanel('profile')">
-      <span class="nav-icon">🪖</span> ประวัติส่วนตัว
-    </div>
-    <div class="nav-item" onclick="showPanel('ops')">
-      <span class="nav-icon">🗺️</span> การปฏิบัติงาน
-    </div>
-    <div class="nav-item" onclick="showPanel('promotion')">
-      <span class="nav-icon">⭐</span> แผนเลื่อนยศ/สอบ
-    </div>
-    <div class="nav-item" onclick="showPanel('courses')">
-      <span class="nav-icon">🎓</span> หลักสูตรการศึกษา
-    </div>
-
+    <div class="nav-item" onclick="showPanel('profile')"><span class="nav-icon">🪖</span> ประวัติส่วนตัว</div>
+    <div class="nav-item" onclick="showPanel('ops')"><span class="nav-icon">🗺️</span> การปฏิบัติงาน</div>
+    <div class="nav-item" onclick="showPanel('promotion')"><span class="nav-icon">⭐</span> แผนเลื่อนยศ/สอบ</div>
+    <div class="nav-item" onclick="showPanel('courses')"><span class="nav-icon">🎓</span> หลักสูตรการศึกษา</div>
     <div class="nav-label" style="margin-top:8px;">การเงิน</div>
-    <div class="nav-item" onclick="showPanel('salary')">
-      <span class="nav-icon">💰</span> เงินเดือน / ขั้นเงิน
-    </div>
-    <div class="nav-item" onclick="showPanel('pension')">
-      <span class="nav-icon">🏦</span> บำเหน็จ บำนาญ
-    </div>
-
-    <div class="nav-item" onclick="showPanel('docs')">
-      <span class="nav-icon">🗂️</span> เอกสารสำคัญ
-    </div>
-
+    <div class="nav-item" onclick="showPanel('salary')"><span class="nav-icon">💰</span> เงินเดือน / ขั้นเงิน</div>
+    <div class="nav-item" onclick="showPanel('pension')"><span class="nav-icon">🏦</span> บำเหน็จ บำนาญ</div>
+    <div class="nav-item" onclick="showPanel('docs')"><span class="nav-icon">🗂️</span> เอกสารสำคัญ</div>
     <div class="nav-label" style="margin-top:8px;">ระบบ</div>
     <div class="nav-item" onclick="showPanel('alerts')">
       <span class="nav-icon">🔔</span> การแจ้งเตือน
-      <span style="margin-left:auto;background:#c0392b;color:#fff;border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700;">4</span>
+      <span style="margin-left:auto;background:#c0392b;color:#fff;border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700;">0</span>
     </div>
-    <div class="nav-item" onclick="showPanel('settings')">
-      <span class="nav-icon">⚙️</span> ตั้งค่าระบบ
-    </div>
+    <div class="nav-item" onclick="showPanel('settings')"><span class="nav-icon">⚙️</span> ตั้งค่าระบบ</div>
   </div>
   <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:8px;">
     <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -511,7 +451,6 @@
 
 <!-- MAIN -->
 <div id="main">
-  <!-- TOPBAR -->
   <div id="topbar">
     <div class="topbar-title" id="topbar-title">ภาพรวมระบบ</div>
     <div class="search-bar">
@@ -530,7 +469,6 @@
     </div>
   </div>
 
-  <!-- CONTENT -->
   <div id="content">
 
     <!-- ===== DASHBOARD ===== -->
@@ -546,7 +484,6 @@
           <button class="btn btn-primary">📤 ส่งออกรายงาน</button>
         </div>
       </div>
-
       <div class="gs-banner">
         <div class="gs-icon">📊</div>
         <div>
@@ -555,40 +492,19 @@
         </div>
         <button class="gs-btn" onclick="showPanel('settings')">ตั้งค่าการเชื่อมต่อ →</button>
       </div>
-
       <div class="stats-grid">
-        <div class="stat-card green">
-          <div class="stat-label">กำลังพลทั้งหมด</div>
-          <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-sub" id="stat-total-sub">—</div>
-        </div>
-        <div class="stat-card gold">
-          <div class="stat-label">รอเลื่อนยศ (60 วัน)</div>
-          <div class="stat-value">—</div>
-          <div class="stat-sub">ยังไม่มีข้อมูล</div>
-        </div>
-        <div class="stat-card blue">
-          <div class="stat-label">ครบเกษียณใน 1 ปี</div>
-          <div class="stat-value">—</div>
-          <div class="stat-sub">ยังไม่มีข้อมูล</div>
-        </div>
-        <div class="stat-card red">
-          <div class="stat-label">อยู่ระหว่างฝึกอบรม</div>
-          <div class="stat-value" id="stat-training">0</div>
-          <div class="stat-sub">นาย</div>
-        </div>
+        <div class="stat-card green"><div class="stat-label">กำลังพลทั้งหมด</div><div class="stat-value" id="stat-total">0</div><div class="stat-sub">นาย</div></div>
+        <div class="stat-card gold"><div class="stat-label">รอเลื่อนยศ (60 วัน)</div><div class="stat-value">—</div><div class="stat-sub">ยังไม่มีข้อมูล</div></div>
+        <div class="stat-card blue"><div class="stat-label">ครบเกษียณใน 1 ปี</div><div class="stat-value">—</div><div class="stat-sub">ยังไม่มีข้อมูล</div></div>
+        <div class="stat-card red"><div class="stat-label">อยู่ระหว่างฝึกอบรม</div><div class="stat-value" id="stat-training">0</div><div class="stat-sub">นาย</div></div>
       </div>
-
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
-        <!-- Quick stats -->
         <div class="table-card">
           <div class="table-header"><h3>🪖 สัดส่วนยศ</h3></div>
-          <div style="padding:16px 20px;" id="rank-distribution">
+          <div style="padding:16px 20px;">
             <div class="empty-state" style="padding:20px 0;"><div class="es-icon" style="font-size:28px;">📊</div><p>เพิ่มข้อมูลกำลังพลเพื่อแสดงสัดส่วน</p></div>
           </div>
         </div>
-
-        <!-- Alerts -->
         <div class="table-card">
           <div class="table-header">
             <h3>🔔 การแจ้งเตือนด่วน</h3>
@@ -599,8 +515,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Recent personnel -->
       <div class="table-card">
         <div class="table-header">
           <h3>📋 รายชื่อกำลังพล (ล่าสุด)</h3>
@@ -619,18 +533,10 @@
         <div style="overflow-x:auto;">
           <table>
             <thead>
-              <tr>
-                <th width="40">#</th>
-                <th>ยศ-ชื่อ-สกุล</th>
-                <th>ตำแหน่ง</th>
-                <th>อายุราชการ</th>
-                <th>ขั้นเงิน</th>
-                <th>เงินเดือน</th>
-                <th>สถานะปัจจุบัน</th>
-                <th></th>
-              </tr>
+              <tr><th width="40">#</th><th>ยศ-ชื่อ-สกุล</th><th>ตำแหน่ง</th><th>อายุราชการ</th><th>ขั้นเงิน</th><th>เงินเดือน</th><th>สถานะปัจจุบัน</th><th></th></tr>
             </thead>
             <tbody id="dashboard-table">
+              <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูลกำลังพล</td></tr>
             </tbody>
           </table>
         </div>
@@ -641,7 +547,7 @@
     <div class="panel" id="panel-list">
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>รายชื่อกำลังพล</span></div>
       <div class="page-header">
-        <div><h2>รายชื่อกำลังพล</h2><p>ทั้งหมด 248 นาย</p></div>
+        <div><h2>รายชื่อกำลังพล</h2><p id="list-count-label">ทั้งหมด 0 นาย</p></div>
         <div style="display:flex;gap:8px;">
           <div class="toggle-row">
             <button class="toggle-btn active">ทั้งหมด</button>
@@ -655,314 +561,32 @@
       <div class="table-card">
         <div class="table-header">
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <select class="filter-select">
-              <option value="">ทุกยศ</option>
-              <option>ส.ต. (สิบตรี)</option>
-              <option>ส.ท. (สิบโท)</option>
-              <option>ส.อ. (สิบเอก)</option>
-              <option>จ.ส.ต. (จ่าสิบตรี)</option>
-              <option>จ.ส.ท. (จ่าสิบโท)</option>
-              <option>จ.ส.อ. (จ่าสิบเอก)</option>
-              <option>ร.ต. (ร้อยตรี)</option>
-              <option>ร.ท. (ร้อยโท)</option>
-              <option>ร.อ. (ร้อยเอก)</option>
-            </select>
-            <select class="filter-select">
-              <option value="">ทุกตำแหน่ง</option>
-              <optgroup label="— ฝ่ายต่างๆ —">
-                <option>ฝกพ. (ฝ่ายกำลังพล)</option>
-                <option>ฝขว. (ฝ่ายข่าวกรอง)</option>
-                <option>ฝยก. (ฝ่ายยุทธการ)</option>
-                <option>ฝกบ. (ฝ่ายกำลังบำรุง)</option>
-                <option>ฝกร. (ฝ่ายการเงิน)</option>
-              </optgroup>
-              <optgroup label="— ตำแหน่งสนาม —">
-                <option>ผบ.ชุด (ผู้บังคับชุด)</option>
-                <option>รอง ผบ.ชุด</option>
-                <option>นายสิบยุทธการและการข่าว</option>
-                <option>นายสิบอาวุธหนัก</option>
-                <option>นายสิบอาวุธเบา</option>
-                <option>พนักงานวิทยุ</option>
-                <option>นายสิบพยาบาล</option>
-                <option>นายสิบการช่างและทำลาย</option>
-              </optgroup>
-            </select>
-            <select class="filter-select">
-              <option value="">ทุกสถานะ</option>
-              <option>ปฏิบัติหน้าที่ณ ที่ตั้ง</option>
-              <option>ราชการสนาม ชค.953</option>
-              <option>ราชการสนาม บก.ควบคุม 2</option>
-              <option>ฝึกอบรม</option>
-              <option>ศึกษา</option>
-            </select>
+            <select class="filter-select"><option value="">ทุกยศ</option></select>
+            <select class="filter-select"><option value="">ทุกตำแหน่ง</option></select>
+            <select class="filter-select"><option value="">ทุกสถานะ</option></select>
             <input type="text" class="form-input" style="width:180px;padding:5px 10px;" placeholder="ค้นหาชื่อ...">
           </div>
         </div>
         <div style="overflow-x:auto;">
           <table>
             <thead>
-              <tr>
-                <th width="40">#</th>
-                <th>ยศ-ชื่อ-สกุล</th>
-                <th>เลขประจำตัว</th>
-                <th>ตำแหน่ง</th>
-                <th>วันเข้ารับราชการ</th>
-                <th>อายุราชการ</th>
-                <th>ขั้นเงิน</th>
-                <th>เงินเดือน</th>
-                <th>สถานะ</th>
-                <th>การดำเนินการ</th>
-              </tr>
+              <tr><th width="40">#</th><th>ยศ-ชื่อ-สกุล</th><th>เลขประจำตัว</th><th>ตำแหน่ง</th><th>วันเข้ารับราชการ</th><th>อายุราชการ</th><th>ขั้นเงิน</th><th>เงินเดือน</th><th>สถานะ</th><th>การดำเนินการ</th></tr>
             </thead>
-            <tbody id="full-table"></tbody>
+            <tbody id="full-table">
+              <tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูลกำลังพล</td></tr>
+            </tbody>
           </table>
-        </div>
-        <div style="padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--army-border);">
-          <span style="font-size:12px;color:var(--text-muted);">แสดง 1–10 จาก 248 รายการ</span>
-          <div style="display:flex;gap:4px;">
-            <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">‹</button>
-            <button class="btn btn-primary" style="padding:4px 10px;font-size:12px;">1</button>
-            <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">2</button>
-            <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">3</button>
-            <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">›</button>
-          </div>
         </div>
       </div>
     </div>
 
     <!-- ===== PROFILE ===== -->
     <div class="panel" id="panel-profile">
-      <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>รายชื่อกำลังพล</span><span class="sep">›</span><span>ประวัติส่วนตัว</span></div>
-      <div class="profile-grid">
-        <!-- Left -->
-        <div>
-          <div class="profile-sidebar-card">
-            <div class="profile-photo">🪖</div>
-            <div class="profile-rank">ร้อยโท</div>
-            <div class="profile-name">สมชาย ใจกล้า</div>
-            <div class="profile-pos">นายทหารยุทธการ กองพันทหารราบที่ 1</div>
-            <div class="profile-stats">
-              <div class="profile-stat-item">
-                <div class="psi-label">อายุราชการ</div>
-                <div class="psi-value">8 ปี 4 เดือน</div>
-              </div>
-              <div class="profile-stat-item">
-                <div class="psi-label">เลขประจำตัว</div>
-                <div class="psi-value">3-1104</div>
-              </div>
-              <div class="profile-stat-item">
-                <div class="psi-label">ขั้นเงินเดือน</div>
-                <div class="psi-value">ขั้น 14</div>
-              </div>
-              <div class="profile-stat-item">
-                <div class="psi-label">บำเหน็จ/บำนาญ</div>
-                <div class="psi-value">บำนาญ</div>
-              </div>
-            </div>
-            <span class="status-badge status-active" style="margin-bottom:16px;display:inline-block;">● ปฏิบัติหน้าที่</span>
-            <div class="profile-actions">
-              <button class="btn btn-primary">✏️ แก้ไขข้อมูล</button>
-              <button class="btn btn-ghost">📤 ส่งออก PDF</button>
-              <button class="btn btn-ghost">🔗 เชื่อมต่อ Drive</button>
-            </div>
-          </div>
-        </div>
-        <!-- Right Tabs -->
-        <div>
-          <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab(this,'profile-basic')">📋 ข้อมูลส่วนตัว</button>
-            <button class="tab-btn" onclick="switchTab(this,'profile-service')">🎖️ ราชการ</button>
-            <button class="tab-btn" onclick="switchTab(this,'profile-education')">🎓 การศึกษา</button>
-            <button class="tab-btn" onclick="switchTab(this,'profile-salary-tab')">💰 เงินเดือน</button>
-            <button class="tab-btn" onclick="switchTab(this,'profile-ops')">🗺️ ปฏิบัติการ</button>
-          </div>
-
-          <!-- Tab: ข้อมูลส่วนตัว -->
-          <div class="tab-content active" id="profile-basic">
-            <div class="detail-card">
-              <h4>👤 ข้อมูลส่วนบุคคล</h4>
-              <div class="detail-grid">
-                <div class="detail-item"><div class="di-label">ชื่อ-สกุล</div><div class="di-value">สมชาย ใจกล้า</div></div>
-                <div class="detail-item"><div class="di-label">วันเกิด</div><div class="di-value">15 ก.พ. 2510</div></div>
-                <div class="detail-item"><div class="di-label">อายุ</div><div class="di-value">57 ปี</div></div>
-                <div class="detail-item"><div class="di-label">เลขบัตรประชาชน</div><div class="di-value">3-1012-xxxxx-xx-x</div></div>
-                <div class="detail-item"><div class="di-label">เบอร์โทรศัพท์</div><div class="di-value highlight">081-234-5678</div></div>
-                <div class="detail-item"><div class="di-label">ที่อยู่</div><div class="di-value">กรุงเทพมหานคร</div></div>
-                <div class="detail-item"><div class="di-label">สถานภาพสมรส</div><div class="di-value">สมรส</div></div>
-                <div class="detail-item"><div class="di-label">จำนวนบุตร</div><div class="di-value">2 คน</div></div>
-                <div class="detail-item"><div class="di-label">ศาสนา</div><div class="di-value">พุทธ</div></div>
-              </div>
-            </div>
-            <div class="detail-card">
-              <h4>🪖 ข้อมูลราชการ</h4>
-              <div class="detail-grid">
-                <div class="detail-item"><div class="di-label">ยศ</div><div class="di-value gold">ร้อยโท (ร.ท.)</div></div>
-                <div class="detail-item"><div class="di-label">ตำแหน่ง</div><div class="di-value">นายทหารยุทธการ</div></div>
-                <div class="detail-item"><div class="di-label">หน่วย</div><div class="di-value">กองพันทหารราบที่ 1</div></div>
-                <div class="detail-item"><div class="di-label">วันเข้ารับราชการ</div><div class="di-value highlight">1 พ.ค. 2559</div></div>
-                <div class="detail-item"><div class="di-label">อายุราชการ</div><div class="di-value highlight">8 ปี 10 เดือน</div></div>
-                <div class="detail-item"><div class="di-label">เหล่า</div><div class="di-value">เหล่าทหารราบ (ร.)</div></div>
-                <div class="detail-item"><div class="di-label">เลขประจำตัว</div><div class="di-value">3-1104-xx-xxxxx-x</div></div>
-                <div class="detail-item"><div class="di-label">เขตรับราชการ</div><div class="di-value">เขตทัพภาคที่ 1</div></div>
-                <div class="detail-item"><div class="di-label">วันเกษียณ (คาด)</div><div class="di-value">30 ก.ย. 2570</div></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tab: ราชการ -->
-          <div class="tab-content" id="profile-service">
-            <div class="detail-card">
-              <h4>📅 ประวัติการดำรงตำแหน่ง</h4>
-              <div class="timeline">
-                <div class="tl-item">
-                  <div class="tl-dot gold"></div>
-                  <div class="tl-content">
-                    <div class="tl-date">1 ต.ค. 2567 – ปัจจุบัน</div>
-                    <div class="tl-title">นายทหารยุทธการ กองพันทหารราบที่ 1</div>
-                    <div class="tl-sub">มทบ.11 • ยศ ร.ท. • ขั้นเงิน 14</div>
-                  </div>
-                </div>
-                <div class="tl-item">
-                  <div class="tl-dot"></div>
-                  <div class="tl-content">
-                    <div class="tl-date">1 เม.ย. 2565 – 30 ก.ย. 2567</div>
-                    <div class="tl-title">ผู้บังคับหมวดปืนเล็ก กองพันทหารราบที่ 2</div>
-                    <div class="tl-sub">มทบ.11 • ยศ ร.ท. • ขั้นเงิน 11</div>
-                  </div>
-                </div>
-                <div class="tl-item">
-                  <div class="tl-dot"></div>
-                  <div class="tl-content">
-                    <div class="tl-date">1 พ.ค. 2559 – 31 มี.ค. 2565</div>
-                    <div class="tl-title">รองผู้บังคับหมวดปืนเล็ก</div>
-                    <div class="tl-sub">กองพันทหารราบที่ 1 • ยศ ร.ต.</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="detail-card">
-              <h4>🎖️ เครื่องราชอิสริยาภรณ์ / รางวัล</h4>
-              <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                <span class="tag">เบญจมาภรณ์ช้างเผือก</span>
-                <span class="tag">เหรียญพิทักษ์เสรีชน ชั้นที่ 2</span>
-                <span class="tag">เหรียญราชการชายแดน</span>
-                <span class="tag">เหรียญกาชาดสรรเสริญ</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tab: การศึกษา -->
-          <div class="tab-content" id="profile-education">
-            <div class="detail-card">
-              <h4>🏫 การศึกษาพื้นฐาน</h4>
-              <div class="detail-grid">
-                <div class="detail-item"><div class="di-label">สถาบันหลัก</div><div class="di-value">โรงเรียนนายร้อย จปร. (รุ่น 53)</div></div>
-                <div class="detail-item"><div class="di-label">ปีที่จบ</div><div class="di-value">2558</div></div>
-                <div class="detail-item"><div class="di-label">วุฒิการศึกษา</div><div class="di-value">รัฐศาสตรบัณฑิต</div></div>
-              </div>
-            </div>
-            <div class="detail-card">
-              <h4>🎓 หลักสูตรทางทหาร</h4>
-              <div class="course-list">
-                <div class="course-item">
-                  <div class="course-icon">🏆</div>
-                  <div class="course-info">
-                    <div class="ci-name">หลักสูตรชั้นนายร้อย (นร.)</div>
-                    <div class="ci-detail">โรงเรียนทหารราบ • 2564 • คะแนน 87.5%</div>
-                  </div>
-                  <span class="course-badge">ผ่าน</span>
-                </div>
-                <div class="course-item">
-                  <div class="course-icon">🎯</div>
-                  <div class="course-info">
-                    <div class="ci-name">หลักสูตรการรบพิเศษ (รพ.)</div>
-                    <div class="ci-detail">ศูนย์สงครามพิเศษ • 2562</div>
-                  </div>
-                  <span class="course-badge">ผ่าน</span>
-                </div>
-                <div class="course-item">
-                  <div class="course-icon">🪂</div>
-                  <div class="course-info">
-                    <div class="ci-name">หลักสูตรการโดดร่ม</div>
-                    <div class="ci-detail">โรงเรียนสงครามพิเศษ • 2561</div>
-                  </div>
-                  <span class="course-badge">ผ่าน</span>
-                </div>
-                <div class="course-item">
-                  <div class="course-icon" style="background:#3a6ea8;">📚</div>
-                  <div class="course-info">
-                    <div class="ci-name">หลักสูตรเสนาธิการทหารบก (สธ.)</div>
-                    <div class="ci-detail">วิทยาลัยเสนาธิการทหารบก • คาดว่าจะสอบ พ.ค. 68</div>
-                  </div>
-                  <span class="course-badge" style="background:#e8f0ff;color:#2a56a0;">วางแผน</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tab: เงินเดือน -->
-          <div class="tab-content" id="profile-salary-tab">
-            <div class="detail-card">
-              <h4>💰 เงินเดือนปัจจุบัน</h4>
-              <div class="salary-bar">
-                <div class="salary-main">
-                  <span class="s-label">เงินเดือนสุทธิ (มี.ค. 2568)</span>
-                  <span class="s-value">32,840 บาท</span>
-                </div>
-                <div class="salary-breakdown">
-                  <div class="salary-item"><div class="si-label">เงินเดือนขั้นฐาน</div><div class="si-value plus">30,100</div></div>
-                  <div class="salary-item"><div class="si-label">เงินเพิ่มพิเศษ</div><div class="si-value plus">5,000</div></div>
-                  <div class="salary-item"><div class="si-label">ภาษี</div><div class="si-value minus">-1,200</div></div>
-                  <div class="salary-item"><div class="si-label">กบข.</div><div class="si-value minus">-1,060</div></div>
-                </div>
-              </div>
-              <h4 style="margin-top:16px;">📊 ตารางขั้นเงินเดือน ยศ ร.ท.</h4>
-              <div class="salary-step-grid">
-                <div class="step-box"><div class="sb-step">ขั้น 1</div><div class="sb-val">16,620</div></div>
-                <div class="step-box"><div class="sb-step">ขั้น 5</div><div class="sb-val">20,100</div></div>
-                <div class="step-box"><div class="sb-step">ขั้น 10</div><div class="sb-val">25,940</div></div>
-                <div class="step-box current-step"><div class="sb-step">ขั้น 14 ◀</div><div class="sb-val">30,100</div></div>
-                <div class="step-box"><div class="sb-step">ขั้นสูงสุด</div><div class="sb-val">36,240</div></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tab: ปฏิบัติการ -->
-          <div class="tab-content" id="profile-ops">
-            <div class="detail-card">
-              <h4>🗺️ ประวัติการปฏิบัติงาน</h4>
-              <div class="ops-grid">
-                <div class="ops-card">
-                  <div class="oc-header">
-                    <div class="oc-title">ปฏิบัติการรักษาความสงบชายแดน</div>
-                    <span class="chip green">เสร็จสิ้น</span>
-                  </div>
-                  <div class="oc-place">📍 ชายแดน จ.สระแก้ว</div>
-                  <div class="oc-date">1 ม.ค. 2566 – 31 มี.ค. 2566 (3 เดือน)</div>
-                  <div class="oc-role"><span class="tag">ผบ.หมวด</span></div>
-                </div>
-                <div class="ops-card">
-                  <div class="oc-header">
-                    <div class="oc-title">ปฏิบัติการช่วยเหลือผู้ประสบภัยน้ำท่วม</div>
-                    <span class="chip green">เสร็จสิ้น</span>
-                  </div>
-                  <div class="oc-place">📍 จ.นครราชสีมา</div>
-                  <div class="oc-date">10 ก.ย. 2565 – 30 ก.ย. 2565 (21 วัน)</div>
-                  <div class="oc-role"><span class="tag">นายทหารปฏิบัติการ</span></div>
-                </div>
-                <div class="ops-card" style="border-color:var(--army-green);border-width:1.5px;">
-                  <div class="oc-header">
-                    <div class="oc-title">ฝึกร่วมนานาชาติ Cobra Gold 2568</div>
-                    <span class="chip gold">กำลังดำเนินการ</span>
-                  </div>
-                  <div class="oc-place">📍 จ.ชลบุรี</div>
-                  <div class="oc-date">11 – 21 มี.ค. 2568</div>
-                  <div class="oc-role"><span class="tag">นายทหารประสานงาน</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>ประวัติส่วนตัว</span></div>
+      <div class="empty-state">
+        <div class="es-icon">🪖</div>
+        <p>กรุณาเลือกกำลังพลจากรายชื่อเพื่อดูประวัติส่วนตัว</p>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="showPanel('list')">ไปยังรายชื่อกำลังพล →</button>
       </div>
     </div>
 
@@ -971,28 +595,21 @@
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>เงินเดือน / ขั้นเงิน</span></div>
       <div class="page-header"><div><h2>เงินเดือน / ขั้นเงิน</h2><p>ภาพรวมการจ่ายเงินเดือนและขั้นเงิน</p></div></div>
       <div class="stats-grid">
-        <div class="stat-card green"><div class="stat-label">ยอดจ่ายรวม/เดือน</div><div class="stat-value">7.2M</div><div class="stat-sub">248 นาย</div></div>
-        <div class="stat-card gold"><div class="stat-label">รอขึ้นขั้นเงิน</div><div class="stat-value">41</div><div class="stat-sub">รอบ 1 ต.ค. 68</div></div>
-        <div class="stat-card blue"><div class="stat-label">เฉลี่ยเงินเดือน/นาย</div><div class="stat-value">29,032</div><div class="stat-sub">บาท</div></div>
-        <div class="stat-card red"><div class="stat-label">ถึงขั้นสูงสุด</div><div class="stat-value">18</div><div class="stat-sub">นาย</div></div>
+        <div class="stat-card green"><div class="stat-label">ยอดจ่ายรวม/เดือน</div><div class="stat-value">—</div><div class="stat-sub">ยังไม่มีข้อมูล</div></div>
+        <div class="stat-card gold"><div class="stat-label">รอขึ้นขั้นเงิน</div><div class="stat-value">—</div><div class="stat-sub">ยังไม่มีข้อมูล</div></div>
+        <div class="stat-card blue"><div class="stat-label">เฉลี่ยเงินเดือน/นาย</div><div class="stat-value">—</div><div class="stat-sub">บาท</div></div>
+        <div class="stat-card red"><div class="stat-label">ถึงขั้นสูงสุด</div><div class="stat-value">—</div><div class="stat-sub">นาย</div></div>
       </div>
       <div class="table-card">
         <div class="table-header"><h3>📊 รายละเอียดเงินเดือนรายบุคคล</h3></div>
         <div style="overflow-x:auto;">
           <table>
             <thead>
-              <tr>
-                <th>ยศ-ชื่อ-สกุล</th>
-                <th>ขั้นเงิน</th>
-                <th>เงินเดือนขั้นฐาน</th>
-                <th>เงินเพิ่มพิเศษ</th>
-                <th>หักภาษี</th>
-                <th>หัก กบข.</th>
-                <th>รับสุทธิ</th>
-                <th>ขึ้นขั้นรอบถัดไป</th>
-              </tr>
+              <tr><th>ยศ-ชื่อ-สกุล</th><th>ขั้นเงิน</th><th>เงินเดือนขั้นฐาน</th><th>เงินเพิ่มพิเศษ</th><th>หักภาษี</th><th>หัก กบข.</th><th>รับสุทธิ</th><th>ขึ้นขั้นรอบถัดไป</th></tr>
             </thead>
-            <tbody id="salary-table"></tbody>
+            <tbody id="salary-table">
+              <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูล</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -1002,41 +619,12 @@
     <div class="panel" id="panel-pension">
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>บำเหน็จ บำนาญ</span></div>
       <div class="page-header"><div><h2>บำเหน็จ บำนาญ</h2><p>คำนวณสิทธิ์บำเหน็จบำนาญตามอายุราชการ</p></div></div>
-      <div class="alert-box success">
-        <span class="ab-icon">✅</span>
-        <p><strong>ร้อยโทสมชาย ใจกล้า</strong> — ปฏิบัติราชการ 8 ปี 10 เดือน ≥ 10 ปี เมื่อเกษียณมีสิทธิ์รับ <strong>บำนาญ</strong> รายเดือน</p>
+      <div class="empty-state">
+        <div class="es-icon">🏦</div>
+        <p>กรุณาเพิ่มข้อมูลกำลังพลเพื่อคำนวณสิทธิ์บำเหน็จบำนาญ</p>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="showPanel('add')">+ เพิ่มกำลังพลใหม่</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
-        <div class="detail-card">
-          <h4>📐 สูตรคำนวณบำนาญ</h4>
-          <div style="background:var(--army-pale);border-radius:var(--radius);padding:14px;font-size:13px;line-height:1.8;">
-            <div>บำนาญ = <strong>(เงินเดือนเดือนสุดท้าย × อายุราชการ) ÷ 50</strong></div>
-            <div class="divider"></div>
-            <div>= (36,240 × 30) ÷ 50</div>
-            <div style="color:var(--army-green);font-size:18px;font-weight:700;font-family:'Chakra Petch',sans-serif;margin-top:8px;">= 21,744 บาท/เดือน</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">คาดการณ์ ณ เกษียณ (ปี 2570)</div>
-          </div>
-        </div>
-        <div class="detail-card">
-          <h4>🔄 เปรียบเทียบ บำเหน็จ vs บำนาญ</h4>
-          <div class="pension-row">
-            <div class="pension-box">
-              <div class="pb-label">บำเหน็จ (รับครั้งเดียว)</div>
-              <div class="pb-value gold">1,087,200 บาท</div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">เงินเดือน × 30 ปี</div>
-            </div>
-            <div class="pension-box">
-              <div class="pb-label">บำนาญ (รายเดือน)</div>
-              <div class="pb-value green">21,744 บาท</div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">ต่อเดือน ตลอดชีพ</div>
-            </div>
-          </div>
-          <div style="margin-top:12px;font-size:12px;color:var(--text-secondary);background:var(--bg-light);border-radius:var(--radius);padding:10px;">
-            💡 บำนาญคุ้มค่ากว่าหากมีอายุหลังเกษียณมากกว่า <strong>49.8 เดือน (ประมาณ 4.1 ปี)</strong>
-          </div>
-        </div>
-      </div>
-      <div class="table-card">
+      <div class="table-card" style="margin-top:20px;">
         <div class="table-header"><h3>📋 รายชื่อผู้ใกล้เกษียณ (3 ปี)</h3></div>
         <table>
           <thead><tr><th>ยศ-ชื่อ-สกุล</th><th>อายุราชการ</th><th>วันเกษียณ</th><th>บำนาญคาด</th><th>บำเหน็จคาด</th><th>สิทธิ์</th></tr></thead>
@@ -1049,115 +637,10 @@
     <div class="panel" id="panel-promotion">
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>แผนเลื่อนยศ / สอบ</span></div>
       <div class="page-header"><div><h2>แผนเลื่อนยศ / สอบ</h2><p>วางแผนการสอบและเลื่อนยศกำลังพล</p></div></div>
-      <div class="detail-card">
-        <h4>⭐ เส้นทางเลื่อนยศ — ร.ท.สมชาย ใจกล้า</h4>
-        <div class="promo-timeline">
-          <div class="promo-step">
-            <div class="promo-node">
-              <div class="promo-circle done">ร.ต.</div>
-              <div class="pn-year">2559</div>
-              <div class="pn-label">เข้าราชการ</div>
-            </div>
-          </div>
-          <div class="promo-arrow done"></div>
-          <div class="promo-step">
-            <div class="promo-node">
-              <div class="promo-circle done">ร.ท.</div>
-              <div class="pn-year">2564</div>
-              <div class="pn-label">เลื่อนยศ</div>
-            </div>
-          </div>
-          <div class="promo-arrow"></div>
-          <div class="promo-step">
-            <div class="promo-node">
-              <div class="promo-circle current">ร.อ.</div>
-              <div class="pn-year">2569</div>
-              <div class="pn-label">เป้าหมาย</div>
-            </div>
-          </div>
-          <div class="promo-arrow"></div>
-          <div class="promo-step">
-            <div class="promo-node">
-              <div class="promo-circle next">พ.ต.</div>
-              <div class="pn-year">2573</div>
-              <div class="pn-label">วางแผน</div>
-            </div>
-          </div>
-          <div class="promo-arrow"></div>
-          <div class="promo-step">
-            <div class="promo-node">
-              <div class="promo-circle next">พ.ท.</div>
-              <div class="pn-year">2576</div>
-              <div class="pn-label">วางแผน</div>
-            </div>
-          </div>
-          <div class="promo-arrow"></div>
-          <div class="promo-step">
-            <div class="promo-node">
-              <div class="promo-circle next">พ.อ.</div>
-              <div class="pn-year">2580</div>
-              <div class="pn-label">วางแผน</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-        <div class="detail-card">
-          <h4>📋 เงื่อนไขเลื่อน ร.ท. → ร.อ.</h4>
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--bg-light);border-radius:var(--radius);">
-              <span style="font-size:13px;">อายุราชการ ≥ 10 ปี</span>
-              <span class="chip green">✓ 8 ปี 10 เดือน / 10 ปี</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--bg-light);border-radius:var(--radius);">
-              <span style="font-size:13px;">ผ่านหลักสูตร นร.</span>
-              <span class="chip green">✓ ผ่านแล้ว</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--bg-light);border-radius:var(--radius);">
-              <span style="font-size:13px;">สอบ สธ. (หรือเทียบเท่า)</span>
-              <span class="chip gold">⏳ กำหนด พ.ค. 68</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--bg-light);border-radius:var(--radius);">
-              <span style="font-size:13px;">ผลประเมินประจำปี ≥ ดีมาก</span>
-              <span class="chip green">✓ ดีมาก (92 คะแนน)</span>
-            </div>
-          </div>
-        </div>
-        <div class="detail-card">
-          <h4>📅 แผนการสอบ 2568</h4>
-          <div class="timeline">
-            <div class="tl-item">
-              <div class="tl-dot blue"></div>
-              <div class="tl-content">
-                <div class="tl-date">มี.ค. – เม.ย. 2568</div>
-                <div class="tl-title">เตรียมสอบ สธ. — ติว 3 เดือน</div>
-                <div class="tl-sub">อ่านหนังสือ + ติวกลุ่ม ทุกวันพุธ-ศุกร์</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot gold"></div>
-              <div class="tl-content">
-                <div class="tl-date">5 พ.ค. 2568</div>
-                <div class="tl-title">สอบข้อเขียน หลักสูตรเสนาธิการทหารบก</div>
-                <div class="tl-sub">วิทยาลัยเสนาธิการทหารบก กรุงเทพฯ</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot"></div>
-              <div class="tl-content">
-                <div class="tl-date">ส.ค. 2568</div>
-                <div class="tl-title">ประกาศผลสอบ</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot"></div>
-              <div class="tl-content">
-                <div class="tl-date">1 ต.ค. 2569</div>
-                <div class="tl-title">คาดว่าเลื่อนยศเป็น ร้อยเอก</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="empty-state">
+        <div class="es-icon">⭐</div>
+        <p>กรุณาเลือกกำลังพลจากรายชื่อเพื่อดูแผนเลื่อนยศ</p>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="showPanel('list')">ไปยังรายชื่อกำลังพล →</button>
       </div>
     </div>
 
@@ -1166,22 +649,16 @@
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>หลักสูตรการศึกษา</span></div>
       <div class="page-header"><div><h2>หลักสูตรการศึกษา</h2><p>จัดการและติดตามหลักสูตรกำลังพล</p></div></div>
       <div class="stats-grid">
-        <div class="stat-card green"><div class="stat-label">หลักสูตรทั้งหมด</div><div class="stat-value">14</div><div class="stat-sub">ในระบบ</div></div>
-        <div class="stat-card gold"><div class="stat-label">กำลังอบรม</div><div class="stat-value">19</div><div class="stat-sub">นาย</div></div>
-        <div class="stat-card blue"><div class="stat-label">จบหลักสูตรปีนี้</div><div class="stat-value">23</div><div class="stat-sub">นาย</div></div>
-        <div class="stat-card red"><div class="stat-label">รอขึ้นทะเบียน</div><div class="stat-value">7</div><div class="stat-sub">นาย</div></div>
+        <div class="stat-card green"><div class="stat-label">หลักสูตรทั้งหมด</div><div class="stat-value">0</div><div class="stat-sub">ในระบบ</div></div>
+        <div class="stat-card gold"><div class="stat-label">กำลังอบรม</div><div class="stat-value">0</div><div class="stat-sub">นาย</div></div>
+        <div class="stat-card blue"><div class="stat-label">จบหลักสูตรปีนี้</div><div class="stat-value">0</div><div class="stat-sub">นาย</div></div>
+        <div class="stat-card red"><div class="stat-label">รอขึ้นทะเบียน</div><div class="stat-value">0</div><div class="stat-sub">นาย</div></div>
       </div>
       <div class="table-card">
         <div class="table-header"><h3>📚 รายการหลักสูตรสำคัญ</h3></div>
         <table>
           <thead><tr><th>หลักสูตร</th><th>หน่วยงาน</th><th>ระยะเวลา</th><th>กำลังเรียน</th><th>จบแล้ว</th><th>รอบถัดไป</th></tr></thead>
-          <tbody>
-            <tr><td><strong>หลักสูตรเสนาธิการทหารบก (สธ.)</strong></td><td>วสบ.</td><td>1 ปี</td><td>4</td><td>67</td><td>ส.ค. 68</td></tr>
-            <tr><td><strong>หลักสูตรชั้นนายพัน (นพ.)</strong></td><td>รร.ทบ.</td><td>6 เดือน</td><td>3</td><td>24</td><td>ต.ค. 68</td></tr>
-            <tr><td><strong>หลักสูตรชั้นนายร้อย (นร.)</strong></td><td>รร.ทร.</td><td>4 เดือน</td><td>7</td><td>89</td><td>มิ.ย. 68</td></tr>
-            <tr><td><strong>หลักสูตรการรบพิเศษ (รพ.)</strong></td><td>ศสพ.</td><td>3 เดือน</td><td>2</td><td>41</td><td>ก.ค. 68</td></tr>
-            <tr><td><strong>หลักสูตรนายสิบชั้นต้น</strong></td><td>รร.นส.</td><td>3 เดือน</td><td>3</td><td>112</td><td>เม.ย. 68</td></tr>
-          </tbody>
+          <tbody><tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูลหลักสูตร</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -1191,10 +668,10 @@
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>การปฏิบัติงาน</span></div>
       <div class="page-header"><div><h2>การปฏิบัติงาน</h2><p>ประวัติและสถานะการปฏิบัติงานกำลังพล</p></div></div>
       <div class="stats-grid">
-        <div class="stat-card gold"><div class="stat-label">กำลังปฏิบัติงาน</div><div class="stat-value">—</div><div class="stat-sub">นาย</div></div>
-        <div class="stat-card green"><div class="stat-label">ปฏิบัติงานในพื้นที่</div><div class="stat-value">—</div><div class="stat-sub">นาย</div></div>
-        <div class="stat-card blue"><div class="stat-label">ราชการนอกพื้นที่</div><div class="stat-value">—</div><div class="stat-sub">นาย</div></div>
-        <div class="stat-card red"><div class="stat-label">ลา / ไม่สามารถปฏิบัติ</div><div class="stat-value">—</div><div class="stat-sub">นาย</div></div>
+        <div class="stat-card gold"><div class="stat-label">กำลังปฏิบัติงาน</div><div class="stat-value">0</div><div class="stat-sub">นาย</div></div>
+        <div class="stat-card green"><div class="stat-label">ปฏิบัติงานในพื้นที่</div><div class="stat-value">0</div><div class="stat-sub">นาย</div></div>
+        <div class="stat-card blue"><div class="stat-label">ราชการนอกพื้นที่</div><div class="stat-value">0</div><div class="stat-sub">นาย</div></div>
+        <div class="stat-card red"><div class="stat-label">ลา / ไม่สามารถปฏิบัติ</div><div class="stat-value">0</div><div class="stat-sub">นาย</div></div>
       </div>
       <div class="table-card">
         <div class="table-header"><h3>🗺️ ภารกิจปัจจุบัน</h3></div>
@@ -1213,57 +690,11 @@
         <h3>🔍 เงื่อนไขการค้นหา</h3>
         <div class="filter-grid">
           <div class="form-group"><label class="form-label">ชื่อ / สกุล</label><input type="text" class="form-input" placeholder="ค้นหาชื่อ-สกุล"></div>
-          <div class="form-group"><label class="form-label">ยศ</label>
-            <select class="form-select">
-              <option value="">-- ทุกยศ --</option>
-              <option>ส.ต. (สิบตรี)</option>
-              <option>ส.ท. (สิบโท)</option>
-              <option>ส.อ. (สิบเอก)</option>
-              <option>จ.ส.ต. (จ่าสิบตรี)</option>
-              <option>จ.ส.ท. (จ่าสิบโท)</option>
-              <option>จ.ส.อ. (จ่าสิบเอก)</option>
-              <option>ร.ต. (ร้อยตรี)</option>
-              <option>ร.ท. (ร้อยโท)</option>
-              <option>ร.อ. (ร้อยเอก)</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">ตำแหน่ง</label>
-            <select class="form-select">
-              <option value="">-- ทุกตำแหน่ง --</option>
-              <optgroup label="— ฝ่ายต่างๆ —">
-                <option>ฝกพ. (ฝ่ายกำลังพล)</option>
-                <option>ฝขว. (ฝ่ายข่าวกรอง)</option>
-                <option>ฝยก. (ฝ่ายยุทธการ)</option>
-                <option>ฝกบ. (ฝ่ายกำลังบำรุง)</option>
-                <option>ฝกร. (ฝ่ายการเงิน)</option>
-              </optgroup>
-              <optgroup label="— ตำแหน่งสนาม —">
-                <option>ผบ.ชุด (ผู้บังคับชุด)</option>
-                <option>รอง ผบ.ชุด</option>
-                <option>นายสิบยุทธการและการข่าว</option>
-                <option>นายสิบอาวุธหนัก</option>
-                <option>นายสิบอาวุธเบา</option>
-                <option>พนักงานวิทยุ</option>
-                <option>นายสิบพยาบาล</option>
-                <option>นายสิบการช่างและทำลาย</option>
-              </optgroup>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">เหล่า / สาขา</label><select class="form-select"><option value="">-- ทุกเหล่า --</option><option>ทหารราบ (ร.)</option><option>ทหารม้า (ม.)</option><option>ทหารปืนใหญ่ (ป.)</option><option>ทหารช่าง (ช.)</option><option>ทหารสื่อสาร (ส.)</option><option>แพทย์ (พ.)</option></select></div>
-          <div class="form-group"><label class="form-label">สถานะ</label>
-            <select class="form-select">
-              <option value="">-- ทุกสถานะ --</option>
-              <option>ปฏิบัติหน้าที่ณ ที่ตั้ง</option>
-              <option>ราชการสนาม ชค.953</option>
-              <option>ราชการสนาม บก.ควบคุม 2</option>
-              <option>ฝึกอบรม</option>
-              <option>ศึกษา</option>
-            </select>
-          </div>
+          <div class="form-group"><label class="form-label">ยศ</label><select class="form-select"><option value="">-- ทุกยศ --</option></select></div>
+          <div class="form-group"><label class="form-label">ตำแหน่ง</label><select class="form-select"><option value="">-- ทุกตำแหน่ง --</option></select></div>
+          <div class="form-group"><label class="form-label">เหล่า / สาขา</label><select class="form-select"><option value="">-- ทุกเหล่า --</option></select></div>
+          <div class="form-group"><label class="form-label">สถานะ</label><select class="form-select"><option value="">-- ทุกสถานะ --</option></select></div>
           <div class="form-group"><label class="form-label">อายุราชการ (ปี)</label><div style="display:flex;gap:6px;"><input type="number" class="form-input" placeholder="ต่ำสุด" min="0"><input type="number" class="form-input" placeholder="สูงสุด" min="0"></div></div>
-          <div class="form-group"><label class="form-label">หลักสูตรที่ผ่าน</label><select class="form-select"><option value="">-- ทุกหลักสูตร --</option><option>นร.</option><option>สธ.</option><option>นพ.</option><option>รพ.</option></select></div>
-          <div class="form-group"><label class="form-label">เงินเดือน (บาท)</label><div style="display:flex;gap:6px;"><input type="number" class="form-input" placeholder="ต่ำสุด"><input type="number" class="form-input" placeholder="สูงสุด"></div></div>
-          <div class="form-group"><label class="form-label">สิทธิ์บำเหน็จ/บำนาญ</label><select class="form-select"><option value="">-- ทั้งหมด --</option><option>บำนาญ</option><option>บำเหน็จ</option><option>ยังไม่มีสิทธิ์</option></select></div>
         </div>
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
           <button class="btn btn-ghost">🔄 ล้างตัวกรอง</button>
@@ -1272,11 +703,13 @@
         </div>
       </div>
       <div class="table-card">
-        <div class="table-header"><h3>📋 ผลการค้นหา</h3><span style="font-size:12px;color:var(--text-muted);">พบ 248 รายการ</span></div>
+        <div class="table-header"><h3>📋 ผลการค้นหา</h3><span style="font-size:12px;color:var(--text-muted);">พบ 0 รายการ</span></div>
         <div style="overflow-x:auto;">
           <table>
             <thead><tr><th>ยศ-ชื่อ-สกุล</th><th>ตำแหน่ง</th><th>เหล่า</th><th>อายุราชการ</th><th>เงินเดือน</th><th>สถานะ</th><th></th></tr></thead>
-            <tbody id="search-table"></tbody>
+            <tbody id="search-table">
+              <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูล</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -1286,7 +719,6 @@
     <div class="panel" id="panel-add">
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>เพิ่มกำลังพลใหม่</span></div>
       <div class="page-header"><div><h2>เพิ่มกำลังพลใหม่</h2><p>กรอกข้อมูลกำลังพลใหม่เข้าสู่ระบบ</p></div></div>
-
       <div class="form-card">
         <h4>📷 รูปภาพ & ข้อมูลเบื้องต้น</h4>
         <div style="display:flex;gap:20px;align-items:flex-start;">
@@ -1296,17 +728,11 @@
               <select class="form-select form-input">
                 <option value="">-- เลือกยศ --</option>
                 <optgroup label="— ชั้นประทวน —">
-                  <option>ส.ต. (สิบตรี)</option>
-                  <option>ส.ท. (สิบโท)</option>
-                  <option>ส.อ. (สิบเอก)</option>
-                  <option>จ.ส.ต. (จ่าสิบตรี)</option>
-                  <option>จ.ส.ท. (จ่าสิบโท)</option>
-                  <option>จ.ส.อ. (จ่าสิบเอก)</option>
+                  <option>ส.ต. (สิบตรี)</option><option>ส.ท. (สิบโท)</option><option>ส.อ. (สิบเอก)</option>
+                  <option>จ.ส.ต. (จ่าสิบตรี)</option><option>จ.ส.ท. (จ่าสิบโท)</option><option>จ.ส.อ. (จ่าสิบเอก)</option>
                 </optgroup>
                 <optgroup label="— ชั้นสัญญาบัตร —">
-                  <option>ร.ต. (ร้อยตรี)</option>
-                  <option>ร.ท. (ร้อยโท)</option>
-                  <option>ร.อ. (ร้อยเอก)</option>
+                  <option>ร.ต. (ร้อยตรี)</option><option>ร.ท. (ร้อยโท)</option><option>ร.อ. (ร้อยเอก)</option>
                 </optgroup>
               </select>
             </div>
@@ -1315,7 +741,6 @@
           </div>
         </div>
       </div>
-
       <div class="form-card">
         <h4>👤 ข้อมูลส่วนตัว</h4>
         <div class="form-grid">
@@ -1327,55 +752,53 @@
           <div class="form-group"><label class="form-label">ที่อยู่ปัจจุบัน</label><input type="text" class="form-input" placeholder="จังหวัด"></div>
         </div>
       </div>
-
       <div class="form-card">
         <h4>🪖 ข้อมูลราชการ</h4>
         <div class="form-grid">
           <div class="form-group"><label class="form-label">เลขประจำตัว 10 หลัก *</label><input type="text" class="form-input" placeholder="x-xxxx-xxxxx" maxlength="12"></div>
-          <div class="form-group"><label class="form-label">วันเข้ารับราชการ *</label><input type="date" class="form-input"></div>
+          <div class="form-group">
+            <label class="form-label">วันเข้ารับราชการ *</label>
+            <div style="display:flex;gap:6px;" id="join-date-wrap"></div>
+          </div>
           <div class="form-group"><label class="form-label">ตำแหน่ง *</label>
             <select class="form-select form-input">
               <option value="">-- เลือกตำแหน่ง --</option>
-              <optgroup label="— ฝ่ายต่างๆ —">
-                <option>ฝกพ. (ฝ่ายกำลังพล)</option>
-                <option>ฝขว. (ฝ่ายข่าวกรอง)</option>
-                <option>ฝยก. (ฝ่ายยุทธการ)</option>
-                <option>ฝกบ. (ฝ่ายกำลังบำรุง)</option>
-                <option>ฝกร. (ฝ่ายการเงิน)</option>
-              </optgroup>
-              <optgroup label="— ตำแหน่งสนาม —">
-                <option>ผบ.ชุด (ผู้บังคับชุด)</option>
-                <option>รอง ผบ.ชุด</option>
-                <option>นายสิบยุทธการและการข่าว</option>
-                <option>นายสิบอาวุธหนัก</option>
-                <option>นายสิบอาวุธเบา</option>
-                <option>พนักงานวิทยุ</option>
-                <option>นายสิบพยาบาล</option>
-                <option>นายสิบการช่างและทำลาย</option>
-              </optgroup>
+              <option>นายสิบยุทธการและการข่าว</option>
+              <option>นายสิบอาวุธหนัก</option>
+              <option>นายสิบอาวุธเบา</option>
+              <option>พนักงานวิทยุ</option>
+              <option>นายสิบพยาบาล</option>
+              <option>นายสิบการช่างและทำลาย</option>
             </select>
           </div>
-          <div class="form-group"><label class="form-label">หน่วยงาน *</label><input type="text" class="form-input" placeholder="กองพัน / กรม"></div>
+          <div class="form-group"><label class="form-label">หน่วยงาน *</label>
+            <select class="form-select form-input">
+              <option value="">-- เลือกหน่วยงาน --</option>
+              <option>รพศ.2 พัน.1</option>
+            </select>
+          </div>
           <div class="form-group"><label class="form-label">เหล่า *</label><input type="text" class="form-input" placeholder="เช่น ทหารราบ, ทหารช่าง"></div>
           <div class="form-group"><label class="form-label">เขตทัพภาค</label><select class="form-select form-input"><option>ทัพภาคที่ 1</option><option>ทัพภาคที่ 2</option><option>ทัพภาคที่ 3</option><option>ทัพภาคที่ 4</option></select></div>
         </div>
       </div>
-
       <div class="form-card">
         <h4>💰 ข้อมูลเงินเดือน</h4>
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">บัญชีเงินเดือน *</label>
+            <label class="form-label">เงินเดือนระดับ *</label>
             <select class="form-select form-input" id="add-salary-account" onchange="calcSalary()">
-              <option value="">-- เลือกบัญชี --</option>
-              <option value="p1">ป.1 — นายทหารสัญญาบัตร (ร.ต. – พล.อ.)</option>
-              <option value="p2">ป.2 — นายทหารประทวน (ส.ต. – จ.ส.อ.)</option>
-              <option value="p3">ป.3 — พลทหาร</option>
+              <option value="">-- เลือกระดับ --</option>
+              <option value="p1">ป.1</option>
+              <option value="p2">ป.2</option>
+              <option value="p3">ป.3</option>
+              <option value="n1">น.1</option>
+              <option value="n2">น.2</option>
+              <option value="n3">น.3</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">ขั้นเงินเดือน *</label>
-            <select class="form-select form-input" id="add-salary-step" onchange="calcSalary()">
+            <select class="form-select form-input" id="add-salary-step" onchange="calcSalaryNet()">
               <option value="">-- เลือกขั้น --</option>
             </select>
           </div>
@@ -1383,33 +806,49 @@
             <label class="form-label">เงินเดือนขั้นฐาน (บาท)</label>
             <input type="number" class="form-input" id="add-salary-base" placeholder="คำนวณอัตโนมัติ" readonly style="background:var(--bg-light);font-weight:700;color:var(--army-green);">
           </div>
-          <div class="form-group"><label class="form-label">เงินเพิ่มพิเศษ (บาท)</label><input type="number" class="form-input" id="add-salary-extra" placeholder="0" oninput="calcSalaryNet()"></div>
           <div class="form-group">
-            <label class="form-label">เงินเดือนสุทธิ (คาดการณ์)</label>
+            <label class="form-label">เงินเพิ่มพิเศษ พ.ร.ด. (บาท)</label>
+            <select class="form-select form-input" id="add-salary-extra" onchange="calcSalaryNet()">
+              <option value="0">-- ไม่มี --</option>
+              <option value="5300">5,300 บาท</option>
+              <option value="7000">7,000 บาท</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">พ.ส.ร. ครั้งที่ 1 (บาท)</label>
+            <input type="number" class="form-input" id="add-psr1" placeholder="กรอกจำนวนเงิน" oninput="calcSalaryNet()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">พ.ส.ร. ครั้งที่ 2 (บาท)</label>
+            <input type="number" class="form-input" id="add-psr2" placeholder="กรอกจำนวนเงิน" oninput="calcSalaryNet()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">พ.ส.ร. ครั้งที่ 3 (บาท)</label>
+            <input type="number" class="form-input" id="add-psr3" placeholder="กรอกจำนวนเงิน" oninput="calcSalaryNet()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">พ.ส.ร. ครั้งที่ 4 (บาท)</label>
+            <input type="number" class="form-input" id="add-psr4" placeholder="กรอกจำนวนเงิน" oninput="calcSalaryNet()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">เงินเดือนสุทธิ</label>
             <input type="number" class="form-input" id="add-salary-net" placeholder="—" readonly style="background:var(--bg-light);font-weight:700;color:var(--army-green);">
           </div>
-          <div class="form-group"><label class="form-label">ประเภทบำเหน็จ/บำนาญ</label><select class="form-select form-input"><option>บำนาญ (กบข.)</option><option>บำเหน็จ</option></select></div>
         </div>
-        <!-- Salary Preview Card -->
         <div id="salary-preview-box" style="display:none;margin-top:14px;background:var(--army-pale);border:1px solid var(--army-border);border-radius:var(--radius);padding:14px 18px;">
           <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">📊 สรุปเงินเดือน ณ ขั้นที่เลือก</div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;">
             <div><div style="font-size:10px;color:var(--text-muted);">บัญชี / ขั้น</div><div style="font-size:14px;font-weight:700;font-family:'Chakra Petch',sans-serif;" id="prev-step">—</div></div>
             <div><div style="font-size:10px;color:var(--text-muted);">เงินเดือนฐาน</div><div style="font-size:14px;font-weight:700;color:var(--army-green);font-family:'Chakra Petch',sans-serif;" id="prev-base">—</div></div>
-            <div><div style="font-size:10px;color:var(--text-muted);">หัก กบข. (3.5%)</div><div style="font-size:14px;font-weight:700;color:#c0392b;font-family:'Chakra Petch',sans-serif;" id="prev-gpf">—</div></div>
-            <div><div style="font-size:10px;color:var(--text-muted);">รับสุทธิ (คาด)</div><div style="font-size:15px;font-weight:700;color:var(--army-green);font-family:'Chakra Petch',sans-serif;" id="prev-net">—</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">เงินเพิ่มพิเศษ พ.ร.ด.</div><div style="font-size:14px;font-weight:700;color:var(--army-green);font-family:'Chakra Petch',sans-serif;" id="prev-extra">—</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">พ.ส.ร. ครั้งที่ 1</div><div style="font-size:14px;font-weight:700;color:var(--army-green);font-family:'Chakra Petch',sans-serif;" id="prev-psr1">—</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">พ.ส.ร. ครั้งที่ 2</div><div style="font-size:14px;font-weight:700;color:var(--army-green);font-family:'Chakra Petch',sans-serif;" id="prev-psr2">—</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">พ.ส.ร. ครั้งที่ 3</div><div style="font-size:14px;font-weight:700;color:var(--army-green);font-family:'Chakra Petch',sans-serif;" id="prev-psr3">—</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">พ.ส.ร. ครั้งที่ 4</div><div style="font-size:14px;font-weight:700;color:var(--army-green);font-family:'Chakra Petch',sans-serif;" id="prev-psr4">—</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">รวมทั้งหมด</div><div style="font-size:15px;font-weight:700;color:var(--army-green);font-family:'Chakra Petch',sans-serif;" id="prev-net">—</div></div>
           </div>
         </div>
       </div>
-
-      <div class="form-card">
-        <h4>🎓 การศึกษา</h4>
-        <div class="form-grid-2">
-          <div class="form-group"><label class="form-label">กำเนิด</label><input type="text" class="form-input" placeholder="เช่น กองหนุน"></div>
-          <div class="form-group"><label class="form-label">รุ่น</label><input type="text" class="form-input" placeholder="เช่น รุ่น 1"></div>
-        </div>
-      </div>
-
       <div class="form-actions">
         <button class="btn btn-ghost">ยกเลิก</button>
         <button class="btn btn-ghost">💾 บันทึกร่าง</button>
@@ -1422,8 +861,9 @@
     <div class="panel" id="panel-alerts">
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>การแจ้งเตือน</span></div>
       <div class="page-header"><div><h2>การแจ้งเตือน</h2><p>ติดตามสถานการณ์สำคัญของกำลังพล</p></div></div>
-      <div class="notif-list">
-        <div class="empty-state"><div class="es-icon">🔔</div><p>ยังไม่มีการแจ้งเตือน</p></div>
+      <div class="empty-state">
+        <div class="es-icon">🔔</div>
+        <p>ยังไม่มีการแจ้งเตือน</p>
       </div>
     </div>
 
@@ -1431,39 +871,20 @@
     <div class="panel" id="panel-docs">
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>เอกสารสำคัญ</span></div>
       <div class="page-header">
-        <div>
-          <h2>เอกสารสำคัญ</h2>
-          <p>จัดเก็บและจัดการเอกสารราชการทางทหาร</p>
-        </div>
+        <div><h2>เอกสารสำคัญ</h2><p>จัดเก็บและจัดการเอกสารราชการทางทหาร</p></div>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-ghost" onclick="document.getElementById('doc-modal-upload').classList.add('open')">📤 อัปโหลดเอกสาร</button>
           <button class="btn btn-primary">🗂️ จัดหมวดหมู่</button>
         </div>
       </div>
-
-      <!-- Stats -->
       <div class="doc-stat-row">
-        <div class="doc-stat">
-          <div class="ds-icon">📁</div>
-          <div class="ds-info"><div class="ds-val">142</div><div class="ds-label">ไฟล์ทั้งหมด</div></div>
-        </div>
-        <div class="doc-stat">
-          <div class="ds-icon">⏳</div>
-          <div class="ds-info"><div class="ds-val" style="color:#9a7420;">8</div><div class="ds-label">ใกล้หมดอายุ (30 วัน)</div></div>
-        </div>
-        <div class="doc-stat">
-          <div class="ds-icon">🔄</div>
-          <div class="ds-info"><div class="ds-val" style="color:#3a6ea8;">14</div><div class="ds-label">อัปโหลดเดือนนี้</div></div>
-        </div>
-        <div class="doc-stat">
-          <div class="ds-icon">💾</div>
-          <div class="ds-info"><div class="ds-val">2.4 GB</div><div class="ds-label">พื้นที่ใช้งาน</div></div>
-        </div>
+        <div class="doc-stat"><div class="ds-icon">📁</div><div class="ds-info"><div class="ds-val">0</div><div class="ds-label">ไฟล์ทั้งหมด</div></div></div>
+        <div class="doc-stat"><div class="ds-icon">⏳</div><div class="ds-info"><div class="ds-val">0</div><div class="ds-label">ใกล้หมดอายุ (30 วัน)</div></div></div>
+        <div class="doc-stat"><div class="ds-icon">🔄</div><div class="ds-info"><div class="ds-val">0</div><div class="ds-label">อัปโหลดเดือนนี้</div></div></div>
+        <div class="doc-stat"><div class="ds-icon">💾</div><div class="ds-info"><div class="ds-val">0 MB</div><div class="ds-label">พื้นที่ใช้งาน</div></div></div>
       </div>
-
-      <!-- Category Tabs -->
-      <div class="doc-cat-tabs" id="doc-cat-tabs">
-        <button class="doc-cat-tab active" onclick="filterDocs('all',this)">📂 ทั้งหมด (142)</button>
+      <div class="doc-cat-tabs">
+        <button class="doc-cat-tab active" onclick="filterDocs('all',this)">📂 ทั้งหมด (0)</button>
         <button class="doc-cat-tab" onclick="filterDocs('วันทวีคูณ',this)">📅 วันทวีคูณ</button>
         <button class="doc-cat-tab" onclick="filterDocs('ปฏิบัติราชการสนาม',this)">🗺️ ปฏิบัติราชการสนาม</button>
         <button class="doc-cat-tab" onclick="filterDocs('เลื่อนยศ',this)">⭐ เลื่อนยศ / ปรับเงิน</button>
@@ -1472,58 +893,15 @@
         <button class="doc-cat-tab" onclick="filterDocs('ส่วนตัว',this)">👤 เอกสารส่วนตัว</button>
         <button class="doc-cat-tab" onclick="filterDocs('คำสั่ง',this)">📜 คำสั่ง / หนังสือราชการ</button>
       </div>
-
-      <!-- Search bar for docs -->
-      <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;">
-        <div class="search-bar" style="width:100%;border-radius:var(--radius);">
-          <span>🔍</span>
-          <input type="text" placeholder="ค้นหาชื่อเอกสาร, เจ้าของ, ประเภท..." id="doc-search-input" oninput="searchDocs(this.value)">
-        </div>
-        <select class="filter-select" id="doc-sort">
-          <option>เรียงตามวันที่ล่าสุด</option>
-          <option>เรียงตามชื่อ</option>
-          <option>เรียงตามเจ้าของ</option>
-          <option>เรียงตามขนาดไฟล์</option>
-        </select>
-        <div class="toggle-row" style="flex-shrink:0;">
-          <button class="toggle-btn active" id="view-grid-btn" onclick="setDocView('grid')">▦ ตาราง</button>
-          <button class="toggle-btn" id="view-list-btn" onclick="setDocView('list')">☰ รายการ</button>
-        </div>
-      </div>
-
-      <!-- Doc Grid View -->
       <div id="doc-grid-view">
-        <div class="doc-grid" id="doc-cards-container"></div>
-      </div>
-
-      <!-- Doc List View -->
-      <div id="doc-list-view" style="display:none;">
-        <div class="table-card">
-          <div style="overflow-x:auto;">
-            <table>
-              <thead>
-                <tr>
-                  <th>ชื่อเอกสาร</th>
-                  <th>หมวดหมู่</th>
-                  <th>เจ้าของ / ผู้เกี่ยวข้อง</th>
-                  <th>วันที่เอกสาร</th>
-                  <th>วันหมดอายุ</th>
-                  <th>ขนาด</th>
-                  <th>การดำเนินการ</th>
-                </tr>
-              </thead>
-              <tbody id="doc-list-tbody"></tbody>
-            </table>
-          </div>
+        <div class="doc-grid" id="doc-cards-container">
+          <div class="empty-state" style="grid-column:1/-1;"><div class="es-icon">📭</div><p>ยังไม่มีเอกสารในระบบ</p></div>
         </div>
       </div>
-
-      <!-- Upload zone (always at bottom) -->
       <div class="doc-upload-zone" style="margin-top:20px;" onclick="document.getElementById('doc-modal-upload').classList.add('open')">
         <div class="duz-icon">📤</div>
         <h4>อัปโหลดเอกสารใหม่</h4>
         <p>ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์ — รองรับ PDF, Word, JPG, PNG, ZIP</p>
-        <p style="margin-top:6px;font-size:11px;color:var(--text-muted);">ไฟล์จะถูกเชื่อมต่อกับ Google Drive โดยอัตโนมัติเมื่อตั้งค่าแล้ว</p>
       </div>
     </div>
 
@@ -1538,7 +916,6 @@
           <div style="border:2px dashed var(--army-border);border-radius:var(--radius);padding:24px;text-align:center;margin-bottom:16px;background:var(--bg-light);">
             <div style="font-size:32px;margin-bottom:8px;">📁</div>
             <p style="font-size:13px;color:var(--text-secondary);">ลากไฟล์มาวางที่นี่ หรือ <span style="color:var(--army-green);font-weight:600;cursor:pointer;">เลือกจากคอมพิวเตอร์</span></p>
-            <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">PDF, DOCX, JPG, PNG, ZIP — ขนาดสูงสุด 50 MB</p>
           </div>
           <div style="display:flex;flex-direction:column;gap:12px;">
             <div class="form-group"><label class="form-label">ชื่อเอกสาร *</label><input type="text" class="form-input" placeholder="กรอกชื่อเอกสาร"></div>
@@ -1546,16 +923,13 @@
               <label class="form-label">หมวดหมู่ *</label>
               <select class="form-select form-input">
                 <option>-- เลือกหมวดหมู่ --</option>
-                <option>📅 วันทวีคูณ</option>
-                <option>🗺️ ปฏิบัติราชการสนาม</option>
-                <option>⭐ เลื่อนยศ / ปรับเงิน</option>
-                <option>🏦 บำเหน็จ / บำนาญ</option>
-                <option>🎓 หลักสูตร / ประกาศนียบัตร</option>
-                <option>👤 เอกสารส่วนตัว</option>
+                <option>📅 วันทวีคูณ</option><option>🗺️ ปฏิบัติราชการสนาม</option>
+                <option>⭐ เลื่อนยศ / ปรับเงิน</option><option>🏦 บำเหน็จ / บำนาญ</option>
+                <option>🎓 หลักสูตร / ประกาศนียบัตร</option><option>👤 เอกสารส่วนตัว</option>
                 <option>📜 คำสั่ง / หนังสือราชการ</option>
               </select>
             </div>
-            <div class="form-group"><label class="form-label">เจ้าของเอกสาร (กำลังพล)</label><input type="text" class="form-input" placeholder="ค้นหาชื่อกำลังพล..."></div>
+            <div class="form-group"><label class="form-label">เจ้าของเอกสาร</label><input type="text" class="form-input" placeholder="ค้นหาชื่อกำลังพล..."></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
               <div class="form-group"><label class="form-label">วันที่เอกสาร</label><input type="date" class="form-input"></div>
               <div class="form-group"><label class="form-label">วันหมดอายุ (ถ้ามี)</label><input type="date" class="form-input"></div>
@@ -1568,17 +942,6 @@
             <button class="btn btn-gold">📊 บันทึก + ซิงค์ Drive</button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- DOC DETAIL MODAL -->
-    <div class="doc-modal-overlay" id="doc-modal-detail">
-      <div class="doc-modal" style="width:640px;">
-        <div class="doc-modal-header">
-          <h3 id="doc-detail-title">รายละเอียดเอกสาร</h3>
-          <button class="doc-modal-close" onclick="document.getElementById('doc-modal-detail').classList.remove('open')">✕</button>
-        </div>
-        <div class="doc-modal-body" id="doc-detail-body"></div>
       </div>
     </div>
 
@@ -1609,152 +972,38 @@
           <div class="form-group"><label class="form-label">Folder ID สำหรับเก็บรูปภาพ</label><input type="text" class="form-input" placeholder="Google Drive Folder ID"></div>
           <div class="form-group"><label class="form-label">Folder ID สำหรับเอกสาร PDF</label><input type="text" class="form-input" placeholder="Google Drive Folder ID"></div>
         </div>
-        <div class="form-actions">
-          <button class="btn btn-primary">🔗 เชื่อมต่อ Google Drive</button>
-        </div>
+        <div class="form-actions"><button class="btn btn-primary">🔗 เชื่อมต่อ Google Drive</button></div>
       </div>
       <div class="form-card">
         <h4>🔔 ตั้งค่าการแจ้งเตือน</h4>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
-            <span>แจ้งเตือนเมื่อกำลังพลครบเกณฑ์เลื่อนยศ (ล่วงหน้า 60 วัน)</span>
-            <input type="checkbox" checked>
-          </label>
-          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
-            <span>แจ้งเตือนวันสอบ / วันส่งเอกสาร (ล่วงหน้า 30 วัน)</span>
-            <input type="checkbox" checked>
-          </label>
-          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
-            <span>แจ้งเตือนก่อนเกษียณ (ล่วงหน้า 1 ปี)</span>
-            <input type="checkbox" checked>
-          </label>
-          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
-            <span>แจ้งเตือนครบรอบปรับขั้นเงินเดือนประจำปี</span>
-            <input type="checkbox">
-          </label>
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span>แจ้งเตือนเมื่อกำลังพลครบเกณฑ์เลื่อนยศ (ล่วงหน้า 60 วัน)</span><input type="checkbox" checked></label>
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span>แจ้งเตือนวันสอบ / วันส่งเอกสาร (ล่วงหน้า 30 วัน)</span><input type="checkbox" checked></label>
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span>แจ้งเตือนก่อนเกษียณ (ล่วงหน้า 1 ปี)</span><input type="checkbox" checked></label>
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span>แจ้งเตือนครบรอบปรับขั้นเงินเดือนประจำปี</span><input type="checkbox"></label>
         </div>
-        <div class="form-actions">
-          <button class="btn btn-primary">💾 บันทึก</button>
-        </div>
+        <div class="form-actions"><button class="btn btn-primary">💾 บันทึก</button></div>
       </div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
+  </div>
+</div>
 
 <script>
 const personnel = [];
 
-
-const statusColorMap = {
-  'ปฏิบัติหน้าที่ณ ที่ตั้ง': { cls:'status-active', dot:'#2d6a2d' },
-  'ราชการสนาม ชค.953':       { cls:'status-detach', dot:'#9a7420' },
-  'ราชการสนาม บก.ควบคุม 2':  { cls:'status-detach', dot:'#9a7420' },
-  'ฝึกอบรม':                  { cls:'status-training', dot:'#2a56a0' },
-  'ศึกษา':                    { cls:'status-training', dot:'#2a56a0' },
-};
-
-function getStatusBadge(label) {
-  const c = statusColorMap[label] || { cls:'status-active', dot:'#2d6a2d' };
-  return `<span class="status-badge ${c.cls}">● ${label}</span>`;
-}
-
-function renderTable(tbodyId, rows, showAll) {
-  const tbody = document.getElementById(tbodyId);
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  rows.forEach((p, i) => {
-    let extra = showAll ? `<td>${p.no}</td>` : '';
-    let salaryStep = showAll ? `<td>${p.step}</td>` : '';
-    let actions = showAll
-      ? `<td><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="showProfile()">👁️ ดู</button> <button class="btn btn-primary" style="font-size:11px;padding:3px 8px;">✏️</button></td>`
-      : `<td><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="showProfile()">ดูประวัติ →</button></td>`;
-
-    // Status cell — show current status badge only
-    let statusCell = `<td>${getStatusBadge(p.statusLabel)}</td>`;
-
-    // Name cell — no avatar circle
-    const nameCell = `<td><strong>${p.rank} ${p.fname} ${p.lname}</strong></td>`;
-
-    // Dashboard (!showAll): ขั้นเงิน before เงินเดือน, no extra/no
-    // List (showAll): extra(เลขประจำตัว) then ขั้นเงิน before เงินเดือน
-    if (showAll) {
-      tbody.innerHTML += `<tr>
-        <td>${i+1}</td>
-        ${nameCell}
-        <td>${p.no}</td>
-        <td>${p.pos}</td>
-        <td>${p.join}</td>
-        <td><span class="chip blue">${p.service}</span></td>
-        <td style="text-align:center;font-family:'Chakra Petch',sans-serif;font-weight:600;">${p.step}</td>
-        <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${p.salary.toLocaleString()} ฿</td>
-        ${statusCell}
-        ${actions}
-      </tr>`;
-    } else {
-      tbody.innerHTML += `<tr>
-        <td>${i+1}</td>
-        ${nameCell}
-        <td>${p.pos}</td>
-        <td><span class="chip blue">${p.service}</span></td>
-        <td style="text-align:center;font-family:'Chakra Petch',sans-serif;font-weight:600;">${p.step}</td>
-        <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${p.salary.toLocaleString()} ฿</td>
-        ${statusCell}
-        ${actions}
-      </tr>`;
-    }
-  });
-}
-
-function renderSalaryTable() {
-  const tbody = document.getElementById('salary-table');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  personnel.forEach(p => {
-    const gross = p.salary + 3000;
-    const tax = Math.round(gross * 0.04);
-    const gpf = Math.round(gross * 0.035);
-    const net = gross - tax - gpf;
-    tbody.innerHTML += `<tr>
-      <td><span class="rank-badge">${p.rank}</span> ${p.fname} ${p.lname}</td>
-      <td style="text-align:center;font-family:'Chakra Petch',sans-serif;font-weight:700;">${p.step}</td>
-      <td style="font-family:'Chakra Petch',sans-serif;">${p.salary.toLocaleString()}</td>
-      <td style="color:var(--army-green);">+3,000</td>
-      <td style="color:#c0392b;">-${tax.toLocaleString()}</td>
-      <td style="color:#c0392b;">-${gpf.toLocaleString()}</td>
-      <td style="font-family:'Chakra Petch',sans-serif;font-weight:700;color:var(--army-green);">${net.toLocaleString()}</td>
-      <td style="font-size:12px;color:var(--text-muted);">1 ต.ค. 68</td>
-    </tr>`;
-  });
-}
-
-function renderSearchTable() {
-  const tbody = document.getElementById('search-table');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  personnel.forEach(p => {
-    tbody.innerHTML += `<tr>
-      <td><span class="rank-badge">${p.rank}</span> ${p.fname} ${p.lname}</td>
-      <td>${p.pos}</td>
-      <td><span class="tag">ทหารราบ</span></td>
-      <td>${p.service}</td>
-      <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${p.salary.toLocaleString()} ฿</td>
-      <td>${getStatusBadge(p.statusLabel)}</td>
-      <td><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="showProfile()">ดูประวัติ →</button></td>
-    </tr>`;
-  });
-}
-
 function showPanel(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
-  const titles = { dashboard:'ภาพรวมระบบ', list:'รายชื่อกำลังพล', profile:'ประวัติส่วนตัว', salary:'เงินเดือน / ขั้นเงิน', pension:'บำเหน็จ บำนาญ', promotion:'แผนเลื่อนยศ / สอบ', courses:'หลักสูตรการศึกษา', ops:'การปฏิบัติงาน', search:'ค้นหาขั้นสูง', add:'เพิ่มกำลังพลใหม่', alerts:'การแจ้งเตือน', settings:'ตั้งค่าระบบ', docs:'เอกสารสำคัญ' };
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  const titles = {
+    dashboard:'ภาพรวมระบบ', list:'รายชื่อกำลังพล', profile:'ประวัติส่วนตัว',
+    salary:'เงินเดือน / ขั้นเงิน', pension:'บำเหน็จ บำนาญ', promotion:'แผนเลื่อนยศ / สอบ',
+    courses:'หลักสูตรการศึกษา', ops:'การปฏิบัติงาน', search:'ค้นหาขั้นสูง',
+    add:'เพิ่มกำลังพลใหม่', alerts:'การแจ้งเตือน', settings:'ตั้งค่าระบบ', docs:'เอกสารสำคัญ'
+  };
   document.getElementById('topbar-title').textContent = titles[name] || name;
-  if (name === 'salary') renderSalaryTable();
-  if (name === 'search') renderSearchTable();
-  if (name === 'docs') { renderDocs(allDocs); }
-  // Highlight active nav
   document.querySelectorAll('.nav-item').forEach(item => {
     if (item.getAttribute('onclick') && item.getAttribute('onclick').includes("'"+name+"'")) {
       item.classList.add('active');
@@ -1762,222 +1011,110 @@ function showPanel(name) {
   });
 }
 
-function showProfile() { showPanel('profile'); }
-  
-// ===== DOCS =====
-const allDocs = [];
+function buildJoinDate() {
+  const wrap = document.getElementById('join-date-wrap');
+  if (!wrap) return;
 
+  // วัน
+  const daySel = document.createElement('select');
+  daySel.className = 'form-select form-input'; daySel.id = 'join-day'; daySel.style.flex = '1';
+  daySel.innerHTML = '<option value="">วัน</option>';
+  for (let d = 1; d <= 31; d++) daySel.innerHTML += `<option>${d}</option>`;
 
-const typeIcon = { pdf:'📄', word:'📝', img:'🖼️', zip:'📦' };
-const typeClass = { pdf:'pdf', word:'word', img:'img', zip:'zip' };
+  // เดือน
+  const months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const monSel = document.createElement('select');
+  monSel.className = 'form-select form-input'; monSel.id = 'join-month'; monSel.style.flex = '2';
+  monSel.innerHTML = '<option value="">เดือน</option>';
+  months.forEach((m, i) => monSel.innerHTML += `<option value="${i+1}">${m}</option>`);
 
-let currentDocFilter = 'all';
-let currentDocView = 'grid';
+  // ปี พ.ศ.
+  const yrSel = document.createElement('select');
+  yrSel.className = 'form-select form-input'; yrSel.id = 'join-year'; yrSel.style.flex = '2';
+  yrSel.innerHTML = '<option value="">ปี พ.ศ.</option>';
+  for (let y = 2510; y <= 2580; y++) yrSel.innerHTML += `<option>${y}</option>`;
 
-function renderDocs(docs) {
-  const container = document.getElementById('doc-cards-container');
-  const listBody = document.getElementById('doc-list-tbody');
-  if (!container) return;
-  container.innerHTML = '';
-  if (listBody) listBody.innerHTML = '';
-
-  if (docs.length === 0) {
-    container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="es-icon">📭</div><p>ไม่พบเอกสารที่ตรงกับเงื่อนไข</p></div>';
-    return;
-  }
-
-  docs.forEach(doc => {
-    // Grid card
-    const card = document.createElement('div');
-    card.className = 'doc-card';
-    card.onclick = () => openDocDetail(doc);
-    card.innerHTML = `
-      ${doc.isNew ? '<span class="dc-badge new">ใหม่</span>' : ''}
-      ${doc.isExp ? '<span class="dc-badge exp">ใกล้หมดอายุ</span>' : ''}
-      <div class="dc-top">
-        <div class="dc-icon ${typeClass[doc.type]}">${typeIcon[doc.type]}</div>
-        <div>
-          <div class="dc-name">${doc.name}</div>
-          <div class="dc-owner">👤 ${doc.owner}</div>
-        </div>
-      </div>
-      <div style="margin-bottom:8px;"><span class="tag">${getCatLabel(doc.cat)}</span></div>
-      <div class="dc-meta">
-        <span class="dc-date">📅 ${doc.date}</span>
-        <span class="dc-size">💾 ${doc.size}</span>
-      </div>
-      <div class="dc-actions">
-        <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;flex:1;" onclick="event.stopPropagation();">👁️ ดู</button>
-        <button class="btn btn-primary" style="font-size:11px;padding:3px 8px;flex:1;" onclick="event.stopPropagation();">⬇️ ดาวน์โหลด</button>
-        <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();">🔗</button>
-      </div>`;
-    container.appendChild(card);
-
-    // List row
-    if (listBody) {
-      const expBadge = doc.isExp ? `<span style="color:#a32d2d;font-size:11px;">⚠️ ใกล้หมดอายุ</span>` : (doc.expiry || '—');
-      listBody.innerHTML += `<tr onclick="openDocDetail(${JSON.stringify(doc).replace(/"/g,"&quot;")})" style="cursor:pointer;">
-        <td><div style="display:flex;align-items:center;gap:8px;">${typeIcon[doc.type]} <strong>${doc.name}</strong></div></td>
-        <td><span class="tag">${getCatLabel(doc.cat)}</span></td>
-        <td style="font-size:12px;">${doc.owner}</td>
-        <td style="font-size:12px;">${doc.date}</td>
-        <td style="font-size:12px;">${expBadge}</td>
-        <td style="font-size:12px;">${doc.size}</td>
-        <td><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();">⬇️</button> <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();">✏️</button></td>
-      </tr>`;
-    }
-  });
+  wrap.appendChild(daySel);
+  wrap.appendChild(monSel);
+  wrap.appendChild(yrSel);
 }
-
-function getCatLabel(cat) {
-  const map = { 'วันทวีคูณ':'📅 วันทวีคูณ','ปฏิบัติราชการสนาม':'🗺️ ปฏิบัติราชการสนาม','เลื่อนยศ':'⭐ เลื่อนยศ','บำเหน็จบำนาญ':'🏦 บำเหน็จ/บำนาญ','หลักสูตร':'🎓 หลักสูตร','ส่วนตัว':'👤 ส่วนตัว','คำสั่ง':'📜 คำสั่ง' };
-  return map[cat] || cat;
-}
+buildJoinDate();
 
 function filterDocs(cat, btn) {
-  currentDocFilter = cat;
   document.querySelectorAll('.doc-cat-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const filtered = cat === 'all' ? allDocs : allDocs.filter(d => d.cat === cat);
-  renderDocs(filtered);
-}
-
-function searchDocs(val) {
-  const base = currentDocFilter === 'all' ? allDocs : allDocs.filter(d => d.cat === currentDocFilter);
-  const filtered = val ? base.filter(d => d.name.includes(val) || d.owner.includes(val)) : base;
-  renderDocs(filtered);
-}
-
-function setDocView(view) {
-  currentDocView = view;
-  document.getElementById('doc-grid-view').style.display = view === 'grid' ? 'block' : 'none';
-  document.getElementById('doc-list-view').style.display = view === 'list' ? 'block' : 'none';
-  document.getElementById('view-grid-btn').classList.toggle('active', view === 'grid');
-  document.getElementById('view-list-btn').classList.toggle('active', view === 'list');
-}
-
-function openDocDetail(doc) {
-  document.getElementById('doc-detail-title').textContent = doc.name;
-  document.getElementById('doc-detail-body').innerHTML = `
-    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;">
-      <div class="dc-icon ${typeClass[doc.type]}" style="width:56px;height:64px;font-size:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;">${typeIcon[doc.type]}</div>
-      <div>
-        <div style="font-size:15px;font-weight:700;margin-bottom:4px;">${doc.name}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="tag">${getCatLabel(doc.cat)}</span>${doc.isNew?'<span class="chip green">ใหม่</span>':''}${doc.isExp?'<span class="chip" style="background:#fde8e8;color:#a32d2d;border-color:#f0b0b0;">ใกล้หมดอายุ</span>':''}</div>
-      </div>
-    </div>
-    <div style="background:var(--bg-light);border-radius:var(--radius);padding:14px;margin-bottom:16px;font-size:13px;line-height:1.7;color:var(--text-secondary);">${doc.detail}</div>
-    <div class="detail-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:16px;">
-      <div class="detail-item"><div class="di-label">เจ้าของเอกสาร</div><div class="di-value">${doc.owner}</div></div>
-      <div class="detail-item"><div class="di-label">ขนาดไฟล์</div><div class="di-value">${doc.size}</div></div>
-      <div class="detail-item"><div class="di-label">วันที่เอกสาร</div><div class="di-value">${doc.date}</div></div>
-      <div class="detail-item"><div class="di-label">วันหมดอายุ</div><div class="di-value ${doc.isExp?'di-value':''}">  ${doc.expiry || '—'}</div></div>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--army-border);">
-      <button class="btn btn-ghost" onclick="document.getElementById('doc-modal-detail').classList.remove('open')">ปิด</button>
-      <button class="btn btn-primary">⬇️ ดาวน์โหลด</button>
-      <button class="btn btn-gold">🔗 เปิดใน Drive</button>
-    </div>`;
-  document.getElementById('doc-modal-detail').classList.add('open');
-}
-
-// Initial docs render
-setTimeout(() => { if(document.getElementById('doc-cards-container')) renderDocs(allDocs); }, 100);
-
-function switchTab(btn, tabId) {
-  btn.closest('.tab-nav').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  btn.closest('.panel').querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
 }
 
 function globalSearch(val) {
   if (val.length > 0) showPanel('search');
 }
 
-// Initial render
-renderTable('dashboard-table', personnel.slice(0, 5), false);
-renderTable('full-table', personnel, true);
-
-// ===== ตารางเงินเดือน ทบ. (พ.ร.บ. 2558 แก้ไขเพิ่มเติม) =====
-// ป.1 นายทหารสัญญาบัตร ขั้น 1-36
+// ===== ตารางเงินเดือน =====
 const salaryP1 = {
-   1: 9700,   2: 10240,  3: 10820,  4: 11440,  5: 12100,
-   6: 12800,  7: 13540,  8: 14320,  9: 15160, 10: 16040,
-  11: 16980, 12: 17980, 13: 19020, 14: 20140, 15: 21330,
-  16: 22590, 17: 23920, 18: 25340, 19: 26860, 20: 28480,
-  21: 30190, 22: 32000, 23: 33940, 24: 35980, 25: 38160,
-  26: 40480, 27: 42940, 28: 45560, 29: 48340, 30: 51300,
-  31: 54440, 32: 57780, 33: 61340, 34: 65120, 35: 69150,
-  36: 73440
+  1:4870, 1.5:4980, 2:5100, 2.5:5220, 3:5340, 3.5:5440, 4:5580, 4.5:5690,
+  5:5810, 5.5:5970, 6:6140, 6.5:6300, 7:6470, 7.5:6630, 8:6800, 8.5:6970,
+  9:7140, 9.5:7290, 10:7460, 10.5:7630, 11:7800, 11.5:7960, 12:8120, 12.5:8290,
+  13:8450, 13.5:8610, 14:8800, 14.5:8970, 15:9150, 15.5:9330, 16:9520, 16.5:9710,
+  17:9910, 17.5:10070, 18:10280, 18.5:10540, 19:10760, 19.5:10970, 20:11180, 20.5:11400,
+  21:11630, 21.5:11860, 22:12090, 22.5:12330, 23:12560, 23.5:12810, 24:13070, 24.5:13310,
+  25:13570, 25.5:13820, 26:14060, 26.5:14320, 27:14560, 27.5:14810, 28:15060, 28.5:15290,
+  29:15540, 29.5:15800, 30:16040, 30.5:16290, 31:16540, 31.5:16790, 32:17050, 32.5:17290,
+  33:17540, 33.5:17790, 34:18020, 34.5:18270, 35:18530, 35.5:18770, 36:19020, 36.5:19260,
+  37:19520, 37.5:19850, 38:20180, 38.5:20510, 39:20840, 39.5:21160, 40:21480
 };
-// ป.2 นายทหารประทวน ขั้น 1-36
-const salaryP2 = {
-   1: 5200,   2: 5490,   3: 5810,   4: 6150,   5: 6510,
-   6: 6890,   7: 7290,   8: 7720,   9: 8170,  10: 8640,
-  11: 9150,  12: 9680,  13: 10240, 14: 10840, 15: 11470,
-  16: 12140, 17: 12850, 18: 13600, 19: 14390, 20: 15230,
-  21: 16120, 22: 17060, 23: 18060, 24: 19110, 25: 20230,
-  26: 21420, 27: 22680, 28: 24010, 29: 25420, 30: 26910,
-  31: 28490, 32: 30160, 33: 31930, 34: 33810, 35: 35810,
-  36: 37940
-};
-// ป.3 พลทหาร (อัตราเดียว)
-const salaryP3 = { 1: 4830 };
-
-const salaryTables = { p1: salaryP1, p2: salaryP2, p3: salaryP3 };
+const salaryP2 = {};
+const salaryP3 = {};
+const salaryN1 = {};
+const salaryN2 = {};
+const salaryN3 = {};
+const salaryTables = { p1:salaryP1, p2:salaryP2, p3:salaryP3, n1:salaryN1, n2:salaryN2, n3:salaryN3 };
 
 function calcSalary() {
   const acct = document.getElementById('add-salary-account').value;
   const stepSel = document.getElementById('add-salary-step');
   const baseInput = document.getElementById('add-salary-base');
   const previewBox = document.getElementById('salary-preview-box');
-
-  // Rebuild step dropdown
   stepSel.innerHTML = '<option value="">-- เลือกขั้น --</option>';
   if (!acct) { baseInput.value = ''; previewBox.style.display = 'none'; return; }
-
   const table = salaryTables[acct];
-  const maxStep = acct === 'p3' ? 1 : 36;
-  for (let i = 1; i <= maxStep; i++) {
-    if (table[i]) {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = `ขั้น ${i}  —  ${table[i].toLocaleString()} บาท`;
-      stepSel.appendChild(opt);
-    }
-  }
-
+  const steps = Object.keys(table).map(Number).sort((a,b) => a - b);
+  steps.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = `ขั้น ${s}  —  ${table[s].toLocaleString()} บาท`;
+    stepSel.appendChild(opt);
+  });
   calcSalaryNet();
 }
 
 function calcSalaryNet() {
   const acct  = document.getElementById('add-salary-account').value;
-  const step  = parseInt(document.getElementById('add-salary-step').value);
+  const step  = parseFloat(document.getElementById('add-salary-step').value);
   const extra = parseInt(document.getElementById('add-salary-extra').value) || 0;
+  const psr1  = parseInt(document.getElementById('add-psr1').value) || 0;
+  const psr2  = parseInt(document.getElementById('add-psr2').value) || 0;
+  const psr3  = parseInt(document.getElementById('add-psr3').value) || 0;
+  const psr4  = parseInt(document.getElementById('add-psr4').value) || 0;
   const baseInput = document.getElementById('add-salary-base');
   const netInput  = document.getElementById('add-salary-net');
   const previewBox = document.getElementById('salary-preview-box');
-
   if (!acct || !step) { baseInput.value = ''; netInput.value = ''; previewBox.style.display='none'; return; }
-
-  const table = salaryTables[acct];
-  const base  = table[step] || 0;
-  const gpf   = Math.round(base * 0.035);
-  const tax   = Math.round((base + extra) * 0.04);
-  const net   = base + extra - gpf - tax;
-
+  const base = salaryTables[acct][step] || 0;
+  const net  = base + extra + psr1 + psr2 + psr3 + psr4;
   baseInput.value = base;
   netInput.value  = net;
-
-  // Update preview
-  const acctLabel = acct === 'p1' ? 'ป.1' : acct === 'p2' ? 'ป.2' : 'ป.3';
-  document.getElementById('prev-step').textContent = `${acctLabel} / ขั้น ${step}`;
-  document.getElementById('prev-base').textContent = base.toLocaleString() + ' ฿';
-  document.getElementById('prev-gpf').textContent  = '-' + gpf.toLocaleString() + ' ฿';
-  document.getElementById('prev-net').textContent  = net.toLocaleString() + ' ฿';
+  const acctLabel = {'p1':'ป.1','p2':'ป.2','p3':'ป.3','n1':'น.1','n2':'น.2','n3':'น.3'}[acct] || acct;
+  document.getElementById('prev-step').textContent  = `${acctLabel} / ขั้น ${step}`;
+  document.getElementById('prev-base').textContent  = base.toLocaleString() + ' ฿';
+  document.getElementById('prev-extra').textContent = extra > 0 ? extra.toLocaleString() + ' ฿' : '—';
+  document.getElementById('prev-psr1').textContent  = psr1 > 0 ? psr1.toLocaleString() + ' ฿' : '—';
+  document.getElementById('prev-psr2').textContent  = psr2 > 0 ? psr2.toLocaleString() + ' ฿' : '—';
+  document.getElementById('prev-psr3').textContent  = psr3 > 0 ? psr3.toLocaleString() + ' ฿' : '—';
+  document.getElementById('prev-psr4').textContent  = psr4 > 0 ? psr4.toLocaleString() + ' ฿' : '—';
+  document.getElementById('prev-net').textContent   = net.toLocaleString() + ' ฿';
   previewBox.style.display = 'block';
 }
+
 const USERS = [
   { id: 'admin', pass: 'admin2', name: 'Admin', role: 'ผู้ดูแลระบบ', avatar: 'AD' }
 ];
@@ -1993,33 +1130,24 @@ function doLogin() {
     return;
   }
   err.classList.remove('show');
-  // Hide login screen
   document.getElementById('login-screen').classList.add('hidden');
-  // Unlock UI
   document.body.classList.remove('locked');
-  // Update topbar
   document.getElementById('user-avatar-text').textContent = user.avatar;
   document.getElementById('user-display-name').textContent = user.name;
   document.getElementById('user-display-role').textContent = user.role;
-  // Update sidebar footer
-  document.getElementById('sidebar-login-status').innerHTML =
-    `<span class="admin-badge">🔓 ${user.name}</span>`;
+  document.getElementById('sidebar-login-status').innerHTML = `<span class="admin-badge">🔓 ${user.name}</span>`;
   document.getElementById('logout-btn').style.display = 'inline-block';
 }
 
 function doLogout() {
-  // Show login screen again
   document.getElementById('login-screen').classList.remove('hidden');
   document.getElementById('login-id').value = '';
   document.getElementById('login-pass').value = '';
   document.getElementById('login-error').classList.remove('show');
-  // Lock UI
   document.body.classList.add('locked');
-  // Reset topbar
   document.getElementById('user-avatar-text').textContent = '?';
   document.getElementById('user-display-name').textContent = 'ผู้เยี่ยมชม';
   document.getElementById('user-display-role').textContent = 'ยังไม่ได้เข้าสู่ระบบ';
-  // Reset sidebar footer
   document.getElementById('sidebar-login-status').textContent = 'ยังไม่เข้าสู่ระบบ';
   document.getElementById('logout-btn').style.display = 'none';
 }
