@@ -69,8 +69,19 @@
 
         /* ── CONTENT ── */
         .content-wrap { flex: 1; overflow: hidden; position: relative; }
-        .page-content { display: none; height: 100%; animation: fadeUp 0.3s ease; }
-        .page-content.active { display: flex; flex-direction: column; }
+
+        /* ── ซ่อนทุก page ก่อน ── */
+        .page-content {
+            display: none;
+            height: 100%;
+            animation: fadeUp 0.3s ease;
+        }
+        /* ── แสดงเฉพาะ page ที่ active ── */
+        .page-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(8px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -78,8 +89,9 @@
         .page-content iframe { flex: 1; border: none; width: 100%; height: 100%; }
 
         /* ── DASHBOARD ── */
-        #dash-page { padding: 28px 30px; overflow-y: auto; display: none; }
-        #dash-page.active { display: block; }
+        /* ลบ display:none และ #dash-page.active ออก เพราะใช้ .page-content / .page-content.active แทน */
+        #dash-page { padding: 28px 30px; overflow-y: auto; }
+
         .page-title {
             font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 700;
             color: #1a2a3a; letter-spacing: 1px; margin-bottom: 22px;
@@ -203,7 +215,6 @@
         <div class="nav-item"        id="nav-esos"     onclick="window.showPage('esos-page', this)"><i class="fas fa-rocket"></i> ESOS</div>
         <div class="nav-item"        id="nav-tracking" onclick="window.showPage('tracking-page', this)"><i class="fas fa-location-dot"></i> Location Tracking</div>
     </div>
-
 </nav>
 
 <!-- CONTENT -->
@@ -276,39 +287,53 @@
     window.syncAuthBtns = function(isAdmin) {
         const btn = document.getElementById('auth-btn');
         if (btn) {
-            btn.innerHTML       = isAdmin ? '<i class="fas fa-sign-out-alt"></i> Logout' : '<i class="fas fa-sign-in-alt"></i> Admin Login';
+            btn.innerHTML        = isAdmin ? '<i class="fas fa-sign-out-alt"></i> Logout' : '<i class="fas fa-sign-in-alt"></i> Admin Login';
             btn.style.background = isAdmin ? 'var(--danger)' : 'var(--primary)';
         }
         const statusEl   = document.getElementById('dash-status');
         const statusIcon = document.getElementById('status-icon');
         if (statusEl)   statusEl.innerText      = isAdmin ? 'Admin Mode' : 'Guest Mode';
-        if (statusIcon) { statusIcon.style.color = isAdmin ? '#2ecc71' : '#95a5a6'; statusIcon.className = isAdmin ? 'fas fa-user-shield' : 'fas fa-shield-alt'; }
+        if (statusIcon) {
+            statusIcon.style.color = isAdmin ? '#2ecc71' : '#95a5a6';
+            statusIcon.className   = isAdmin ? 'fas fa-user-shield' : 'fas fa-shield-alt';
+        }
     };
 
-    // showPage
+    // ── showPage: ถอด active ทุกตัว แล้วใส่เฉพาะที่กด ──
     window.showPage = function(id, el) {
-        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-        const pg = document.getElementById(id); if (pg) pg.classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(a => a.classList.remove('active'));
+        // ซ่อนทุก page
+        document.querySelectorAll('.page-content').forEach(function(p) {
+            p.classList.remove('active');
+        });
+        // แสดง page ที่เลือก
+        var pg = document.getElementById(id);
+        if (pg) pg.classList.add('active');
+
+        // ถอด active จากทุก nav-item
+        document.querySelectorAll('.nav-item').forEach(function(a) {
+            a.classList.remove('active');
+        });
+        // ใส่ active เฉพาะตัวที่กด
         if (el) el.classList.add('active');
     };
 
-    // Clock (stat-box เท่านั้น)
+    // ── Clock ──
     function tick() {
-        const el = document.getElementById('dash-time2');
+        var el = document.getElementById('dash-time2');
         if (el) el.innerText = new Date().toLocaleTimeString('th-TH');
     }
-    tick(); setInterval(tick, 1000);
+    tick();
+    setInterval(tick, 1000);
 
-    // Patch toggleAuth + performLogin ของ script.js ให้เรียก syncAuthBtns
+    // ── Patch toggleAuth + performLogin ให้เรียก syncAuthBtns ──
     window.addEventListener('load', function() {
         function patchFn(name) {
-            const orig = window[name];
+            var orig = window[name];
             if (!orig) return;
             window[name] = function() {
                 orig.apply(this, arguments);
-                setTimeout(() => {
-                    const adminPanel = document.getElementById('admin-panel');
+                setTimeout(function() {
+                    var adminPanel = document.getElementById('admin-panel');
                     window.syncAuthBtns(adminPanel && adminPanel.style.display !== 'none');
                 }, 80);
             };
