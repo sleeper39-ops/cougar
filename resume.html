@@ -600,6 +600,7 @@
               <div class="profile-stats">
                 <div class="profile-stat-item"><div class="psi-label">เลขประจำตัว</div><div class="psi-value" id="prof-empid">—</div></div>
                 <div class="profile-stat-item"><div class="psi-label">หน่วยงาน</div><div class="psi-value" id="prof-unit">—</div></div>
+                <div class="profile-stat-item"><div class="psi-label">อายุราชการ</div><div class="psi-value" id="prof-svc" style="font-size:11px;">—</div></div>
                 <div class="profile-stat-item"><div class="psi-label">ขั้นเงินเดือน</div><div class="psi-value" id="prof-step">—</div></div>
                 <div class="profile-stat-item"><div class="psi-label">เงินเดือนสุทธิ</div><div class="psi-value" id="prof-net">—</div></div>
               </div>
@@ -1377,7 +1378,7 @@ function renderPersonnelTable(data) {
         <td>${i+1}</td>
         <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
         <td>${p['ตำแหน่ง'] || '—'}</td>
-        <td>—</td>
+        <td><span class="chip blue" style="font-size:11px;">${calcServiceDetail(p['วันเข้ารับราชการ']).text}</span></td>
         <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;">${p['ขั้นเงินเดือน'] || '—'}</td>
         <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${Number(p['เงินเดือนสุทธิ']||0).toLocaleString()} ฿</td>
         <td><span class="status-badge status-active">● ปฏิบัติหน้าที่</span></td>
@@ -1394,7 +1395,7 @@ function renderPersonnelTable(data) {
         <td>${p['เลขประจำตัว10หลัก'] || '—'}</td>
         <td>${p['ตำแหน่ง'] || '—'}</td>
         <td>${formatDateThai(p['วันเข้ารับราชการ'])}</td>
-        <td><span class="chip blue">${Math.floor(calcServiceYears(p['วันเข้ารับราชการ']))} ปี</span></td>
+        <td><span class="chip blue">${calcServiceDetail(p['วันเข้ารับราชการ']).text}</span></td>
         <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;">${p['ขั้นเงินเดือน'] || '—'}</td>
         <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${Number(p['เงินเดือนสุทธิ']||0).toLocaleString()} ฿</td>
         <td><span class="status-badge status-active">● ปฏิบัติหน้าที่</span></td>
@@ -1523,6 +1524,7 @@ function renderProfile(p) {
   document.getElementById('prof-pos').textContent  = p['ตำแหน่ง'] || '—';
   document.getElementById('prof-empid').textContent = p['เลขประจำตัว10หลัก'] || '—';
   document.getElementById('prof-unit').textContent  = p['หน่วยงาน'] || '—';
+  document.getElementById('prof-svc').textContent   = calcServiceDetail(p['วันเข้ารับราชการ']).text;
   document.getElementById('prof-step').textContent  = p['ขั้นเงินเดือน'] ? `ขั้น ${p['ขั้นเงินเดือน']}` : '—';
   document.getElementById('prof-net').textContent   = p['เงินเดือนสุทธิ'] ? Number(p['เงินเดือนสุทธิ']).toLocaleString() + ' ฿' : '—';
 
@@ -1615,20 +1617,18 @@ function formatDateThai(dateStr) {
   return dateStr;
 }
 
-// ── คำนวณอายุราชการ ─────────────────────────────────
-function calcServiceYears(joinDateStr) {
-  if (!joinDateStr) return 0;
+// ── คำนวณอายุราชการ — คืนค่า { years, months, days, total } ──
+function calcServiceDetail(joinDateStr) {
+  if (!joinDateStr) return { years:0, months:0, days:0, total:0, text:'—' };
   const monthNumMap = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
   const thaiMonthMap = {'มกราคม':0,'กุมภาพันธ์':1,'มีนาคม':2,'เมษายน':3,'พฤษภาคม':4,'มิถุนายน':5,'กรกฎาคม':6,'สิงหาคม':7,'กันยายน':8,'ตุลาคม':9,'พฤศจิกายน':10,'ธันวาคม':11};
   let joinDate;
-  // GMT format
   const m = joinDateStr.match(/\w+\s+(\w+)\s+(\d+)\s+(\d+)/);
   if (m) {
     let year = parseInt(m[3]);
     if (year > 2400) year -= 543;
     joinDate = new Date(year, monthNumMap[m[1]] ?? 0, parseInt(m[2]));
   } else {
-    // Thai format "1 พฤษภาคม 2559"
     const parts = joinDateStr.trim().split(' ');
     if (parts.length === 3 && thaiMonthMap[parts[1]] !== undefined) {
       let y = parseInt(parts[2]);
@@ -1638,8 +1638,28 @@ function calcServiceYears(joinDateStr) {
       joinDate = new Date(joinDateStr);
     }
   }
-  if (isNaN(joinDate)) return 0;
-  return (new Date() - joinDate) / (1000 * 60 * 60 * 24 * 365.25);
+  if (isNaN(joinDate)) return { years:0, months:0, days:0, total:0, text:'—' };
+
+  const now   = new Date();
+  let years   = now.getFullYear() - joinDate.getFullYear();
+  let months  = now.getMonth()    - joinDate.getMonth();
+  let days    = now.getDate()     - joinDate.getDate();
+
+  if (days < 0) {
+    months--;
+    const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    days += prevMonth.getDate();
+  }
+  if (months < 0) { years--; months += 12; }
+
+  const total = years + months / 12 + days / 365;
+  const text  = `${years} ปี ${months} เดือน ${days} วัน`;
+  return { years, months, days, total, text };
+}
+
+// ── compat wrapper ───────────────────────────────────
+function calcServiceYears(joinDateStr) {
+  return calcServiceDetail(joinDateStr).total;
 }
 
 // ── โหลดหน้าเงินเดือน ───────────────────────────────
@@ -1684,17 +1704,17 @@ async function loadPension() {
     const tbody = document.getElementById('pension-table');
     if (!json.data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูล</td></tr>'; return; }
     tbody.innerHTML = json.data.map(p => {
-      const yrs     = calcServiceYears(p['วันเข้ารับราชการ']);
-      const yrsInt  = Math.floor(yrs);
+      const svc     = calcServiceDetail(p['วันเข้ารับราชการ']);
+      const yrsInt  = svc.years;
       const net     = Number(p['เงินเดือนสุทธิ']) || 0;
-      const pension = net > 0 ? Math.round((net * yrsInt) / 50) : 0;
+      const pension  = net > 0 ? Math.round((net * yrsInt) / 50) : 0;
       const gratuity = net > 0 ? net * yrsInt : 0;
-      const right   = yrsInt >= 25 ? 'บำนาญ' : yrsInt >= 10 ? 'บำเหน็จ/บำนาญ' : yrsInt >= 1 ? 'บำเหน็จ' : 'ยังไม่มีสิทธิ์';
+      const right    = yrsInt >= 25 ? 'บำนาญ' : yrsInt >= 10 ? 'บำเหน็จ/บำนาญ' : yrsInt >= 1 ? 'บำเหน็จ' : 'ยังไม่มีสิทธิ์';
       const rightColor = yrsInt >= 10 ? 'var(--army-green)' : '#9a7420';
       return `<tr>
         <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
         <td>${formatDateThai(p['วันเข้ารับราชการ'])}</td>
-        <td><span class="chip blue">${yrsInt} ปี</span></td>
+        <td><span class="chip blue">${svc.text}</span></td>
         <td style="font-family:'Chakra Petch',sans-serif;">${net.toLocaleString()} ฿</td>
         <td style="color:#9a7420;font-weight:700;">${gratuity.toLocaleString()} ฿</td>
         <td style="color:var(--army-green);font-weight:700;">${pension.toLocaleString()} ฿/เดือน</td>
