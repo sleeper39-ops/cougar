@@ -583,10 +583,96 @@
     <!-- ===== PROFILE ===== -->
     <div class="panel" id="panel-profile">
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>ประวัติส่วนตัว</span></div>
-      <div class="empty-state">
+      <div id="profile-empty" class="empty-state">
         <div class="es-icon">🪖</div>
         <p>กรุณาเลือกกำลังพลจากรายชื่อเพื่อดูประวัติส่วนตัว</p>
         <button class="btn btn-primary" style="margin-top:16px;" onclick="showPanel('list')">ไปยังรายชื่อกำลังพล →</button>
+      </div>
+      <div id="profile-content" style="display:none;">
+        <div class="profile-grid">
+          <!-- Left -->
+          <div>
+            <div class="profile-sidebar-card">
+              <div class="profile-photo" id="prof-photo">🪖</div>
+              <div class="profile-rank" id="prof-rank">—</div>
+              <div class="profile-name" id="prof-name">—</div>
+              <div class="profile-pos" id="prof-pos">—</div>
+              <div class="profile-stats">
+                <div class="profile-stat-item"><div class="psi-label">เลขประจำตัว</div><div class="psi-value" id="prof-empid">—</div></div>
+                <div class="profile-stat-item"><div class="psi-label">หน่วยงาน</div><div class="psi-value" id="prof-unit">—</div></div>
+                <div class="profile-stat-item"><div class="psi-label">ขั้นเงินเดือน</div><div class="psi-value" id="prof-step">—</div></div>
+                <div class="profile-stat-item"><div class="psi-label">เงินเดือนสุทธิ</div><div class="psi-value" id="prof-net">—</div></div>
+              </div>
+              <span class="status-badge status-active" style="margin-bottom:16px;display:inline-block;">● ปฏิบัติหน้าที่</span>
+              <div class="profile-actions">
+                <button class="btn btn-primary" onclick="editCurrentProfile()">✏️ แก้ไขข้อมูล</button>
+                <button class="btn btn-ghost" onclick="showPanel('list')">← กลับรายชื่อ</button>
+              </div>
+            </div>
+          </div>
+          <!-- Right Tabs -->
+          <div>
+            <div class="tab-nav">
+              <button class="tab-btn active" onclick="switchTab(this,'prof-tab-basic')">📋 ข้อมูลส่วนตัว</button>
+              <button class="tab-btn" onclick="switchTab(this,'prof-tab-service')">🪖 ราชการ</button>
+              <button class="tab-btn" onclick="switchTab(this,'prof-tab-salary')">💰 เงินเดือน</button>
+            </div>
+
+            <!-- Tab: ข้อมูลส่วนตัว -->
+            <div class="tab-content active" id="prof-tab-basic">
+              <div class="detail-card">
+                <h4>👤 ข้อมูลส่วนบุคคล</h4>
+                <div class="detail-grid">
+                  <div class="detail-item"><div class="di-label">ชื่อ-สกุล</div><div class="di-value" id="pd-fullname">—</div></div>
+                  <div class="detail-item"><div class="di-label">วันเกิด</div><div class="di-value" id="pd-birthdate">—</div></div>
+                  <div class="detail-item"><div class="di-label">เลขบัตรประชาชน</div><div class="di-value" id="pd-idcard">—</div></div>
+                  <div class="detail-item"><div class="di-label">เบอร์โทรศัพท์</div><div class="di-value highlight" id="pd-phone">—</div></div>
+                  <div class="detail-item"><div class="di-label">สถานภาพสมรส</div><div class="di-value" id="pd-marital">—</div></div>
+                  <div class="detail-item"><div class="di-label">จำนวนบุตร</div><div class="di-value" id="pd-children">—</div></div>
+                  <div class="detail-item"><div class="di-label">ที่อยู่</div><div class="di-value" id="pd-address">—</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: ราชการ -->
+            <div class="tab-content" id="prof-tab-service">
+              <div class="detail-card">
+                <h4>🪖 ข้อมูลราชการ</h4>
+                <div class="detail-grid">
+                  <div class="detail-item"><div class="di-label">ยศ</div><div class="di-value gold" id="pd-rank">—</div></div>
+                  <div class="detail-item"><div class="di-label">ตำแหน่ง</div><div class="di-value" id="pd-position">—</div></div>
+                  <div class="detail-item"><div class="di-label">หน่วยงาน</div><div class="di-value" id="pd-unit">—</div></div>
+                  <div class="detail-item"><div class="di-label">เลขประจำตัว</div><div class="di-value" id="pd-empid">—</div></div>
+                  <div class="detail-item"><div class="di-label">วันเข้ารับราชการ</div><div class="di-value highlight" id="pd-joindate">—</div></div>
+                  <div class="detail-item"><div class="di-label">เหล่า</div><div class="di-value" id="pd-branch">—</div></div>
+                  <div class="detail-item"><div class="di-label">เขตทัพภาค</div><div class="di-value" id="pd-region">—</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: เงินเดือน -->
+            <div class="tab-content" id="prof-tab-salary">
+              <div class="detail-card">
+                <h4>💰 ข้อมูลเงินเดือน</h4>
+                <div class="salary-bar">
+                  <div class="salary-main">
+                    <span class="s-label">เงินเดือนสุทธิ</span>
+                    <span class="s-value" id="pd-net">— บาท</span>
+                  </div>
+                  <div class="salary-breakdown">
+                    <div class="salary-item"><div class="si-label">ระดับ / ขั้น</div><div class="si-value plus" id="pd-level">—</div></div>
+                    <div class="salary-item"><div class="si-label">เงินเดือนขั้นฐาน</div><div class="si-value plus" id="pd-base">—</div></div>
+                    <div class="salary-item"><div class="si-label">เงินเพิ่มพิเศษ พ.ร.ด.</div><div class="si-value plus" id="pd-extra">—</div></div>
+                    <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 1</div><div class="si-value plus" id="pd-psr1">—</div></div>
+                    <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 2</div><div class="si-value plus" id="pd-psr2">—</div></div>
+                    <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 3</div><div class="si-value plus" id="pd-psr3">—</div></div>
+                    <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 4</div><div class="si-value plus" id="pd-psr4">—</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -726,37 +812,43 @@
           <div class="photo-upload"><span>📷</span><p>คลิกเพื่ออัปโหลดรูป</p></div>
           <div style="flex:1;" class="form-grid">
             <div class="form-group"><label class="form-label">ยศ *</label>
-              <select class="form-select form-input">
+              <select class="form-select form-input" id="add-rank">
                 <option value="">-- เลือกยศ --</option>
                 <optgroup label="— ชั้นประทวน —">
-                  <option>ส.ต. (สิบตรี)</option><option>ส.ท. (สิบโท)</option><option>ส.อ. (สิบเอก)</option>
-                  <option>จ.ส.ต. (จ่าสิบตรี)</option><option>จ.ส.ท. (จ่าสิบโท)</option><option>จ.ส.อ. (จ่าสิบเอก)</option>
+                  <option value="ส.ต.">ส.ต.</option>
+                  <option value="ส.ท.">ส.ท.</option>
+                  <option value="ส.อ.">ส.อ.</option>
+                  <option value="จ.ส.ต.">จ.ส.ต.</option>
+                  <option value="จ.ส.ท.">จ.ส.ท.</option>
+                  <option value="จ.ส.อ.">จ.ส.อ.</option>
                 </optgroup>
                 <optgroup label="— ชั้นสัญญาบัตร —">
-                  <option>ร.ต. (ร้อยตรี)</option><option>ร.ท. (ร้อยโท)</option><option>ร.อ. (ร้อยเอก)</option>
+                  <option value="ร.ต.">ร.ต.</option>
+                  <option value="ร.ท.">ร.ท.</option>
+                  <option value="ร.อ.">ร.อ.</option>
                 </optgroup>
               </select>
             </div>
-            <div class="form-group"><label class="form-label">ชื่อ *</label><input type="text" class="form-input" placeholder="กรอกชื่อ"></div>
-            <div class="form-group"><label class="form-label">นามสกุล *</label><input type="text" class="form-input" placeholder="กรอกนามสกุล"></div>
+            <div class="form-group"><label class="form-label">ชื่อ *</label><input type="text" class="form-input" id="add-fname" placeholder="กรอกชื่อ"></div>
+            <div class="form-group"><label class="form-label">นามสกุล *</label><input type="text" class="form-input" id="add-lname" placeholder="กรอกนามสกุล"></div>
           </div>
         </div>
       </div>
       <div class="form-card">
         <h4>👤 ข้อมูลส่วนตัว</h4>
         <div class="form-grid">
-          <div class="form-group"><label class="form-label">เลขบัตรประชาชน 13 หลัก *</label><input type="text" class="form-input" placeholder="x-xxxx-xxxxx-xx-x" maxlength="17"></div>
-          <div class="form-group"><label class="form-label">วันเกิด *</label><input type="date" class="form-input"></div>
-          <div class="form-group"><label class="form-label">เบอร์โทรศัพท์</label><input type="tel" class="form-input" placeholder="0xx-xxx-xxxx"></div>
-          <div class="form-group"><label class="form-label">สถานภาพสมรส</label><select class="form-select form-input"><option>โสด</option><option>สมรส</option><option>หม้าย</option><option>หย่า</option></select></div>
-          <div class="form-group"><label class="form-label">จำนวนบุตร</label><input type="number" class="form-input" min="0" value="0"></div>
-          <div class="form-group"><label class="form-label">ที่อยู่ปัจจุบัน</label><input type="text" class="form-input" placeholder="จังหวัด"></div>
+          <div class="form-group"><label class="form-label">เลขบัตรประชาชน 13 หลัก *</label><input type="text" class="form-input" id="add-idcard" placeholder="x-xxxx-xxxxx-xx-x" maxlength="17"></div>
+          <div class="form-group"><label class="form-label">วันเกิด *</label><input type="date" class="form-input" id="add-birthdate"></div>
+          <div class="form-group"><label class="form-label">เบอร์โทรศัพท์</label><input type="tel" class="form-input" id="add-phone" placeholder="0xx-xxx-xxxx"></div>
+          <div class="form-group"><label class="form-label">สถานภาพสมรส</label><select class="form-select form-input" id="add-marital"><option>โสด</option><option>สมรส</option><option>หม้าย</option><option>หย่า</option></select></div>
+          <div class="form-group"><label class="form-label">จำนวนบุตร</label><input type="number" class="form-input" id="add-children" min="0" value="0"></div>
+          <div class="form-group"><label class="form-label">ที่อยู่ปัจจุบัน</label><input type="text" class="form-input" id="add-address" placeholder="จังหวัด"></div>
         </div>
       </div>
       <div class="form-card">
         <h4>🪖 ข้อมูลราชการ</h4>
         <div class="form-grid">
-          <div class="form-group"><label class="form-label">เลขประจำตัว 10 หลัก *</label><input type="text" class="form-input" placeholder="x-xxxx-xxxxx" maxlength="12"></div>
+          <div class="form-group"><label class="form-label">เลขประจำตัว 10 หลัก *</label><input type="text" class="form-input" id="add-empid" placeholder="x-xxxx-xxxxx" maxlength="12"></div>
           <div class="form-group">
             <label class="form-label">วันเข้ารับราชการ *</label>
             <div style="display:flex;gap:6px;" id="join-date-wrap"></div>
@@ -778,7 +870,7 @@
               <option>รพศ.2 พัน.1</option>
             </select>
           </div>
-          <div class="form-group"><label class="form-label">เหล่า *</label><input type="text" class="form-input" placeholder="เช่น ทหารราบ, ทหารช่าง"></div>
+          <div class="form-group"><label class="form-label">เหล่า *</label><input type="text" class="form-input" id="add-branch" placeholder="เช่น ทหารราบ, ทหารช่าง"></div>
           <div class="form-group"><label class="form-label">เขตทัพภาค</label><select class="form-select form-input" id="add-region"><option>ทัพภาคที่ 1</option><option>ทัพภาคที่ 2</option><option>ทัพภาคที่ 3</option><option>ทัพภาคที่ 4</option></select></div>
         </div>
       </div>
@@ -1224,30 +1316,30 @@ async function saveRecord() {
   const data = {
     action: editId ? 'update' : 'add',
     'ID':                    editId,
-    'ยศ':                    document.querySelector('#panel-add select')?.value || '',
-    'ชื่อ':                   document.querySelectorAll('#panel-add .form-grid input[type=text]')[0]?.value || '',
-    'นามสกุล':               document.querySelectorAll('#panel-add .form-grid input[type=text]')[1]?.value || '',
-    'เลขบัตรประชาชน':       document.querySelectorAll('#panel-add .form-input')[3]?.value || '',
-    'วันเกิด':               document.querySelectorAll('#panel-add input[type=date]')[0]?.value || '',
-    'เบอร์โทรศัพท์':        document.querySelector('#panel-add input[type=tel]')?.value || '',
-    'สถานภาพสมรส':          document.querySelectorAll('#panel-add select')[1]?.value || '',
-    'จำนวนบุตร':            document.querySelector('#panel-add input[type=number][min="0"]')?.value || '0',
-    'ที่อยู่':               document.querySelectorAll('#panel-add input[type=text]')[2]?.value || '',
-    'เลขประจำตัว10หลัก':    document.querySelectorAll('#panel-add input[type=text]')[3]?.value || '',
+    'ยศ':                    document.getElementById('add-rank')?.value           || '',
+    'ชื่อ':                   document.getElementById('add-fname')?.value          || '',
+    'นามสกุล':               document.getElementById('add-lname')?.value          || '',
+    'เลขบัตรประชาชน':       document.getElementById('add-idcard')?.value         || '',
+    'วันเกิด':               document.getElementById('add-birthdate')?.value      || '',
+    'เบอร์โทรศัพท์':        document.getElementById('add-phone')?.value          || '',
+    'สถานภาพสมรส':          document.getElementById('add-marital')?.value        || '',
+    'จำนวนบุตร':            document.getElementById('add-children')?.value       || '0',
+    'ที่อยู่':               document.getElementById('add-address')?.value        || '',
+    'เลขประจำตัว10หลัก':    document.getElementById('add-empid')?.value          || '',
     'วันเข้ารับราชการ':      getJoinDate(),
-    'ตำแหน่ง':              document.getElementById('add-position')?.value || '',
-    'หน่วยงาน':             document.getElementById('add-unit')?.value || '',
-    'เหล่า':                 document.querySelectorAll('#panel-add input[type=text]')[4]?.value || '',
-    'เขตทัพภาค':            document.getElementById('add-region')?.value || '',
+    'ตำแหน่ง':              document.getElementById('add-position')?.value       || '',
+    'หน่วยงาน':             document.getElementById('add-unit')?.value           || '',
+    'เหล่า':                 document.getElementById('add-branch')?.value         || '',
+    'เขตทัพภาค':            document.getElementById('add-region')?.value         || '',
     'เงินเดือนระดับ':       document.getElementById('add-salary-account')?.value || '',
-    'ขั้นเงินเดือน':        document.getElementById('add-salary-step')?.value || '',
-    'เงินเดือนขั้นฐาน':    document.getElementById('add-salary-base')?.value || '',
-    'เงินเพิ่มพิเศษพรด':   document.getElementById('add-salary-extra')?.value || '',
-    'พสรครั้งที่1':         document.getElementById('add-psr1')?.value || '',
-    'พสรครั้งที่2':         document.getElementById('add-psr2')?.value || '',
-    'พสรครั้งที่3':         document.getElementById('add-psr3')?.value || '',
-    'พสรครั้งที่4':         document.getElementById('add-psr4')?.value || '',
-    'เงินเดือนสุทธิ':       document.getElementById('add-salary-net')?.value || '',
+    'ขั้นเงินเดือน':        document.getElementById('add-salary-step')?.value    || '',
+    'เงินเดือนขั้นฐาน':    document.getElementById('add-salary-base')?.value     || '',
+    'เงินเพิ่มพิเศษพรด':   document.getElementById('add-salary-extra')?.value    || '',
+    'พสรครั้งที่1':         document.getElementById('add-psr1')?.value            || '',
+    'พสรครั้งที่2':         document.getElementById('add-psr2')?.value            || '',
+    'พสรครั้งที่3':         document.getElementById('add-psr3')?.value            || '',
+    'พสรครั้งที่4':         document.getElementById('add-psr4')?.value            || '',
+    'เงินเดือนสุทธิ':       document.getElementById('add-salary-net')?.value      || '',
     'URLรูปภาพ':            '',
   };
 
@@ -1294,9 +1386,72 @@ async function deleteRecord(id) {
 }
 
 // ── เปิดหน้าประวัติ ─────────────────────────────────
-function openProfile(id) {
+let currentProfileId = null;
+
+async function openProfile(id) {
   showPanel('profile');
-  // TODO: โหลดข้อมูลแสดงในหน้าประวัติ
+  currentProfileId = id;
+  try {
+    const json = await callAPI({ action: 'getOne', id });
+    if (json.status === 'ok') renderProfile(json.data);
+  } catch(e) {
+    console.error('openProfile error:', e);
+  }
+}
+
+function renderProfile(p) {
+  document.getElementById('profile-empty').style.display   = 'none';
+  document.getElementById('profile-content').style.display = 'block';
+
+  // Sidebar
+  const photo = p['URLรูปภาพ'];
+  const photoEl = document.getElementById('prof-photo');
+  if (photo) {
+    photoEl.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">`;
+  } else {
+    photoEl.innerHTML = '🪖';
+  }
+  document.getElementById('prof-rank').textContent = p['ยศ'] || '—';
+  document.getElementById('prof-name').textContent = `${p['ชื่อ']} ${p['นามสกุล']}`;
+  document.getElementById('prof-pos').textContent  = p['ตำแหน่ง'] || '—';
+  document.getElementById('prof-empid').textContent = p['เลขประจำตัว10หลัก'] || '—';
+  document.getElementById('prof-unit').textContent  = p['หน่วยงาน'] || '—';
+  document.getElementById('prof-step').textContent  = p['ขั้นเงินเดือน'] ? `ขั้น ${p['ขั้นเงินเดือน']}` : '—';
+  document.getElementById('prof-net').textContent   = p['เงินเดือนสุทธิ'] ? Number(p['เงินเดือนสุทธิ']).toLocaleString() + ' ฿' : '—';
+
+  // Tab: ข้อมูลส่วนตัว
+  document.getElementById('pd-fullname').textContent  = `${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`;
+  document.getElementById('pd-birthdate').textContent = p['วันเกิด'] || '—';
+  document.getElementById('pd-idcard').textContent    = p['เลขบัตรประชาชน'] || '—';
+  document.getElementById('pd-phone').textContent     = p['เบอร์โทรศัพท์'] || '—';
+  document.getElementById('pd-marital').textContent   = p['สถานภาพสมรส'] || '—';
+  document.getElementById('pd-children').textContent  = p['จำนวนบุตร'] || '—';
+  document.getElementById('pd-address').textContent   = p['ที่อยู่'] || '—';
+
+  // Tab: ราชการ
+  document.getElementById('pd-rank').textContent     = p['ยศ'] || '—';
+  document.getElementById('pd-position').textContent = p['ตำแหน่ง'] || '—';
+  document.getElementById('pd-unit').textContent     = p['หน่วยงาน'] || '—';
+  document.getElementById('pd-empid').textContent    = p['เลขประจำตัว10หลัก'] || '—';
+  document.getElementById('pd-joindate').textContent = p['วันเข้ารับราชการ'] || '—';
+  document.getElementById('pd-branch').textContent   = p['เหล่า'] || '—';
+  document.getElementById('pd-region').textContent   = p['เขตทัพภาค'] || '—';
+
+  // Tab: เงินเดือน
+  document.getElementById('pd-net').textContent   = p['เงินเดือนสุทธิ'] ? Number(p['เงินเดือนสุทธิ']).toLocaleString() + ' บาท' : '—';
+  document.getElementById('pd-level').textContent = `${p['เงินเดือนระดับ'] || '—'} / ขั้น ${p['ขั้นเงินเดือน'] || '—'}`;
+  document.getElementById('pd-base').textContent  = p['เงินเดือนขั้นฐาน'] ? Number(p['เงินเดือนขั้นฐาน']).toLocaleString() + ' ฿' : '—';
+  document.getElementById('pd-extra').textContent = p['เงินเพิ่มพิเศษพรด'] && p['เงินเพิ่มพิเศษพรด'] !== '0' ? Number(p['เงินเพิ่มพิเศษพรด']).toLocaleString() + ' ฿' : '—';
+  document.getElementById('pd-psr1').textContent  = p['พสรครั้งที่1'] || '—';
+  document.getElementById('pd-psr2').textContent  = p['พสรครั้งที่2'] || '—';
+  document.getElementById('pd-psr3').textContent  = p['พสรครั้งที่3'] || '—';
+  document.getElementById('pd-psr4').textContent  = p['พสรครั้งที่4'] || '—';
+}
+
+function editCurrentProfile() {
+  if (!currentProfileId) return;
+  // TODO: โหลดข้อมูลใส่ฟอร์มแก้ไข
+  showPanel('add');
 }
 
 // ── ดึงวันเข้ารับราชการ ──────────────────────────────
@@ -1311,12 +1466,20 @@ function getJoinDate() {
 
 // ── ล้างฟอร์ม ────────────────────────────────────────
 function resetAddForm() {
-  document.querySelectorAll('#panel-add input:not([readonly])').forEach(el => el.value = '');
-  document.querySelectorAll('#panel-add select').forEach(el => el.selectedIndex = 0);
+  const ids = ['add-rank','add-fname','add-lname','add-idcard','add-birthdate',
+    'add-phone','add-marital','add-children','add-address','add-empid',
+    'add-position','add-unit','add-branch','add-region',
+    'add-salary-account','add-salary-step','add-salary-base',
+    'add-salary-extra','add-psr1','add-psr2','add-psr3','add-psr4','add-salary-net',
+    'join-day','join-month','join-year','edit-record-id'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+  });
   const previewBox = document.getElementById('salary-preview-box');
   if (previewBox) previewBox.style.display = 'none';
-  const editId = document.getElementById('edit-record-id');
-  if (editId) editId.value = '';
   const btn = document.getElementById('btn-save-record');
   if (btn) btn.textContent = '✅ บันทึกข้อมูล';
 }
