@@ -862,8 +862,8 @@
         <div class="table-header"><h3>🗺️ รายการภารกิจ</h3></div>
         <div style="overflow-x:auto;">
           <table>
-            <thead><tr><th>ชื่อกำลังพล</th><th>ภารกิจ</th><th>พื้นที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>บทบาท</th><th>สถานะ</th><th></th></tr></thead>
-            <tbody id="ops-table"><tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">กำลังโหลด...</td></tr></tbody>
+            <thead><tr><th>ชื่อกำลังพล</th><th>ภารกิจ</th><th>พื้นที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>บทบาท</th><th>หมายเหตุ</th><th>สถานะ</th><th></th></tr></thead>
+            <tbody id="ops-table"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">กำลังโหลด...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -1500,8 +1500,12 @@ async function openProfile(id) {
   showPanel('profile');
   currentProfileId = id;
   try {
-    const json = await callAPI({ action: 'getOne', id });
-    if (json.status === 'ok') renderProfile(json.data);
+    const json = await callAPI({ action: 'getOne', table: 'personnel', id });
+    if (json.status === 'ok') {
+      renderProfile(json.data);
+    } else {
+      console.error('openProfile error:', json.message);
+    }
   } catch(e) {
     console.error('openProfile error:', e);
   }
@@ -1783,7 +1787,7 @@ async function loadOps() {
     if (json.status !== 'ok') return;
     const data  = json.data;
     const tbody = document.getElementById('ops-table');
-    if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูล</td></tr>'; return; }
+    if (!data.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูล</td></tr>'; return; }
     document.getElementById('ops-total').textContent  = data.length;
     document.getElementById('ops-active').textContent = data.filter(r => r['สถานะ'] === 'กำลังดำเนินการ').length;
     document.getElementById('ops-done').textContent   = data.filter(r => r['สถานะ'] === 'เสร็จสิ้น').length;
@@ -1793,9 +1797,10 @@ async function loadOps() {
       <td><strong>${r['ชื่อกำลังพล']}</strong></td>
       <td>${r['ชื่อภารกิจ']}</td>
       <td>${r['พื้นที่'] || '—'}</td>
-      <td>${r['วันเริ่ม'] || '—'}</td>
-      <td>${r['วันสิ้นสุด'] || '—'}</td>
+      <td>${formatDateThai(r['วันเริ่ม'])}</td>
+      <td>${formatDateThai(r['วันสิ้นสุด'])}</td>
       <td>${r['บทบาท'] || '—'}</td>
+      <td style="font-size:12px;color:var(--text-secondary);">${r['หมายเหตุ'] || '—'}</td>
       <td><span class="chip ${statusColor[r['สถานะ']]||''}">${r['สถานะ']}</span></td>
       <td>
         <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="editOps('${r['ID']}')">✏️</button>
