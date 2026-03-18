@@ -719,6 +719,7 @@
     <div class="panel" id="panel-add">
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>เพิ่มกำลังพลใหม่</span></div>
       <div class="page-header"><div><h2>เพิ่มกำลังพลใหม่</h2><p>กรอกข้อมูลกำลังพลใหม่เข้าสู่ระบบ</p></div></div>
+      <input type="hidden" id="edit-record-id">
       <div class="form-card">
         <h4>📷 รูปภาพ & ข้อมูลเบื้องต้น</h4>
         <div style="display:flex;gap:20px;align-items:flex-start;">
@@ -761,7 +762,7 @@
             <div style="display:flex;gap:6px;" id="join-date-wrap"></div>
           </div>
           <div class="form-group"><label class="form-label">ตำแหน่ง *</label>
-            <select class="form-select form-input">
+            <select class="form-select form-input" id="add-position">
               <option value="">-- เลือกตำแหน่ง --</option>
               <option>นายสิบยุทธการและการข่าว</option>
               <option>นายสิบอาวุธหนัก</option>
@@ -772,13 +773,13 @@
             </select>
           </div>
           <div class="form-group"><label class="form-label">หน่วยงาน *</label>
-            <select class="form-select form-input">
+            <select class="form-select form-input" id="add-unit">
               <option value="">-- เลือกหน่วยงาน --</option>
               <option>รพศ.2 พัน.1</option>
             </select>
           </div>
           <div class="form-group"><label class="form-label">เหล่า *</label><input type="text" class="form-input" placeholder="เช่น ทหารราบ, ทหารช่าง"></div>
-          <div class="form-group"><label class="form-label">เขตทัพภาค</label><select class="form-select form-input"><option>ทัพภาคที่ 1</option><option>ทัพภาคที่ 2</option><option>ทัพภาคที่ 3</option><option>ทัพภาคที่ 4</option></select></div>
+          <div class="form-group"><label class="form-label">เขตทัพภาค</label><select class="form-select form-input" id="add-region"><option>ทัพภาคที่ 1</option><option>ทัพภาคที่ 2</option><option>ทัพภาคที่ 3</option><option>ทัพภาคที่ 4</option></select></div>
         </div>
       </div>
       <div class="form-card">
@@ -850,10 +851,8 @@
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-ghost">ยกเลิก</button>
-        <button class="btn btn-ghost">💾 บันทึกร่าง</button>
-        <button class="btn btn-primary">✅ บันทึกข้อมูล</button>
-        <button class="btn btn-gold">📊 บันทึก + ซิงค์ Google Sheet</button>
+        <button class="btn btn-ghost" onclick="resetAddForm()">ยกเลิก</button>
+        <button class="btn btn-primary" id="btn-save-record" onclick="saveRecord()">✅ บันทึกข้อมูล</button>
       </div>
     </div>
 
@@ -1118,6 +1117,214 @@ function calcSalaryNet() {
 const USERS = [
   { id: 'admin', pass: 'admin2', name: 'Admin', role: 'ผู้ดูแลระบบ', avatar: 'AD' }
 ];
+
+// ── Google Apps Script API URL ──────────────────────
+const API_URL = 'https://script.google.com/macros/s/AKfycbzIvXZvUyh20jM8ci1dEYqSazI-VB6TXKBVgWtaXPdwB_GZvms2cXqo9LHcsVWFYXQ/exec';
+
+// ── GET — ใช้ fetch + callback=? แล้ว strip wrapper ──
+async function callAPI(params) {
+  const cbName = 'cb_' + Date.now();
+  const qs = new URLSearchParams({ ...params, callback: cbName }).toString();
+  const res  = await fetch(API_URL + '?' + qs);
+  const text = await res.text();
+  // strip callback wrapper: cbName({...}) → {...}
+  const json = text.replace(new RegExp('^' + cbName + '\\('), '').replace(/\)$/, '');
+  return JSON.parse(json);
+}
+
+// ── POST — ส่งเป็น form-data ──────────────────────
+async function callAPIPost(data) {
+  const form = new FormData();
+  form.append('payload', JSON.stringify(data));
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: form
+  });
+  const text = await res.text();
+  try { return JSON.parse(text); }
+  catch(e) { return { status: 'ok', message: 'บันทึกสำเร็จ' }; }
+}
+
+// ── ดึงข้อมูลทั้งหมดจาก Sheet ──────────────────────
+async function loadPersonnel() {
+  try {
+    const json = await callAPI({ action: 'getAll' });
+    if (json.status === 'ok') {
+      renderPersonnelTable(json.data);
+      updateDashboardStats(json.data);
+    }
+  } catch (err) {
+    console.error('loadPersonnel error:', err);
+  }
+}
+
+// ── แสดงข้อมูลในตาราง ──────────────────────────────
+function renderPersonnelTable(data) {
+  const dashTbody = document.getElementById('dashboard-table');
+  const fullTbody = document.getElementById('full-table');
+
+  const emptyRow = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูลกำลังพล</td></tr>`;
+
+  if (!data || data.length === 0) {
+    if (dashTbody) dashTbody.innerHTML = emptyRow;
+    if (fullTbody) fullTbody.innerHTML = emptyRow;
+    return;
+  }
+
+  // Dashboard table (5 รายการล่าสุด)
+  if (dashTbody) {
+    dashTbody.innerHTML = data.slice(0, 5).map((p, i) => `
+      <tr onclick="openProfile('${p['ID']}')">
+        <td>${i+1}</td>
+        <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
+        <td>${p['ตำแหน่ง'] || '—'}</td>
+        <td>—</td>
+        <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;">${p['ขั้นเงินเดือน'] || '—'}</td>
+        <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${Number(p['เงินเดือนสุทธิ']||0).toLocaleString()} ฿</td>
+        <td><span class="status-badge status-active">● ปฏิบัติหน้าที่</span></td>
+        <td><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();openProfile('${p['ID']}')">ดูประวัติ →</button></td>
+      </tr>`).join('');
+  }
+
+  // Full table
+  if (fullTbody) {
+    fullTbody.innerHTML = data.map((p, i) => `
+      <tr onclick="openProfile('${p['ID']}')">
+        <td>${i+1}</td>
+        <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
+        <td>${p['เลขประจำตัว10หลัก'] || '—'}</td>
+        <td>${p['ตำแหน่ง'] || '—'}</td>
+        <td>${p['วันเข้ารับราชการ'] || '—'}</td>
+        <td>—</td>
+        <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;">${p['ขั้นเงินเดือน'] || '—'}</td>
+        <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${Number(p['เงินเดือนสุทธิ']||0).toLocaleString()} ฿</td>
+        <td><span class="status-badge status-active">● ปฏิบัติหน้าที่</span></td>
+        <td>
+          <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();openProfile('${p['ID']}')">👁️ ดู</button>
+          <button class="btn btn-primary" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();editRecord('${p['ID']}')">✏️</button>
+          <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#c0392b;border-color:#c0392b;" onclick="event.stopPropagation();deleteRecord('${p['ID']}')">🗑️</button>
+        </td>
+      </tr>`).join('');
+  }
+}
+
+// ── อัปเดต stat ─────────────────────────────────────
+function updateDashboardStats(data) {
+  const el = document.getElementById('stat-total');
+  if (el) el.textContent = data.length;
+}
+
+// ── บันทึกข้อมูลใหม่ ────────────────────────────────
+async function saveRecord() {
+  const btn = document.getElementById('btn-save-record');
+
+  // เก็บค่าจากฟอร์ม
+  const editId = document.getElementById('edit-record-id')?.value || '';
+
+  const data = {
+    action: editId ? 'update' : 'add',
+    'ID':                    editId,
+    'ยศ':                    document.querySelector('#panel-add select')?.value || '',
+    'ชื่อ':                   document.querySelectorAll('#panel-add .form-grid input[type=text]')[0]?.value || '',
+    'นามสกุล':               document.querySelectorAll('#panel-add .form-grid input[type=text]')[1]?.value || '',
+    'เลขบัตรประชาชน':       document.querySelectorAll('#panel-add .form-input')[3]?.value || '',
+    'วันเกิด':               document.querySelectorAll('#panel-add input[type=date]')[0]?.value || '',
+    'เบอร์โทรศัพท์':        document.querySelector('#panel-add input[type=tel]')?.value || '',
+    'สถานภาพสมรส':          document.querySelectorAll('#panel-add select')[1]?.value || '',
+    'จำนวนบุตร':            document.querySelector('#panel-add input[type=number][min="0"]')?.value || '0',
+    'ที่อยู่':               document.querySelectorAll('#panel-add input[type=text]')[2]?.value || '',
+    'เลขประจำตัว10หลัก':    document.querySelectorAll('#panel-add input[type=text]')[3]?.value || '',
+    'วันเข้ารับราชการ':      getJoinDate(),
+    'ตำแหน่ง':              document.getElementById('add-position')?.value || '',
+    'หน่วยงาน':             document.getElementById('add-unit')?.value || '',
+    'เหล่า':                 document.querySelectorAll('#panel-add input[type=text]')[4]?.value || '',
+    'เขตทัพภาค':            document.getElementById('add-region')?.value || '',
+    'เงินเดือนระดับ':       document.getElementById('add-salary-account')?.value || '',
+    'ขั้นเงินเดือน':        document.getElementById('add-salary-step')?.value || '',
+    'เงินเดือนขั้นฐาน':    document.getElementById('add-salary-base')?.value || '',
+    'เงินเพิ่มพิเศษพรด':   document.getElementById('add-salary-extra')?.value || '',
+    'พสรครั้งที่1':         document.getElementById('add-psr1')?.value || '',
+    'พสรครั้งที่2':         document.getElementById('add-psr2')?.value || '',
+    'พสรครั้งที่3':         document.getElementById('add-psr3')?.value || '',
+    'พสรครั้งที่4':         document.getElementById('add-psr4')?.value || '',
+    'เงินเดือนสุทธิ':       document.getElementById('add-salary-net')?.value || '',
+    'URLรูปภาพ':            '',
+  };
+
+  // validate
+  if (!data['ชื่อ'] || !data['นามสกุล']) {
+    alert('กรุณากรอกชื่อและนามสกุล'); return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังบันทึก...';
+
+  try {
+    const json = await callAPIPost(data);
+    if (json.status === 'ok') {
+      alert(editId ? '✅ แก้ไขข้อมูลสำเร็จ' : '✅ บันทึกข้อมูลสำเร็จ');
+      resetAddForm();
+      loadPersonnel();
+      showPanel('list');
+    } else {
+      alert('❌ เกิดข้อผิดพลาด: ' + json.message);
+    }
+  } catch (err) {
+    alert('❌ ไม่สามารถเชื่อมต่อได้: ' + err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✅ บันทึกข้อมูล';
+  }
+}
+
+// ── ลบข้อมูล ────────────────────────────────────────
+async function deleteRecord(id) {
+  if (!confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) return;
+  try {
+    const json = await callAPIPost({ action: 'delete', id });
+    if (json.status === 'ok') {
+      alert('✅ ลบสำเร็จ');
+      loadPersonnel();
+    } else {
+      alert('❌ ' + json.message);
+    }
+  } catch (err) {
+    alert('❌ ' + err);
+  }
+}
+
+// ── เปิดหน้าประวัติ ─────────────────────────────────
+function openProfile(id) {
+  showPanel('profile');
+  // TODO: โหลดข้อมูลแสดงในหน้าประวัติ
+}
+
+// ── ดึงวันเข้ารับราชการ ──────────────────────────────
+function getJoinDate() {
+  const d = document.getElementById('join-day')?.value || '';
+  const m = document.getElementById('join-month')?.value || '';
+  const y = document.getElementById('join-year')?.value || '';
+  if (!d || !m || !y) return '';
+  const monthNames = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  return `${d} ${monthNames[parseInt(m)]} ${y}`;
+}
+
+// ── ล้างฟอร์ม ────────────────────────────────────────
+function resetAddForm() {
+  document.querySelectorAll('#panel-add input:not([readonly])').forEach(el => el.value = '');
+  document.querySelectorAll('#panel-add select').forEach(el => el.selectedIndex = 0);
+  const previewBox = document.getElementById('salary-preview-box');
+  if (previewBox) previewBox.style.display = 'none';
+  const editId = document.getElementById('edit-record-id');
+  if (editId) editId.value = '';
+  const btn = document.getElementById('btn-save-record');
+  if (btn) btn.textContent = '✅ บันทึกข้อมูล';
+}
+
+// ── โหลดข้อมูลเมื่อเปิดเว็บ ─────────────────────────
+window.addEventListener('load', () => {
+  loadPersonnel();
+});
 
 function doLogin() {
   const id   = document.getElementById('login-id').value.trim();
