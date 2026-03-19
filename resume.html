@@ -4878,6 +4878,250 @@ window.renderDocCards = function(data, cat) {
 console.log('[IMG Fix] Drive image display fix loaded');
 </script>
 
-    
+    <!-- ══════════════════════════════════════════════════════
+     PATCH v4 — วางก่อน </body>
+     1. แก้หน้าเอกสารสำคัญ — โหลดและแสดงไฟล์หลังอัปโหลด
+     2. เปลี่ยนคำ "ปฏิบัติงาน/การปฏิบัติงานราชการสนาม" → "ราชการสนาม"
+     ══════════════════════════════════════════════════════ -->
+<script>
+
+// ════════════════════════════════════════════════════════
+//  PART 1: แก้หน้าเอกสารสำคัญ
+// ════════════════════════════════════════════════════════
+
+// ── fixDriveUrl: แปลง Drive URL ให้ดูได้ใน browser ─────
+function fixDriveUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('data:')) return url;
+  let fid = '';
+  const m1 = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (m1) fid = m1[1];
+  const m2 = url.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+  if (m2) fid = m2[1];
+  const m3 = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]{10,})/);
+  if (m3) fid = m3[1];
+  if (!fid) return url;
+  return 'https://lh3.googleusercontent.com/d/' + fid;
+}
+
+// ── override loadDocs — โหลด + แสดงผลทันที ──────────────
+async function loadDocs() {
+  try {
+    const json = await callAPI({ action: 'getAll', table: 'docs' });
+    allDocsData = (json.status === 'ok' && json.data) ? json.data : [];
+    renderDocCards(allDocsData, 'all');
+    updateDocStats(allDocsData);
+  } catch(e) {
+    console.error('loadDocs:', e);
+    allDocsData = [];
+    renderDocCards([], 'all');
+  }
+}
+
+// ── override renderDocCards — แสดงการ์ดเอกสารครบถ้วน ───
+function renderDocCards(data, cat) {
+  const container = document.getElementById('doc-cards-container');
+  if (!container) return;
+
+  const filtered = cat === 'all' ? data : data.filter(d => (d['หมวดหมู่'] || '').includes(cat));
+
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="es-icon">📭</div>
+      <p>${cat === 'all' ? 'ยังไม่มีเอกสารในระบบ — กด "อัปโหลดเอกสาร" เพื่อเพิ่ม' : 'ยังไม่มีเอกสารในหมวดนี้'}</p>
+    </div>`;
+    return;
+  }
+
+  const typeIcon = { pdf:'📄', doc:'📝', docx:'📝', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', zip:'📦', xlsx:'📊', pptx:'📊' };
+  const now = new Date();
+
+  container.innerHTML = filtered.map(d => {
+    const ext      = (d['ชื่อไฟล์'] || d['ชื่อเอกสาร'] || '').split('.').pop().toLowerCase();
+    const icon     = typeIcon[ext] || '📁';
+    const iconType = ['pdf'].includes(ext) ? 'pdf' : ['jpg','jpeg','png'].includes(ext) ? 'img' : ['zip'].includes(ext) ? 'zip' : 'word';
+    const exp      = d['วันหมดอายุ'] ? new Date(d['วันหมดอายุ']) : null;
+    const isNew    = d['วันที่อัปโหลด'] && (now - new Date(d['วันที่อัปโหลด'])) < 7 * 86400000;
+    const isExp    = exp && exp < now;
+    const nearExp  = exp && !isExp && (exp - now) < 30 * 86400000;
+
+    // แปลง URL ให้ดูได้
+    const rawUrl   = d['URLไฟล์'] || d['url'] || d['URL'] || '';
+    const viewUrl  = rawUrl ? fixDriveUrl(rawUrl) : '';
+    const openUrl  = rawUrl || viewUrl;
+
+    const size     = d['ขนาดไฟล์'] ? (Number(d['ขนาดไฟล์']) / 1024).toFixed(0) + ' KB' : '—';
+    const owner    = d['เจ้าของ'] || d['ชื่อกำลังพล'] || '—';
+    const cat2     = d['หมวดหมู่'] || '—';
+    const docName  = d['ชื่อเอกสาร'] || d['ชื่อไฟล์'] || '—';
+    const docDate  = d['วันที่เอกสาร'] || d['วันที่อัปโหลด'] || '—';
+    const docId    = d['ID'] || '';
+    const fileId   = d['fileId'] || d['FileId'] || '';
+
+    return `<div class="doc-card">
+      ${isNew  ? '<span class="dc-badge new">ใหม่</span>' : ''}
+      ${nearExp ? '<span class="dc-badge exp">ใกล้หมด</span>' : ''}
+      ${isExp  ? '<span class="dc-badge exp">หมดอายุ</span>' : ''}
+      <div class="dc-top">
+        <div class="dc-icon ${iconType}">${icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="dc-name" title="${docName}">${docName}</div>
+          <div class="dc-owner" style="font-size:11px;color:var(--text-muted);">${owner} • ${cat2}</div>
+        </div>
+      </div>
+      <div class="dc-meta">
+        <span class="dc-date">${docDate}</span>
+        <span class="dc-size">${size}</span>
+      </div>
+      <div class="dc-actions">
+        ${openUrl
+          ? `<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;"
+               onclick="window.open('${openUrl}','_blank')">👁️ ดู</button>`
+          : `<span style="font-size:11px;color:var(--text-muted);">ไม่มี URL</span>`}
+        <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#c0392b;border-color:#c0392b;"
+          onclick="deleteDoc('${docId}','${fileId}')">🗑️ ลบ</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── override updateDocStats ───────────────────────────────
+function updateDocStats(data) {
+  const now = new Date();
+  const in30 = data.filter(d => {
+    if (!d['วันหมดอายุ']) return false;
+    const exp = new Date(d['วันหมดอายุ']);
+    return !isNaN(exp) && exp > now && (exp - now) < 30 * 86400000;
+  }).length;
+  const thisMonth = data.filter(d => {
+    if (!d['วันที่อัปโหลด']) return false;
+    const up = new Date(d['วันที่อัปโหลด']);
+    return !isNaN(up) && up.getMonth() === now.getMonth() && up.getFullYear() === now.getFullYear();
+  }).length;
+  let totalSize = 0;
+  data.forEach(d => { totalSize += Number(d['ขนาดไฟล์']) || 0; });
+
+  const boxes = document.querySelectorAll('#panel-docs .ds-val');
+  if (boxes[0]) boxes[0].textContent = data.length;
+  if (boxes[1]) boxes[1].textContent = in30;
+  if (boxes[2]) boxes[2].textContent = thisMonth;
+  if (boxes[3]) boxes[3].textContent = (totalSize / 1024 / 1024).toFixed(1) + ' MB';
+
+  const firstTab = document.querySelector('#panel-docs .doc-cat-tab');
+  if (firstTab) firstTab.textContent = `📂 ทั้งหมด (${data.length})`;
+}
+
+// ── override filterDocs ───────────────────────────────────
+function filterDocs(cat, btn) {
+  document.querySelectorAll('.doc-cat-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderDocCards(allDocsData, cat);
+}
+
+// ── โหลด docs อัตโนมัติหลัง _saveDoc สำเร็จ ─────────────
+const _origSaveDoc = window._saveDoc;
+window._saveDoc = async function(useDrive) {
+  if (_origSaveDoc) await _origSaveDoc(useDrive);
+  // reload หลังบันทึก
+  setTimeout(() => loadDocs(), 800);
+};
+
+// ════════════════════════════════════════════════════════
+//  PART 2: เปลี่ยนคำ "ราชการสนาม" ให้สม่ำเสมอ
+//  - "การปฏิบัติงานราชการสนาม" → "ราชการสนาม"
+//  - tab ปฏิบัติงาน → ราชการสนาม
+// ════════════════════════════════════════════════════════
+
+// ── override loadOps — เปลี่ยน title ─────────────────────
+const _origLoadOps = window.loadOps;
+window.loadOps = async function() {
+  if (_origLoadOps) await _origLoadOps();
+};
+
+// ── แก้ label บนหน้าจอ หลัง DOM โหลดเสร็จ ───────────────
+function fixOpsLabels() {
+  // แก้ tab button
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (btn.textContent.includes('ปฏิบัติงาน') && !btn.textContent.includes('ราชการสนาม')) {
+      btn.textContent = '🗺️ ราชการสนาม';
+    }
+  });
+
+  // แก้หัวคอลัมน์ใน profile ops tab
+  const opsHeader = document.querySelector('#prof-tab-ops h4 span');
+  if (opsHeader && opsHeader.textContent.includes('ปฏิบัติงาน')) {
+    opsHeader.textContent = '🗺️ ประวัติราชการสนาม';
+  }
+
+  // แก้ breadcrumb
+  document.querySelectorAll('.breadcrumb span').forEach(span => {
+    if (span.textContent === 'การปฏิบัติงานราชการสนาม') {
+      span.textContent = 'ราชการสนาม';
+    }
+  });
+
+  // แก้ page header h2
+  document.querySelectorAll('.page-header h2').forEach(h2 => {
+    if (h2.textContent === 'การปฏิบัติงานราชการสนาม') {
+      h2.textContent = 'ราชการสนาม';
+    }
+  });
+
+  // แก้ topbar title
+  const topbarTitle = document.getElementById('topbar-title');
+  if (topbarTitle && topbarTitle.textContent === 'การปฏิบัติงานราชการสนาม') {
+    topbarTitle.textContent = 'ราชการสนาม';
+  }
+
+  // แก้ nav item sidebar
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (item.textContent.trim().includes('การปฏิบัติงานราชการสนาม')) {
+      item.innerHTML = item.innerHTML.replace('การปฏิบัติงานราชการสนาม', 'ราชการสนาม');
+    }
+  });
+}
+
+// ── override showPanel — แก้ title ทุกครั้งที่เปิด panel ─
+const _origShowPanel = window.showPanel;
+window.showPanel = function(name) {
+  if (_origShowPanel) _origShowPanel(name);
+  const topbarTitle = document.getElementById('topbar-title');
+  if (name === 'ops' && topbarTitle) {
+    topbarTitle.textContent = 'ราชการสนาม';
+  }
+  setTimeout(fixOpsLabels, 50);
+};
+
+// ── override loadProfileRelated — แก้ label ใน profile tab
+const _origLoadProfileRelated = window.loadProfileRelated;
+window.loadProfileRelated = async function(id, p) {
+  if (_origLoadProfileRelated) await _origLoadProfileRelated(id, p);
+  // แก้ label วันทวีคูณใน ops list และ tab
+  const opsCount = document.getElementById('prof-ops-count');
+  setTimeout(() => {
+    // แก้ tab button "ปฏิบัติงาน" → "ราชการสนาม"
+    document.querySelectorAll('#prof-tab-nav .tab-btn').forEach(btn => {
+      if (btn.textContent.includes('ปฏิบัติงาน')) {
+        btn.textContent = '🗺️ ราชการสนาม';
+      }
+    });
+    // แก้หัว detail-card
+    document.querySelectorAll('#prof-tab-ops .detail-card h4 span').forEach(span => {
+      if (span.textContent.includes('ปฏิบัติงาน')) {
+        span.textContent = '🗺️ ประวัติราชการสนาม';
+      }
+    });
+  }, 100);
+};
+
+// รัน fixOpsLabels ทันทีที่โหลด
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(fixOpsLabels, 300);
+});
+setTimeout(fixOpsLabels, 500);
+
+console.log('[PATCH v4] Docs display + Ops label fix loaded');
+</script>
+
 </body>
 </html>
