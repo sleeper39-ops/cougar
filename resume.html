@@ -2216,59 +2216,114 @@ const USERS = [
 ];
 
 // ══════════════════════════════════════════════════
-//  CONFIG — ดึงจาก localStorage (ตั้งค่าในหน้าตั้งค่าระบบ)
+//  CONFIG — ค่า default ฝังในไฟล์ (แก้ได้จากหน้าตั้งค่า)
+//  localStorage จะ override ถ้าตั้งค่าไว้
 // ══════════════════════════════════════════════════
+
+// ▼▼▼ แก้ค่านี้ให้ตรงกับ Apps Script URL ของท่าน ▼▼▼
+const DEFAULT_API_URL    = 'https://script.google.com/macros/s/AKfycbzIvXZvUyh20jM8ci1dEYqSazI-VB6TXKBVgWtaXPdwB_GZvms2cXqo9LHcsVWFYXQ/exec';
+const DEFAULT_SHEET_ID   = '';
+const DEFAULT_DRIVE_DOCS = '';   // Folder ID เอกสาร
+const DEFAULT_DRIVE_IMG  = '';   // Folder ID รูปภาพ
+const DEFAULT_TABS = {
+  personnel: 'กำลังพล',
+  promo:     'เลื่อนยศ',
+  courses:   'หลักสูตร',
+  ops:       'ภารกิจ',
+  docs:      'เอกสาร'
+};
+// ▲▲▲ แก้แค่ส่วนนี้ ▲▲▲
+
 function getAPIURL() {
-  return localStorage.getItem('cfg_api_url') || '';
+  // localStorage override → ถ้าไม่มีใช้ DEFAULT
+  return localStorage.getItem('cfg_api_url') || DEFAULT_API_URL;
 }
-// ดึงชื่อ Tab ตาม table key จาก localStorage
 function getTabName(tableKey) {
-  const defaults = { personnel:'กำลังพล', promo:'เลื่อนยศ', courses:'หลักสูตร', ops:'ภารกิจ', docs:'เอกสาร' };
-  return localStorage.getItem('cfg_tab_' + tableKey) || defaults[tableKey] || tableKey;
+  return localStorage.getItem('cfg_tab_' + tableKey) || DEFAULT_TABS[tableKey] || tableKey;
+}
+function getDriveDocsId() {
+  return localStorage.getItem('cfg_drive_docs_id') || DEFAULT_DRIVE_DOCS;
+}
+function getDriveImgId() {
+  return localStorage.getItem('cfg_drive_img_id') || DEFAULT_DRIVE_IMG;
 }
 function isConfigured() {
   return !!getAPIURL();
 }
 
-async function callAPI(params) {
-  const url = getAPIURL();
-  if (!url) {
-    console.warn('API URL ยังไม่ได้ตั้งค่า — กรุณาตั้งค่าในหน้าตั้งค่าระบบ');
-    return { status: 'error', message: 'ยังไม่ได้ตั้งค่า API URL' };
-  }
-  // ส่งชื่อ Tab จริงไปพร้อมกับ request
-  const tableKey = params.table || 'personnel';
-  const enriched = { ...params, tabName: getTabName(tableKey) };
-  const cbName = 'cb_' + Date.now();
-  const qs = new URLSearchParams({ ...enriched, callback: cbName }).toString();
-  const res  = await fetch(url + '?' + qs);
-  const text = await res.text();
-  const json = text.replace(new RegExp('^' + cbName + '\\('), '').replace(/\)$/, '');
-  return JSON.parse(json);
+// ── GET — ใช้ JSONP (script tag) หลีกเลี่ยง CORS ──────
+function callAPI(params) {
+  return new Promise((resolve, reject) => {
+    const url       = getAPIURL();
+    if (!url) { resolve({ status:'error', message:'ยังไม่ได้ตั้งค่า API URL' }); return; }
+
+    const tableKey  = params.table || 'personnel';
+    const enriched  = { ...params, tabName: getTabName(tableKey) };
+    const cbName    = 'jsonpCb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    enriched.callback = cbName;
+
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Request timeout (30s)'));
+    }, 30000);
+
+    window[cbName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      const s = document.getElementById(cbName);
+      if (s) s.remove();
+    }
+
+    const script = document.createElement('script');
+    script.id  = cbName;
+    script.src = url + '?' + new URLSearchParams(enriched).toString();
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('Failed to fetch (network/CORS)'));
+    };
+    document.head.appendChild(script);
+  });
 }
 
+// ── POST — ส่งเป็น form-data (no-cors) ────────────────
 async function callAPIPost(data) {
   const url = getAPIURL();
-  if (!url) {
-    return { status: 'error', message: 'ยังไม่ได้ตั้งค่า API URL' };
-  }
-  // ส่งชื่อ Tab จริงไปพร้อมกับ payload
+  if (!url) return { status:'error', message:'ยังไม่ได้ตั้งค่า API URL' };
+
   const tableKey = data.table || 'personnel';
   const enriched = { ...data, tabName: getTabName(tableKey) };
   const form = new FormData();
   form.append('payload', JSON.stringify(enriched));
-  const res = await fetch(url, { method: 'POST', body: form });
-  const text = await res.text();
-  try { return JSON.parse(text); }
-  catch(e) { return { status: 'ok', message: 'บันทึกสำเร็จ' }; }
+
+  try {
+    // ลอง fetch ปกติก่อน
+    const res  = await fetch(url, { method:'POST', body:form });
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch(_) { return { status:'ok', message:'บันทึกสำเร็จ' }; }
+  } catch(e) {
+    // ถ้า CORS block — ส่งแบบ no-cors (ไม่ได้รับ response แต่ GAS ยังทำงาน)
+    try {
+      await fetch(url, { method:'POST', body:form, mode:'no-cors' });
+      return { status:'ok', message:'บันทึกสำเร็จ (no-cors mode)' };
+    } catch(e2) {
+      return { status:'error', message: e2.message };
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════
 //  SETTINGS FUNCTIONS
 // ══════════════════════════════════════════════════
 function loadSettingsUI() {
-  const url  = localStorage.getItem('cfg_api_url')  || '';
-  const shId = localStorage.getItem('cfg_sheet_id') || '';
+  // แสดงค่าที่ใช้งานจริง (localStorage override → default)
+  const url  = localStorage.getItem('cfg_api_url')  || DEFAULT_API_URL;
+  const shId = localStorage.getItem('cfg_sheet_id') || DEFAULT_SHEET_ID;
 
   const tabDefaults = { personnel:'กำลังพล', promo:'เลื่อนยศ', courses:'หลักสูตร', ops:'ภารกิจ', docs:'เอกสาร' };
 
@@ -2320,7 +2375,7 @@ function loadSettingsUI() {
   updateDrivePreview('img');
   // อัปเดตสถานะ dot drive
   ['docs','img'].forEach(type => {
-    const id     = localStorage.getItem('cfg_drive_' + type + '_id');
+    const id     = type === 'img' ? getDriveImgId() : getDriveDocsId();
     const dot    = document.getElementById('drive-' + type + '-dot');
     const status = document.getElementById('drive-' + type + '-status');
     const icon   = type === 'docs' ? '📁' : '🖼️';
@@ -2393,19 +2448,15 @@ async function testConnection() {
 
   updateConnectionStatus('testing');
   try {
-    const cbName = 'cb_test_' + Date.now();
-    const qs = new URLSearchParams({ action: 'getAll', table: 'personnel', callback: cbName }).toString();
-    const res  = await fetch(url + '?' + qs);
-    const text = await res.text();
-    const json = JSON.parse(text.replace(new RegExp('^' + cbName + '\\('), '').replace(/\)$/, ''));
-
+    const json = await callAPI({ action:'getAll', table:'personnel' });
     if (json.status === 'ok') {
       localStorage.setItem('cfg_last_sync', new Date().toLocaleString('th-TH'));
-      document.getElementById('info-last-sync').textContent = localStorage.getItem('cfg_last_sync');
+      const el = document.getElementById('info-last-sync');
+      if (el) el.textContent = localStorage.getItem('cfg_last_sync');
       updateConnectionStatus('ok', `เชื่อมต่อสำเร็จ — พบข้อมูล ${(json.data||[]).length} รายการ`);
       showToast('✅ เชื่อมต่อสำเร็จ!');
     } else {
-      updateConnectionStatus('error', 'ตอบกลับแต่ status ไม่ใช่ ok: ' + json.message);
+      updateConnectionStatus('error', 'status ไม่ใช่ ok: ' + json.message);
     }
   } catch(e) {
     updateConnectionStatus('error', 'เชื่อมต่อไม่ได้: ' + e.message);
@@ -2504,7 +2555,7 @@ function updateDrivePreview(type) {
 // เปิดโฟลเดอร์ใน Drive
 function openDriveFolder(type) {
   const id = document.getElementById('cfg-drive-' + type + '-id')?.value.trim()
-          || localStorage.getItem('cfg_drive_' + type + '_id');
+          || (type === 'img' ? getDriveImgId() : getDriveDocsId());
   if (!id) { showToast('⚠️ ยังไม่ได้ตั้งค่า Folder ID'); return; }
   window.open('https://drive.google.com/drive/folders/' + id, '_blank');
 }
@@ -2512,7 +2563,7 @@ function openDriveFolder(type) {
 // ทดสอบการเข้าถึง Folder เดี่ยว
 async function testDriveFolderAccess(type) {
   const id  = document.getElementById('cfg-drive-' + type + '-id')?.value.trim()
-           || localStorage.getItem('cfg_drive_' + type + '_id');
+           || (type === 'img' ? getDriveImgId() : getDriveDocsId());
   const url = getDriveAPIURL();
   if (!id)  { showToast('⚠️ กรุณากรอก Folder ID ก่อน'); return; }
   if (!url) { showToast('⚠️ ยังไม่ได้ตั้งค่า API URL'); return; }
@@ -2577,7 +2628,7 @@ function saveDriveSettings() {
 
 // ── อัปโหลดไฟล์ไปยัง Drive (ใช้จากหน้าเอกสาร) ──────
 async function uploadFileToDriveAPI(file, type) {
-  const folderId = localStorage.getItem(type === 'img' ? 'cfg_drive_img_id' : 'cfg_drive_docs_id');
+  const folderId = type === 'img' ? getDriveImgId() : getDriveDocsId();
   const url      = getDriveAPIURL();
 
   if (!folderId) throw new Error('ยังไม่ตั้งค่า Folder ID — ไปตั้งค่าที่หน้าตั้งค่าระบบ');
@@ -2629,7 +2680,7 @@ async function uploadFileToDriveAPI(file, type) {
 
 // ── ดูรายการไฟล์ใน Drive ────────────────────────────
 async function listDriveFilesAPI(type, prefix) {
-  const folderId = localStorage.getItem(type === 'img' ? 'cfg_drive_img_id' : 'cfg_drive_docs_id');
+  const folderId = type === 'img' ? getDriveImgId() : getDriveDocsId();
   const url      = getDriveAPIURL();
   if (!folderId || !url) return { status:'error', data:[] };
   const cb  = 'cb_' + Date.now();
@@ -2762,7 +2813,7 @@ function previewPhoto(input, previewId, urlId) {
     }
 
     // ตรวจสอบว่าตั้งค่า Drive ไว้หรือยัง
-    const imgFolderId = localStorage.getItem('cfg_drive_img_id');
+    const imgFolderId = getDriveImgId();
     if (!imgFolderId || !isConfigured()) {
       // ไม่มี Drive → เก็บ dataUrl ไว้ใน hidden field (บันทึกลง Sheet โดยตรง)
       if (urlEl) urlEl.value = dataUrl;
@@ -2962,7 +3013,7 @@ function openDocModal(preloadFile) {
   // แสดงสถานะ Drive
   const driveCheckEl = document.getElementById('doc-drive-check');
   if (driveCheckEl) {
-    const hasDrive = !!localStorage.getItem('cfg_drive_docs_id') && isConfigured();
+    const hasDrive = !!getDriveDocsId() && isConfigured();
     driveCheckEl.style.display = 'block';
     driveCheckEl.style.background = hasDrive ? '#e8f5e8' : '#fff8e1';
     driveCheckEl.style.border = hasDrive ? '1px solid #b5d8b5' : '1px solid #f0d070';
@@ -3053,7 +3104,7 @@ async function _saveDoc(useDrive) {
       showToast('❌ ยังไม่ตั้งค่า Apps Script URL — ไปตั้งค่าที่หน้าตั้งค่าระบบ', 5000);
       return;
     }
-    const docFolderId = localStorage.getItem('cfg_drive_docs_id');
+    const docFolderId = getDriveDocsId();
     if (!docFolderId) {
       showToast('❌ ยังไม่ตั้งค่า Drive Folder ID สำหรับเอกสาร — ไปตั้งค่าที่หน้าตั้งค่าระบบ', 5000);
       return;
@@ -3841,18 +3892,9 @@ function resetAddForm() {
 }
 
 window.addEventListener('load', () => {
-  // โหลด URL จาก localStorage ก่อนดึงข้อมูล
-  if (isConfigured()) {
-    loadPersonnel();
-  } else {
-    // แสดงข้อความให้ตั้งค่า
-    ['dashboard-table','full-table'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted);">
-        ⚙️ ยังไม่ได้ตั้งค่า API — <span style="color:var(--army-green);cursor:pointer;font-weight:600;" onclick="showPanel('settings')">ไปตั้งค่าระบบ →</span>
-      </td></tr>`;
-    });
-  }
+  // DEFAULT_API_URL ฝังในไฟล์แล้ว — โหลดข้อมูลเสมอ
+  // (ถ้า URL ไม่ทำงาน จะเห็น error ในตาราง)
+  loadPersonnel();
 });
 
 // ── แปลง year string ให้เป็น ค.ศ. เสมอ ─────────────
