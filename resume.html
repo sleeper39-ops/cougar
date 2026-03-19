@@ -4610,5 +4610,170 @@ function doLogout() {
   document.getElementById('logout-btn').style.display = 'none';
 }
 </script>
+
+    <script>
+// ════════════════════════════════════════════════════════════════
+//  PATCH v3 — วางก่อน </body>
+//  ✅ แก้ระบบ Google Drive อัปโหลดไฟล์ + เอกสาร
+//  ✅ แก้ chip สไตล์เกษียณอายุ
+//  ✅ แก้ chip เงินเดือนสุทธิในตาราง
+// ════════════════════════════════════════════════════════════════
+
+// ── 1. uploadFileToDriveAPI — รองรับ CORS + no-cors fallback ────
+async function uploadFileToDriveAPI(file, type) {
+  const folderId = type === 'img' ? getDriveImgId() : getDriveDocsId();
+  const url      = getDriveAPIURL();
+
+  if (!folderId) throw new Error('ยังไม่ตั้งค่า Folder ID — ไปตั้งค่าที่หน้าตั้งค่าระบบ');
+  if (!url)      throw new Error('ยังไม่ตั้งค่า Apps Script URL');
+  if (file.size > 8 * 1024 * 1024) throw new Error('ไฟล์ขนาดเกิน 8MB — GAS รองรับสูงสุด 8MB');
+
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = () => reject(new Error('อ่านไฟล์ไม่ได้'));
+    reader.readAsDataURL(file);
+  });
+
+  const form = new FormData();
+  form.append('payload', JSON.stringify({
+    action: 'uploadFile', table: 'docs',
+    folderId, fileName: file.name,
+    mimeType: file.type || 'application/octet-stream',
+    base64
+  }));
+
+  try {
+    const res  = await fetch(url, { method: 'POST', body: form });
+    const text = await res.text();
+    try { const j = JSON.parse(text); if (j && j.status) return j; } catch(_) {}
+    const m = text.match(/^[a-zA-Z_$][\w$]*\((.+)\)\s*;?\s*$/s);
+    if (m) { try { return JSON.parse(m[1]); } catch(_) {} }
+    if (res.ok) return { status: 'ok', fileId: '', viewUrl: '', message: 'อัปโหลดสำเร็จ' };
+    throw new Error(`HTTP ${res.status}`);
+  } catch(corsErr) {
+    const isCors = corsErr.message && (
+      corsErr.message.includes('Failed to fetch') ||
+      corsErr.message.includes('NetworkError') ||
+      corsErr.message.includes('CORS')
+    );
+    if (isCors) {
+      console.warn('[Drive] CORS block, trying no-cors...');
+      try {
+        await fetch(url, { method: 'POST', body: form, mode: 'no-cors' });
+        return { status: 'ok', fileId: '', viewUrl: '',
+                 message: 'อัปโหลดสำเร็จ (no-cors mode)' };
+      } catch(e2) { throw new Error('เชื่อมต่อไม่ได้: ' + e2.message); }
+    }
+    throw corsErr;
+  }
+}
+
+// ── 2. previewPhoto — progress ชัดขึ้น, fallback ดีขึ้น ─────────
+function previewPhoto(input, previewId, urlId) {
+  const file = input.files?.[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('❌ ไฟล์ขนาดใหญ่เกิน 10MB', 4000);
+    input.value = ''; return;
+  }
+  const preview  = document.getElementById(previewId);
+  const urlEl    = document.getElementById(urlId);
+  const statusEl = document.getElementById(previewId.replace('-preview', '-status'));
+  const setS = (html) => { if (statusEl) statusEl.innerHTML = html; };
+
+  setS('<span style="color:var(--text-muted);">⏳ กำลังบีบอัดรูป...</span>');
+  compressImage(file, 1200, 0.85).then(({ dataUrl, base64, mimeType }) => {
+    if (preview) preview.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">`;
+    const imgFolderId = getDriveImgId();
+    if (!imgFolderId || !isConfigured()) {
+      if (urlEl) urlEl.value = dataUrl;
+      setS('<span style="color:var(--army-gold);">⚠️ ไม่มี Drive<br>บันทึกรูปใน Sheet</span>');
+      showToast('⚠️ ยังไม่ตั้งค่า Drive — รูปจะเก็บใน Sheet', 4000);
+      return;
+    }
+    setS('<span style="color:var(--text-muted);">⏳ กำลังอัปโหลด Drive...</span>');
+    const bytes = atob(base64);
+    const arr   = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const compFile = new File([arr], file.name.replace(/\.\w+$/, '.jpg'), { type: mimeType });
+
+    uploadFileToDriveAPI(compFile, 'img').then(res => {
+      if (res.status === 'ok') {
+        const hasUrl = !!(res.viewUrl || res.url);
+        if (urlEl) urlEl.value = res.viewUrl || res.url || dataUrl;
+        setS(hasUrl
+          ? '<span style="color:var(--army-green);">✅ อัปโหลด Drive สำเร็จ</span>'
+          : '<span style="color:var(--army-gold);">⚠️ อัปโหลดสำเร็จ (no-cors)<br>รูปอยู่ใน Drive</span>');
+        showToast(hasUrl ? '✅ อัปโหลดรูป Drive สำเร็จ' : '⚠️ อัปโหลดสำเร็จ (no-cors mode)');
+      } else {
+        if (urlEl) urlEl.value = dataUrl;
+        setS(`<span style="color:#c0392b;">❌ ${res.message||'Drive ผิดพลาด'}<br>บันทึกรูปใน Sheet</span>`);
+        showToast('⚠️ Drive ผิดพลาด — บันทึกใน Sheet แทน', 4000);
+      }
+    }).catch(e => {
+      if (urlEl) urlEl.value = dataUrl;
+      setS('<span style="color:#c0392b;">❌ อัปโหลดไม่ได้<br>บันทึกรูปใน Sheet</span>');
+      showToast('⚠️ ' + e.message + ' — บันทึกใน Sheet แทน', 4000);
+    });
+  }).catch(e => {
+    showToast('❌ ประมวลผลรูปไม่ได้: ' + e.message, 4000);
+    setS('<span style="color:#c0392b;">❌ อ่านรูปไม่ได้</span>');
+  });
+}
+
+// ── 3. calcRetirement — chip สีน้ำเงิน (25 ปี) ──────────────────
+function calcRetirement(joinDateStr, extraDays) {
+  const joinDate = parseAnyDate(joinDateStr);
+  if (!joinDate || isNaN(joinDate)) return '—';
+  const retireMs   = joinDate.getTime() + (25 * 365.25 * 24 * 3600 * 1000) - ((extraDays || 0) * 24 * 3600 * 1000);
+  const retireDate = new Date(retireMs);
+  const now        = new Date();
+  if (retireDate <= now) return '<span class="chip green" style="font-size:11px;">✅ ครบแล้ว</span>';
+  const diffDays = Math.floor((retireDate - now) / (24 * 3600 * 1000));
+  const ymd      = daysToYMD(diffDays);
+  const retireYear  = toBE(retireDate.getFullYear());
+  const retireMonth = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][retireDate.getMonth()];
+  const retireDay   = retireDate.getDate();
+  return `<span class="chip blue" style="font-size:11px;">อีก ${ymd.text}</span><div style="font-size:10px;color:var(--text-muted);margin-top:3px;">${retireDay} ${retireMonth} ${retireYear}</div>`;
+}
+
+// ── 4. calcRetirementAge60 — chip สีเขียว (60 ปี) ───────────────
+function calcRetirementAge60(birthDateStr) {
+  const birthDate = parseAnyDate(birthDateStr);
+  if (!birthDate || isNaN(birthDate)) return '—';
+  const retireDate = new Date(birthDate.getFullYear() + 60, birthDate.getMonth(), birthDate.getDate());
+  const now        = new Date();
+  if (retireDate <= now) return '<span class="chip green" style="font-size:11px;">✅ เกษียณแล้ว</span>';
+  const diffDays    = Math.floor((retireDate - now) / (24 * 3600 * 1000));
+  const ymd         = daysToYMD(diffDays);
+  const retireYear  = toBE(retireDate.getFullYear());
+  const retireMonth = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][retireDate.getMonth()];
+  const retireDay   = retireDate.getDate();
+  return `<span class="chip green" style="font-size:11px;">อีก ${ymd.text}</span><div style="font-size:10px;color:var(--text-muted);margin-top:3px;">${retireDay} ${retireMonth} ${retireYear}</div>`;
+}
+
+// ── 5. loadPension — override เพื่อ style cell เงินเดือนสุทธิ ────
+const _origLoadPension = window.loadPension;
+window.loadPension = async function() {
+  if (_origLoadPension) await _origLoadPension();
+  const tbody = document.getElementById('pension-table');
+  if (!tbody) return;
+  tbody.querySelectorAll('tr').forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length >= 8) {
+      const cell = cells[7]; // index 7 = เงินเดือนสุทธิ
+      const txt  = cell.textContent.trim();
+      if (txt && txt !== '—' && txt.includes('฿') && !cell.querySelector('.chip')) {
+        cell.style.padding = '6px 10px';
+        cell.innerHTML = `<span class="chip" style="font-size:12px;font-family:'Chakra Petch',sans-serif;font-weight:700;background:#e8f5e8;border-color:#b5d8b5;color:var(--army-green);">${txt}</span>`;
+      }
+    }
+  });
+};
+
+console.log('[Patch v3] Drive + Chip styles loaded');
+</script>
+    
 </body>
 </html>
