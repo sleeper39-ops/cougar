@@ -417,7 +417,6 @@
     <div class="nav-label">หลัก</div>
     <div class="nav-item active" onclick="showPanel('dashboard')"><span class="nav-icon">📊</span> ภาพรวมระบบ</div>
     <div class="nav-item" onclick="showPanel('list')"><span class="nav-icon">👥</span> รายชื่อกำลังพล</div>
-    <div class="nav-item" onclick="showPanel('search')"><span class="nav-icon">🔍</span> ค้นหาขั้นสูง</div>
     <div class="nav-item" onclick="showPanel('add')"><span class="nav-icon">➕</span> เพิ่มกำลังพลใหม่</div>
     <div class="nav-label" style="margin-top:8px;">การบริหาร</div>
     <div class="nav-item" onclick="showPanel('profile')"><span class="nav-icon">🪖</span> ประวัติส่วนตัว</div>
@@ -619,8 +618,18 @@
               <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;" id="prof-pos">—</div>
             </div>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <span class="status-badge status-active">● ปฏิบัติหน้าที่</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <select id="prof-status-select"
+              style="padding:5px 12px;border-radius:20px;border:2px solid var(--army-green);background:var(--status-active-bg);color:var(--status-active);font-size:12px;font-weight:600;font-family:'Sarabun',sans-serif;cursor:pointer;outline:none;"
+              onchange="updateProfileStatus(this.value)">
+              <option value="ปฏิบัติงาน ณ ที่ตั้ง">● ปฏิบัติงาน ณ ที่ตั้ง</option>
+              <option value="ราชการสนาม ชค.953">● ราชการสนาม ชค.953</option>
+              <option value="ราชการสนาม บก.ควบคุม 2">● ราชการสนาม บก.ควบคุม 2</option>
+              <option value="ฝึกศึกษา">● ฝึกศึกษา</option>
+              <option value="ฝึกอบรม">● ฝึกอบรม</option>
+              <option value="ราชการ">● ราชการ</option>
+              <option value="ราชการต่างหน่วย">● ราชการต่างหน่วย</option>
+            </select>
             <button class="btn btn-primary" onclick="editCurrentProfile()">✏️ แก้ไขข้อมูล</button>
             <button class="btn btn-ghost" onclick="showPanel('list')">← กลับรายชื่อ</button>
           </div>
@@ -816,7 +825,13 @@
       <div class="form-card">
         <h4>📷 รูปภาพ & ข้อมูลเบื้องต้น</h4>
         <div style="display:flex;gap:20px;align-items:flex-start;">
-          <div class="photo-upload"><span>📷</span><p>คลิกเพื่ออัปโหลดรูป</p></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;">
+            <div id="edit-photo-preview" style="width:100px;height:120px;border-radius:var(--radius);background:var(--army-pale);border:2px dashed var(--army-border);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:36px;overflow:hidden;cursor:pointer;transition:border-color 0.15s;" onclick="document.getElementById('edit-photo-input').click()" onmouseenter="this.style.borderColor='var(--army-green)'" onmouseleave="this.style.borderColor='var(--army-border)'">📷</div>
+            <input type="file" id="edit-photo-input" accept="image/*" style="display:none;" onchange="previewPhoto(this,'edit-photo-preview','edit-photo-url')">
+            <input type="hidden" id="edit-photo-url">
+            <button type="button" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;width:100px;" onclick="document.getElementById('edit-photo-input').click()">📷 เลือกรูป</button>
+            <div id="edit-photo-status" style="font-size:10px;color:var(--text-muted);text-align:center;max-width:100px;"></div>
+          </div>
           <div style="flex:1;" class="form-grid">
             <div class="form-group"><label class="form-label">ยศ *</label>
               <select class="form-select form-input" id="edit-rank">
@@ -1158,92 +1173,6 @@
     </div>
 
     <!-- ===== SEARCH ===== -->
-    <div class="panel" id="panel-search">
-      <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>ค้นหาขั้นสูง</span></div>
-      <div class="page-header"><div><h2>ค้นหาขั้นสูง</h2><p>กรองและค้นหาข้อมูลกำลังพลแบบละเอียด</p></div></div>
-      <div class="search-filters">
-        <h3>🔍 เงื่อนไขการค้นหา</h3>
-        <div class="filter-grid">
-          <div class="form-group">
-            <label class="form-label">ชื่อ / สกุล</label>
-            <input type="text" class="form-input" id="search-name" placeholder="ค้นหาชื่อ-สกุล">
-          </div>
-          <div class="form-group">
-            <label class="form-label">ยศ</label>
-            <select class="form-select form-input" id="search-rank">
-              <option value="">-- ทุกยศ --</option>
-              <optgroup label="— ชั้นประทวน —">
-                <option value="ส.ต.">ส.ต.</option>
-                <option value="ส.ท.">ส.ท.</option>
-                <option value="ส.อ.">ส.อ.</option>
-                <option value="จ.ส.ต.">จ.ส.ต.</option>
-                <option value="จ.ส.ท.">จ.ส.ท.</option>
-                <option value="จ.ส.อ.">จ.ส.อ.</option>
-              </optgroup>
-              <optgroup label="— ชั้นสัญญาบัตร —">
-                <option value="ร.ต.">ร.ต.</option>
-                <option value="ร.ท.">ร.ท.</option>
-                <option value="ร.อ.">ร.อ.</option>
-              </optgroup>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">ตำแหน่ง</label>
-            <select class="form-select form-input" id="search-position">
-              <option value="">-- ทุกตำแหน่ง --</option>
-              <option value="นายสิบยุทธการและการข่าว">นายสิบยุทธการและการข่าว</option>
-              <option value="นายสิบอาวุธหนัก">นายสิบอาวุธหนัก</option>
-              <option value="นายสิบอาวุธเบา">นายสิบอาวุธเบา</option>
-              <option value="พนักงานวิทยุ">พนักงานวิทยุ</option>
-              <option value="นายสิบพยาบาล">นายสิบพยาบาล</option>
-              <option value="นายสิบการช่างและทำลาย">นายสิบการช่างและทำลาย</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">เหล่า / สาขา</label>
-            <input type="text" class="form-input" id="search-branch" placeholder="เช่น ทหารราบ">
-          </div>
-          <div class="form-group">
-            <label class="form-label">สถานะ</label>
-            <select class="form-select form-input" id="search-status">
-              <option value="">-- ทุกสถานะ --</option>
-              <option value="ปฏิบัติงาน ณ ที่ตั้ง">ปฏิบัติงาน ณ ที่ตั้ง</option>
-              <option value="ราชการสนาม ชค.953">ราชการสนาม ชค.953</option>
-              <option value="ราชการสนาม บก.ควบคุม 2">ราชการสนาม บก.ควบคุม 2</option>
-              <option value="ฝึกศึกษา">ฝึกศึกษา</option>
-              <option value="ฝึกอบรม">ฝึกอบรม</option>
-              <option value="ราชการ">ราชการ</option>
-              <option value="ราชการต่างหน่วย">ราชการต่างหน่วย</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">อายุราชการ (ปี)</label>
-            <div style="display:flex;gap:6px;">
-              <input type="number" class="form-input" id="search-svc-min" placeholder="ต่ำสุด" min="0">
-              <input type="number" class="form-input" id="search-svc-max" placeholder="สูงสุด" min="0">
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;align-items:center;">
-          <span id="search-result-count" style="font-size:12px;color:var(--text-muted);margin-right:auto;"></span>
-          <button class="btn btn-ghost" onclick="clearSearchFilter()">🔄 ล้างตัวกรอง</button>
-          <button class="btn btn-primary" onclick="applySearchFilter()">🔍 ค้นหา</button>
-          <button class="btn btn-gold">📤 ส่งออก Excel</button>
-        </div>
-      </div>
-      <div class="table-card">
-        <div class="table-header"><h3>📋 ผลการค้นหา</h3><span style="font-size:12px;color:var(--text-muted);">พบ 0 รายการ</span></div>
-        <div style="overflow-x:auto;">
-          <table>
-            <thead><tr><th>ยศ-ชื่อ-สกุล</th><th>ตำแหน่ง</th><th>เหล่า</th><th>อายุราชการ</th><th>เงินเดือน</th><th>สถานะ</th><th></th></tr></thead>
-            <tbody id="search-table">
-              <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูล</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
     <!-- ===== ADD ===== -->
     <div class="panel" id="panel-add">
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>เพิ่มกำลังพลใหม่</span></div>
@@ -1252,7 +1181,13 @@
       <div class="form-card">
         <h4>📷 รูปภาพ & ข้อมูลเบื้องต้น</h4>
         <div style="display:flex;gap:20px;align-items:flex-start;">
-          <div class="photo-upload"><span>📷</span><p>คลิกเพื่ออัปโหลดรูป</p></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;">
+            <div id="add-photo-preview" style="width:100px;height:120px;border-radius:var(--radius);background:var(--army-pale);border:2px dashed var(--army-border);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:36px;overflow:hidden;cursor:pointer;transition:border-color 0.15s;" onclick="document.getElementById('add-photo-input').click()" onmouseenter="this.style.borderColor='var(--army-green)'" onmouseleave="this.style.borderColor='var(--army-border)'">📷</div>
+            <input type="file" id="add-photo-input" accept="image/*" style="display:none;" onchange="previewPhoto(this,'add-photo-preview','add-photo-url')">
+            <input type="hidden" id="add-photo-url">
+            <button type="button" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;width:100px;" onclick="document.getElementById('add-photo-input').click()">📷 เลือกรูป</button>
+            <div id="add-photo-status" style="font-size:10px;color:var(--text-muted);text-align:center;max-width:100px;"></div>
+          </div>
           <div style="flex:1;" class="form-grid">
             <div class="form-group"><label class="form-label">ยศ *</label>
               <select class="form-select form-input" id="add-rank">
@@ -1453,39 +1388,83 @@
 
     <!-- UPLOAD MODAL -->
     <div class="doc-modal-overlay" id="doc-modal-upload">
-      <div class="doc-modal">
+      <div class="doc-modal" style="width:600px;">
         <div class="doc-modal-header">
           <h3>📤 อัปโหลดเอกสารใหม่</h3>
-          <button class="doc-modal-close" onclick="document.getElementById('doc-modal-upload').classList.remove('open')">✕</button>
+          <button class="doc-modal-close" onclick="closeDocModal()">✕</button>
         </div>
         <div class="doc-modal-body">
-          <div style="border:2px dashed var(--army-border);border-radius:var(--radius);padding:24px;text-align:center;margin-bottom:16px;background:var(--bg-light);">
-            <div style="font-size:32px;margin-bottom:8px;">📁</div>
-            <p style="font-size:13px;color:var(--text-secondary);">ลากไฟล์มาวางที่นี่ หรือ <span style="color:var(--army-green);font-weight:600;cursor:pointer;">เลือกจากคอมพิวเตอร์</span></p>
+          <!-- Drop Zone -->
+          <div id="doc-drop-zone" style="border:2px dashed var(--army-border);border-radius:var(--radius);padding:24px;text-align:center;margin-bottom:16px;background:var(--bg-light);cursor:pointer;transition:all 0.15s;"
+            onclick="document.getElementById('doc-file-input').click()"
+            ondragover="event.preventDefault();this.style.borderColor='var(--army-green)';this.style.background='#f0faf0';"
+            ondragleave="this.style.borderColor='var(--army-border)';this.style.background='var(--bg-light)';"
+            ondrop="handleDocDrop(event)">
+            <div id="doc-drop-icon" style="font-size:32px;margin-bottom:8px;">📁</div>
+            <div id="doc-drop-text" style="font-size:13px;color:var(--text-secondary);">
+              ลากไฟล์มาวางที่นี่ หรือ <span style="color:var(--army-green);font-weight:600;">เลือกจากคอมพิวเตอร์</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">รองรับ PDF, Word, JPG, PNG, ZIP (ขนาดไม่เกิน 10MB)</div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:12px;">
-            <div class="form-group"><label class="form-label">ชื่อเอกสาร *</label><input type="text" class="form-input" placeholder="กรอกชื่อเอกสาร"></div>
+          <input type="file" id="doc-file-input" style="display:none;" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip"
+            onchange="handleDocFileSelect(this)">
+          <!-- ไฟล์ที่เลือก -->
+          <div id="doc-selected-file" style="display:none;background:var(--army-pale);border:1px solid var(--army-border);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;display:none;align-items:center;gap:10px;">
+            <span id="doc-file-icon" style="font-size:20px;">📄</span>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;" id="doc-file-name">—</div>
+              <div style="font-size:11px;color:var(--text-muted);" id="doc-file-size">—</div>
+            </div>
+            <button type="button" class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#c0392b;" onclick="clearDocFile()">✕</button>
+          </div>
+          <!-- ฟอร์มรายละเอียด -->
+          <div style="display:flex;flex-direction:column;gap:10px;">
             <div class="form-group">
-              <label class="form-label">หมวดหมู่ *</label>
-              <select class="form-select form-input">
-                <option>-- เลือกหมวดหมู่ --</option>
-                <option>📅 วันทวีคูณ</option><option>🗺️ ปฏิบัติราชการสนาม</option>
-                <option>⭐ เลื่อนยศ / ปรับเงิน</option><option>🏦 บำเหน็จ / บำนาญ</option>
-                <option>🎓 หลักสูตร / ประกาศนียบัตร</option><option>👤 เอกสารส่วนตัว</option>
-                <option>📜 คำสั่ง / หนังสือราชการ</option>
-              </select>
+              <label class="form-label">ชื่อเอกสาร *</label>
+              <input type="text" class="form-input" id="doc-upload-name" placeholder="กรอกชื่อเอกสาร">
             </div>
-            <div class="form-group"><label class="form-label">เจ้าของเอกสาร</label><input type="text" class="form-input" placeholder="ค้นหาชื่อกำลังพล..."></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-              <div class="form-group"><label class="form-label">วันที่เอกสาร</label><input type="date" class="form-input"></div>
-              <div class="form-group"><label class="form-label">วันหมดอายุ (ถ้ามี)</label><input type="date" class="form-input"></div>
+              <div class="form-group">
+                <label class="form-label">หมวดหมู่ *</label>
+                <select class="form-select form-input" id="doc-upload-category">
+                  <option value="">-- เลือกหมวดหมู่ --</option>
+                  <option value="วันทวีคูณ">📅 วันทวีคูณ</option>
+                  <option value="ปฏิบัติราชการสนาม">🗺️ ปฏิบัติราชการสนาม</option>
+                  <option value="เลื่อนยศ">⭐ เลื่อนยศ / ปรับเงิน</option>
+                  <option value="บำเหน็จบำนาญ">🏦 บำเหน็จ / บำนาญ</option>
+                  <option value="หลักสูตร">🎓 หลักสูตร / ประกาศนียบัตร</option>
+                  <option value="ส่วนตัว">👤 เอกสารส่วนตัว</option>
+                  <option value="คำสั่ง">📜 คำสั่ง / หนังสือราชการ</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">เจ้าของเอกสาร</label>
+                <select class="form-select form-input" id="doc-upload-owner">
+                  <option value="">-- เลือกกำลังพล --</option>
+                </select>
+              </div>
             </div>
-            <div class="form-group"><label class="form-label">หมายเหตุ</label><textarea class="form-input" style="height:60px;resize:none;" placeholder="รายละเอียดเพิ่มเติม..."></textarea></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div class="form-group"><label class="form-label">วันที่เอกสาร</label><input type="date" class="form-input" id="doc-upload-date"></div>
+              <div class="form-group"><label class="form-label">วันหมดอายุ (ถ้ามี)</label><input type="date" class="form-input" id="doc-upload-expire"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">หมายเหตุ</label>
+              <textarea class="form-input" id="doc-upload-note" style="height:60px;resize:none;" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+            </div>
           </div>
+          <!-- Progress -->
+          <div id="doc-upload-progress" style="display:none;margin-top:12px;">
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;" id="doc-progress-text">⏳ กำลังอัปโหลด...</div>
+            <div style="background:var(--army-border);border-radius:4px;height:6px;overflow:hidden;">
+              <div id="doc-progress-bar" style="height:100%;background:var(--army-green);width:0%;transition:width 0.3s;border-radius:4px;"></div>
+            </div>
+          </div>
+          <!-- ปุ่ม -->
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--army-border);">
-            <button class="btn btn-ghost" onclick="document.getElementById('doc-modal-upload').classList.remove('open')">ยกเลิก</button>
-            <button class="btn btn-primary">💾 บันทึกเอกสาร</button>
-            <button class="btn btn-gold">📊 บันทึก + ซิงค์ Drive</button>
+            <button type="button" class="btn btn-ghost" onclick="closeDocModal()">ยกเลิก</button>
+            <button type="button" class="btn btn-primary" onclick="saveDocRecord()">💾 บันทึกข้อมูล (ไม่มีไฟล์)</button>
+            <button type="button" class="btn btn-gold" id="btn-upload-drive" onclick="saveDocWithDrive()">☁️ อัปโหลด + บันทึก Drive</button>
           </div>
         </div>
       </div>
@@ -2010,6 +1989,7 @@ function showPanel(name) {
   if (name === 'ops')       loadOps();
   if (name === 'list')      loadPersonnel();
   if (name === 'settings')  loadSettingsUI();
+  if (name === 'docs')      initDocsPanel();
 }
 
 function switchTab(btn, tabId) {
@@ -2054,7 +2034,10 @@ function filterDocs(cat, btn) {
 }
 
 function globalSearch(val) {
-  if (val.length > 0) showPanel('search');
+  if (!val) return;
+  // กรองตรงใน list แทน
+  const nameEl = document.getElementById('list-filter-name');
+  if (nameEl) { nameEl.value = val; applyListFilter(); showPanel('list'); }
 }
 
 // ===== ตารางเงินเดือน =====
@@ -2521,6 +2504,401 @@ function copyDriveCode() {
   });
 }
 
+// ══════════════════════════════════════════════════
+//  อัปเดตสถานะกำลังพลจากหน้าประวัติ (dropdown)
+// ══════════════════════════════════════════════════
+async function updateProfileStatus(newStatus) {
+  if (!currentProfileId) return;
+  const sel = document.getElementById('prof-status-select');
+
+  // อัปเดตสีของ dropdown ตามสถานะ
+  const colorMap = {
+    'ปฏิบัติงาน ณ ที่ตั้ง':       { bg:'var(--status-active-bg)',  color:'var(--status-active)',  border:'var(--army-green)' },
+    'ราชการสนาม ชค.953':           { bg:'#e8f0ff',                  color:'#2a56a0',               border:'#2a56a0' },
+    'ราชการสนาม บก.ควบคุม 2':      { bg:'#e8f0ff',                  color:'#2a56a0',               border:'#2a56a0' },
+    'ฝึกศึกษา':                    { bg:'#fff8e1',                  color:'#7a5a00',               border:'var(--army-gold)' },
+    'ฝึกอบรม':                     { bg:'#fff8e1',                  color:'#7a5a00',               border:'var(--army-gold)' },
+    'ราชการ':                      { bg:'#f4f0ff',                  color:'#5a3a9a',               border:'#8a6ac8' },
+    'ราชการต่างหน่วย':             { bg:'#fde8e8',                  color:'#a32d2d',               border:'#c0392b' },
+  };
+  const c = colorMap[newStatus] || colorMap['ปฏิบัติงาน ณ ที่ตั้ง'];
+  if (sel) {
+    sel.style.background  = c.bg;
+    sel.style.color       = c.color;
+    sel.style.borderColor = c.border;
+  }
+
+  // บันทึกลง Sheet ทันที
+  try {
+    showToast('⏳ กำลังบันทึกสถานะ...');
+    const json = await callAPIPost({
+      action: 'update', table: 'personnel',
+      ID: currentProfileId, 'สถานะ': newStatus
+    });
+    if (json.status === 'ok') {
+      // อัปเดต cache
+      if (currentProfileData) currentProfileData['สถานะ'] = newStatus;
+      // อัปเดตตาราง list ถ้ามีข้อมูลใน cache
+      const idx = allPersonnelData.findIndex(p => p['ID'] === currentProfileId);
+      if (idx >= 0) allPersonnelData[idx]['สถานะ'] = newStatus;
+      showToast('✅ บันทึกสถานะ: ' + newStatus);
+    } else {
+      showToast('❌ บันทึกไม่สำเร็จ: ' + json.message, 4000);
+    }
+  } catch(e) {
+    showToast('❌ เชื่อมต่อไม่ได้', 4000);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  PHOTO UPLOAD — preview + upload to Drive
+// ══════════════════════════════════════════════════
+function previewPhoto(input, previewId, urlId) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const preview = document.getElementById(previewId);
+  const urlEl   = document.getElementById(urlId);
+  const statusId = previewId.replace('preview','status');
+  const statusEl = document.getElementById(statusId);
+
+  // แสดง preview ทันที
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    if (preview) {
+      preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">`;
+    }
+  };
+  reader.readAsDataURL(file);
+
+  // ตรวจสอบว่าตั้งค่า Drive ไว้หรือยัง
+  const imgFolderId = localStorage.getItem('cfg_drive_img_id');
+  if (!imgFolderId || !isConfigured()) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:#c0392b;">⚠️ ยังไม่ตั้งค่า Drive<br>รูปจะไม่ถูกบันทึก</span>';
+    if (urlEl) urlEl.value = '';
+    return;
+  }
+
+  // อัปโหลดไปยัง Drive
+  if (statusEl) statusEl.textContent = '⏳ กำลังอัปโหลด...';
+  uploadFileToDriveAPI(file, 'img').then(res => {
+    if (res.status === 'ok') {
+      if (urlEl) urlEl.value = res.viewUrl || res.url || '';
+      if (statusEl) statusEl.innerHTML = `<span style="color:var(--army-green);">✅ อัปโหลดสำเร็จ</span>`;
+      showToast('✅ อัปโหลดรูปสำเร็จ');
+    } else {
+      if (statusEl) statusEl.innerHTML = `<span style="color:#c0392b;">❌ ${res.message}</span>`;
+      showToast('❌ อัปโหลดรูปไม่สำเร็จ', 4000);
+    }
+  }).catch(e => {
+    if (statusEl) statusEl.innerHTML = `<span style="color:#c0392b;">❌ ${e.message}</span>`;
+    showToast('❌ ' + e.message, 4000);
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  DOCS PANEL — โหลด, แสดง, อัปโหลด, ลบ
+// ══════════════════════════════════════════════════
+let allDocsData = [];
+
+async function loadDocs() {
+  try {
+    const json = await callAPI({ action: 'getAll', table: 'docs' });
+    allDocsData = (json.status === 'ok' && json.data) ? json.data : [];
+    renderDocCards(allDocsData, 'all');
+    updateDocStats(allDocsData);
+  } catch(e) {
+    console.error('loadDocs:', e);
+  }
+}
+
+function updateDocStats(data) {
+  const now = new Date();
+  const in30 = data.filter(d => {
+    if (!d['วันหมดอายุ']) return false;
+    const exp = new Date(d['วันหมดอายุ']);
+    return !isNaN(exp) && exp > now && (exp - now) < 30 * 86400000;
+  }).length;
+  const thisMonth = data.filter(d => {
+    if (!d['วันที่อัปโหลด']) return false;
+    const up = new Date(d['วันที่อัปโหลด']);
+    return !isNaN(up) && up.getMonth() === now.getMonth() && up.getFullYear() === now.getFullYear();
+  }).length;
+  let totalSize = 0;
+  data.forEach(d => { totalSize += Number(d['ขนาดไฟล์']) || 0; });
+
+  // อัปเดต stat boxes
+  const boxes = document.querySelectorAll('#panel-docs .ds-val');
+  if (boxes[0]) boxes[0].textContent = data.length;
+  if (boxes[1]) boxes[1].textContent = in30;
+  if (boxes[2]) boxes[2].textContent = thisMonth;
+  if (boxes[3]) boxes[3].textContent = (totalSize / 1024 / 1024).toFixed(1) + ' MB';
+
+  // อัปเดต tab count
+  const allTab = document.querySelector('#panel-docs .doc-cat-tab.active') ||
+                 document.querySelector('#panel-docs .doc-cat-tab');
+  const firstTab = document.querySelector('#panel-docs .doc-cat-tab');
+  if (firstTab) firstTab.textContent = `📂 ทั้งหมด (${data.length})`;
+}
+
+function renderDocCards(data, cat) {
+  const container = document.getElementById('doc-cards-container');
+  if (!container) return;
+  const filtered = cat === 'all' ? data : data.filter(d => (d['หมวดหมู่'] || '').includes(cat));
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="es-icon">📭</div><p>ยังไม่มีเอกสารในหมวดนี้</p></div>`;
+    return;
+  }
+  const typeIcon = { pdf:'📄', word:'📝', docx:'📝', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', zip:'📦', xlsx:'📊', pptx:'📊' };
+  const now = new Date();
+  container.innerHTML = filtered.map(d => {
+    const ext   = (d['ชื่อไฟล์'] || '').split('.').pop().toLowerCase();
+    const icon  = typeIcon[ext] || '📁';
+    const exp   = d['วันหมดอายุ'] ? new Date(d['วันหมดอายุ']) : null;
+    const isNew = d['วันที่อัปโหลด'] && (now - new Date(d['วันที่อัปโหลด'])) < 7 * 86400000;
+    const isExp = exp && exp < now;
+    const nearExp = exp && !isExp && (exp - now) < 30 * 86400000;
+    return `<div class="doc-card">
+      ${isNew ? '<span class="dc-badge new">ใหม่</span>' : ''}
+      ${nearExp ? '<span class="dc-badge exp">ใกล้หมด</span>' : ''}
+      ${isExp  ? '<span class="dc-badge exp">หมดอายุ</span>' : ''}
+      <div class="dc-top">
+        <div class="dc-icon ${['pdf'].includes(ext)?'pdf':['jpg','jpeg','png'].includes(ext)?'img':['zip'].includes(ext)?'zip':'word'}">${icon}</div>
+        <div>
+          <div class="dc-name">${d['ชื่อเอกสาร'] || d['ชื่อไฟล์'] || '—'}</div>
+          <div class="dc-owner" style="font-size:11px;color:var(--text-muted);">${d['เจ้าของ'] || '—'} • ${d['หมวดหมู่'] || '—'}</div>
+        </div>
+      </div>
+      <div class="dc-meta">
+        <span class="dc-date">${d['วันที่เอกสาร'] || '—'}</span>
+        <span class="dc-size">${d['ขนาดไฟล์'] ? (Number(d['ขนาดไฟล์'])/1024).toFixed(0)+' KB' : '—'}</span>
+      </div>
+      <div class="dc-actions">
+        ${d['URLไฟล์'] ? `<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="window.open('${d['URLไฟล์']}','_blank')">👁️ ดู</button>` : ''}
+        <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#c0392b;border-color:#c0392b;" onclick="deleteDoc('${d['ID']}','${d['fileId'] || ''}')">🗑️ ลบ</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterDocs(cat, btn) {
+  document.querySelectorAll('.doc-cat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDocCards(allDocsData, cat);
+}
+
+async function deleteDoc(id, fileId) {
+  if (!confirm('ต้องการลบเอกสารนี้หรือไม่?')) return;
+  try {
+    // ลบไฟล์จาก Drive (ถ้ามี)
+    if (fileId) await callAPIPost({ action: 'deleteFile', fileId });
+    // ลบ record จาก Sheet
+    await callAPIPost({ action: 'delete', table: 'docs', id });
+    showToast('✅ ลบเอกสารแล้ว');
+    loadDocs();
+  } catch(e) { showToast('❌ ' + e.message, 4000); }
+}
+
+// ── โหลด docs ตอนเปิดหน้า ─────────────────────────
+function initDocsPanel() {
+  loadDocs();
+  // เชื่อม drag-and-drop
+  const zone = document.querySelector('#panel-docs .doc-upload-zone');
+  if (zone) {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--army-green)'; });
+    zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+    zone.addEventListener('drop', e => {
+      e.preventDefault(); zone.style.borderColor = '';
+      const files = e.dataTransfer.files;
+      if (files.length) openDocModal(files[0]);
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  DOC UPLOAD MODAL — ใช้งานได้จริง
+// ══════════════════════════════════════════════════
+let _docUploadFile = null;
+
+function closeDocModal() {
+  document.getElementById('doc-modal-upload').classList.remove('open');
+  _docUploadFile = null;
+}
+
+function openDocModal(preloadFile) {
+  document.getElementById('doc-modal-upload').classList.add('open');
+  // reset fields
+  ['doc-upload-name','doc-upload-date','doc-upload-expire','doc-upload-note'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const catSel = document.getElementById('doc-upload-category');
+  if (catSel) catSel.selectedIndex = 0;
+  const progEl = document.getElementById('doc-upload-progress');
+  if (progEl) progEl.style.display = 'none';
+
+  // reset file display
+  clearDocFile();
+
+  // เติม personnel dropdown
+  const ownerSel = document.getElementById('doc-upload-owner');
+  if (ownerSel) {
+    ownerSel.innerHTML = '<option value="">-- เลือกกำลังพล --</option>';
+    allPersonnelData.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p['ID'];
+      opt.textContent = `${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`;
+      ownerSel.appendChild(opt);
+    });
+  }
+
+  // แสดงสถานะ Drive
+  const driveCheckEl = document.getElementById('doc-drive-check');
+  if (driveCheckEl) {
+    const hasDrive = !!localStorage.getItem('cfg_drive_docs_id') && isConfigured();
+    driveCheckEl.style.display = 'block';
+    driveCheckEl.style.background = hasDrive ? '#e8f5e8' : '#fff8e1';
+    driveCheckEl.style.border = hasDrive ? '1px solid #b5d8b5' : '1px solid #f0d070';
+    driveCheckEl.innerHTML = hasDrive
+      ? `✅ Google Drive พร้อมใช้งาน — ไฟล์จะถูกอัปโหลดไปยัง Drive อัตโนมัติ`
+      : `⚠️ ยังไม่ตั้งค่า Google Drive — ไฟล์จะไม่ถูกบันทึกใน Drive (แค่บันทึก record ใน Sheet)`;
+  }
+
+  _docUploadFile = null;
+  if (preloadFile) handleDocFileSelect({ files: [preloadFile] });
+}
+
+function handleDocFileSelect(input) {
+  const file = (input.files || input)[0];
+  if (!file) return;
+  setDocUploadFile(file);
+}
+
+function handleDocDrop(event) {
+  event.preventDefault();
+  const zone = document.getElementById('doc-drop-zone');
+  if (zone) { zone.style.borderColor = 'var(--army-border)'; zone.style.background = 'var(--bg-light)'; }
+  const file = event.dataTransfer.files[0];
+  if (file) setDocUploadFile(file);
+}
+
+function setDocUploadFile(file) {
+  _docUploadFile = file;
+  const typeIcon = { pdf:'📄', doc:'📝', docx:'📝', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', zip:'📦', xlsx:'📊', pptx:'📊' };
+  const ext  = file.name.split('.').pop().toLowerCase();
+  const icon = typeIcon[ext] || '📁';
+
+  const selEl   = document.getElementById('doc-selected-file');
+  const nameEl  = document.getElementById('doc-file-name');
+  const sizeEl  = document.getElementById('doc-file-size');
+  const iconEl  = document.getElementById('doc-file-icon');
+  const dropTxt = document.getElementById('doc-drop-text');
+  if (selEl)   selEl.style.display   = 'flex';
+  if (nameEl)  nameEl.textContent    = file.name;
+  if (sizeEl)  sizeEl.textContent    = (file.size / 1024).toFixed(1) + ' KB';
+  if (iconEl)  iconEl.textContent    = icon;
+  if (dropTxt) dropTxt.innerHTML     = `<span style="color:var(--army-green);font-weight:600;">${icon} ${file.name}</span><br><span style="font-size:11px;color:var(--text-muted);">คลิกเพื่อเปลี่ยนไฟล์</span>`;
+
+  // เติมชื่อเอกสารอัตโนมัติ
+  const nameInput = document.getElementById('doc-upload-name');
+  if (nameInput && !nameInput.value) nameInput.value = file.name.replace(/\.[^.]+$/, '');
+}
+
+function clearDocFile() {
+  _docUploadFile = null;
+  const selEl   = document.getElementById('doc-selected-file');
+  const dropTxt = document.getElementById('doc-drop-text');
+  if (selEl)   selEl.style.display  = 'none';
+  if (dropTxt) dropTxt.innerHTML    = `ลากไฟล์มาวางที่นี่ หรือ <span style="color:var(--army-green);font-weight:600;">เลือกจากคอมพิวเตอร์</span>`;
+  const fileInput = document.getElementById('doc-file-input');
+  if (fileInput) fileInput.value = '';
+}
+
+// บันทึก record อย่างเดียว (ไม่อัปโหลด Drive)
+async function saveDocRecord() {
+  await _saveDoc(false);
+}
+
+// อัปโหลด Drive + บันทึก record
+async function saveDocWithDrive() {
+  await _saveDoc(true);
+}
+
+async function _saveDoc(useDrive) {
+  const name     = document.getElementById('doc-upload-name')?.value.trim() || '';
+  const cat      = document.getElementById('doc-upload-category')?.value    || '';
+  const ownerSel = document.getElementById('doc-upload-owner');
+  const ownerId  = ownerSel?.value || '';
+  const ownerTxt = ownerSel?.options[ownerSel.selectedIndex]?.text || '';
+  const date     = document.getElementById('doc-upload-date')?.value    || '';
+  const expire   = document.getElementById('doc-upload-expire')?.value  || '';
+  const note     = document.getElementById('doc-upload-note')?.value.trim() || '';
+  const progEl   = document.getElementById('doc-upload-progress');
+  const progTxt  = document.getElementById('doc-progress-text');
+  const progBar  = document.getElementById('doc-progress-bar');
+
+  if (!name) { showToast('⚠️ กรุณากรอกชื่อเอกสาร'); return; }
+  if (useDrive && !_docUploadFile) { showToast('⚠️ กรุณาเลือกไฟล์ก่อน'); return; }
+
+  if (progEl) { progEl.style.display = 'block'; }
+  if (progTxt) progTxt.textContent = '⏳ กำลังดำเนินการ...';
+  if (progBar) progBar.style.width = '20%';
+
+  let fileUrl = '', fileId = '', fileName = _docUploadFile?.name || '';
+
+  try {
+    // อัปโหลดไฟล์ถ้าต้องการและมีไฟล์
+    if (useDrive && _docUploadFile) {
+      const docFolderId = localStorage.getItem('cfg_drive_docs_id');
+      if (!docFolderId || !isConfigured()) {
+        showToast('⚠️ ยังไม่ตั้งค่า Drive Folder ID — ดูที่หน้าตั้งค่าระบบ', 4000);
+        if (progEl) progEl.style.display = 'none';
+        return;
+      }
+      if (progTxt) progTxt.textContent = '⏳ กำลังอัปโหลดไฟล์ไปยัง Drive...';
+      if (progBar) progBar.style.width = '50%';
+      const upRes = await uploadFileToDriveAPI(_docUploadFile, 'docs');
+      if (upRes.status !== 'ok') throw new Error('Drive: ' + upRes.message);
+      fileUrl  = upRes.viewUrl || upRes.url || '';
+      fileId   = upRes.fileId  || '';
+      if (progBar) progBar.style.width = '75%';
+    }
+
+    if (progTxt) progTxt.textContent = '⏳ กำลังบันทึกข้อมูล...';
+    if (progBar) progBar.style.width = '90%';
+
+    const saveRes = await callAPIPost({
+      action: 'add', table: 'docs',
+      'ชื่อเอกสาร':    name,
+      'หมวดหมู่':      cat,
+      'ID_กำลังพล':   ownerId,
+      'เจ้าของ':       ownerTxt.replace('-- เลือกกำลังพล --', ''),
+      'วันที่เอกสาร':  date,
+      'วันหมดอายุ':    expire,
+      'หมายเหตุ':      note,
+      'ชื่อไฟล์':      fileName,
+      'URLไฟล์':       fileUrl,
+      'fileId':        fileId,
+      'ขนาดไฟล์':     _docUploadFile?.size || 0,
+      'วันที่อัปโหลด': new Date().toISOString().split('T')[0],
+    });
+
+    if (progBar) progBar.style.width = '100%';
+
+    if (saveRes.status === 'ok') {
+      showToast(useDrive ? '✅ อัปโหลดและบันทึกสำเร็จ' : '✅ บันทึก record สำเร็จ');
+      setTimeout(() => {
+        closeDocModal();
+        loadDocs();
+      }, 600);
+    } else {
+      throw new Error(saveRes.message);
+    }
+  } catch(e) {
+    if (progTxt) progTxt.innerHTML = `<span style="color:#c0392b;">❌ ${e.message}</span>`;
+    if (progBar) { progBar.style.background = '#c0392b'; }
+    showToast('❌ ' + e.message, 5000);
+  }
+}
+
 // ── Toast notification ────────────────────────────
 function showToast(msg, duration = 3000) {
   let toast = document.getElementById('sys-toast');
@@ -2604,26 +2982,6 @@ function makeListRow(p, i) {
 }
 
 // ── helper สร้าง row ตาราง search ─────────────────────
-function makeSearchRow(p) {
-  const status = p['สถานะ'] || 'ปฏิบัติงาน ณ ที่ตั้ง';
-  const statusClass = status.includes('สนาม') ? 'status-training'
-    : status.includes('ฝึก') ? 'status-detach'
-    : status.includes('ราชการ') && !status.includes('ณ') ? 'status-detach'
-    : 'status-active';
-  return `<tr onclick="openProfile('${p['ID']}')">
-    <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
-    <td style="font-size:12px;">${p['ตำแหน่ง'] || '—'}</td>
-    <td style="font-size:12px;">${p['เหล่า'] || '—'}</td>
-    <td><span class="chip blue" style="font-size:11px;">${calcServiceDetail(p['วันเข้ารับราชการ']).text}</span></td>
-    <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${Number(p['เงินเดือนสุทธิ']||0).toLocaleString()} ฿</td>
-    <td><span class="status-badge ${statusClass}" style="font-size:11px;">● ${status}</span></td>
-    <td>
-      <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();openProfile('${p['ID']}')">👁️ ดู</button>
-      <button class="btn btn-primary" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();editRecord('${p['ID']}')">✏️</button>
-    </td>
-  </tr>`;
-}
-
 // ── renderPersonnelTable (ใช้สำหรับ reload เต็ม) ──────
 function renderPersonnelTable(data) {
   const dashTbody = document.getElementById('dashboard-table');
@@ -2718,56 +3076,6 @@ function clearListFilter() {
 }
 
 // ── filter สำหรับ Search panel ────────────────────────
-function applySearchFilter() {
-  const name     = (document.getElementById('search-name')?.value     || '').trim().toLowerCase();
-  const rank     = document.getElementById('search-rank')?.value      || '';
-  const position = document.getElementById('search-position')?.value  || '';
-  const branch   = (document.getElementById('search-branch')?.value   || '').trim().toLowerCase();
-  const status   = document.getElementById('search-status')?.value    || '';
-  const svcMin   = parseFloat(document.getElementById('search-svc-min')?.value) || 0;
-  const svcMax   = parseFloat(document.getElementById('search-svc-max')?.value) || 999;
-
-  let filtered = allPersonnelData.filter(p => {
-    if (rank     && p['ยศ']       !== rank)                                         return false;
-    if (position && p['ตำแหน่ง'] !== position)                                     return false;
-    if (status   && (p['สถานะ'] || 'ปฏิบัติงาน ณ ที่ตั้ง') !== status)           return false;
-    if (branch   && !(p['เหล่า'] || '').toLowerCase().includes(branch))             return false;
-    if (name) {
-      const full = `${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`.toLowerCase();
-      if (!full.includes(name)) return false;
-    }
-    const svcYrs = calcServiceDetail(p['วันเข้ารับราชการ']).total;
-    if (svcYrs < svcMin || svcYrs > svcMax) return false;
-    return true;
-  });
-
-  const tbody   = document.getElementById('search-table');
-  const countEl = document.querySelector('#panel-search .table-header span');
-  if (countEl) countEl.textContent = `พบ ${filtered.length} รายการ`;
-  const countEl2 = document.getElementById('search-result-count');
-  if (countEl2) countEl2.textContent = filtered.length ? `พบ ${filtered.length} รายการ` : 'ไม่พบข้อมูลที่ตรงกัน';
-
-  if (!tbody) return;
-  if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = filtered.map(p => makeSearchRow(p)).join('');
-}
-
-function clearSearchFilter() {
-  ['search-name','search-branch','search-svc-min','search-svc-max'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value = '';
-  });
-  ['search-rank','search-position','search-status'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.selectedIndex = 0;
-  });
-  const tbody = document.getElementById('search-table');
-  if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">กรอกเงื่อนไขแล้วกด "ค้นหา"</td></tr>`;
-  const countEl = document.getElementById('search-result-count');
-  if (countEl) countEl.textContent = '';
-}
-
 function updateDashboardStats(data) {
   const el = document.getElementById('stat-total');
   if (el) el.textContent = data.length;
@@ -2980,6 +3288,27 @@ function renderProfile(p) {
   document.getElementById('prof-svc').textContent   = calcServiceDetail(p['วันเข้ารับราชการ']).text;
   document.getElementById('prof-step').textContent  = p['ขั้นเงินเดือน'] ? `ขั้น ${p['ขั้นเงินเดือน']}` : '—';
   document.getElementById('prof-net').textContent   = p['เงินเดือนสุทธิ'] ? Number(p['เงินเดือนสุทธิ']).toLocaleString() + ' ฿' : '—';
+
+  // ตั้งค่า status dropdown ให้ตรงกับข้อมูล
+  const statusSel = document.getElementById('prof-status-select');
+  if (statusSel) {
+    const sv = p['สถานะ'] || 'ปฏิบัติงาน ณ ที่ตั้ง';
+    statusSel.value = sv;
+    // อัปเดตสี
+    const colorMap = {
+      'ปฏิบัติงาน ณ ที่ตั้ง':  { bg:'var(--status-active-bg)', color:'var(--status-active)',  border:'var(--army-green)' },
+      'ราชการสนาม ชค.953':      { bg:'#e8f0ff', color:'#2a56a0', border:'#2a56a0' },
+      'ราชการสนาม บก.ควบคุม 2': { bg:'#e8f0ff', color:'#2a56a0', border:'#2a56a0' },
+      'ฝึกศึกษา':               { bg:'#fff8e1', color:'#7a5a00', border:'var(--army-gold)' },
+      'ฝึกอบรม':                { bg:'#fff8e1', color:'#7a5a00', border:'var(--army-gold)' },
+      'ราชการ':                 { bg:'#f4f0ff', color:'#5a3a9a', border:'#8a6ac8' },
+      'ราชการต่างหน่วย':        { bg:'#fde8e8', color:'#a32d2d', border:'#c0392b' },
+    };
+    const c = colorMap[sv] || colorMap['ปฏิบัติงาน ณ ที่ตั้ง'];
+    statusSel.style.background  = c.bg;
+    statusSel.style.color       = c.color;
+    statusSel.style.borderColor = c.border;
+  }
 
   // Tab: ส่วนตัว
   document.getElementById('pd-fullname').textContent  = `${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`;
