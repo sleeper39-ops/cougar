@@ -1361,7 +1361,7 @@
       <div class="page-header">
         <div><h2>เอกสารสำคัญ</h2><p>จัดเก็บและจัดการเอกสารราชการทางทหาร</p></div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-ghost" onclick="document.getElementById('doc-modal-upload').classList.add('open')">📤 อัปโหลดเอกสาร</button>
+          <button class="btn btn-ghost" onclick="openDocModal()">📤 อัปโหลดเอกสาร</button>
           <button class="btn btn-primary">🗂️ จัดหมวดหมู่</button>
         </div>
       </div>
@@ -1386,7 +1386,7 @@
           <div class="empty-state" style="grid-column:1/-1;"><div class="es-icon">📭</div><p>ยังไม่มีเอกสารในระบบ</p></div>
         </div>
       </div>
-      <div class="doc-upload-zone" style="margin-top:20px;" onclick="document.getElementById('doc-modal-upload').classList.add('open')">
+      <div class="doc-upload-zone" style="margin-top:20px;" onclick="openDocModal()">
         <div class="duz-icon">📤</div>
         <h4>อัปโหลดเอกสารใหม่</h4>
         <p>ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์ — รองรับ PDF, Word, JPG, PNG, ZIP</p>
@@ -1467,11 +1467,13 @@
               <div id="doc-progress-bar" style="height:100%;background:var(--army-green);width:0%;transition:width 0.3s;border-radius:4px;"></div>
             </div>
           </div>
+          <!-- สถานะ Drive -->
+          <div id="doc-drive-check" style="display:none;padding:9px 12px;border-radius:var(--radius);font-size:12px;margin-top:10px;"></div>
           <!-- ปุ่ม -->
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--army-border);">
             <button type="button" class="btn btn-ghost" onclick="closeDocModal()">ยกเลิก</button>
-            <button type="button" class="btn btn-primary" onclick="saveDocRecord()">💾 บันทึกข้อมูล (ไม่มีไฟล์)</button>
-            <button type="button" class="btn btn-gold" id="btn-upload-drive" onclick="saveDocWithDrive()">☁️ อัปโหลด + บันทึก Drive</button>
+            <button type="button" class="btn btn-primary" onclick="saveDocRecord()">💾 บันทึก (ไม่อัปโหลด)</button>
+            <button type="button" class="btn btn-gold" id="btn-upload-drive" onclick="saveDocWithDrive()">☁️ อัปโหลด Drive + บันทึก</button>
           </div>
         </div>
       </div>
@@ -2353,9 +2355,27 @@ function saveSettings() {
     localStorage.setItem('cfg_tab_' + key, val);
   });
 
+  // บันทึก Drive settings ไปพร้อมกันเลย (ถ้ากรอกไว้)
+  const driveMap = {
+    'cfg-drive-docs-id':   'cfg_drive_docs_id',
+    'cfg-drive-docs-name': 'cfg_drive_docs_name',
+    'cfg-drive-img-id':    'cfg_drive_img_id',
+    'cfg-drive-img-name':  'cfg_drive_img_name',
+    'cfg-drive-api-url':   'cfg_drive_api_url',
+  };
+  Object.entries(driveMap).forEach(([elId, lsKey]) => {
+    const el = document.getElementById(elId);
+    if (el && el.value.trim()) localStorage.setItem(lsKey, el.value.trim());
+  });
+
   const infoUrl = document.getElementById('info-api-url');
   if (infoUrl) infoUrl.textContent = url;
-  showToast('✅ บันทึกการตั้งค่าสำเร็จ');
+
+  // อัปเดต Drive preview หลังบันทึก
+  updateDrivePreview('docs');
+  updateDrivePreview('img');
+
+  showToast('✅ บันทึกการตั้งค่าสำเร็จ (Sheet + Drive)');
   updateConnectionStatus('saved');
 }
 
@@ -2559,14 +2579,15 @@ function saveDriveSettings() {
 async function uploadFileToDriveAPI(file, type) {
   const folderId = localStorage.getItem(type === 'img' ? 'cfg_drive_img_id' : 'cfg_drive_docs_id');
   const url      = getDriveAPIURL();
-  if (!folderId) throw new Error('ยังไม่ได้ตั้งค่า Folder ID สำหรับ ' + (type === 'img' ? 'รูปภาพ' : 'เอกสาร'));
-  if (!url)      throw new Error('ยังไม่ได้ตั้งค่า API URL');
+
+  if (!folderId) throw new Error('ยังไม่ตั้งค่า Folder ID — ไปตั้งค่าที่หน้าตั้งค่าระบบ');
+  if (!url)      throw new Error('ยังไม่ตั้งค่า Apps Script URL');
 
   // อ่านไฟล์เป็น Base64
   const base64 = await new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload  = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
+    reader.onerror = () => reject(new Error('อ่านไฟล์ไม่ได้'));
     reader.readAsDataURL(file);
   });
 
@@ -2580,9 +2601,30 @@ async function uploadFileToDriveAPI(file, type) {
 
   const form = new FormData();
   form.append('payload', JSON.stringify(payload));
-  const res  = await fetch(url, { method: 'POST', body: form });
+
+  const res  = await fetch(url, {
+    method: 'POST',
+    body:   form,
+    // ไม่ set Content-Type ให้ browser set เอง (boundary)
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+
   const text = await res.text();
-  return JSON.parse(text);
+
+  // GAS อาจ return JSON หรือ JSONP wrapped
+  let json;
+  try {
+    // ลอง parse ตรง
+    json = JSON.parse(text);
+  } catch(_) {
+    // ลอง strip callback wrapper: cb_xxx({...})
+    const stripped = text.replace(/^[\w]+\(/, '').replace(/\)$/, '').trim();
+    try { json = JSON.parse(stripped); }
+    catch(e) { throw new Error('Response ผิดรูปแบบ: ' + text.substring(0, 100)); }
+  }
+
+  return json;
 }
 
 // ── ดูรายการไฟล์ใน Drive ────────────────────────────
@@ -3005,31 +3047,49 @@ async function _saveDoc(useDrive) {
   if (!name) { showToast('⚠️ กรุณากรอกชื่อเอกสาร'); return; }
   if (useDrive && !_docUploadFile) { showToast('⚠️ กรุณาเลือกไฟล์ก่อน'); return; }
 
-  if (progEl) { progEl.style.display = 'block'; }
+  // ตรวจสอบ Drive config ก่อน
+  if (useDrive) {
+    if (!isConfigured()) {
+      showToast('❌ ยังไม่ตั้งค่า Apps Script URL — ไปตั้งค่าที่หน้าตั้งค่าระบบ', 5000);
+      return;
+    }
+    const docFolderId = localStorage.getItem('cfg_drive_docs_id');
+    if (!docFolderId) {
+      showToast('❌ ยังไม่ตั้งค่า Drive Folder ID สำหรับเอกสาร — ไปตั้งค่าที่หน้าตั้งค่าระบบ', 5000);
+      return;
+    }
+  }
+
+  // Reset progress
+  if (progEl)  { progEl.style.display = 'block'; }
   if (progTxt) progTxt.textContent = '⏳ กำลังดำเนินการ...';
-  if (progBar) progBar.style.width = '20%';
+  if (progBar) { progBar.style.width = '20%'; progBar.style.background = 'var(--army-green)'; }
 
   let fileUrl = '', fileId = '', fileName = _docUploadFile?.name || '';
 
   try {
-    // อัปโหลดไฟล์ถ้าต้องการและมีไฟล์
     if (useDrive && _docUploadFile) {
-      const docFolderId = localStorage.getItem('cfg_drive_docs_id');
-      if (!docFolderId || !isConfigured()) {
-        showToast('⚠️ ยังไม่ตั้งค่า Drive Folder ID — ดูที่หน้าตั้งค่าระบบ', 4000);
-        if (progEl) progEl.style.display = 'none';
-        return;
-      }
       if (progTxt) progTxt.textContent = '⏳ กำลังอัปโหลดไฟล์ไปยัง Drive...';
       if (progBar) progBar.style.width = '50%';
       const upRes = await uploadFileToDriveAPI(_docUploadFile, 'docs');
-      if (upRes.status !== 'ok') throw new Error('Drive: ' + upRes.message);
-      fileUrl  = upRes.viewUrl || upRes.url || '';
-      fileId   = upRes.fileId  || '';
+      if (upRes.status !== 'ok') throw new Error('Drive error: ' + (upRes.message || 'ไม่ทราบสาเหตุ'));
+      fileUrl = upRes.viewUrl || upRes.url || '';
+      fileId  = upRes.fileId  || '';
       if (progBar) progBar.style.width = '75%';
     }
 
-    if (progTxt) progTxt.textContent = '⏳ กำลังบันทึกข้อมูล...';
+    if (!isConfigured()) {
+      // ไม่มี Sheet — แค่บันทึกใน local cache
+      allDocsData.push({ ID:'local_'+Date.now(), 'ชื่อเอกสาร':name, 'หมวดหมู่':cat,
+        'URLไฟล์':fileUrl, 'ชื่อไฟล์':fileName, 'วันที่อัปโหลด': new Date().toISOString().split('T')[0] });
+      renderDocCards(allDocsData, 'all');
+      if (progBar) progBar.style.width = '100%';
+      showToast('⚠️ บันทึกในหน่วยความจำ (ยังไม่เชื่อมต่อ Sheet)');
+      setTimeout(() => { closeDocModal(); }, 800);
+      return;
+    }
+
+    if (progTxt) progTxt.textContent = '⏳ กำลังบันทึกข้อมูลลง Sheet...';
     if (progBar) progBar.style.width = '90%';
 
     const saveRes = await callAPIPost({
@@ -3037,7 +3097,7 @@ async function _saveDoc(useDrive) {
       'ชื่อเอกสาร':    name,
       'หมวดหมู่':      cat,
       'ID_กำลังพล':   ownerId,
-      'เจ้าของ':       ownerTxt.replace('-- เลือกกำลังพล --', ''),
+      'เจ้าของ':       ownerTxt.replace('-- เลือกกำลังพล --', '').trim(),
       'วันที่เอกสาร':  date,
       'วันหมดอายุ':    expire,
       'หมายเหตุ':      note,
@@ -3051,18 +3111,15 @@ async function _saveDoc(useDrive) {
     if (progBar) progBar.style.width = '100%';
 
     if (saveRes.status === 'ok') {
-      showToast(useDrive ? '✅ อัปโหลดและบันทึกสำเร็จ' : '✅ บันทึก record สำเร็จ');
-      setTimeout(() => {
-        closeDocModal();
-        loadDocs();
-      }, 600);
+      showToast(useDrive ? '✅ อัปโหลด Drive + บันทึก Sheet สำเร็จ' : '✅ บันทึก record สำเร็จ');
+      setTimeout(() => { closeDocModal(); loadDocs(); }, 600);
     } else {
-      throw new Error(saveRes.message);
+      throw new Error('Sheet error: ' + (saveRes.message || 'ไม่ทราบสาเหตุ'));
     }
   } catch(e) {
     if (progTxt) progTxt.innerHTML = `<span style="color:#c0392b;">❌ ${e.message}</span>`;
-    if (progBar) { progBar.style.background = '#c0392b'; }
-    showToast('❌ ' + e.message, 5000);
+    if (progBar) progBar.style.background = '#c0392b';
+    showToast('❌ ' + e.message, 6000);
   }
 }
 
