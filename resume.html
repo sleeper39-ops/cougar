@@ -1530,9 +1530,41 @@
               style="font-family:monospace;font-size:12px;">
             <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">ดูได้จาก URL ของ Google Sheet ของท่าน</div>
           </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label class="form-label" style="font-weight:600;color:var(--text-primary);">ชื่อ Tab แต่ละ Sheet <span style="font-weight:400;color:var(--text-muted);">(ต้องตรงกับชื่อ Tab ใน Google Sheet ของท่านทุกตัวอักษร)</span></label>
+            <!-- ตารางแสดงภาพรวม -->
+            <div style="background:var(--army-dark);border-radius:var(--radius);padding:12px 14px;margin:8px 0;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;">
+              <div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px;">Tab 1</div><div style="font-size:12px;color:var(--army-gold);font-weight:700;" id="preview-tab-personnel">กำลังพล</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">👥 กำลังพล</div></div>
+              <div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px;">Tab 2</div><div style="font-size:12px;color:var(--army-gold);font-weight:700;" id="preview-tab-promo">เลื่อนยศ</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">⭐ เลื่อนยศ</div></div>
+              <div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px;">Tab 3</div><div style="font-size:12px;color:var(--army-gold);font-weight:700;" id="preview-tab-courses">หลักสูตร</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">🎓 หลักสูตร</div></div>
+              <div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px;">Tab 4</div><div style="font-size:12px;color:var(--army-gold);font-weight:700;" id="preview-tab-ops">ภารกิจ</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">🗺️ ภารกิจ</div></div>
+              <div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px;">Tab 5</div><div style="font-size:12px;color:var(--army-gold);font-weight:700;" id="preview-tab-docs">เอกสาร</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">🗂️ เอกสาร</div></div>
+            </div>
+          </div>
           <div class="form-group">
-            <label class="form-label">ชื่อ Sheet กำลังพล (Tab name)</label>
-            <input type="text" class="form-input" id="cfg-sheet-name" placeholder="กำลังพล" value="กำลังพล">
+            <label class="form-label">👥 Tab กำลังพล</label>
+            <input type="text" class="form-input" id="cfg-tab-personnel" placeholder="กำลังพล" value="กำลังพล"
+              oninput="document.getElementById('preview-tab-personnel').textContent=this.value||'กำลังพล'">
+          </div>
+          <div class="form-group">
+            <label class="form-label">⭐ Tab เลื่อนยศ / สอบ</label>
+            <input type="text" class="form-input" id="cfg-tab-promo" placeholder="เลื่อนยศ" value="เลื่อนยศ"
+              oninput="document.getElementById('preview-tab-promo').textContent=this.value||'เลื่อนยศ'">
+          </div>
+          <div class="form-group">
+            <label class="form-label">🎓 Tab หลักสูตร</label>
+            <input type="text" class="form-input" id="cfg-tab-courses" placeholder="หลักสูตร" value="หลักสูตร"
+              oninput="document.getElementById('preview-tab-courses').textContent=this.value||'หลักสูตร'">
+          </div>
+          <div class="form-group">
+            <label class="form-label">🗺️ Tab ภารกิจ / ราชการสนาม</label>
+            <input type="text" class="form-input" id="cfg-tab-ops" placeholder="ภารกิจ" value="ภารกิจ"
+              oninput="document.getElementById('preview-tab-ops').textContent=this.value||'ภารกิจ'">
+          </div>
+          <div class="form-group">
+            <label class="form-label">🗂️ Tab เอกสาร</label>
+            <input type="text" class="form-input" id="cfg-tab-docs" placeholder="เอกสาร" value="เอกสาร"
+              oninput="document.getElementById('preview-tab-docs').textContent=this.value||'เอกสาร'">
           </div>
         </div>
         <div class="form-actions">
@@ -1550,18 +1582,27 @@
         </h4>
         <div style="background:#1a2332;border-radius:var(--radius);padding:14px 16px;overflow-x:auto;max-height:280px;overflow-y:auto;">
           <pre id="script-code-display" style="color:#c8a84b;font-size:11px;font-family:monospace;line-height:1.6;margin:0;white-space:pre;">// ===== วาง Code นี้ทั้งหมดใน Google Apps Script =====
-const SHEET_ID   = ''; // ใส่ Spreadsheet ID ของท่าน
-const SHEET_TABS = { personnel:'กำลังพล', promo:'เลื่อนยศ', courses:'หลักสูตร', ops:'ภารกิจ', docs:'เอกสาร' };
+const SHEET_ID = ''; // ใส่ Spreadsheet ID ของท่านที่นี่ (หรือปล่อยว่างและตั้งค่าผ่าน Settings)
+
+// ชื่อ Tab เริ่มต้น (ใช้เมื่อ client ไม่ส่ง tabName มา)
+const DEFAULT_TABS = {
+  personnel: 'กำลังพล',
+  promo:     'เลื่อนยศ',
+  courses:   'หลักสูตร',
+  ops:       'ภารกิจ',
+  docs:      'เอกสาร'
+};
 
 function doGet(e) {
-  const p      = e.parameter;
-  const cb     = p.callback || '';
-  const action = p.action   || '';
-  const table  = p.table    || 'personnel';
+  const p       = e.parameter;
+  const cb      = p.callback || '';
+  const action  = p.action   || '';
+  const table   = p.table    || 'personnel';
+  const tabName = p.tabName  || DEFAULT_TABS[table] || table; // รับชื่อ Tab จาก client
   let result;
   try {
-    if      (action === 'getAll') result = getAllRows(table);
-    else if (action === 'getOne') result = getOneRow(table, p.id);
+    if      (action === 'getAll') result = getAllRows(tabName);
+    else if (action === 'getOne') result = getOneRow(tabName, p.id);
     else result = { status:'error', message:'Unknown action' };
   } catch(err) { result = { status:'error', message: err.toString() }; }
   const json = JSON.stringify(result);
@@ -1574,12 +1615,13 @@ function doPost(e) {
   let data;
   try { data = JSON.parse(e.parameter.payload || e.postData.contents); }
   catch(err) { return out({ status:'error', message:'Parse error' }); }
-  const action = data.action || '';
-  const table  = data.table  || 'personnel';
+  const action  = data.action  || '';
+  const table   = data.table   || 'personnel';
+  const tabName = data.tabName || DEFAULT_TABS[table] || table; // รับชื่อ Tab จาก client
   try {
-    if      (action === 'add')    return out(addRow(table, data));
-    else if (action === 'update') return out(updateRow(table, data));
-    else if (action === 'delete') return out(deleteRow(table, data.id || data.ID));
+    if      (action === 'add')    return out(addRow(tabName, data));
+    else if (action === 'update') return out(updateRow(tabName, data));
+    else if (action === 'delete') return out(deleteRow(tabName, data.id || data.ID));
     else return out({ status:'error', message:'Unknown action' });
   } catch(err) { return out({ status:'error', message: err.toString() }); }
 }
@@ -1588,16 +1630,16 @@ function out(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
-function getSheet(table) {
-  const ss   = SpreadsheetApp.openById(SHEET_ID);
-  const name = SHEET_TABS[table] || table;
-  let sh = ss.getSheetByName(name);
-  if (!sh) sh = ss.insertSheet(name);
+function getSheet(tabName) {
+  const ssId = SHEET_ID || PropertiesService.getScriptProperties().getProperty('SHEET_ID') || '';
+  const ss   = ssId ? SpreadsheetApp.openById(ssId) : SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(tabName);
+  if (!sh) sh = ss.insertSheet(tabName); // สร้าง Tab ใหม่ถ้ายังไม่มี
   return sh;
 }
 
-function getAllRows(table) {
-  const sh   = getSheet(table);
+function getAllRows(tabName) {
+  const sh   = getSheet(tabName);
   const vals = sh.getDataRange().getValues();
   if (vals.length < 2) return { status:'ok', data:[] };
   const headers = vals[0];
@@ -1609,16 +1651,16 @@ function getAllRows(table) {
   return { status:'ok', data };
 }
 
-function getOneRow(table, id) {
-  const all = getAllRows(table);
+function getOneRow(tabName, id) {
+  const all = getAllRows(tabName);
   const row = (all.data || []).find(r => r['ID'] === id);
   return row ? { status:'ok', data:row } : { status:'error', message:'Not found' };
 }
 
-function addRow(table, data) {
-  const sh      = getSheet(table);
+function addRow(tabName, data) {
+  const sh      = getSheet(tabName);
   const vals    = sh.getDataRange().getValues();
-  const headers = vals.length > 0 ? vals[0] : Object.keys(data).filter(k => k !== 'action' && k !== 'table');
+  const headers = vals.length > 0 ? vals[0] : Object.keys(data).filter(k => !['action','table','tabName'].includes(k));
   if (vals.length === 0) sh.appendRow(headers);
   const newId = 'ID_' + Date.now();
   data['ID']  = newId;
@@ -1627,8 +1669,8 @@ function addRow(table, data) {
   return { status:'ok', id: newId };
 }
 
-function updateRow(table, data) {
-  const sh      = getSheet(table);
+function updateRow(tabName, data) {
+  const sh      = getSheet(tabName);
   const vals    = sh.getDataRange().getValues();
   if (vals.length < 2) return { status:'error', message:'No data' };
   const headers = vals[0];
@@ -1646,8 +1688,8 @@ function updateRow(table, data) {
   return { status:'error', message:'Row not found' };
 }
 
-function deleteRow(table, id) {
-  const sh      = getSheet(table);
+function deleteRow(tabName, id) {
+  const sh      = getSheet(tabName);
   const vals    = sh.getDataRange().getValues();
   if (vals.length < 2) return { status:'error', message:'No data' };
   const idCol   = vals[0].indexOf('ID');
@@ -1658,6 +1700,234 @@ function deleteRow(table, id) {
     }
   }
   return { status:'error', message:'Row not found' };
+}</pre>
+        </div>
+      </div>
+
+      <!-- Google Drive -->
+      <div class="form-card">
+        <h4>🗂️ Google Drive — เชื่อมต่อโฟลเดอร์จัดเก็บไฟล์</h4>
+
+        <!-- สถานะ Drive -->
+        <div id="drive-status-bar" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius);margin-bottom:16px;border:1px solid var(--army-border);background:var(--bg-light);">
+          <div style="display:flex;gap:10px;align-items:center;flex:1;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div id="drive-docs-dot" style="width:10px;height:10px;border-radius:50%;background:#ccc;flex-shrink:0;"></div>
+              <span style="font-size:12px;" id="drive-docs-status">📁 เอกสาร: ยังไม่ตั้งค่า</span>
+            </div>
+            <div style="color:var(--army-border);">|</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div id="drive-img-dot" style="width:10px;height:10px;border-radius:50%;background:#ccc;flex-shrink:0;"></div>
+              <span style="font-size:12px;" id="drive-img-status">🖼️ รูปภาพ: ยังไม่ตั้งค่า</span>
+            </div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:12px;" onclick="testDriveConnection()">🔄 ทดสอบ Drive</button>
+        </div>
+
+        <div style="background:var(--army-pale);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--text-secondary);line-height:1.7;">
+          <strong>วิธีหา Folder ID:</strong> เปิด Google Drive → คลิกขวาโฟลเดอร์ → "Get Link" หรือดูจาก URL:<br>
+          <code style="background:#e8ecf0;padding:2px 6px;border-radius:4px;font-size:11px;">https://drive.google.com/drive/folders/<strong style="color:var(--army-green);">FOLDER_ID_อยู่ตรงนี้</strong></code><br>
+          <span style="color:#c0392b;font-size:11px;">⚠️ ต้องแชร์โฟลเดอร์ให้ Service Account หรือตั้งเป็น "Anyone with the link" ด้วย</span>
+        </div>
+
+        <div class="form-grid-2" style="margin-bottom:16px;">
+          <!-- เอกสาร -->
+          <div style="background:var(--bg-light);border:1px solid var(--army-border);border-radius:var(--radius);padding:16px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <span style="font-size:20px;">📁</span> โฟลเดอร์เอกสาร
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+              <label class="form-label">Google Drive Folder ID *</label>
+              <input type="text" class="form-input" id="cfg-drive-docs-id"
+                placeholder="เช่น 1a2b3c4d5e6f7g8h9i0j..."
+                style="font-family:monospace;font-size:12px;"
+                oninput="updateDrivePreview('docs')">
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px;" id="cfg-drive-docs-preview">ยังไม่ได้ตั้งค่า</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ชื่อโฟลเดอร์ (แสดงในระบบ)</label>
+              <input type="text" class="form-input" id="cfg-drive-docs-name"
+                placeholder="เช่น เอกสารทะเบียนประวัติ"
+                oninput="updateDrivePreview('docs')">
+            </div>
+            <div style="margin-top:10px;display:flex;gap:6px;">
+              <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;flex:1;" onclick="openDriveFolder('docs')">🔗 เปิดโฟลเดอร์</button>
+              <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;flex:1;" onclick="testDriveFolderAccess('docs')">🔌 ทดสอบ</button>
+            </div>
+          </div>
+
+          <!-- รูปภาพ -->
+          <div style="background:var(--bg-light);border:1px solid var(--army-border);border-radius:var(--radius);padding:16px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <span style="font-size:20px;">🖼️</span> โฟลเดอร์รูปภาพ
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+              <label class="form-label">Google Drive Folder ID *</label>
+              <input type="text" class="form-input" id="cfg-drive-img-id"
+                placeholder="เช่น 1a2b3c4d5e6f7g8h9i0j..."
+                style="font-family:monospace;font-size:12px;"
+                oninput="updateDrivePreview('img')">
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px;" id="cfg-drive-img-preview">ยังไม่ได้ตั้งค่า</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ชื่อโฟลเดอร์ (แสดงในระบบ)</label>
+              <input type="text" class="form-input" id="cfg-drive-img-name"
+                placeholder="เช่น รูปภาพกำลังพล"
+                oninput="updateDrivePreview('img')">
+            </div>
+            <div style="margin-top:10px;display:flex;gap:6px;">
+              <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;flex:1;" onclick="openDriveFolder('img')">🔗 เปิดโฟลเดอร์</button>
+              <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;flex:1;" onclick="testDriveFolderAccess('img')">🔌 ทดสอบ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drive URL สำหรับ Upload -->
+        <div style="background:var(--army-pale);border:1px solid var(--army-border);border-radius:var(--radius);padding:14px;margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">🔗 Drive Upload Endpoint (สำหรับ upload ไฟล์ผ่าน Apps Script)</div>
+          <div class="form-group">
+            <label class="form-label">Apps Script URL สำหรับ Drive (อาจใช้ URL เดียวกับ Sheet หรือแยกได้)</label>
+            <input type="text" class="form-input" id="cfg-drive-api-url"
+              placeholder="ปล่อยว่างเพื่อใช้ URL เดียวกับ Google Sheet"
+              style="font-family:monospace;font-size:12px;">
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">ถ้าปล่อยว่างจะใช้ URL จาก Google Apps Script เดิม</div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="testDriveConnection()">🔌 ทดสอบการเชื่อมต่อ Drive</button>
+          <button class="btn btn-primary" onclick="saveDriveSettings()">💾 บันทึกการตั้งค่า Drive</button>
+        </div>
+      </div>
+
+      <!-- Google Drive — Apps Script Code เพิ่มเติม -->
+      <div class="form-card">
+        <h4 style="display:flex;justify-content:space-between;align-items:center;">
+          <span>📋 Apps Script — เพิ่มเติมสำหรับ Google Drive</span>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="copyDriveCode()">📋 คัดลอก Code</button>
+        </h4>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">เพิ่ม Code นี้ต่อท้าย Apps Script เดิมในไฟล์เดียวกัน</div>
+        <div style="background:#1a2332;border-radius:var(--radius);padding:14px 16px;overflow-x:auto;max-height:260px;overflow-y:auto;">
+          <pre id="drive-code-display" style="color:#c8a84b;font-size:11px;font-family:monospace;line-height:1.6;margin:0;white-space:pre;">// ===== เพิ่มใน doGet — รองรับ action drive =====
+// (แทน doGet เดิมด้วยอันนี้)
+function doGet(e) {
+  const p       = e.parameter;
+  const cb      = p.callback || '';
+  const action  = p.action   || '';
+  const table   = p.table    || 'personnel';
+  const tabName = p.tabName  || DEFAULT_TABS[table] || table;
+  let result;
+  try {
+    if      (action === 'getAll')       result = getAllRows(tabName);
+    else if (action === 'getOne')       result = getOneRow(tabName, p.id);
+    else if (action === 'driveTest')    result = testDriveFolder(p.folderId);
+    else if (action === 'driveList')    result = listDriveFiles(p.folderId, p.prefix || '');
+    else result = { status:'error', message:'Unknown action' };
+  } catch(err) { result = { status:'error', message: err.toString() }; }
+  const json = JSON.stringify(result);
+  return cb
+    ? ContentService.createTextOutput(cb+'('+json+')').setMimeType(ContentService.MimeType.JAVASCRIPT)
+    : ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+}
+
+// ===== เพิ่มใน doPost — รองรับ upload ไฟล์ =====
+// (แทน doPost เดิมด้วยอันนี้)
+function doPost(e) {
+  let data;
+  try { data = JSON.parse(e.parameter.payload || e.postData.contents); }
+  catch(err) { return out({ status:'error', message:'Parse error' }); }
+  const action  = data.action  || '';
+  const table   = data.table   || 'personnel';
+  const tabName = data.tabName || DEFAULT_TABS[table] || table;
+  try {
+    if      (action === 'add')          return out(addRow(tabName, data));
+    else if (action === 'update')       return out(updateRow(tabName, data));
+    else if (action === 'delete')       return out(deleteRow(tabName, data.id || data.ID));
+    else if (action === 'uploadFile')   return out(uploadFileToDrive(data));
+    else if (action === 'deleteFile')   return out(deleteFileFromDrive(data.fileId));
+    else return out({ status:'error', message:'Unknown action' });
+  } catch(err) { return out({ status:'error', message: err.toString() }); }
+}
+
+// ===== Google Drive Functions =====
+
+// ทดสอบการเข้าถึง Folder
+function testDriveFolder(folderId) {
+  if (!folderId) return { status:'error', message:'ไม่ได้ระบุ Folder ID' };
+  try {
+    const folder = DriveApp.getFolderById(folderId);
+    const name   = folder.getName();
+    const files  = folder.getFiles();
+    let count = 0;
+    while (files.hasNext()) { files.next(); count++; }
+    return { status:'ok', name, fileCount: count };
+  } catch(e) {
+    return { status:'error', message:'เข้าไม่ได้: ' + e.toString() };
+  }
+}
+
+// ดูรายการไฟล์ใน Folder
+function listDriveFiles(folderId, prefix) {
+  if (!folderId) return { status:'error', message:'ไม่ได้ระบุ Folder ID' };
+  try {
+    const folder = DriveApp.getFolderById(folderId);
+    const files  = folder.getFiles();
+    const result = [];
+    while (files.hasNext()) {
+      const f = files.next();
+      const name = f.getName();
+      if (!prefix || name.startsWith(prefix)) {
+        result.push({
+          id:       f.getId(),
+          name:     name,
+          mimeType: f.getMimeType(),
+          size:     f.getSize(),
+          url:      f.getUrl(),
+          viewUrl:  'https://drive.google.com/uc?id=' + f.getId(),
+          modified: f.getLastUpdated().toISOString()
+        });
+      }
+    }
+    return { status:'ok', data: result };
+  } catch(e) {
+    return { status:'error', message: e.toString() };
+  }
+}
+
+// อัปโหลดไฟล์ไปยัง Drive (รับ Base64)
+function uploadFileToDrive(data) {
+  const folderId  = data.folderId;
+  const fileName  = data.fileName  || ('file_' + Date.now());
+  const mimeType  = data.mimeType  || 'application/octet-stream';
+  const base64    = data.base64;   // ข้อมูลไฟล์ในรูป base64
+  if (!folderId || !base64) return { status:'error', message:'ขาด folderId หรือ base64' };
+  try {
+    const folder   = DriveApp.getFolderById(folderId);
+    const decoded  = Utilities.base64Decode(base64);
+    const blob     = Utilities.newBlob(decoded, mimeType, fileName);
+    const file     = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return {
+      status:  'ok',
+      fileId:  file.getId(),
+      url:     file.getUrl(),
+      viewUrl: 'https://drive.google.com/uc?id=' + file.getId(),
+      name:    file.getName()
+    };
+  } catch(e) {
+    return { status:'error', message: e.toString() };
+  }
+}
+
+// ลบไฟล์จาก Drive
+function deleteFileFromDrive(fileId) {
+  if (!fileId) return { status:'error', message:'ไม่ได้ระบุ fileId' };
+  try {
+    DriveApp.getFileById(fileId).setTrashed(true);
+    return { status:'ok' };
+  } catch(e) {
+    return { status:'error', message: e.toString() };
+  }
 }</pre>
         </div>
       </div>
@@ -1863,8 +2133,10 @@ const USERS = [
 function getAPIURL() {
   return localStorage.getItem('cfg_api_url') || '';
 }
-function getSheetName() {
-  return localStorage.getItem('cfg_sheet_name') || 'กำลังพล';
+// ดึงชื่อ Tab ตาม table key จาก localStorage
+function getTabName(tableKey) {
+  const defaults = { personnel:'กำลังพล', promo:'เลื่อนยศ', courses:'หลักสูตร', ops:'ภารกิจ', docs:'เอกสาร' };
+  return localStorage.getItem('cfg_tab_' + tableKey) || defaults[tableKey] || tableKey;
 }
 function isConfigured() {
   return !!getAPIURL();
@@ -1876,8 +2148,11 @@ async function callAPI(params) {
     console.warn('API URL ยังไม่ได้ตั้งค่า — กรุณาตั้งค่าในหน้าตั้งค่าระบบ');
     return { status: 'error', message: 'ยังไม่ได้ตั้งค่า API URL' };
   }
+  // ส่งชื่อ Tab จริงไปพร้อมกับ request
+  const tableKey = params.table || 'personnel';
+  const enriched = { ...params, tabName: getTabName(tableKey) };
   const cbName = 'cb_' + Date.now();
-  const qs = new URLSearchParams({ ...params, callback: cbName }).toString();
+  const qs = new URLSearchParams({ ...enriched, callback: cbName }).toString();
   const res  = await fetch(url + '?' + qs);
   const text = await res.text();
   const json = text.replace(new RegExp('^' + cbName + '\\('), '').replace(/\)$/, '');
@@ -1889,8 +2164,11 @@ async function callAPIPost(data) {
   if (!url) {
     return { status: 'error', message: 'ยังไม่ได้ตั้งค่า API URL' };
   }
+  // ส่งชื่อ Tab จริงไปพร้อมกับ payload
+  const tableKey = data.table || 'personnel';
+  const enriched = { ...data, tabName: getTabName(tableKey) };
   const form = new FormData();
-  form.append('payload', JSON.stringify(data));
+  form.append('payload', JSON.stringify(enriched));
   const res = await fetch(url, { method: 'POST', body: form });
   const text = await res.text();
   try { return JSON.parse(text); }
@@ -1901,19 +2179,28 @@ async function callAPIPost(data) {
 //  SETTINGS FUNCTIONS
 // ══════════════════════════════════════════════════
 function loadSettingsUI() {
-  const url   = localStorage.getItem('cfg_api_url')    || '';
-  const shId  = localStorage.getItem('cfg_sheet_id')   || '';
-  const shNm  = localStorage.getItem('cfg_sheet_name') || 'กำลังพล';
+  const url  = localStorage.getItem('cfg_api_url')  || '';
+  const shId = localStorage.getItem('cfg_sheet_id') || '';
+
+  const tabDefaults = { personnel:'กำลังพล', promo:'เลื่อนยศ', courses:'หลักสูตร', ops:'ภารกิจ', docs:'เอกสาร' };
 
   const urlEl  = document.getElementById('cfg-api-url');
   const shIdEl = document.getElementById('cfg-sheet-id');
-  const shNmEl = document.getElementById('cfg-sheet-name');
   if (urlEl)  urlEl.value  = url;
   if (shIdEl) shIdEl.value = shId;
-  if (shNmEl) shNmEl.value = shNm;
+
+  // โหลดชื่อ Tab ทั้ง 5 + sync preview bar
+  Object.keys(tabDefaults).forEach(key => {
+    const val = localStorage.getItem('cfg_tab_' + key) || tabDefaults[key];
+    const el  = document.getElementById('cfg-tab-' + key);
+    if (el) el.value = val;
+    // อัปเดต preview bar
+    const prev = document.getElementById('preview-tab-' + key);
+    if (prev) prev.textContent = val;
+  });
 
   // อัปเดต info section
-  const infoUrl = document.getElementById('info-api-url');
+  const infoUrl   = document.getElementById('info-api-url');
   const infoTotal = document.getElementById('info-total');
   if (infoUrl)   infoUrl.textContent   = url || 'ยังไม่ได้ตั้งค่า';
   if (infoTotal) infoTotal.textContent = allPersonnelData.length + ' นาย';
@@ -1928,24 +2215,60 @@ function loadSettingsUI() {
     if (el) el.checked = localStorage.getItem(id) !== 'false';
   });
 
-  updateConnectionStatus(url ? null : 'unconfigured');
+  // โหลดการตั้งค่า Drive
+  const driveFields = {
+    'cfg-drive-docs-id':   'cfg_drive_docs_id',
+    'cfg-drive-docs-name': 'cfg_drive_docs_name',
+    'cfg-drive-img-id':    'cfg_drive_img_id',
+    'cfg-drive-img-name':  'cfg_drive_img_name',
+    'cfg-drive-api-url':   'cfg_drive_api_url',
+  };
+  Object.entries(driveFields).forEach(([elId, key]) => {
+    const el = document.getElementById(elId);
+    if (el) el.value = localStorage.getItem(key) || '';
+  });
+  // อัปเดต preview Drive
+  updateDrivePreview('docs');
+  updateDrivePreview('img');
+  // อัปเดตสถานะ dot drive
+  ['docs','img'].forEach(type => {
+    const id     = localStorage.getItem('cfg_drive_' + type + '_id');
+    const dot    = document.getElementById('drive-' + type + '-dot');
+    const status = document.getElementById('drive-' + type + '-status');
+    const icon   = type === 'docs' ? '📁' : '🖼️';
+    const label  = type === 'docs' ? 'เอกสาร' : 'รูปภาพ';
+    if (dot && status) {
+      dot.style.background  = id ? 'var(--army-gold)' : '#ccc';
+      status.textContent    = id ? `${icon} ${label}: บันทึกแล้ว (ยังไม่ทดสอบ)` : `${icon} ${label}: ยังไม่ตั้งค่า`;
+    }
+  });
+
+  updateConnectionStatus(url ? 'saved' : 'unconfigured');
 }
 
 function saveSettings() {
-  const url   = document.getElementById('cfg-api-url')?.value.trim()    || '';
-  const shId  = document.getElementById('cfg-sheet-id')?.value.trim()   || '';
-  const shNm  = document.getElementById('cfg-sheet-name')?.value.trim() || 'กำลังพล';
+  const url  = document.getElementById('cfg-api-url')?.value.trim()  || '';
+  const shId = document.getElementById('cfg-sheet-id')?.value.trim() || '';
 
   if (!url) { alert('⚠️ กรุณากรอก Google Apps Script URL'); return; }
   if (!url.startsWith('https://script.google.com/macros/s/')) {
     if (!confirm('URL ไม่ตรงรูปแบบ Google Apps Script\nต้องการบันทึกต่อหรือไม่?')) return;
   }
 
-  localStorage.setItem('cfg_api_url',    url);
-  localStorage.setItem('cfg_sheet_id',   shId);
-  localStorage.setItem('cfg_sheet_name', shNm);
+  const tabDefaults = { personnel:'กำลังพล', promo:'เลื่อนยศ', courses:'หลักสูตร', ops:'ภารกิจ', docs:'เอกสาร' };
 
-  document.getElementById('info-api-url').textContent = url;
+  localStorage.setItem('cfg_api_url',  url);
+  localStorage.setItem('cfg_sheet_id', shId);
+
+  // บันทึกชื่อ Tab ทั้ง 5
+  Object.keys(tabDefaults).forEach(key => {
+    const el  = document.getElementById('cfg-tab-' + key);
+    const val = el ? (el.value.trim() || tabDefaults[key]) : tabDefaults[key];
+    localStorage.setItem('cfg_tab_' + key, val);
+  });
+
+  const infoUrl = document.getElementById('info-api-url');
+  if (infoUrl) infoUrl.textContent = url;
   showToast('✅ บันทึกการตั้งค่าสำเร็จ');
   updateConnectionStatus('saved');
 }
@@ -2037,11 +2360,165 @@ function copyScriptCode() {
 
 function clearAllSettings() {
   if (!confirm('⚠️ ต้องการล้างการตั้งค่าทั้งหมดหรือไม่?\n(จะลบ URL, Sheet ID และการตั้งค่าอื่นๆ)')) return;
-  ['cfg_api_url','cfg_sheet_id','cfg_sheet_name','cfg_last_sync',
+  ['cfg_api_url','cfg_sheet_id','cfg_last_sync',
+   'cfg_tab_personnel','cfg_tab_promo','cfg_tab_courses','cfg_tab_ops','cfg_tab_docs',
+   'cfg_drive_docs_id','cfg_drive_docs_name','cfg_drive_img_id','cfg_drive_img_name','cfg_drive_api_url',
    'notif-promotion','notif-exam','notif-retire25','notif-retire60','notif-salary'
   ].forEach(k => localStorage.removeItem(k));
   loadSettingsUI();
   showToast('🗑️ ล้างการตั้งค่าแล้ว');
+}
+
+// ══════════════════════════════════════════════════
+//  GOOGLE DRIVE FUNCTIONS
+// ══════════════════════════════════════════════════
+
+// ดึง Drive API URL (ใช้ URL เดียวกับ Sheet ถ้าไม่ได้ตั้งแยก)
+function getDriveAPIURL() {
+  return localStorage.getItem('cfg_drive_api_url') || getAPIURL();
+}
+
+// อัปเดต preview URL เมื่อพิมพ์ Folder ID
+function updateDrivePreview(type) {
+  const idEl   = document.getElementById('cfg-drive-' + type + '-id');
+  const nameEl = document.getElementById('cfg-drive-' + type + '-name');
+  const prevEl = document.getElementById('cfg-drive-' + type + '-preview');
+  if (!prevEl) return;
+  const id   = idEl?.value.trim()   || '';
+  const name = nameEl?.value.trim() || '';
+  if (!id) {
+    prevEl.textContent = 'ยังไม่ได้ตั้งค่า';
+    prevEl.style.color = 'var(--text-muted)';
+  } else {
+    prevEl.innerHTML = `🔗 <a href="https://drive.google.com/drive/folders/${id}" target="_blank"
+      style="color:var(--army-green);font-size:11px;">${name || id}</a>`;
+  }
+}
+
+// เปิดโฟลเดอร์ใน Drive
+function openDriveFolder(type) {
+  const id = document.getElementById('cfg-drive-' + type + '-id')?.value.trim()
+          || localStorage.getItem('cfg_drive_' + type + '_id');
+  if (!id) { showToast('⚠️ ยังไม่ได้ตั้งค่า Folder ID'); return; }
+  window.open('https://drive.google.com/drive/folders/' + id, '_blank');
+}
+
+// ทดสอบการเข้าถึง Folder เดี่ยว
+async function testDriveFolderAccess(type) {
+  const id  = document.getElementById('cfg-drive-' + type + '-id')?.value.trim()
+           || localStorage.getItem('cfg_drive_' + type + '_id');
+  const url = getDriveAPIURL();
+  if (!id)  { showToast('⚠️ กรุณากรอก Folder ID ก่อน'); return; }
+  if (!url) { showToast('⚠️ ยังไม่ได้ตั้งค่า API URL'); return; }
+
+  showToast('⏳ กำลังทดสอบ...');
+  try {
+    const cb   = 'cb_' + Date.now();
+    const qs   = new URLSearchParams({ action:'driveTest', folderId: id, callback: cb }).toString();
+    const res  = await fetch(url + '?' + qs);
+    const text = await res.text();
+    const json = JSON.parse(text.replace(new RegExp('^' + cb + '\\('), '').replace(/\)$/, ''));
+
+    const dot    = document.getElementById('drive-' + type + '-dot');
+    const status = document.getElementById('drive-' + type + '-status');
+    const icon   = type === 'docs' ? '📁' : '🖼️';
+    const label  = type === 'docs' ? 'เอกสาร' : 'รูปภาพ';
+
+    if (json.status === 'ok') {
+      if (dot) dot.style.background = 'var(--army-green)';
+      if (status) status.textContent = `${icon} ${label}: ✅ "${json.name}" (${json.fileCount} ไฟล์)`;
+      showToast(`✅ เข้าถึงโฟลเดอร์ "${json.name}" สำเร็จ (${json.fileCount} ไฟล์)`);
+    } else {
+      if (dot) dot.style.background = '#c0392b';
+      if (status) status.textContent = `${icon} ${label}: ❌ ${json.message}`;
+      showToast('❌ ' + json.message, 5000);
+    }
+  } catch(e) {
+    showToast('❌ เชื่อมต่อไม่ได้: ' + e.message, 5000);
+  }
+}
+
+// ทดสอบทั้ง 2 โฟลเดอร์
+async function testDriveConnection() {
+  await testDriveFolderAccess('docs');
+  await testDriveFolderAccess('img');
+}
+
+// บันทึกการตั้งค่า Drive
+function saveDriveSettings() {
+  const docsId   = document.getElementById('cfg-drive-docs-id')?.value.trim()   || '';
+  const docsName = document.getElementById('cfg-drive-docs-name')?.value.trim() || 'เอกสาร';
+  const imgId    = document.getElementById('cfg-drive-img-id')?.value.trim()    || '';
+  const imgName  = document.getElementById('cfg-drive-img-name')?.value.trim()  || 'รูปภาพ';
+  const driveUrl = document.getElementById('cfg-drive-api-url')?.value.trim()   || '';
+
+  if (!docsId && !imgId) {
+    if (!confirm('ยังไม่ได้กรอก Folder ID ต้องการบันทึกต่อหรือไม่?')) return;
+  }
+
+  localStorage.setItem('cfg_drive_docs_id',   docsId);
+  localStorage.setItem('cfg_drive_docs_name', docsName);
+  localStorage.setItem('cfg_drive_img_id',    imgId);
+  localStorage.setItem('cfg_drive_img_name',  imgName);
+  localStorage.setItem('cfg_drive_api_url',   driveUrl);
+
+  showToast('✅ บันทึกการตั้งค่า Drive สำเร็จ');
+
+  // อัปเดต preview
+  updateDrivePreview('docs');
+  updateDrivePreview('img');
+}
+
+// ── อัปโหลดไฟล์ไปยัง Drive (ใช้จากหน้าเอกสาร) ──────
+async function uploadFileToDriveAPI(file, type) {
+  const folderId = localStorage.getItem(type === 'img' ? 'cfg_drive_img_id' : 'cfg_drive_docs_id');
+  const url      = getDriveAPIURL();
+  if (!folderId) throw new Error('ยังไม่ได้ตั้งค่า Folder ID สำหรับ ' + (type === 'img' ? 'รูปภาพ' : 'เอกสาร'));
+  if (!url)      throw new Error('ยังไม่ได้ตั้งค่า API URL');
+
+  // อ่านไฟล์เป็น Base64
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const payload = {
+    action:   'uploadFile',
+    folderId,
+    fileName: file.name,
+    mimeType: file.type || 'application/octet-stream',
+    base64
+  };
+
+  const form = new FormData();
+  form.append('payload', JSON.stringify(payload));
+  const res  = await fetch(url, { method: 'POST', body: form });
+  const text = await res.text();
+  return JSON.parse(text);
+}
+
+// ── ดูรายการไฟล์ใน Drive ────────────────────────────
+async function listDriveFilesAPI(type, prefix) {
+  const folderId = localStorage.getItem(type === 'img' ? 'cfg_drive_img_id' : 'cfg_drive_docs_id');
+  const url      = getDriveAPIURL();
+  if (!folderId || !url) return { status:'error', data:[] };
+  const cb  = 'cb_' + Date.now();
+  const qs  = new URLSearchParams({ action:'driveList', folderId, prefix: prefix || '', callback: cb }).toString();
+  const res = await fetch(url + '?' + qs);
+  const txt = await res.text();
+  return JSON.parse(txt.replace(new RegExp('^' + cb + '\\('), '').replace(/\)$/, ''));
+}
+
+function copyDriveCode() {
+  const code = document.getElementById('drive-code-display')?.textContent || '';
+  navigator.clipboard.writeText(code).then(() => showToast('📋 คัดลอก Drive Code แล้ว')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = code; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('📋 คัดลอก Drive Code แล้ว');
+  });
 }
 
 // ── Toast notification ────────────────────────────
