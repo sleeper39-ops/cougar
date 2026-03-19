@@ -4774,6 +4774,110 @@ window.loadPension = async function() {
 
 console.log('[Patch v3] Drive + Chip styles loaded');
 </script>
+
+<!-- วางก่อน </body> — แก้การแสดงรูปภาพจาก Google Drive -->
+<script>
+// ════════════════════════════════════════════════════════════
+//  แก้รูปภาพไม่แสดง — ลอง URL หลายรูปแบบอัตโนมัติ
+// ════════════════════════════════════════════════════════════
+
+// ── helper: แปลง Drive URL ให้แสดงรูปได้ ──────────────────────
+function fixDriveImageUrl(url) {
+  if (!url) return '';
+
+  // ถ้าเป็น base64 dataUrl → ใช้ได้เลย
+  if (url.startsWith('data:')) return url;
+
+  // ดึง fileId จาก URL รูปแบบต่างๆ
+  let fileId = '';
+
+  // https://drive.google.com/uc?id=XXX หรือ ?export=view&id=XXX
+  const m1 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m1) fileId = m1[1];
+
+  // https://drive.google.com/file/d/XXX/view
+  const m2 = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (m2) fileId = m2[1];
+
+  // https://lh3.googleusercontent.com/d/XXX
+  const m3 = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+  if (m3) fileId = m3[1];
+
+  if (!fileId) return url; // ถ้าหา fileId ไม่เจอ ใช้ URL เดิม
+
+  // ใช้ thumbnail URL — แสดงใน <img> ได้โดยตรง
+  return 'https://lh3.googleusercontent.com/d/' + fileId;
+}
+
+// ── แก้ renderProfile — รูปโปรไฟล์ ──────────────────────────────
+const _origRenderProfile = window.renderProfile;
+window.renderProfile = function(p) {
+  if (_origRenderProfile) _origRenderProfile(p);
+
+  // แก้รูปหัวหน้า
+  const photo   = p['URLรูปภาพ'];
+  const photoEl = document.getElementById('prof-photo');
+  if (photo && photoEl) {
+    const fixedUrl = fixDriveImageUrl(photo);
+    const img = new Image();
+    img.onload = () => {
+      photoEl.innerHTML = `<img src="${fixedUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+    };
+    img.onerror = () => {
+      // fallback: ลอง thumbnail sz=w200
+      const fbUrl = photo.match(/[a-zA-Z0-9_-]{25,}/)
+        ? 'https://drive.google.com/thumbnail?id=' + photo.match(/[a-zA-Z0-9_-]{25,}/)[0] + '&sz=w200'
+        : '';
+      if (fbUrl) photoEl.innerHTML = `<img src="${fbUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+      else photoEl.innerHTML = '🪖';
+    };
+    img.src = fixedUrl;
+  }
+};
+
+// ── แก้ loadEditForm — รูปในหน้าแก้ไข ───────────────────────────
+const _origLoadEditForm = window.loadEditForm;
+window.loadEditForm = function(p) {
+  if (_origLoadEditForm) _origLoadEditForm(p);
+
+  const photo      = p['URLรูปภาพ'];
+  const photoPreview = document.getElementById('edit-photo-preview');
+  const photoUrl   = document.getElementById('edit-photo-url');
+  if (photo && photoPreview) {
+    const fixedUrl = fixDriveImageUrl(photo);
+    photoPreview.innerHTML = `<img src="${fixedUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);"
+      onerror="this.parentElement.innerHTML='📷'">`;
+    if (photoUrl) photoUrl.value = photo; // เก็บ URL เดิมไว้
+  }
+};
+
+// ── แก้ renderDocCards — แสดงเอกสาร ────────────────────────────
+const _origRenderDocCards = window.renderDocCards;
+window.renderDocCards = function(data, cat) {
+  if (_origRenderDocCards) _origRenderDocCards(data, cat);
+
+  // แทนที่ปุ่ม "ดู" ให้ใช้ URL ที่ถูกต้อง
+  const container = document.getElementById('doc-cards-container');
+  if (!container) return;
+  container.querySelectorAll('button').forEach(btn => {
+    if (btn.textContent.includes('ดู') && btn.onclick) {
+      const onclickStr = btn.getAttribute('onclick') || '';
+      const urlMatch   = onclickStr.match(/window\.open\('([^']+)'/);
+      if (urlMatch) {
+        const origUrl  = urlMatch[1];
+        const fixedUrl = fixDriveImageUrl(origUrl);
+        btn.setAttribute('onclick', `window.open('${fixedUrl}','_blank')`);
+      }
+    }
+  });
+};
+
+// ── แก้ makeListRow / makeDashRow — รูปใน table ─────────────────
+// ไม่มีรูปใน table แต่แก้ openProfile ให้ fix URL ก่อน render
+
+console.log('[IMG Fix] Drive image display fix loaded');
+</script>
+
     
 </body>
 </html>
