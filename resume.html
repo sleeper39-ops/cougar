@@ -590,83 +590,309 @@
         <button class="btn btn-primary" style="margin-top:16px;" onclick="showPanel('list')">ไปยังรายชื่อกำลังพล →</button>
       </div>
       <div id="profile-content" style="display:none;">
-        <div class="profile-grid">
-          <div>
-            <div class="profile-sidebar-card">
-              <div class="profile-photo" id="prof-photo">🪖</div>
-              <div class="profile-rank" id="prof-rank">—</div>
-              <div class="profile-name" id="prof-name">—</div>
-              <div class="profile-pos" id="prof-pos">—</div>
-              <div class="profile-stats">
-                <div class="profile-stat-item"><div class="psi-label">เลขประจำตัว</div><div class="psi-value" id="prof-empid">—</div></div>
-                <div class="profile-stat-item"><div class="psi-label">หน่วยงาน</div><div class="psi-value" id="prof-unit">—</div></div>
-                <div class="profile-stat-item"><div class="psi-label">อายุราชการ</div><div class="psi-value" id="prof-svc" style="font-size:11px;">—</div></div>
-                <div class="profile-stat-item"><div class="psi-label">ขั้นเงินเดือน</div><div class="psi-value" id="prof-step">—</div></div>
-                <div class="profile-stat-item"><div class="psi-label">เงินเดือนสุทธิ</div><div class="psi-value" id="prof-net">—</div></div>
-              </div>
-              <span class="status-badge status-active" style="margin-bottom:16px;display:inline-block;">● ปฏิบัติหน้าที่</span>
-              <div class="profile-actions">
-                <button class="btn btn-primary" onclick="editCurrentProfile()">✏️ แก้ไขข้อมูล</button>
-                <button class="btn btn-ghost" onclick="showPanel('list')">← กลับรายชื่อ</button>
-              </div>
+        <!-- HEADER BAR -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div id="prof-photo" style="width:56px;height:68px;border-radius:var(--radius);background:var(--army-pale);border:2px solid var(--army-border);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden;">🪖</div>
+            <div>
+              <div style="font-size:11px;color:var(--text-muted);font-weight:500;letter-spacing:.5px;" id="prof-rank">—</div>
+              <div style="font-size:20px;font-weight:700;color:var(--text-primary);font-family:'Chakra Petch',sans-serif;line-height:1.2;" id="prof-name">—</div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;" id="prof-pos">—</div>
             </div>
           </div>
-          <div>
-            <div class="tab-nav">
-              <button class="tab-btn active" onclick="switchTab(this,'prof-tab-basic')">📋 ข้อมูลส่วนตัว</button>
-              <button class="tab-btn" onclick="switchTab(this,'prof-tab-service')">🪖 ราชการ</button>
-              <button class="tab-btn" onclick="switchTab(this,'prof-tab-salary')">💰 เงินเดือน</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span class="status-badge status-active">● ปฏิบัติหน้าที่</span>
+            <button class="btn btn-primary" onclick="editCurrentProfile()">✏️ แก้ไขข้อมูล</button>
+            <button class="btn btn-ghost" onclick="showPanel('list')">← กลับรายชื่อ</button>
+          </div>
+        </div>
+
+        <!-- QUICK STATS ROW -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;">
+          <div style="background:var(--bg-card);border:1px solid var(--army-border);border-top:3px solid var(--army-green);border-radius:var(--radius);padding:10px 12px;">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">เลขประจำตัว</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text-primary);font-family:'Chakra Petch',sans-serif;" id="prof-empid">—</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--army-border);border-top:3px solid var(--army-green);border-radius:var(--radius);padding:10px 12px;">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">หน่วยงาน</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text-primary);" id="prof-unit">—</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--army-border);border-top:3px solid #3a6ea8;border-radius:var(--radius);padding:10px 12px;">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">อายุราชการ</div>
+            <div style="font-size:11px;font-weight:700;color:#3a6ea8;" id="prof-svc">—</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--army-border);border-top:3px solid var(--army-gold);border-radius:var(--radius);padding:10px 12px;">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">ขั้นเงินเดือน</div>
+            <div style="font-size:13px;font-weight:700;color:#9a7420;font-family:'Chakra Petch',sans-serif;" id="prof-step">—</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--army-border);border-top:3px solid var(--army-green);border-radius:var(--radius);padding:10px 12px;">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">เงินเดือนสุทธิ</div>
+            <div style="font-size:13px;font-weight:700;color:var(--army-green);font-family:'Chakra Petch',sans-serif;" id="prof-net">—</div>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="tab-nav" id="prof-tab-nav">
+          <button class="tab-btn active" onclick="switchTab(this,'prof-tab-basic')">👤 ส่วนตัว</button>
+          <button class="tab-btn" onclick="switchTab(this,'prof-tab-service')">🪖 ราชการ</button>
+          <button class="tab-btn" onclick="switchTab(this,'prof-tab-salary')">💰 เงินเดือน</button>
+          <button class="tab-btn" onclick="switchTab(this,'prof-tab-ops')">🗺️ ปฏิบัติงาน</button>
+          <button class="tab-btn" onclick="switchTab(this,'prof-tab-courses')">🎓 หลักสูตร</button>
+          <button class="tab-btn" onclick="switchTab(this,'prof-tab-pension')">🏦 บำเหน็จ/บำนาญ</button>
+          <button class="tab-btn" onclick="switchTab(this,'prof-tab-docs')">🗂️ เอกสาร</button>
+        </div>
+
+        <!-- TAB: ส่วนตัว -->
+        <div class="tab-content active" id="prof-tab-basic">
+          <div class="detail-card">
+            <h4>👤 ข้อมูลส่วนบุคคล</h4>
+            <div class="detail-grid">
+              <div class="detail-item"><div class="di-label">ชื่อ-สกุล</div><div class="di-value" id="pd-fullname">—</div></div>
+              <div class="detail-item"><div class="di-label">วันเกิด</div><div class="di-value" id="pd-birthdate">—</div></div>
+              <div class="detail-item"><div class="di-label">เลขบัตรประชาชน</div><div class="di-value" id="pd-idcard">—</div></div>
+              <div class="detail-item"><div class="di-label">เบอร์โทรศัพท์</div><div class="di-value highlight" id="pd-phone">—</div></div>
+              <div class="detail-item"><div class="di-label">สถานภาพสมรส</div><div class="di-value" id="pd-marital">—</div></div>
+              <div class="detail-item"><div class="di-label">จำนวนบุตร</div><div class="di-value" id="pd-children">—</div></div>
+              <div class="detail-item"><div class="di-label">ที่อยู่</div><div class="di-value" id="pd-address">—</div></div>
             </div>
-            <div class="tab-content active" id="prof-tab-basic">
-              <div class="detail-card">
-                <h4>👤 ข้อมูลส่วนบุคคล</h4>
-                <div class="detail-grid">
-                  <div class="detail-item"><div class="di-label">ชื่อ-สกุล</div><div class="di-value" id="pd-fullname">—</div></div>
-                  <div class="detail-item"><div class="di-label">วันเกิด</div><div class="di-value" id="pd-birthdate">—</div></div>
-                  <div class="detail-item"><div class="di-label">เลขบัตรประชาชน</div><div class="di-value" id="pd-idcard">—</div></div>
-                  <div class="detail-item"><div class="di-label">เบอร์โทรศัพท์</div><div class="di-value highlight" id="pd-phone">—</div></div>
-                  <div class="detail-item"><div class="di-label">สถานภาพสมรส</div><div class="di-value" id="pd-marital">—</div></div>
-                  <div class="detail-item"><div class="di-label">จำนวนบุตร</div><div class="di-value" id="pd-children">—</div></div>
-                  <div class="detail-item"><div class="di-label">ที่อยู่</div><div class="di-value" id="pd-address">—</div></div>
-                </div>
+          </div>
+        </div>
+
+        <!-- TAB: ราชการ -->
+        <div class="tab-content" id="prof-tab-service">
+          <div class="detail-card">
+            <h4>🪖 ข้อมูลราชการ</h4>
+            <div class="detail-grid">
+              <div class="detail-item"><div class="di-label">ยศ</div><div class="di-value gold" id="pd-rank">—</div></div>
+              <div class="detail-item"><div class="di-label">ตำแหน่ง</div><div class="di-value" id="pd-position">—</div></div>
+              <div class="detail-item"><div class="di-label">หน่วยงาน</div><div class="di-value" id="pd-unit">—</div></div>
+              <div class="detail-item"><div class="di-label">เลขประจำตัว</div><div class="di-value" id="pd-empid">—</div></div>
+              <div class="detail-item"><div class="di-label">วันเข้ารับราชการ</div><div class="di-value highlight" id="pd-joindate">—</div></div>
+              <div class="detail-item"><div class="di-label">เหล่า</div><div class="di-value" id="pd-branch">—</div></div>
+              <div class="detail-item"><div class="di-label">เขตทัพภาค</div><div class="di-value" id="pd-region">—</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: เงินเดือน -->
+        <div class="tab-content" id="prof-tab-salary">
+          <div class="detail-card">
+            <h4>💰 ข้อมูลเงินเดือน</h4>
+            <div class="salary-bar">
+              <div class="salary-main">
+                <span class="s-label">เงินเดือนสุทธิ</span>
+                <span class="s-value" id="pd-net">— บาท</span>
               </div>
-            </div>
-            <div class="tab-content" id="prof-tab-service">
-              <div class="detail-card">
-                <h4>🪖 ข้อมูลราชการ</h4>
-                <div class="detail-grid">
-                  <div class="detail-item"><div class="di-label">ยศ</div><div class="di-value gold" id="pd-rank">—</div></div>
-                  <div class="detail-item"><div class="di-label">ตำแหน่ง</div><div class="di-value" id="pd-position">—</div></div>
-                  <div class="detail-item"><div class="di-label">หน่วยงาน</div><div class="di-value" id="pd-unit">—</div></div>
-                  <div class="detail-item"><div class="di-label">เลขประจำตัว</div><div class="di-value" id="pd-empid">—</div></div>
-                  <div class="detail-item"><div class="di-label">วันเข้ารับราชการ</div><div class="di-value highlight" id="pd-joindate">—</div></div>
-                  <div class="detail-item"><div class="di-label">เหล่า</div><div class="di-value" id="pd-branch">—</div></div>
-                  <div class="detail-item"><div class="di-label">เขตทัพภาค</div><div class="di-value" id="pd-region">—</div></div>
-                </div>
-              </div>
-            </div>
-            <div class="tab-content" id="prof-tab-salary">
-              <div class="detail-card">
-                <h4>💰 ข้อมูลเงินเดือน</h4>
-                <div class="salary-bar">
-                  <div class="salary-main">
-                    <span class="s-label">เงินเดือนสุทธิ</span>
-                    <span class="s-value" id="pd-net">— บาท</span>
-                  </div>
-                  <div class="salary-breakdown">
-                    <div class="salary-item"><div class="si-label">ระดับ / ขั้น</div><div class="si-value plus" id="pd-level">—</div></div>
-                    <div class="salary-item"><div class="si-label">เงินเดือนขั้นฐาน</div><div class="si-value plus" id="pd-base">—</div></div>
-                    <div class="salary-item"><div class="si-label">เงินเพิ่มพิเศษ พ.ร.ด.</div><div class="si-value plus" id="pd-extra">—</div></div>
-                    <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 1</div><div class="si-value plus" id="pd-psr1">—</div></div>
-                    <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 2</div><div class="si-value plus" id="pd-psr2">—</div></div>
-                    <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 3</div><div class="si-value plus" id="pd-psr3">—</div></div>
-                    <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 4</div><div class="si-value plus" id="pd-psr4">—</div></div>
-                  </div>
-                </div>
+              <div class="salary-breakdown">
+                <div class="salary-item"><div class="si-label">ระดับ / ขั้น</div><div class="si-value plus" id="pd-level">—</div></div>
+                <div class="salary-item"><div class="si-label">เงินเดือนขั้นฐาน</div><div class="si-value plus" id="pd-base">—</div></div>
+                <div class="salary-item"><div class="si-label">เงินเพิ่มพิเศษ พ.ร.ด.</div><div class="si-value plus" id="pd-extra">—</div></div>
+                <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 1</div><div class="si-value plus" id="pd-psr1">—</div></div>
+                <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 2</div><div class="si-value plus" id="pd-psr2">—</div></div>
+                <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 3</div><div class="si-value plus" id="pd-psr3">—</div></div>
+                <div class="salary-item"><div class="si-label">พ.ส.ร. ครั้งที่ 4</div><div class="si-value plus" id="pd-psr4">—</div></div>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- TAB: ปฏิบัติงานราชการสนาม -->
+        <div class="tab-content" id="prof-tab-ops">
+          <div class="detail-card">
+            <h4 style="display:flex;justify-content:space-between;align-items:center;">
+              <span>🗺️ ประวัติการปฏิบัติงานราชการสนาม</span>
+              <span id="prof-ops-count" style="font-size:11px;font-weight:400;color:var(--text-muted);">โหลดข้อมูล...</span>
+            </h4>
+            <div id="prof-ops-list">
+              <div class="empty-state" style="padding:20px 0;"><div class="es-icon" style="font-size:28px;">🗺️</div><p style="font-size:13px;">ยังไม่มีข้อมูลการปฏิบัติงาน</p></div>
+            </div>
+          </div>
+          <!-- สรุปวันทวีคูณ -->
+          <div style="background:var(--army-pale);border:1px solid var(--army-border);border-left:4px solid var(--army-gold);border-radius:var(--radius);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;font-weight:600;color:var(--text-secondary);">🌟 รวมวันทวีคูณทั้งหมด</span>
+            <span style="font-size:18px;font-weight:700;color:#9a7420;font-family:'Chakra Petch',sans-serif;" id="prof-ops-total-dd">—</span>
+          </div>
+        </div>
+
+        <!-- TAB: หลักสูตร -->
+        <div class="tab-content" id="prof-tab-courses">
+          <div class="detail-card">
+            <h4 style="display:flex;justify-content:space-between;align-items:center;">
+              <span>🎓 ประวัติหลักสูตรการศึกษา</span>
+              <span id="prof-courses-count" style="font-size:11px;font-weight:400;color:var(--text-muted);">โหลดข้อมูล...</span>
+            </h4>
+            <div id="prof-courses-list">
+              <div class="empty-state" style="padding:20px 0;"><div class="es-icon" style="font-size:28px;">🎓</div><p style="font-size:13px;">ยังไม่มีข้อมูลหลักสูตร</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: บำเหน็จ/บำนาญ -->
+        <div class="tab-content" id="prof-tab-pension">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+            <div style="background:var(--bg-card);border:1px solid var(--army-border);border-top:3px solid #3a6ea8;border-radius:var(--radius);padding:14px;">
+              <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">อายุราชการปัจจุบัน</div>
+              <div style="font-size:13px;font-weight:700;color:#3a6ea8;font-family:'Chakra Petch',sans-serif;" id="pf-svc-now">—</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--army-border);border-top:3px solid var(--army-gold);border-radius:var(--radius);padding:14px;">
+              <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">วันทวีคูณรวม</div>
+              <div style="font-size:13px;font-weight:700;color:#9a7420;font-family:'Chakra Petch',sans-serif;" id="pf-dd-total">—</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--army-border);border-top:3px solid var(--army-green);border-radius:var(--radius);padding:14px;">
+              <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">รวมอายุราชการ</div>
+              <div style="font-size:13px;font-weight:700;color:var(--army-green);font-family:'Chakra Petch',sans-serif;" id="pf-svc-total">—</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+            <div style="background:#e8f5e8;border:1px solid #b5d8b5;border-radius:var(--radius);padding:14px;">
+              <div style="font-size:10px;color:var(--status-active);margin-bottom:4px;">🏦 บำนาญคาด/เดือน (ตามอายุราชการรวม)</div>
+              <div style="font-size:20px;font-weight:700;color:var(--status-active);font-family:'Chakra Petch',sans-serif;" id="pf-pension">—</div>
+            </div>
+            <div style="background:#fff8e1;border:1px solid #f0d070;border-radius:var(--radius);padding:14px;">
+              <div style="font-size:10px;color:#7a5a00;margin-bottom:4px;">💵 บำเหน็จคาด (ตามอายุราชการรวม)</div>
+              <div style="font-size:20px;font-weight:700;color:#7a5a00;font-family:'Chakra Petch',sans-serif;" id="pf-gratuity">—</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+            <div style="background:var(--army-pale);border:1px solid var(--army-border);border-radius:var(--radius);padding:14px;">
+              <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">⏱ เกษียณอายุราชการ (25 ปี บำนาญ)</div>
+              <div style="font-size:12px;font-weight:600;color:var(--army-green);" id="pf-retire25">—</div>
+            </div>
+            <div style="background:var(--army-pale);border:1px solid var(--army-border);border-radius:var(--radius);padding:14px;">
+              <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">⏱ เกษียณอายุ (60 ปี)</div>
+              <div style="font-size:12px;font-weight:600;color:#3a6ea8;" id="pf-retire60">—</div>
+            </div>
+          </div>
+          <div style="background:var(--army-pale);border:1px solid var(--army-border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:14px;">📋</span>
+            <span style="font-size:12px;color:var(--text-secondary);">สิทธิ์:</span>
+            <span style="font-size:13px;font-weight:700;" id="pf-right">—</span>
+          </div>
+        </div>
+
+        <!-- TAB: เอกสาร -->
+        <div class="tab-content" id="prof-tab-docs">
+          <div class="detail-card">
+            <h4 style="display:flex;justify-content:space-between;align-items:center;">
+              <span>🗂️ เอกสารสำคัญ</span>
+              <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="showPanel('docs')">จัดการเอกสาร →</button>
+            </h4>
+            <div id="prof-docs-list">
+              <div class="empty-state" style="padding:20px 0;"><div class="es-icon" style="font-size:28px;">📭</div><p style="font-size:13px;">ยังไม่มีเอกสารในระบบ</p></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /profile-content -->
+    </div>
+
+    <!-- ===== EDIT PROFILE MODAL (แยกจาก add) ===== -->
+    <div class="panel" id="panel-edit">
+      <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span onclick="goBackToProfile()" style="cursor:pointer;color:var(--army-green);">ประวัติส่วนตัว</span><span class="sep">›</span><span>แก้ไขข้อมูล</span></div>
+      <div class="page-header">
+        <div><h2 id="edit-panel-title">แก้ไขข้อมูลกำลังพล</h2><p id="edit-panel-sub">กรุณาแก้ไขข้อมูลแล้วกดบันทึก</p></div>
+        <button class="btn btn-ghost" onclick="goBackToProfile()">← กลับประวัติ</button>
+      </div>
+      <input type="hidden" id="edit-record-id-modal">
+      <div class="form-card">
+        <h4>📷 รูปภาพ & ข้อมูลเบื้องต้น</h4>
+        <div style="display:flex;gap:20px;align-items:flex-start;">
+          <div class="photo-upload"><span>📷</span><p>คลิกเพื่ออัปโหลดรูป</p></div>
+          <div style="flex:1;" class="form-grid">
+            <div class="form-group"><label class="form-label">ยศ *</label>
+              <select class="form-select form-input" id="edit-rank">
+                <option value="">-- เลือกยศ --</option>
+                <optgroup label="— ชั้นประทวน —">
+                  <option value="ส.ต.">ส.ต.</option><option value="ส.ท.">ส.ท.</option><option value="ส.อ.">ส.อ.</option>
+                  <option value="จ.ส.ต.">จ.ส.ต.</option><option value="จ.ส.ท.">จ.ส.ท.</option><option value="จ.ส.อ.">จ.ส.อ.</option>
+                </optgroup>
+                <optgroup label="— ชั้นสัญญาบัตร —">
+                  <option value="ร.ต.">ร.ต.</option><option value="ร.ท.">ร.ท.</option><option value="ร.อ.">ร.อ.</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">ชื่อ *</label><input type="text" class="form-input" id="edit-fname"></div>
+            <div class="form-group"><label class="form-label">นามสกุล *</label><input type="text" class="form-input" id="edit-lname"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-card">
+        <h4>👤 ข้อมูลส่วนตัว</h4>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">เลขบัตรประชาชน 13 หลัก</label><input type="text" class="form-input" id="edit-idcard" maxlength="17"></div>
+          <div class="form-group"><label class="form-label">วันเกิด</label><input type="date" class="form-input" id="edit-birthdate"></div>
+          <div class="form-group"><label class="form-label">เบอร์โทรศัพท์</label><input type="tel" class="form-input" id="edit-phone"></div>
+          <div class="form-group"><label class="form-label">สถานภาพสมรส</label>
+            <select class="form-select form-input" id="edit-marital"><option>โสด</option><option>สมรส</option><option>หม้าย</option><option>หย่า</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">จำนวนบุตร</label><input type="number" class="form-input" id="edit-children" min="0"></div>
+          <div class="form-group"><label class="form-label">ที่อยู่ปัจจุบัน</label><input type="text" class="form-input" id="edit-address"></div>
+        </div>
+      </div>
+      <div class="form-card">
+        <h4>🪖 ข้อมูลราชการ</h4>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">เลขประจำตัว 10 หลัก</label><input type="text" class="form-input" id="edit-empid" maxlength="12"></div>
+          <div class="form-group">
+            <label class="form-label">วันเข้ารับราชการ</label>
+            <div style="display:flex;gap:6px;" id="edit-join-date-wrap"></div>
+          </div>
+          <div class="form-group"><label class="form-label">ตำแหน่ง</label>
+            <select class="form-select form-input" id="edit-position">
+              <option value="">-- เลือกตำแหน่ง --</option>
+              <option>นายสิบยุทธการและการข่าว</option><option>นายสิบอาวุธหนัก</option>
+              <option>นายสิบอาวุธเบา</option><option>พนักงานวิทยุ</option>
+              <option>นายสิบพยาบาล</option><option>นายสิบการช่างและทำลาย</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">หน่วยงาน</label>
+            <select class="form-select form-input" id="edit-unit">
+              <option value="">-- เลือกหน่วยงาน --</option><option>รพศ.2 พัน.1</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">เหล่า</label><input type="text" class="form-input" id="edit-branch"></div>
+          <div class="form-group"><label class="form-label">เขตทัพภาค</label>
+            <select class="form-select form-input" id="edit-region">
+              <option>ทัพภาคที่ 1</option><option>ทัพภาคที่ 2</option><option>ทัพภาคที่ 3</option><option>ทัพภาคที่ 4</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-card">
+        <h4>💰 ข้อมูลเงินเดือน</h4>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">เงินเดือนระดับ</label>
+            <select class="form-select form-input" id="edit-salary-account" onchange="calcSalaryEdit()">
+              <option value="">-- เลือกระดับ --</option>
+              <option value="p1">ป.1</option><option value="p2">ป.2</option><option value="p3">ป.3</option>
+              <option value="n1">น.1</option><option value="n2">น.2</option><option value="n3">น.3</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">ขั้นเงินเดือน</label>
+            <select class="form-select form-input" id="edit-salary-step" onchange="calcSalaryNetEdit()">
+              <option value="">-- เลือกขั้น --</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">เงินเดือนขั้นฐาน</label>
+            <input type="number" class="form-input" id="edit-salary-base" readonly style="background:var(--bg-light);font-weight:700;color:var(--army-green);">
+          </div>
+          <div class="form-group"><label class="form-label">เงินเพิ่มพิเศษ พ.ร.ด.</label>
+            <select class="form-select form-input" id="edit-salary-extra" onchange="calcSalaryNetEdit()">
+              <option value="0">-- ไม่มี --</option><option value="5300">5,300 บาท</option><option value="7000">7,000 บาท</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">พ.ส.ร. ครั้งที่ 1</label><input type="number" class="form-input" id="edit-psr1" oninput="calcSalaryNetEdit()"></div>
+          <div class="form-group"><label class="form-label">พ.ส.ร. ครั้งที่ 2</label><input type="number" class="form-input" id="edit-psr2" oninput="calcSalaryNetEdit()"></div>
+          <div class="form-group"><label class="form-label">พ.ส.ร. ครั้งที่ 3</label><input type="number" class="form-input" id="edit-psr3" oninput="calcSalaryNetEdit()"></div>
+          <div class="form-group"><label class="form-label">พ.ส.ร. ครั้งที่ 4</label><input type="number" class="form-input" id="edit-psr4" oninput="calcSalaryNetEdit()"></div>
+          <div class="form-group"><label class="form-label">เงินเดือนสุทธิ</label>
+            <input type="number" class="form-input" id="edit-salary-net" readonly style="background:var(--bg-light);font-weight:700;color:var(--army-green);">
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="goBackToProfile()">ยกเลิก</button>
+        <button class="btn btn-primary" id="btn-update-record" onclick="updateRecord()">✅ บันทึกการแก้ไข</button>
       </div>
     </div>
 
@@ -1222,6 +1448,7 @@ function showPanel(name) {
   if (panel) panel.classList.add('active');
   const titles = {
     dashboard:'ภาพรวมระบบ', list:'รายชื่อกำลังพล', profile:'ประวัติส่วนตัว',
+    edit:'แก้ไขข้อมูลกำลังพล',
     salary:'เงินเดือน / ขั้นเงิน', pension:'บำเหน็จ บำนาญ', promotion:'แผนเลื่อนยศ / สอบ',
     courses:'หลักสูตรการศึกษา',
     // [แก้ไข] เปลี่ยนชื่อในแถบบน
@@ -1512,6 +1739,7 @@ async function deleteRecord(id) {
 }
 
 let currentProfileId = null;
+let currentProfileData = null;
 
 async function openProfile(id) {
   showPanel('profile');
@@ -1519,22 +1747,120 @@ async function openProfile(id) {
   try {
     const json = await callAPI({ action: 'getOne', table: 'personnel', id });
     if (json.status === 'ok') {
+      currentProfileData = json.data;
       renderProfile(json.data);
-    } else {
-      console.error('openProfile error:', json.message);
+      // โหลดข้อมูลอื่นๆ แบบ parallel
+      loadProfileRelated(id, json.data);
     }
-  } catch(e) {
-    console.error('openProfile error:', e);
-  }
+  } catch(e) { console.error('openProfile error:', e); }
+}
+
+async function loadProfileRelated(id, p) {
+  try {
+    const [jsonO, jsonC, jsonD] = await Promise.all([
+      callAPI({ action: 'getAll', table: 'ops' }),
+      callAPI({ action: 'getAll', table: 'courses' }),
+      callAPI({ action: 'getAll', table: 'docs' }).catch(() => ({ status:'ok', data:[] }))
+    ]);
+
+    // --- OPS ---
+    const opsAll  = jsonO.status === 'ok' ? jsonO.data : [];
+    const myOps   = opsAll.filter(o => o['ID_กำลังพล'] === id);
+    const opsList = document.getElementById('prof-ops-list');
+    const opsCount = document.getElementById('prof-ops-count');
+    opsCount.textContent = `${myOps.length} รายการ`;
+    let totalDDays = 0;
+    if (myOps.length === 0) {
+      opsList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">ยังไม่มีข้อมูลการปฏิบัติงาน</div>';
+    } else {
+      opsList.innerHTML = myOps.map(o => {
+        const ddDays = parseDoubleDaysToDays(o['หมายเหตุ']);
+        totalDDays += ddDays;
+        const ddYMD  = daysToYMD(ddDays);
+        const statusColor = {'เสร็จสิ้น':'green','กำลังดำเนินการ':'gold','วางแผน':''}[o['สถานะ']]||'';
+        return `<div style="display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--army-border);font-size:12.5px;">
+          <div><div style="font-weight:600;color:var(--text-primary);font-size:13px;">${o['ชื่อภารกิจ']||'—'}</div><div style="color:var(--text-muted);font-size:11px;margin-top:2px;">📍 ${o['พื้นที่']||'—'}</div></div>
+          <div><div style="color:var(--text-muted);font-size:10px;">ตำแหน่ง</div><div style="font-weight:500;">${o['บทบาท']||'—'}</div></div>
+          <div><div style="color:var(--text-muted);font-size:10px;">วันเริ่ม</div><div>${formatDateThai(o['วันเริ่ม'])}</div></div>
+          <div><div style="color:var(--text-muted);font-size:10px;">วันทวีคูณ</div><div style="font-weight:600;color:#9a7420;">${ddDays > 0 ? ddYMD.text : '—'}</div></div>
+          <div><span class="chip ${statusColor}" style="font-size:11px;">${o['สถานะ']||'—'}</span></div>
+        </div>`;
+      }).join('');
+    }
+    const totalDDYMD = daysToYMD(totalDDays);
+    document.getElementById('prof-ops-total-dd').textContent = totalDDays > 0 ? totalDDYMD.text : '—';
+
+    // --- PENSION TAB ---
+    const svc      = calcServiceDetail(p['วันเข้ารับราชการ']);
+    const svcDays  = (svc.years * 365) + (svc.months * 30) + svc.days;
+    const totalD   = svcDays + totalDDays;
+    const totalYMD = daysToYMD(totalD);
+    const totalYrs = totalD / 365;
+    const net      = Number(p['เงินเดือนสุทธิ']) || 0;
+    const pension  = net > 0 ? Math.round((net * totalYrs) / 50) : 0;
+    const gratuity = net > 0 ? Math.round(net * totalYrs) : 0;
+    const right    = totalYrs >= 25 ? '✅ บำนาญ (อายุราชการครบ 25 ปีแล้ว)' : totalYrs >= 10 ? '🔵 บำเหน็จ/บำนาญ (≥10 ปี)' : totalYrs >= 1 ? '🟡 บำเหน็จ (≥1 ปี)' : '⚪ ยังไม่มีสิทธิ์';
+    const rightColor = totalYrs >= 25 ? 'var(--army-green)' : totalYrs >= 10 ? '#3a6ea8' : '#9a7420';
+    document.getElementById('pf-svc-now').textContent  = svc.text;
+    document.getElementById('pf-dd-total').textContent = totalDDays > 0 ? totalDDYMD.text : '—';
+    document.getElementById('pf-svc-total').textContent = totalYMD.text;
+    document.getElementById('pf-pension').textContent  = pension > 0 ? pension.toLocaleString() + ' ฿/เดือน' : '—';
+    document.getElementById('pf-gratuity').textContent = gratuity > 0 ? gratuity.toLocaleString() + ' ฿' : '—';
+    document.getElementById('pf-right').innerHTML = `<span style="color:${rightColor}">${right}</span>`;
+    // retire 25
+    const ret25 = calcRetirement(p['วันเข้ารับราชการ'], totalDDays);
+    document.getElementById('pf-retire25').innerHTML = ret25;
+    // retire 60
+    const ret60 = calcRetirementAge60(p['วันเกิด']);
+    document.getElementById('pf-retire60').innerHTML = ret60;
+
+    // --- COURSES ---
+    const coursesAll = jsonC.status === 'ok' ? jsonC.data : [];
+    const myCourses  = coursesAll.filter(c => c['ID_กำลังพล'] === id);
+    const coursesList = document.getElementById('prof-courses-list');
+    const coursesCount = document.getElementById('prof-courses-count');
+    coursesCount.textContent = `${myCourses.length} หลักสูตร`;
+    if (myCourses.length === 0) {
+      coursesList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">ยังไม่มีข้อมูลหลักสูตร</div>';
+    } else {
+      const scMap = {'ผ่าน':'green','กำลังอบรม':'blue','วางแผน':'gold','ไม่ผ่าน':''};
+      coursesList.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;">` + myCourses.map(c => `
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 0.8fr;gap:10px;align-items:center;padding:10px 12px;background:var(--bg-light);border-radius:var(--radius);border:1px solid var(--army-border);font-size:12.5px;">
+          <div><div style="font-weight:600;color:var(--text-primary);font-size:13px;">${c['ชื่อหลักสูตร']||'—'}</div><div style="color:var(--text-muted);font-size:11px;margin-top:2px;">🏫 ${c['หน่วยงาน']||'—'}</div></div>
+          <div><div style="color:var(--text-muted);font-size:10px;">ปีที่เข้า</div><div>${c['ปีที่เข้า']||'—'}</div></div>
+          <div><div style="color:var(--text-muted);font-size:10px;">ระยะเวลา</div><div>${c['ระยะเวลา']||'—'}</div></div>
+          <div><div style="color:var(--text-muted);font-size:10px;">ผลการเรียน</div><div style="font-weight:600;color:var(--army-green);">${c['ผลการเรียน']||'—'}</div></div>
+          <div><span class="chip ${scMap[c['สถานะ']]||''}" style="font-size:11px;">${c['สถานะ']||'—'}</span></div>
+        </div>`).join('') + `</div>`;
+    }
+
+    // --- DOCS ---
+    const docsAll = jsonD.status === 'ok' ? (jsonD.data || []) : [];
+    const myDocs  = docsAll.filter(d => d['เจ้าของ'] === id || d['ID_กำลังพล'] === id);
+    const docsList = document.getElementById('prof-docs-list');
+    if (myDocs.length === 0) {
+      docsList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">ยังไม่มีเอกสารในระบบ</div>';
+    } else {
+      const iconMap = {pdf:'📄',word:'📝',img:'🖼️',zip:'📦'};
+      docsList.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;">` + myDocs.map(d => `
+        <div style="background:var(--bg-light);border:1px solid var(--army-border);border-radius:var(--radius);padding:12px;font-size:12px;">
+          <div style="font-size:20px;margin-bottom:6px;">${iconMap[d['ประเภท']]||'📁'}</div>
+          <div style="font-weight:600;color:var(--text-primary);margin-bottom:3px;">${d['ชื่อเอกสาร']||'—'}</div>
+          <div style="color:var(--text-muted);font-size:11px;">${d['หมวดหมู่']||'—'}</div>
+        </div>`).join('') + `</div>`;
+    }
+  } catch(e) { console.error('loadProfileRelated:', e); }
 }
 
 function renderProfile(p) {
   document.getElementById('profile-empty').style.display   = 'none';
   document.getElementById('profile-content').style.display = 'block';
+
+  // Header photo
   const photo = p['URLรูปภาพ'];
   const photoEl = document.getElementById('prof-photo');
   if (photo) {
-    photoEl.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">`;
+    photoEl.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;">`;
   } else {
     photoEl.innerHTML = '🪖';
   }
@@ -1546,6 +1872,8 @@ function renderProfile(p) {
   document.getElementById('prof-svc').textContent   = calcServiceDetail(p['วันเข้ารับราชการ']).text;
   document.getElementById('prof-step').textContent  = p['ขั้นเงินเดือน'] ? `ขั้น ${p['ขั้นเงินเดือน']}` : '—';
   document.getElementById('prof-net').textContent   = p['เงินเดือนสุทธิ'] ? Number(p['เงินเดือนสุทธิ']).toLocaleString() + ' ฿' : '—';
+
+  // Tab: ส่วนตัว
   document.getElementById('pd-fullname').textContent  = `${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`;
   document.getElementById('pd-birthdate').textContent = formatDateThai(p['วันเกิด']);
   document.getElementById('pd-idcard').textContent    = p['เลขบัตรประชาชน'] || '—';
@@ -1553,6 +1881,8 @@ function renderProfile(p) {
   document.getElementById('pd-marital').textContent   = p['สถานภาพสมรส'] || '—';
   document.getElementById('pd-children').textContent  = p['จำนวนบุตร'] || '—';
   document.getElementById('pd-address').textContent   = p['ที่อยู่'] || '—';
+
+  // Tab: ราชการ
   document.getElementById('pd-rank').textContent     = p['ยศ'] || '—';
   document.getElementById('pd-position').textContent = p['ตำแหน่ง'] || '—';
   document.getElementById('pd-unit').textContent     = p['หน่วยงาน'] || '—';
@@ -1560,6 +1890,8 @@ function renderProfile(p) {
   document.getElementById('pd-joindate').textContent = formatDateThai(p['วันเข้ารับราชการ']);
   document.getElementById('pd-branch').textContent   = p['เหล่า'] || '—';
   document.getElementById('pd-region').textContent   = p['เขตทัพภาค'] || '—';
+
+  // Tab: เงินเดือน
   document.getElementById('pd-net').textContent   = p['เงินเดือนสุทธิ'] ? Number(p['เงินเดือนสุทธิ']).toLocaleString() + ' บาท' : '—';
   document.getElementById('pd-level').textContent = `${p['เงินเดือนระดับ'] || '—'} / ขั้น ${p['ขั้นเงินเดือน'] || '—'}`;
   document.getElementById('pd-base').textContent  = p['เงินเดือนขั้นฐาน'] ? Number(p['เงินเดือนขั้นฐาน']).toLocaleString() + ' ฿' : '—';
@@ -1568,11 +1900,222 @@ function renderProfile(p) {
   document.getElementById('pd-psr2').textContent  = p['พสรครั้งที่2'] || '—';
   document.getElementById('pd-psr3').textContent  = p['พสรครั้งที่3'] || '—';
   document.getElementById('pd-psr4').textContent  = p['พสรครั้งที่4'] || '—';
+
+  // Reset tab to first
+  document.querySelectorAll('#prof-tab-nav .tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  ['prof-tab-basic','prof-tab-service','prof-tab-salary','prof-tab-ops','prof-tab-courses','prof-tab-pension','prof-tab-docs']
+    .forEach((id,i) => { const el = document.getElementById(id); if(el) el.classList.toggle('active', i===0); });
 }
 
+// ── เปิดหน้าแก้ไข (panel-edit) แยกจาก panel-add ──
 function editCurrentProfile() {
-  if (!currentProfileId) return;
-  showPanel('add');
+  if (!currentProfileId || !currentProfileData) return;
+  loadEditForm(currentProfileData);
+  showPanel('edit');
+}
+
+// ── editRecord จากตาราง list ──
+async function editRecord(id) {
+  try {
+    const json = await callAPI({ action: 'getOne', table: 'personnel', id });
+    if (json.status === 'ok') {
+      currentProfileId = id;
+      currentProfileData = json.data;
+      loadEditForm(json.data);
+      showPanel('edit');
+    }
+  } catch(e) { alert('❌ โหลดข้อมูลไม่สำเร็จ'); }
+}
+
+// ── โหลดข้อมูลเดิมใส่ฟอร์ม edit ──
+function loadEditForm(p) {
+  document.getElementById('edit-panel-title').textContent = `แก้ไขข้อมูล: ${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`;
+  document.getElementById('edit-panel-sub').textContent   = `รหัส: ${p['เลขประจำตัว10หลัก'] || p['ID'] || '—'}`;
+  document.getElementById('edit-record-id-modal').value   = p['ID'] || '';
+
+  // ยศ
+  const rankSel = document.getElementById('edit-rank');
+  rankSel.value = p['ยศ'] || '';
+
+  // ชื่อ-สกุล
+  document.getElementById('edit-fname').value    = p['ชื่อ']    || '';
+  document.getElementById('edit-lname').value    = p['นามสกุล'] || '';
+
+  // ส่วนตัว
+  document.getElementById('edit-idcard').value   = p['เลขบัตรประชาชน'] || '';
+  document.getElementById('edit-birthdate').value = p['วันเกิด'] || '';
+  document.getElementById('edit-phone').value    = p['เบอร์โทรศัพท์'] || '';
+  const marSel = document.getElementById('edit-marital');
+  for(let o of marSel.options) if(o.value === p['สถานภาพสมรส'] || o.text === p['สถานภาพสมรส']) { marSel.value = o.value; break; }
+  document.getElementById('edit-children').value = p['จำนวนบุตร'] || '0';
+  document.getElementById('edit-address').value  = p['ที่อยู่'] || '';
+
+  // ราชการ
+  document.getElementById('edit-empid').value    = p['เลขประจำตัว10หลัก'] || '';
+  document.getElementById('edit-branch').value   = p['เหล่า'] || '';
+  const posSel = document.getElementById('edit-position');
+  for(let o of posSel.options) if(o.value === p['ตำแหน่ง'] || o.text === p['ตำแหน่ง']) { posSel.value = o.value; break; }
+  const unitSel = document.getElementById('edit-unit');
+  for(let o of unitSel.options) if(o.value === p['หน่วยงาน'] || o.text === p['หน่วยงาน']) { unitSel.value = o.value; break; }
+  const regSel = document.getElementById('edit-region');
+  for(let o of regSel.options) if(o.value === p['เขตทัพภาค'] || o.text === p['เขตทัพภาค']) { regSel.value = o.value; break; }
+
+  // วันเข้ารับราชการ — สร้าง/อัปเดต dropdown
+  buildEditJoinDate(p['วันเข้ารับราชการ']);
+
+  // เงินเดือน
+  const acctSel = document.getElementById('edit-salary-account');
+  acctSel.value = p['เงินเดือนระดับ'] || '';
+  calcSalaryEdit();   // โหลด step options
+  // หลังจาก populate step แล้วค่อยตั้งค่า
+  setTimeout(() => {
+    document.getElementById('edit-salary-step').value = p['ขั้นเงินเดือน'] || '';
+    calcSalaryNetEdit();
+  }, 50);
+
+  const extraSel = document.getElementById('edit-salary-extra');
+  const extraVal = p['เงินเพิ่มพิเศษพรด'] || '0';
+  for(let o of extraSel.options) if(o.value === extraVal) { extraSel.value = extraVal; break; }
+  document.getElementById('edit-psr1').value = p['พสรครั้งที่1'] || '';
+  document.getElementById('edit-psr2').value = p['พสรครั้งที่2'] || '';
+  document.getElementById('edit-psr3').value = p['พสรครั้งที่3'] || '';
+  document.getElementById('edit-psr4').value = p['พสรครั้งที่4'] || '';
+}
+
+function buildEditJoinDate(joinDateStr) {
+  const wrap = document.getElementById('edit-join-date-wrap');
+  if (!wrap) return;
+  // สร้างใหม่ถ้ายังไม่มี
+  if (!document.getElementById('edit-join-day')) {
+    const thaiMonths = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    const daySel = document.createElement('select'); daySel.className='form-select form-input'; daySel.id='edit-join-day'; daySel.style.flex='1';
+    daySel.innerHTML = '<option value="">วัน</option>';
+    for(let d=1;d<=31;d++) daySel.innerHTML += `<option>${d}</option>`;
+    const monSel = document.createElement('select'); monSel.className='form-select form-input'; monSel.id='edit-join-month'; monSel.style.flex='2';
+    monSel.innerHTML = '<option value="">เดือน</option>';
+    thaiMonths.forEach((m,i) => monSel.innerHTML += `<option value="${i+1}">${m}</option>`);
+    const yrSel = document.createElement('select'); yrSel.className='form-select form-input'; yrSel.id='edit-join-year'; yrSel.style.flex='2';
+    yrSel.innerHTML = '<option value="">ปี พ.ศ.</option>';
+    for(let y=2510;y<=2580;y++) yrSel.innerHTML += `<option>${y}</option>`;
+    wrap.appendChild(daySel); wrap.appendChild(monSel); wrap.appendChild(yrSel);
+  }
+  // ตั้งค่าจาก joinDateStr
+  if (!joinDateStr) return;
+  const thaiMonthMap = {'มกราคม':1,'กุมภาพันธ์':2,'มีนาคม':3,'เมษายน':4,'พฤษภาคม':5,'มิถุนายน':6,'กรกฎาคม':7,'สิงหาคม':8,'กันยายน':9,'ตุลาคม':10,'พฤศจิกายน':11,'ธันวาคม':12};
+  const parts = joinDateStr.trim().split(' ');
+  if (parts.length >= 3 && thaiMonthMap[parts[1]]) {
+    document.getElementById('edit-join-day').value   = parseInt(parts[0]);
+    document.getElementById('edit-join-month').value = thaiMonthMap[parts[1]];
+    document.getElementById('edit-join-year').value  = parts[2];
+  } else {
+    // format จาก Sheet เช่น "Mon Aug 31 2562 ..."
+    const monthNumMap = { Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12 };
+    const m = joinDateStr.match(/\w+\s+(\w+)\s+(\d+)\s+(\d+)/);
+    if (m) {
+      let y = parseInt(m[3]); if(y < 2500) y += 543;
+      document.getElementById('edit-join-day').value   = parseInt(m[2]);
+      document.getElementById('edit-join-month').value = monthNumMap[m[1]] || '';
+      document.getElementById('edit-join-year').value  = y;
+    }
+  }
+}
+
+function getEditJoinDate() {
+  const d = document.getElementById('edit-join-day')?.value  || '';
+  const m = document.getElementById('edit-join-month')?.value || '';
+  const y = document.getElementById('edit-join-year')?.value  || '';
+  if (!d || !m || !y) return '';
+  const monthNames = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  return `${d} ${monthNames[parseInt(m)]} ${y}`;
+}
+
+function calcSalaryEdit() {
+  const acct = document.getElementById('edit-salary-account').value;
+  const stepSel = document.getElementById('edit-salary-step');
+  const baseInput = document.getElementById('edit-salary-base');
+  stepSel.innerHTML = '<option value="">-- เลือกขั้น --</option>';
+  if (!acct) { baseInput.value = ''; return; }
+  const table = salaryTables[acct];
+  if (!table) return;
+  Object.keys(table).map(Number).sort((a,b)=>a-b).forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = `ขั้น ${s}  —  ${table[s].toLocaleString()} บาท`;
+    stepSel.appendChild(opt);
+  });
+  calcSalaryNetEdit();
+}
+
+function calcSalaryNetEdit() {
+  const acct  = document.getElementById('edit-salary-account').value;
+  const step  = parseFloat(document.getElementById('edit-salary-step').value);
+  const extra = parseInt(document.getElementById('edit-salary-extra').value) || 0;
+  const psr1  = parseInt(document.getElementById('edit-psr1').value) || 0;
+  const psr2  = parseInt(document.getElementById('edit-psr2').value) || 0;
+  const psr3  = parseInt(document.getElementById('edit-psr3').value) || 0;
+  const psr4  = parseInt(document.getElementById('edit-psr4').value) || 0;
+  if (!acct || !step) return;
+  const base = (salaryTables[acct] || {})[step] || 0;
+  document.getElementById('edit-salary-base').value = base;
+  document.getElementById('edit-salary-net').value  = base + extra + psr1 + psr2 + psr3 + psr4;
+}
+
+async function updateRecord() {
+  const btn = document.getElementById('btn-update-record');
+  const editId = document.getElementById('edit-record-id-modal').value;
+  if (!editId) { alert('ไม่พบ ID ของรายการ'); return; }
+
+  const data = {
+    action: 'update',
+    'ID':                    editId,
+    'ยศ':                    document.getElementById('edit-rank').value           || '',
+    'ชื่อ':                   document.getElementById('edit-fname').value          || '',
+    'นามสกุล':               document.getElementById('edit-lname').value          || '',
+    'เลขบัตรประชาชน':       document.getElementById('edit-idcard').value         || '',
+    'วันเกิด':               document.getElementById('edit-birthdate').value      || '',
+    'เบอร์โทรศัพท์':        document.getElementById('edit-phone').value          || '',
+    'สถานภาพสมรส':          document.getElementById('edit-marital').value        || '',
+    'จำนวนบุตร':            document.getElementById('edit-children').value       || '0',
+    'ที่อยู่':               document.getElementById('edit-address').value        || '',
+    'เลขประจำตัว10หลัก':    document.getElementById('edit-empid').value          || '',
+    'วันเข้ารับราชการ':      getEditJoinDate(),
+    'ตำแหน่ง':              document.getElementById('edit-position').value       || '',
+    'หน่วยงาน':             document.getElementById('edit-unit').value           || '',
+    'เหล่า':                 document.getElementById('edit-branch').value         || '',
+    'เขตทัพภาค':            document.getElementById('edit-region').value         || '',
+    'เงินเดือนระดับ':       document.getElementById('edit-salary-account').value || '',
+    'ขั้นเงินเดือน':        document.getElementById('edit-salary-step').value    || '',
+    'เงินเดือนขั้นฐาน':    document.getElementById('edit-salary-base').value     || '',
+    'เงินเพิ่มพิเศษพรด':   document.getElementById('edit-salary-extra').value    || '',
+    'พสรครั้งที่1':         document.getElementById('edit-psr1').value            || '',
+    'พสรครั้งที่2':         document.getElementById('edit-psr2').value            || '',
+    'พสรครั้งที่3':         document.getElementById('edit-psr3').value            || '',
+    'พสรครั้งที่4':         document.getElementById('edit-psr4').value            || '',
+    'เงินเดือนสุทธิ':       document.getElementById('edit-salary-net').value      || '',
+    'URLรูปภาพ':            currentProfileData?.['URLรูปภาพ'] || '',
+  };
+  if (!data['ชื่อ'] || !data['นามสกุล']) { alert('กรุณากรอกชื่อและนามสกุล'); return; }
+  btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
+  try {
+    const json = await callAPIPost(data);
+    if (json.status === 'ok') {
+      alert('✅ แก้ไขข้อมูลสำเร็จ');
+      // อัปเดต cache และกลับไปหน้าประวัติ
+      currentProfileData = { ...currentProfileData, ...data };
+      loadPersonnel();
+      await openProfile(editId); // reload profile
+    } else {
+      alert('❌ ' + json.message);
+    }
+  } catch(e) { alert('❌ ไม่สามารถเชื่อมต่อได้: ' + e); }
+  finally { btn.disabled = false; btn.textContent = '✅ บันทึกการแก้ไข'; }
+}
+
+function goBackToProfile() {
+  if (currentProfileId) {
+    openProfile(currentProfileId);
+  } else {
+    showPanel('profile');
+  }
 }
 
 function getJoinDate() {
