@@ -426,7 +426,8 @@
     <div class="nav-item" onclick="showPanel('add')"><span class="nav-icon">➕</span> เพิ่มกำลังพลใหม่</div>
     <div class="nav-label" style="margin-top:8px;">การบริหาร</div>
     <div class="nav-item" onclick="showPanel('profile')"><span class="nav-icon">🪖</span> ประวัติส่วนตัว</div>
-    <div class="nav-item" onclick="showPanel('ops')"><span class="nav-icon">🗺️</span> การปฏิบัติงาน</div>
+    <!-- [แก้ไข #1] เปลี่ยนชื่อเมนู -->
+    <div class="nav-item" onclick="showPanel('ops')"><span class="nav-icon">🗺️</span> การปฏิบัติงานราชการสนาม</div>
     <div class="nav-item" onclick="showPanel('promotion')"><span class="nav-icon">⭐</span> แผนเลื่อนยศ/สอบ</div>
     <div class="nav-item" onclick="showPanel('courses')"><span class="nav-icon">🎓</span> หลักสูตรการศึกษา</div>
     <div class="nav-label" style="margin-top:8px;">การเงิน</div>
@@ -590,7 +591,6 @@
       </div>
       <div id="profile-content" style="display:none;">
         <div class="profile-grid">
-          <!-- Left -->
           <div>
             <div class="profile-sidebar-card">
               <div class="profile-photo" id="prof-photo">🪖</div>
@@ -611,15 +611,12 @@
               </div>
             </div>
           </div>
-          <!-- Right Tabs -->
           <div>
             <div class="tab-nav">
               <button class="tab-btn active" onclick="switchTab(this,'prof-tab-basic')">📋 ข้อมูลส่วนตัว</button>
               <button class="tab-btn" onclick="switchTab(this,'prof-tab-service')">🪖 ราชการ</button>
               <button class="tab-btn" onclick="switchTab(this,'prof-tab-salary')">💰 เงินเดือน</button>
             </div>
-
-            <!-- Tab: ข้อมูลส่วนตัว -->
             <div class="tab-content active" id="prof-tab-basic">
               <div class="detail-card">
                 <h4>👤 ข้อมูลส่วนบุคคล</h4>
@@ -634,8 +631,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Tab: ราชการ -->
             <div class="tab-content" id="prof-tab-service">
               <div class="detail-card">
                 <h4>🪖 ข้อมูลราชการ</h4>
@@ -650,8 +645,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Tab: เงินเดือน -->
             <div class="tab-content" id="prof-tab-salary">
               <div class="detail-card">
                 <h4>💰 ข้อมูลเงินเดือน</h4>
@@ -736,7 +729,6 @@
         <div><h2>แผนเลื่อนยศ / สอบ</h2><p>วางแผนการสอบและเลื่อนยศกำลังพล</p></div>
         <button class="btn btn-primary" onclick="openPromoForm()">+ เพิ่มแผน</button>
       </div>
-      <!-- ฟอร์มเพิ่ม/แก้ไข -->
       <div id="promo-form-card" class="form-card" style="display:none;">
         <h4>⭐ เพิ่ม / แก้ไขแผนเลื่อนยศ</h4>
         <input type="hidden" id="promo-edit-id">
@@ -784,7 +776,6 @@
         <div class="stat-card blue"><div class="stat-label">จบแล้ว</div><div class="stat-value" id="course-done">0</div><div class="stat-sub">นาย</div></div>
         <div class="stat-card red"><div class="stat-label">วางแผน</div><div class="stat-value" id="course-plan">0</div><div class="stat-sub">รายการ</div></div>
       </div>
-      <!-- ฟอร์ม -->
       <div id="course-form-card" class="form-card" style="display:none;">
         <h4>🎓 เพิ่ม / แก้ไขหลักสูตร</h4>
         <input type="hidden" id="course-edit-id">
@@ -821,10 +812,11 @@
     </div>
 
     <!-- ===== OPS ===== -->
+    <!-- [แก้ไข #1] เปลี่ยนชื่อหัวข้อและ breadcrumb -->
     <div class="panel" id="panel-ops">
-      <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>การปฏิบัติงาน</span></div>
+      <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>การปฏิบัติงานราชการสนาม</span></div>
       <div class="page-header">
-        <div><h2>การปฏิบัติงาน</h2><p>ประวัติและสถานะการปฏิบัติงานกำลังพล</p></div>
+        <div><h2>การปฏิบัติงานราชการสนาม</h2><p>ประวัติและสถานะการปฏิบัติงานกำลังพล</p></div>
         <button class="btn btn-primary" onclick="openOpsForm()">+ เพิ่มภารกิจ</button>
       </div>
       <div class="stats-grid">
@@ -845,13 +837,15 @@
           <div class="form-group"><label class="form-label">พื้นที่</label><input type="text" class="form-input" id="ops-area" placeholder="เช่น จ.สระแก้ว"></div>
           <div class="form-group"><label class="form-label">วันเริ่ม</label><input type="text" class="form-input" id="ops-start" placeholder="เช่น 1 ม.ค. 2568"></div>
           <div class="form-group"><label class="form-label">วันสิ้นสุด</label><input type="text" class="form-input" id="ops-end" placeholder="เช่น 31 มี.ค. 2568"></div>
-          <div class="form-group"><label class="form-label">บทบาท</label><input type="text" class="form-input" id="ops-role" placeholder="เช่น ผบ.ชุด"></div>
+          <!-- [แก้ไข #2] บทบาท → ตำแหน่ง -->
+          <div class="form-group"><label class="form-label">ตำแหน่ง</label><input type="text" class="form-input" id="ops-role" placeholder="เช่น ผบ.ชุด"></div>
           <div class="form-group"><label class="form-label">สถานะ</label>
             <select class="form-select form-input" id="ops-status">
               <option>วางแผน</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option>
             </select>
           </div>
-          <div class="form-group"><label class="form-label">หมายเหตุ</label><input type="text" class="form-input" id="ops-note"></div>
+          <!-- [แก้ไข #3] หมายเหตุ → วันทวีคูณ -->
+          <div class="form-group"><label class="form-label">วันทวีคูณ</label><input type="text" class="form-input" id="ops-note" placeholder="เช่น 2 ปี"></div>
         </div>
         <div class="form-actions">
           <button class="btn btn-ghost" onclick="closeOpsForm()">ยกเลิก</button>
@@ -862,7 +856,8 @@
         <div class="table-header"><h3>🗺️ รายการภารกิจ</h3></div>
         <div style="overflow-x:auto;">
           <table>
-            <thead><tr><th>ชื่อกำลังพล</th><th>ภารกิจ</th><th>พื้นที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>บทบาท</th><th>หมายเหตุ</th><th>สถานะ</th><th></th></tr></thead>
+            <!-- [แก้ไข #2&#3] เปลี่ยน header คอลัมน์ -->
+            <thead><tr><th>ชื่อกำลังพล</th><th>ภารกิจ</th><th>พื้นที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>ตำแหน่ง</th><th>วันทวีคูณ</th><th>สถานะ</th><th></th></tr></thead>
             <tbody id="ops-table"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">กำลังโหลด...</td></tr></tbody>
           </table>
         </div>
@@ -1192,7 +1187,10 @@ function showPanel(name) {
   const titles = {
     dashboard:'ภาพรวมระบบ', list:'รายชื่อกำลังพล', profile:'ประวัติส่วนตัว',
     salary:'เงินเดือน / ขั้นเงิน', pension:'บำเหน็จ บำนาญ', promotion:'แผนเลื่อนยศ / สอบ',
-    courses:'หลักสูตรการศึกษา', ops:'การปฏิบัติงาน', search:'ค้นหาขั้นสูง',
+    courses:'หลักสูตรการศึกษา',
+    // [แก้ไข] เปลี่ยนชื่อในแถบบน
+    ops:'การปฏิบัติงานราชการสนาม',
+    search:'ค้นหาขั้นสูง',
     add:'เพิ่มกำลังพลใหม่', alerts:'การแจ้งเตือน', settings:'ตั้งค่าระบบ', docs:'เอกสารสำคัญ'
   };
   document.getElementById('topbar-title').textContent = titles[name] || name;
@@ -1201,7 +1199,6 @@ function showPanel(name) {
       item.classList.add('active');
     }
   });
-  // โหลดข้อมูลตามหน้า
   if (name === 'salary')    loadSalary();
   if (name === 'pension')   loadPension();
   if (name === 'promotion') loadPromo();
@@ -1210,29 +1207,36 @@ function showPanel(name) {
   if (name === 'list')      loadPersonnel();
 }
 
+function switchTab(btn, tabId) {
+  const nav = btn.closest('.tab-nav');
+  nav.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const container = nav.nextElementSibling;
+  // find all sibling tab-content
+  let el = nav.nextElementSibling;
+  while (el) {
+    if (el.classList.contains('tab-content')) el.classList.remove('active');
+    el = el.nextElementSibling;
+  }
+  document.getElementById(tabId).classList.add('active');
+}
+
 function buildJoinDate() {
   const wrap = document.getElementById('join-date-wrap');
   if (!wrap) return;
-
-  // วัน
   const daySel = document.createElement('select');
   daySel.className = 'form-select form-input'; daySel.id = 'join-day'; daySel.style.flex = '1';
   daySel.innerHTML = '<option value="">วัน</option>';
   for (let d = 1; d <= 31; d++) daySel.innerHTML += `<option>${d}</option>`;
-
-  // เดือน
   const months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
   const monSel = document.createElement('select');
   monSel.className = 'form-select form-input'; monSel.id = 'join-month'; monSel.style.flex = '2';
   monSel.innerHTML = '<option value="">เดือน</option>';
   months.forEach((m, i) => monSel.innerHTML += `<option value="${i+1}">${m}</option>`);
-
-  // ปี พ.ศ.
   const yrSel = document.createElement('select');
   yrSel.className = 'form-select form-input'; yrSel.id = 'join-year'; yrSel.style.flex = '2';
   yrSel.innerHTML = '<option value="">ปี พ.ศ.</option>';
   for (let y = 2510; y <= 2580; y++) yrSel.innerHTML += `<option>${y}</option>`;
-
   wrap.appendChild(daySel);
   wrap.appendChild(monSel);
   wrap.appendChild(yrSel);
@@ -1318,21 +1322,17 @@ const USERS = [
   { id: 'admin', pass: 'admin2', name: 'Admin', role: 'ผู้ดูแลระบบ', avatar: 'AD' }
 ];
 
-// ── Google Apps Script API URL ──────────────────────
 const API_URL = 'https://script.google.com/macros/s/AKfycbzIvXZvUyh20jM8ci1dEYqSazI-VB6TXKBVgWtaXPdwB_GZvms2cXqo9LHcsVWFYXQ/exec';
 
-// ── GET — ใช้ fetch + callback=? แล้ว strip wrapper ──
 async function callAPI(params) {
   const cbName = 'cb_' + Date.now();
   const qs = new URLSearchParams({ ...params, callback: cbName }).toString();
   const res  = await fetch(API_URL + '?' + qs);
   const text = await res.text();
-  // strip callback wrapper: cbName({...}) → {...}
   const json = text.replace(new RegExp('^' + cbName + '\\('), '').replace(/\)$/, '');
   return JSON.parse(json);
 }
 
-// ── POST — ส่งเป็น form-data ──────────────────────
 async function callAPIPost(data) {
   const form = new FormData();
   form.append('payload', JSON.stringify(data));
@@ -1345,7 +1345,6 @@ async function callAPIPost(data) {
   catch(e) { return { status: 'ok', message: 'บันทึกสำเร็จ' }; }
 }
 
-// ── ดึงข้อมูลทั้งหมดจาก Sheet ──────────────────────
 async function loadPersonnel() {
   try {
     const json = await callAPI({ action: 'getAll' });
@@ -1358,20 +1357,15 @@ async function loadPersonnel() {
   }
 }
 
-// ── แสดงข้อมูลในตาราง ──────────────────────────────
 function renderPersonnelTable(data) {
   const dashTbody = document.getElementById('dashboard-table');
   const fullTbody = document.getElementById('full-table');
-
   const emptyRow = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูลกำลังพล</td></tr>`;
-
   if (!data || data.length === 0) {
     if (dashTbody) dashTbody.innerHTML = emptyRow;
     if (fullTbody) fullTbody.innerHTML = emptyRow;
     return;
   }
-
-  // Dashboard table (5 รายการล่าสุด)
   if (dashTbody) {
     dashTbody.innerHTML = data.slice(0, 5).map((p, i) => `
       <tr onclick="openProfile('${p['ID']}')">
@@ -1385,8 +1379,6 @@ function renderPersonnelTable(data) {
         <td><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();openProfile('${p['ID']}')">ดูประวัติ →</button></td>
       </tr>`).join('');
   }
-
-  // Full table
   if (fullTbody) {
     fullTbody.innerHTML = data.map((p, i) => `
       <tr onclick="openProfile('${p['ID']}')">
@@ -1408,19 +1400,14 @@ function renderPersonnelTable(data) {
   }
 }
 
-// ── อัปเดต stat ─────────────────────────────────────
 function updateDashboardStats(data) {
   const el = document.getElementById('stat-total');
   if (el) el.textContent = data.length;
 }
 
-// ── บันทึกข้อมูลใหม่ ────────────────────────────────
 async function saveRecord() {
   const btn = document.getElementById('btn-save-record');
-
-  // เก็บค่าจากฟอร์ม
   const editId = document.getElementById('edit-record-id')?.value || '';
-
   const data = {
     action: editId ? 'update' : 'add',
     'ID':                    editId,
@@ -1450,15 +1437,11 @@ async function saveRecord() {
     'เงินเดือนสุทธิ':       document.getElementById('add-salary-net')?.value      || '',
     'URLรูปภาพ':            '',
   };
-
-  // validate
   if (!data['ชื่อ'] || !data['นามสกุล']) {
     alert('กรุณากรอกชื่อและนามสกุล'); return;
   }
-
   btn.disabled = true;
   btn.textContent = '⏳ กำลังบันทึก...';
-
   try {
     const json = await callAPIPost(data);
     if (json.status === 'ok') {
@@ -1477,7 +1460,6 @@ async function saveRecord() {
   }
 }
 
-// ── ลบข้อมูล ────────────────────────────────────────
 async function deleteRecord(id) {
   if (!confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) return;
   try {
@@ -1493,7 +1475,6 @@ async function deleteRecord(id) {
   }
 }
 
-// ── เปิดหน้าประวัติ ─────────────────────────────────
 let currentProfileId = null;
 
 async function openProfile(id) {
@@ -1514,8 +1495,6 @@ async function openProfile(id) {
 function renderProfile(p) {
   document.getElementById('profile-empty').style.display   = 'none';
   document.getElementById('profile-content').style.display = 'block';
-
-  // Sidebar
   const photo = p['URLรูปภาพ'];
   const photoEl = document.getElementById('prof-photo');
   if (photo) {
@@ -1531,8 +1510,6 @@ function renderProfile(p) {
   document.getElementById('prof-svc').textContent   = calcServiceDetail(p['วันเข้ารับราชการ']).text;
   document.getElementById('prof-step').textContent  = p['ขั้นเงินเดือน'] ? `ขั้น ${p['ขั้นเงินเดือน']}` : '—';
   document.getElementById('prof-net').textContent   = p['เงินเดือนสุทธิ'] ? Number(p['เงินเดือนสุทธิ']).toLocaleString() + ' ฿' : '—';
-
-  // Tab: ข้อมูลส่วนตัว
   document.getElementById('pd-fullname').textContent  = `${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`;
   document.getElementById('pd-birthdate').textContent = formatDateThai(p['วันเกิด']);
   document.getElementById('pd-idcard').textContent    = p['เลขบัตรประชาชน'] || '—';
@@ -1540,8 +1517,6 @@ function renderProfile(p) {
   document.getElementById('pd-marital').textContent   = p['สถานภาพสมรส'] || '—';
   document.getElementById('pd-children').textContent  = p['จำนวนบุตร'] || '—';
   document.getElementById('pd-address').textContent   = p['ที่อยู่'] || '—';
-
-  // Tab: ราชการ
   document.getElementById('pd-rank').textContent     = p['ยศ'] || '—';
   document.getElementById('pd-position').textContent = p['ตำแหน่ง'] || '—';
   document.getElementById('pd-unit').textContent     = p['หน่วยงาน'] || '—';
@@ -1549,8 +1524,6 @@ function renderProfile(p) {
   document.getElementById('pd-joindate').textContent = formatDateThai(p['วันเข้ารับราชการ']);
   document.getElementById('pd-branch').textContent   = p['เหล่า'] || '—';
   document.getElementById('pd-region').textContent   = p['เขตทัพภาค'] || '—';
-
-  // Tab: เงินเดือน
   document.getElementById('pd-net').textContent   = p['เงินเดือนสุทธิ'] ? Number(p['เงินเดือนสุทธิ']).toLocaleString() + ' บาท' : '—';
   document.getElementById('pd-level').textContent = `${p['เงินเดือนระดับ'] || '—'} / ขั้น ${p['ขั้นเงินเดือน'] || '—'}`;
   document.getElementById('pd-base').textContent  = p['เงินเดือนขั้นฐาน'] ? Number(p['เงินเดือนขั้นฐาน']).toLocaleString() + ' ฿' : '—';
@@ -1563,11 +1536,9 @@ function renderProfile(p) {
 
 function editCurrentProfile() {
   if (!currentProfileId) return;
-  // TODO: โหลดข้อมูลใส่ฟอร์มแก้ไข
   showPanel('add');
 }
 
-// ── ดึงวันเข้ารับราชการ ──────────────────────────────
 function getJoinDate() {
   const d = document.getElementById('join-day')?.value || '';
   const m = document.getElementById('join-month')?.value || '';
@@ -1577,7 +1548,6 @@ function getJoinDate() {
   return `${d} ${monthNames[parseInt(m)]} ${y}`;
 }
 
-// ── ล้างฟอร์ม ────────────────────────────────────────
 function resetAddForm() {
   const ids = ['add-rank','add-fname','add-lname','add-idcard','add-birthdate',
     'add-phone','add-marital','add-children','add-address','add-empid',
@@ -1597,31 +1567,26 @@ function resetAddForm() {
   if (btn) btn.textContent = '✅ บันทึกข้อมูล';
 }
 
-// ── โหลดข้อมูลเมื่อเปิดเว็บ ─────────────────────────
 window.addEventListener('load', () => {
   loadPersonnel();
 });
 
-// ── แปลงวันที่จาก Sheet ให้อ่านได้ (ไทย) ───────────
 function formatDateThai(dateStr) {
   if (!dateStr || dateStr === '—') return '—';
   const monthMap = { Jan:'มกราคม',Feb:'กุมภาพันธ์',Mar:'มีนาคม',Apr:'เมษายน',
     May:'พฤษภาคม',Jun:'มิถุนายน',Jul:'กรกฎาคม',Aug:'สิงหาคม',
     Sep:'กันยายน',Oct:'ตุลาคม',Nov:'พฤศจิกายน',Dec:'ธันวาคม' };
-  // รูปแบบ "Mon Aug 31 2561 00:00:00 GMT+0700..."
   const m = dateStr.match(/\w+\s+(\w+)\s+(\d+)\s+(\d+)/);
   if (m) {
     const day   = parseInt(m[2]);
     const month = monthMap[m[1]] || m[1];
     let   year  = parseInt(m[3]);
-    if (year < 2500) year += 543; // ค.ศ. → พ.ศ.
+    if (year < 2500) year += 543;
     return `${day} ${month} ${year}`;
   }
-  // รูปแบบ "1 พฤษภาคม 2559" — ส่งคืนตามเดิม
   return dateStr;
 }
 
-// ── คำนวณอายุราชการ — คืนค่า { years, months, days, total } ──
 function calcServiceDetail(joinDateStr) {
   if (!joinDateStr) return { years:0, months:0, days:0, total:0, text:'—' };
   const monthNumMap = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
@@ -1643,30 +1608,25 @@ function calcServiceDetail(joinDateStr) {
     }
   }
   if (isNaN(joinDate)) return { years:0, months:0, days:0, total:0, text:'—' };
-
   const now   = new Date();
   let years   = now.getFullYear() - joinDate.getFullYear();
   let months  = now.getMonth()    - joinDate.getMonth();
   let days    = now.getDate()     - joinDate.getDate();
-
   if (days < 0) {
     months--;
     const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
     days += prevMonth.getDate();
   }
   if (months < 0) { years--; months += 12; }
-
   const total = years + months / 12 + days / 365;
   const text  = `${years} ปี ${months} เดือน ${days} วัน`;
   return { years, months, days, total, text };
 }
 
-// ── compat wrapper ───────────────────────────────────
 function calcServiceYears(joinDateStr) {
   return calcServiceDetail(joinDateStr).total;
 }
 
-// ── โหลดหน้าเงินเดือน ───────────────────────────────
 async function loadSalary() {
   try {
     const json = await callAPI({ action: 'getAll', table: 'personnel' });
@@ -1700,7 +1660,6 @@ async function loadSalary() {
   } catch(e) { console.error('loadSalary:', e); }
 }
 
-// ── โหลดหน้าบำนาญ ───────────────────────────────────
 async function loadPension() {
   try {
     const json = await callAPI({ action: 'getAll', table: 'personnel' });
@@ -1728,7 +1687,6 @@ async function loadPension() {
   } catch(e) { console.error('loadPension:', e); }
 }
 
-// ── โหลดตาราง Promotion ─────────────────────────────
 async function loadPromo() {
   try {
     const json = await callAPI({ action: 'getAll', table: 'promo' });
@@ -1751,7 +1709,6 @@ async function loadPromo() {
   } catch(e) { console.error('loadPromo:', e); }
 }
 
-// ── โหลดตาราง Courses ───────────────────────────────
 async function loadCourses() {
   try {
     const json = await callAPI({ action: 'getAll', table: 'courses' });
@@ -1780,7 +1737,6 @@ async function loadCourses() {
   } catch(e) { console.error('loadCourses:', e); }
 }
 
-// ── โหลดตาราง Ops ───────────────────────────────────
 async function loadOps() {
   try {
     const json = await callAPI({ action: 'getAll', table: 'ops' });
@@ -1810,8 +1766,7 @@ async function loadOps() {
   } catch(e) { console.error('loadOps:', e); }
 }
 
-// ── helper: เติม dropdown กำลังพล ──────────────────
-async function fillPersonnelDropdown(selectId) {
+async function fillPersonnelDropdown(selectId, selectedId) {
   const sel = document.getElementById(selectId);
   if (!sel) return;
   sel.innerHTML = '<option value="">-- เลือกกำลังพล --</option>';
@@ -1823,6 +1778,8 @@ async function fillPersonnelDropdown(selectId) {
         opt.value       = p['ID'];
         opt.textContent = `${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`;
         opt.dataset.name = `${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`;
+        // [แก้ไข #4] เลือก option ที่ตรงกับ selectedId
+        if (selectedId && p['ID'] === selectedId) opt.selected = true;
         sel.appendChild(opt);
       });
     }
@@ -1923,9 +1880,16 @@ async function deleteCourseRow(id) {
 function openOpsForm() {
   document.getElementById('ops-form-card').style.display = 'block';
   document.getElementById('ops-edit-id').value = '';
+  // ล้างค่าฟอร์ม
+  ['ops-name','ops-area','ops-start','ops-end','ops-role','ops-note'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('ops-status').selectedIndex = 0;
   fillPersonnelDropdown('ops-personnel');
 }
 function closeOpsForm() { document.getElementById('ops-form-card').style.display = 'none'; }
+
 async function saveOps() {
   const sel  = document.getElementById('ops-personnel');
   const name = sel.options[sel.selectedIndex]?.dataset.name || '';
@@ -1939,26 +1903,48 @@ async function saveOps() {
     'พื้นที่':        document.getElementById('ops-area').value,
     'วันเริ่ม':       document.getElementById('ops-start').value,
     'วันสิ้นสุด':    document.getElementById('ops-end').value,
+    // [แก้ไข #2] ยังคงใช้ field 'บทบาท' ใน DB แต่ label หน้าจอเป็น 'ตำแหน่ง'
     'บทบาท':         document.getElementById('ops-role').value,
     'สถานะ':         document.getElementById('ops-status').value,
+    // [แก้ไข #3] ยังคงใช้ field 'หมายเหตุ' ใน DB แต่ label หน้าจอเป็น 'วันทวีคูณ'
     'หมายเหตุ':      document.getElementById('ops-note').value,
   };
   await callAPIPost(data); closeOpsForm(); loadOps();
 }
+
+// [แก้ไข #4] editOps — โหลดข้อมูลเดิมกลับมาใส่ฟอร์มครบทุกช่อง รวมถึงกำลังพล วันเริ่ม วันสิ้นสุด
 async function editOps(id) {
-  openOpsForm();
+  // เปิดฟอร์มก่อน (ไม่เรียก openOpsForm เพื่อหลีกเลี่ยงการล้างค่า)
+  document.getElementById('ops-form-card').style.display = 'block';
+  document.getElementById('ops-edit-id').value = '';
+
   const json = await callAPI({ action: 'getOne', table: 'ops', id });
   if (json.status !== 'ok') return;
   const r = json.data;
+
+  // โหลด dropdown กำลังพลก่อน แล้วเลือกคนที่ถูกต้อง
+  await fillPersonnelDropdown('ops-personnel', r['ID_กำลังพล']);
+
+  // ใส่ข้อมูลเดิมทุกช่อง
   document.getElementById('ops-edit-id').value = r['ID'];
-  document.getElementById('ops-name').value    = r['ชื่อภารกิจ'];
-  document.getElementById('ops-area').value    = r['พื้นที่'];
-  document.getElementById('ops-start').value   = r['วันเริ่ม'];
-  document.getElementById('ops-end').value     = r['วันสิ้นสุด'];
-  document.getElementById('ops-role').value    = r['บทบาท'];
-  document.getElementById('ops-status').value  = r['สถานะ'];
-  document.getElementById('ops-note').value    = r['หมายเหตุ'];
+  document.getElementById('ops-name').value    = r['ชื่อภารกิจ']  || '';
+  document.getElementById('ops-area').value    = r['พื้นที่']       || '';
+  // [แก้ไข #4] ค่าวันเริ่ม/วันสิ้นสุด จาก Sheet อาจเป็น formatted date string
+  document.getElementById('ops-start').value   = r['วันเริ่ม']     || '';
+  document.getElementById('ops-end').value     = r['วันสิ้นสุด']   || '';
+  document.getElementById('ops-role').value    = r['บทบาท']        || '';
+  document.getElementById('ops-note').value    = r['หมายเหตุ']     || '';
+
+  // เลือกสถานะที่ตรงกัน
+  const statusSel = document.getElementById('ops-status');
+  for (let i = 0; i < statusSel.options.length; i++) {
+    if (statusSel.options[i].value === r['สถานะ'] || statusSel.options[i].text === r['สถานะ']) {
+      statusSel.selectedIndex = i;
+      break;
+    }
+  }
 }
+
 async function deleteOpsRow(id) {
   if (!confirm('ต้องการลบ?')) return;
   await callAPIPost({ action: 'delete', table: 'ops', id }); loadOps();
