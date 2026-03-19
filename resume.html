@@ -2570,11 +2570,7 @@ async function testDriveFolderAccess(type) {
 
   showToast('⏳ กำลังทดสอบ...');
   try {
-    const cb   = 'cb_' + Date.now();
-    const qs   = new URLSearchParams({ action:'driveTest', folderId: id, callback: cb }).toString();
-    const res  = await fetch(url + '?' + qs);
-    const text = await res.text();
-    const json = JSON.parse(text.replace(new RegExp('^' + cb + '\\('), '').replace(/\)$/, ''));
+    const json = await callAPI({ action:'driveTest', folderId: id });
 
     const dot    = document.getElementById('drive-' + type + '-dot');
     const status = document.getElementById('drive-' + type + '-status');
@@ -2681,13 +2677,12 @@ async function uploadFileToDriveAPI(file, type) {
 // ── ดูรายการไฟล์ใน Drive ────────────────────────────
 async function listDriveFilesAPI(type, prefix) {
   const folderId = type === 'img' ? getDriveImgId() : getDriveDocsId();
-  const url      = getDriveAPIURL();
-  if (!folderId || !url) return { status:'error', data:[] };
-  const cb  = 'cb_' + Date.now();
-  const qs  = new URLSearchParams({ action:'driveList', folderId, prefix: prefix || '', callback: cb }).toString();
-  const res = await fetch(url + '?' + qs);
-  const txt = await res.text();
-  return JSON.parse(txt.replace(new RegExp('^' + cb + '\\('), '').replace(/\)$/, ''));
+  if (!folderId) return { status:'error', data:[] };
+  try {
+    return await callAPI({ action:'driveList', folderId, prefix: prefix || '' });
+  } catch(e) {
+    return { status:'error', message: e.message, data:[] };
+  }
 }
 
 function copyDriveCode() {
