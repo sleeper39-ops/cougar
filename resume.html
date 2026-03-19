@@ -854,7 +854,10 @@
         <h4>👤 ข้อมูลส่วนตัว</h4>
         <div class="form-grid">
           <div class="form-group"><label class="form-label">เลขบัตรประชาชน 13 หลัก</label><input type="text" class="form-input" id="edit-idcard" maxlength="17"></div>
-          <div class="form-group"><label class="form-label">วันเกิด</label><input type="date" class="form-input" id="edit-birthdate"></div>
+          <div class="form-group">
+            <label class="form-label">วันเกิด</label>
+            <div style="display:flex;gap:6px;" id="edit-birth-wrap"></div>
+          </div>
           <div class="form-group"><label class="form-label">เบอร์โทรศัพท์</label><input type="tel" class="form-input" id="edit-phone"></div>
           <div class="form-group"><label class="form-label">สถานภาพสมรส</label>
             <select class="form-select form-input" id="edit-marital"><option>โสด</option><option>สมรส</option><option>หม้าย</option><option>หย่า</option></select>
@@ -1216,7 +1219,10 @@
         <h4>👤 ข้อมูลส่วนตัว</h4>
         <div class="form-grid">
           <div class="form-group"><label class="form-label">เลขบัตรประชาชน 13 หลัก *</label><input type="text" class="form-input" id="add-idcard" placeholder="x-xxxx-xxxxx-xx-x" maxlength="17"></div>
-          <div class="form-group"><label class="form-label">วันเกิด *</label><input type="date" class="form-input" id="add-birthdate"></div>
+          <div class="form-group">
+            <label class="form-label">วันเกิด *</label>
+            <div style="display:flex;gap:6px;" id="add-birth-wrap"></div>
+          </div>
           <div class="form-group"><label class="form-label">เบอร์โทรศัพท์</label><input type="tel" class="form-input" id="add-phone" placeholder="0xx-xxx-xxxx"></div>
           <div class="form-group"><label class="form-label">สถานภาพสมรส</label><select class="form-select form-input" id="add-marital"><option>โสด</option><option>สมรส</option><option>หม้าย</option><option>หย่า</option></select></div>
           <div class="form-group"><label class="form-label">จำนวนบุตร</label><input type="number" class="form-input" id="add-children" min="0" value="0"></div>
@@ -2028,6 +2034,94 @@ function buildJoinDate() {
 }
 buildJoinDate();
 
+// ── สร้าง dropdown วันเกิด (ปีพ.ศ. ย้อนหลัง 80 ปี) ────
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const THAI_MONTH_MAP = {};
+THAI_MONTHS.forEach((m, i) => { THAI_MONTH_MAP[m] = i + 1; });
+
+function buildBirthDateDropdown(wrapId, prefix) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap || document.getElementById(prefix + '-birth-day')) return; // สร้างแล้ว
+
+  const daySel = document.createElement('select');
+  daySel.className = 'form-select form-input';
+  daySel.id = prefix + '-birth-day';
+  daySel.style.flex = '1';
+  daySel.innerHTML = '<option value="">วัน</option>';
+  for (let d = 1; d <= 31; d++) daySel.innerHTML += `<option value="${d}">${d}</option>`;
+
+  const monSel = document.createElement('select');
+  monSel.className = 'form-select form-input';
+  monSel.id = prefix + '-birth-month';
+  monSel.style.flex = '2';
+  monSel.innerHTML = '<option value="">เดือน</option>';
+  THAI_MONTHS.forEach((m, i) => monSel.innerHTML += `<option value="${i+1}">${m}</option>`);
+
+  const curYear = new Date().getFullYear() + 543;
+  const yrSel = document.createElement('select');
+  yrSel.className = 'form-select form-input';
+  yrSel.id = prefix + '-birth-year';
+  yrSel.style.flex = '2';
+  yrSel.innerHTML = '<option value="">ปี พ.ศ.</option>';
+  for (let y = curYear; y >= curYear - 80; y--) yrSel.innerHTML += `<option value="${y}">${y}</option>`;
+
+  wrap.appendChild(daySel);
+  wrap.appendChild(monSel);
+  wrap.appendChild(yrSel);
+}
+
+// ── แปลงข้อมูลวันเกิดจาก DB → ตั้งค่า dropdown ────────
+function setBirthDateDropdown(prefix, birthStr) {
+  if (!birthStr) return;
+
+  let day = '', month = '', year = '';
+
+  // รูปแบบ "25 พฤศจิกายน 2531" หรือ "5 มิถุนายน 2540"
+  const thaiMatch = birthStr.trim().match(/^(\d{1,2})\s+(\S+)\s+(\d{4})$/);
+  if (thaiMatch) {
+    day   = parseInt(thaiMatch[1]);
+    month = THAI_MONTH_MAP[thaiMatch[2]] || '';
+    year  = parseInt(thaiMatch[3]);
+    // ถ้าเป็น ค.ศ. ให้บวก 543
+    if (year < 2400) year += 543;
+  }
+
+  // รูปแบบ ISO "YYYY-MM-DD" (ค.ศ.)
+  const isoMatch = birthStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    year  = parseInt(isoMatch[1]) + 543; // แปลงเป็น พ.ศ.
+    month = parseInt(isoMatch[2]);
+    day   = parseInt(isoMatch[3]);
+  }
+
+  // รูปแบบจาก Sheet "Mon Nov 25 1988 00:00:00 ..."
+  const sheetMonthMap = { Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12 };
+  const sheetMatch = birthStr.match(/\w+\s+(\w+)\s+(\d+)\s+(\d{4})/);
+  if (sheetMatch && !thaiMatch && !isoMatch) {
+    day   = parseInt(sheetMatch[2]);
+    month = sheetMonthMap[sheetMatch[1]] || '';
+    year  = parseInt(sheetMatch[3]);
+    if (year < 2400) year += 543;
+  }
+
+  if (day)   { const el = document.getElementById(prefix + '-birth-day');   if (el) el.value = day; }
+  if (month) { const el = document.getElementById(prefix + '-birth-month'); if (el) el.value = month; }
+  if (year)  { const el = document.getElementById(prefix + '-birth-year');  if (el) el.value = year; }
+}
+
+// ── อ่านค่าจาก dropdown วันเกิด → string "25 พฤศจิกายน 2531" ──
+function getBirthDate(prefix) {
+  const d = document.getElementById(prefix + '-birth-day')?.value   || '';
+  const m = document.getElementById(prefix + '-birth-month')?.value || '';
+  const y = document.getElementById(prefix + '-birth-year')?.value  || '';
+  if (!d || !m || !y) return '';
+  return `${parseInt(d)} ${THAI_MONTHS[parseInt(m) - 1]} ${y}`;
+}
+
+// สร้าง dropdown วันเกิด ทั้ง add และ edit เมื่อโหลดหน้า
+buildBirthDateDropdown('add-birth-wrap', 'add');
+buildBirthDateDropdown('edit-birth-wrap', 'edit');
+
 function filterDocs(cat, btn) {
   document.querySelectorAll('.doc-cat-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -2513,13 +2607,13 @@ async function updateProfileStatus(newStatus) {
 
   // อัปเดตสีของ dropdown ตามสถานะ
   const colorMap = {
-    'ปฏิบัติงาน ณ ที่ตั้ง':       { bg:'var(--status-active-bg)',  color:'var(--status-active)',  border:'var(--army-green)' },
-    'ราชการสนาม ชค.953':           { bg:'#e8f0ff',                  color:'#2a56a0',               border:'#2a56a0' },
-    'ราชการสนาม บก.ควบคุม 2':      { bg:'#e8f0ff',                  color:'#2a56a0',               border:'#2a56a0' },
-    'ฝึกศึกษา':                    { bg:'#fff8e1',                  color:'#7a5a00',               border:'var(--army-gold)' },
-    'ฝึกอบรม':                     { bg:'#fff8e1',                  color:'#7a5a00',               border:'var(--army-gold)' },
-    'ราชการ':                      { bg:'#f4f0ff',                  color:'#5a3a9a',               border:'#8a6ac8' },
-    'ราชการต่างหน่วย':             { bg:'#fde8e8',                  color:'#a32d2d',               border:'#c0392b' },
+    'ปฏิบัติงาน ณ ที่ตั้ง':   { bg:'var(--status-active-bg)', color:'var(--status-active)',  border:'var(--army-green)' },
+    'ราชการสนาม ชค.953':       { bg:'#e8f0ff',                 color:'#2a56a0',               border:'#2a56a0' },
+    'ราชการสนาม บก.ควบคุม 2': { bg:'#e8f0ff',                 color:'#2a56a0',               border:'#2a56a0' },
+    'ฝึกศึกษา':               { bg:'#fff8e1',                 color:'#7a5a00',               border:'var(--army-gold)' },
+    'ฝึกอบรม':                { bg:'#fff8e1',                 color:'#7a5a00',               border:'var(--army-gold)' },
+    'ราชการ':                 { bg:'#f4f0ff',                 color:'#5a3a9a',               border:'#8a6ac8' },
+    'ราชการต่างหน่วย':        { bg:'#fde8e8',                 color:'#a32d2d',               border:'#c0392b' },
   };
   const c = colorMap[newStatus] || colorMap['ปฏิบัติงาน ณ ที่ตั้ง'];
   if (sel) {
@@ -2528,7 +2622,21 @@ async function updateProfileStatus(newStatus) {
     sel.style.borderColor = c.border;
   }
 
-  // บันทึกลง Sheet ทันที
+  // อัปเดต cache ทันที (ก่อน API เพื่อให้ UI ตอบสนองเร็ว)
+  if (currentProfileData) currentProfileData['สถานะ'] = newStatus;
+  const idx = allPersonnelData.findIndex(p => p['ID'] === currentProfileId);
+  if (idx >= 0) {
+    allPersonnelData[idx]['สถานะ'] = newStatus;
+    // Re-render ตาราง list และ dashboard ทันที
+    applyListFilter();
+    applyDashFilter();
+  }
+
+  // บันทึกลง Sheet
+  if (!isConfigured()) {
+    showToast('⚠️ บันทึกสำเร็จในหน่วยความจำ (ยังไม่ได้เชื่อมต่อ Sheet)');
+    return;
+  }
   try {
     showToast('⏳ กำลังบันทึกสถานะ...');
     const json = await callAPIPost({
@@ -2536,11 +2644,6 @@ async function updateProfileStatus(newStatus) {
       ID: currentProfileId, 'สถานะ': newStatus
     });
     if (json.status === 'ok') {
-      // อัปเดต cache
-      if (currentProfileData) currentProfileData['สถานะ'] = newStatus;
-      // อัปเดตตาราง list ถ้ามีข้อมูลใน cache
-      const idx = allPersonnelData.findIndex(p => p['ID'] === currentProfileId);
-      if (idx >= 0) allPersonnelData[idx]['สถานะ'] = newStatus;
       showToast('✅ บันทึกสถานะ: ' + newStatus);
     } else {
       showToast('❌ บันทึกไม่สำเร็จ: ' + json.message, 4000);
@@ -2553,46 +2656,69 @@ async function updateProfileStatus(newStatus) {
 // ══════════════════════════════════════════════════
 //  PHOTO UPLOAD — preview + upload to Drive
 // ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+//  PHOTO UPLOAD — preview + upload to Drive (or store base64)
+// ══════════════════════════════════════════════════
 function previewPhoto(input, previewId, urlId) {
   const file = input.files?.[0];
   if (!file) return;
-  const preview = document.getElementById(previewId);
-  const urlEl   = document.getElementById(urlId);
-  const statusId = previewId.replace('preview','status');
-  const statusEl = document.getElementById(statusId);
 
-  // แสดง preview ทันที
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    if (preview) {
-      preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">`;
-    }
-  };
-  reader.readAsDataURL(file);
-
-  // ตรวจสอบว่าตั้งค่า Drive ไว้หรือยัง
-  const imgFolderId = localStorage.getItem('cfg_drive_img_id');
-  if (!imgFolderId || !isConfigured()) {
-    if (statusEl) statusEl.innerHTML = '<span style="color:#c0392b;">⚠️ ยังไม่ตั้งค่า Drive<br>รูปจะไม่ถูกบันทึก</span>';
-    if (urlEl) urlEl.value = '';
+  // ตรวจสอบขนาดไฟล์ (สูงสุด 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('❌ ไฟล์ขนาดใหญ่เกิน 5MB', 4000);
+    input.value = '';
     return;
   }
 
-  // อัปโหลดไปยัง Drive
-  if (statusEl) statusEl.textContent = '⏳ กำลังอัปโหลด...';
-  uploadFileToDriveAPI(file, 'img').then(res => {
-    if (res.status === 'ok') {
-      if (urlEl) urlEl.value = res.viewUrl || res.url || '';
-      if (statusEl) statusEl.innerHTML = `<span style="color:var(--army-green);">✅ อัปโหลดสำเร็จ</span>`;
-      showToast('✅ อัปโหลดรูปสำเร็จ');
-    } else {
-      if (statusEl) statusEl.innerHTML = `<span style="color:#c0392b;">❌ ${res.message}</span>`;
-      showToast('❌ อัปโหลดรูปไม่สำเร็จ', 4000);
+  const preview  = document.getElementById(previewId);
+  const urlEl    = document.getElementById(urlId);
+  const statusId = previewId.replace('-preview', '-status');
+  const statusEl = document.getElementById(statusId);
+
+  // อ่านไฟล์เป็น Base64 ก่อนเสมอ
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64DataUrl = e.target.result;
+
+    // แสดง preview ทันที
+    if (preview) {
+      preview.innerHTML = `<img src="${base64DataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">`;
     }
-  }).catch(e => {
-    if (statusEl) statusEl.innerHTML = `<span style="color:#c0392b;">❌ ${e.message}</span>`;
-    showToast('❌ ' + e.message, 4000);
-  });
+
+    // ตรวจสอบว่าตั้งค่า Drive ไว้หรือยัง
+    const imgFolderId = localStorage.getItem('cfg_drive_img_id');
+    if (!imgFolderId || !isConfigured()) {
+      // ไม่มี Drive → เก็บ Base64 ไว้ใน hidden field (จะบันทึกลง Sheet โดยตรง)
+      if (urlEl) urlEl.value = base64DataUrl;
+      if (statusEl) statusEl.innerHTML = '<span style="color:var(--army-gold);">⚠️ ไม่มี Drive<br>บันทึกรูปใน Sheet</span>';
+      showToast('⚠️ ยังไม่ตั้งค่า Drive — รูปจะเก็บใน Sheet โดยตรง');
+      return;
+    }
+
+    // มี Drive → อัปโหลดไปยัง Drive
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted);">⏳ กำลังอัปโหลด...</span>';
+    uploadFileToDriveAPI(file, 'img').then(res => {
+      if (res.status === 'ok') {
+        if (urlEl) urlEl.value = res.viewUrl || res.url || '';
+        if (statusEl) statusEl.innerHTML = `<span style="color:var(--army-green);">✅ อัปโหลดสำเร็จ</span>`;
+        showToast('✅ อัปโหลดรูปสำเร็จ');
+      } else {
+        // Drive ล้มเหลว → fallback เก็บ base64
+        if (urlEl) urlEl.value = base64DataUrl;
+        if (statusEl) statusEl.innerHTML = `<span style="color:#c0392b;">❌ Drive ผิดพลาด<br>บันทึกรูปใน Sheet แทน</span>`;
+        showToast('⚠️ Drive ผิดพลาด — บันทึกรูปใน Sheet แทน', 4000);
+      }
+    }).catch(e => {
+      // เชื่อมต่อไม่ได้ → fallback เก็บ base64
+      if (urlEl) urlEl.value = base64DataUrl;
+      if (statusEl) statusEl.innerHTML = `<span style="color:#c0392b;">❌ เชื่อมต่อไม่ได้<br>บันทึกรูปใน Sheet แทน</span>`;
+      showToast('⚠️ เชื่อมต่อไม่ได้ — บันทึกรูปใน Sheet แทน', 4000);
+    });
+  };
+  reader.onerror = () => {
+    showToast('❌ อ่านไฟล์ไม่ได้', 4000);
+  };
+  reader.readAsDataURL(file);
 }
 
 // ══════════════════════════════════════════════════
@@ -3093,7 +3219,7 @@ async function saveRecord() {
     'ชื่อ':                   document.getElementById('add-fname')?.value          || '',
     'นามสกุล':               document.getElementById('add-lname')?.value          || '',
     'เลขบัตรประชาชน':       document.getElementById('add-idcard')?.value         || '',
-    'วันเกิด':               document.getElementById('add-birthdate')?.value      || '',
+    'วันเกิด':               getBirthDate('add')                                   || '',
     'เบอร์โทรศัพท์':        document.getElementById('add-phone')?.value          || '',
     'สถานภาพสมรส':          document.getElementById('add-marital')?.value        || '',
     'จำนวนบุตร':            document.getElementById('add-children')?.value       || '0',
@@ -3114,7 +3240,7 @@ async function saveRecord() {
     'พสรครั้งที่3':         document.getElementById('add-psr3')?.value            || '',
     'พสรครั้งที่4':         document.getElementById('add-psr4')?.value            || '',
     'เงินเดือนสุทธิ':       document.getElementById('add-salary-net')?.value      || '',
-    'URLรูปภาพ':            '',
+    'URLรูปภาพ':            document.getElementById('add-photo-url')?.value       || '',
   };
   if (!data['ชื่อ'] || !data['นามสกุล']) {
     alert('กรุณากรอกชื่อและนามสกุล'); return;
@@ -3370,6 +3496,21 @@ function loadEditForm(p) {
   document.getElementById('edit-panel-sub').textContent   = `รหัส: ${p['เลขประจำตัว10หลัก'] || p['ID'] || '—'}`;
   document.getElementById('edit-record-id-modal').value   = p['ID'] || '';
 
+  // โหลดรูปเดิม
+  const existingPhoto = p['URLรูปภาพ'] || '';
+  const photoPreview  = document.getElementById('edit-photo-preview');
+  const photoUrl      = document.getElementById('edit-photo-url');
+  const photoStatus   = document.getElementById('edit-photo-status');
+  if (photoPreview) {
+    photoPreview.innerHTML = existingPhoto
+      ? `<img src="${existingPhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">`
+      : '📷';
+  }
+  if (photoUrl) photoUrl.value = existingPhoto;
+  if (photoStatus) photoStatus.innerHTML = existingPhoto
+    ? '<span style="color:var(--army-green);">✅ มีรูปอยู่แล้ว</span>'
+    : '';
+
   // ยศ
   const rankSel = document.getElementById('edit-rank');
   rankSel.value = p['ยศ'] || '';
@@ -3380,7 +3521,9 @@ function loadEditForm(p) {
 
   // ส่วนตัว
   document.getElementById('edit-idcard').value   = p['เลขบัตรประชาชน'] || '';
-  document.getElementById('edit-birthdate').value = p['วันเกิด'] || '';
+  // วันเกิด — แปลงทุกรูปแบบแล้วใส่ dropdown
+  buildBirthDateDropdown('edit-birth-wrap', 'edit');
+  setBirthDateDropdown('edit', p['วันเกิด'] || '');
   document.getElementById('edit-phone').value    = p['เบอร์โทรศัพท์'] || '';
   const marSel = document.getElementById('edit-marital');
   for(let o of marSel.options) if(o.value === p['สถานภาพสมรส'] || o.text === p['สถานภาพสมรส']) { marSel.value = o.value; break; }
@@ -3515,7 +3658,7 @@ async function updateRecord() {
     'ชื่อ':                   document.getElementById('edit-fname').value          || '',
     'นามสกุล':               document.getElementById('edit-lname').value          || '',
     'เลขบัตรประชาชน':       document.getElementById('edit-idcard').value         || '',
-    'วันเกิด':               document.getElementById('edit-birthdate').value      || '',
+    'วันเกิด':               getBirthDate('edit')                                   || '',
     'เบอร์โทรศัพท์':        document.getElementById('edit-phone').value          || '',
     'สถานภาพสมรส':          document.getElementById('edit-marital').value        || '',
     'จำนวนบุตร':            document.getElementById('edit-children').value       || '0',
@@ -3536,7 +3679,7 @@ async function updateRecord() {
     'พสรครั้งที่3':         document.getElementById('edit-psr3').value            || '',
     'พสรครั้งที่4':         document.getElementById('edit-psr4').value            || '',
     'เงินเดือนสุทธิ':       document.getElementById('edit-salary-net').value      || '',
-    'URLรูปภาพ':            currentProfileData?.['URLรูปภาพ'] || '',
+    'URLรูปภาพ':            document.getElementById('edit-photo-url')?.value || currentProfileData?.['URLรูปภาพ'] || '',
   };
   if (!data['ชื่อ'] || !data['นามสกุล']) { alert('กรุณากรอกชื่อและนามสกุล'); return; }
   btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
@@ -3573,7 +3716,8 @@ function getJoinDate() {
 }
 
 function resetAddForm() {
-  const ids = ['add-rank','add-fname','add-lname','add-idcard','add-birthdate',
+  const ids = ['add-rank','add-fname','add-lname','add-idcard',
+    'add-birth-day','add-birth-month','add-birth-year',
     'add-phone','add-marital','add-children','add-address','add-empid',
     'add-position','add-unit','add-branch','add-region','add-status',
     'add-salary-account','add-salary-step','add-salary-base',
@@ -3585,6 +3729,13 @@ function resetAddForm() {
     if (el.tagName === 'SELECT') el.selectedIndex = 0;
     else el.value = '';
   });
+  // ล้าง photo
+  const photoPreview = document.getElementById('add-photo-preview');
+  if (photoPreview) photoPreview.innerHTML = '📷';
+  const photoUrl    = document.getElementById('add-photo-url');
+  if (photoUrl) photoUrl.value = '';
+  const photoStatus = document.getElementById('add-photo-status');
+  if (photoStatus) photoStatus.innerHTML = '';
   const previewBox = document.getElementById('salary-preview-box');
   if (previewBox) previewBox.style.display = 'none';
   const btn = document.getElementById('btn-save-record');
@@ -3768,16 +3919,48 @@ function calcRetirement(joinDateStr, extraDays) {
 // ── คำนวณเวลาคงเหลือก่อนเกษียณอายุ 60 ปี (จากวันเกิด) ──
 function calcRetirementAge60(birthDateStr) {
   if (!birthDateStr || birthDateStr === '—') return '—';
-  // รองรับรูปแบบ ISO date (YYYY-MM-DD) จาก input[type=date]
   let birthDate;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(birthDateStr)) {
-    // ค.ศ. format
-    birthDate = new Date(birthDateStr);
-  } else {
-    // ลองแปลงรูปแบบอื่น
-    birthDate = new Date(birthDateStr);
+
+  // รูปแบบ "25 พฤศจิกายน 2531" (พ.ศ.)
+  const thaiMatch = (birthDateStr+'').trim().match(/^(\d{1,2})\s+(\S+)\s+(\d{4})$/);
+  if (thaiMatch && THAI_MONTH_MAP[thaiMatch[2]]) {
+    let y = parseInt(thaiMatch[3]);
+    if (y > 2400) y -= 543; // แปลงเป็น ค.ศ.
+    birthDate = new Date(y, THAI_MONTH_MAP[thaiMatch[2]] - 1, parseInt(thaiMatch[1]));
   }
-  if (isNaN(birthDate)) return '—';
+
+  // รูปแบบ ISO "YYYY-MM-DD" (ค.ศ.)
+  if (!birthDate || isNaN(birthDate)) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(birthDateStr)) {
+      birthDate = new Date(birthDateStr);
+    }
+  }
+
+  // รูปแบบจาก Sheet "Mon Nov 25 1988 ..."
+  if (!birthDate || isNaN(birthDate)) {
+    const sheetMonthMap = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+    const m = (birthDateStr+'').match(/\w+\s+(\w+)\s+(\d+)\s+(\d{4})/);
+    if (m && sheetMonthMap[m[1]] !== undefined) {
+      birthDate = new Date(parseInt(m[3]), sheetMonthMap[m[1]], parseInt(m[2]));
+    }
+  }
+
+  if (!birthDate || isNaN(birthDate)) return '—';
+
+  // วันเกษียณอายุ 60 ปี
+  const retireDate = new Date(birthDate.getFullYear() + 60, birthDate.getMonth(), birthDate.getDate());
+  const now        = new Date();
+
+  if (retireDate <= now) return '<span class="chip green" style="font-size:11px;">✅ เกษียณแล้ว</span>';
+
+  const diffMs   = retireDate - now;
+  const diffDays = Math.floor(diffMs / (24 * 3600 * 1000));
+  const ymd      = daysToYMD(diffDays);
+  const retireYear  = retireDate.getFullYear() + 543;
+  const retireMonth = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][retireDate.getMonth()];
+  const retireDay   = retireDate.getDate();
+  return `<div style="font-size:11px;font-weight:600;color:#3a6ea8;">อีก ${ymd.text}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${retireDay} ${retireMonth} ${retireYear}</div>`;
+}
 
   // วันเกษียณอายุ 60 ปี
   const retireDate = new Date(birthDate.getFullYear() + 60, birthDate.getMonth(), birthDate.getDate());
