@@ -264,11 +264,6 @@
   .progress-bar { background: var(--army-border); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 4px; }
   .progress-fill { height: 100%; border-radius: 4px; background: var(--army-green); }
   .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: var(--army-pale); color: var(--text-secondary); border: 1px solid var(--army-border); margin: 2px; }
-  .gs-banner { background: linear-gradient(135deg, #1a2332 0%, #2d5016 100%); color: #fff; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-  .gs-banner .gs-icon { font-size: 28px; }
-  .gs-banner h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-  .gs-banner p { font-size: 12px; opacity: 0.75; }
-  .gs-banner .gs-btn { margin-left: auto; padding: 8px 16px; border-radius: var(--radius); background: var(--army-gold); color: var(--army-dark); border: none; font-weight: 600; font-size: 13px; cursor: pointer; font-family: 'Sarabun', sans-serif; white-space: nowrap; }
   .toggle-row { display: flex; gap: 0; background: var(--bg-light); border: 1px solid var(--army-border); border-radius: var(--radius); padding: 3px; }
   .toggle-btn { flex: 1; padding: 6px 12px; border: none; background: none; border-radius: 6px; font-size: 12px; font-family: 'Sarabun', sans-serif; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
   .toggle-btn.active { background: var(--bg-white); color: var(--text-primary); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -480,18 +475,6 @@
           <h2>ภาพรวมระบบ</h2>
           <p>ข้อมูล ณ วันที่ 18 มีนาคม 2568</p>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-ghost" onclick="showPanel('settings')">🔗 เชื่อมต่อ Google Sheet</button>
-          <button class="btn btn-primary">📤 ส่งออกรายงาน</button>
-        </div>
-      </div>
-      <div class="gs-banner">
-        <div class="gs-icon">📊</div>
-        <div>
-          <h4>เชื่อมต่อ Google Sheet เพื่อซิงค์ข้อมูลอัตโนมัติ</h4>
-          <p>ระบบรองรับการนำเข้า-ส่งออกข้อมูลกับ Google Sheet และ Google Drive ได้ทันที</p>
-        </div>
-        <button class="gs-btn" onclick="showPanel('settings')">ตั้งค่าการเชื่อมต่อ →</button>
       </div>
       <div class="stats-grid">
         <div class="stat-card green"><div class="stat-label">กำลังพลทั้งหมด</div><div class="stat-value" id="stat-total">0</div><div class="stat-sub">นาย</div></div>
@@ -520,13 +503,15 @@
         <div class="table-header">
           <h3>📋 รายชื่อกำลังพล (ล่าสุด)</h3>
           <div style="display:flex;gap:8px;">
-            <select class="filter-select">
+            <select class="filter-select" id="dash-filter-status" onchange="applyDashFilter()">
               <option value="">ทุกสถานะ</option>
-              <option>ปฏิบัติหน้าที่ณ ที่ตั้ง</option>
-              <option>ราชการสนาม ชค.953</option>
-              <option>ราชการสนาม บก.ควบคุม 2</option>
-              <option>ฝึกอบรม</option>
-              <option>ศึกษา</option>
+              <option value="ปฏิบัติงาน ณ ที่ตั้ง">ปฏิบัติงาน ณ ที่ตั้ง</option>
+              <option value="ราชการสนาม ชค.953">ราชการสนาม ชค.953</option>
+              <option value="ราชการสนาม บก.ควบคุม 2">ราชการสนาม บก.ควบคุม 2</option>
+              <option value="ฝึกศึกษา">ฝึกศึกษา</option>
+              <option value="ฝึกอบรม">ฝึกอบรม</option>
+              <option value="ราชการ">ราชการ</option>
+              <option value="ราชการต่างหน่วย">ราชการต่างหน่วย</option>
             </select>
             <button class="btn btn-ghost" style="font-size:12px;" onclick="showPanel('list')">ดูทั้งหมด →</button>
           </div>
@@ -551,21 +536,55 @@
         <div><h2>รายชื่อกำลังพล</h2><p id="list-count-label">ทั้งหมด 0 นาย</p></div>
         <div style="display:flex;gap:8px;">
           <div class="toggle-row">
-            <button class="toggle-btn active">ทั้งหมด</button>
-            <button class="toggle-btn">สัญญาบัตร</button>
-            <button class="toggle-btn">ประทวน</button>
-            <button class="toggle-btn">พลทหาร</button>
+            <button class="toggle-btn active" onclick="setRankGroup(this,'')">ทั้งหมด</button>
+            <button class="toggle-btn" onclick="setRankGroup(this,'สัญญาบัตร')">สัญญาบัตร</button>
+            <button class="toggle-btn" onclick="setRankGroup(this,'ประทวน')">ประทวน</button>
+            <button class="toggle-btn" onclick="setRankGroup(this,'พลทหาร')">พลทหาร</button>
           </div>
           <button class="btn btn-primary" onclick="showPanel('add')">+ เพิ่มใหม่</button>
         </div>
       </div>
       <div class="table-card">
         <div class="table-header">
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <select class="filter-select"><option value="">ทุกยศ</option></select>
-            <select class="filter-select"><option value="">ทุกตำแหน่ง</option></select>
-            <select class="filter-select"><option value="">ทุกสถานะ</option></select>
-            <input type="text" class="form-input" style="width:180px;padding:5px 10px;" placeholder="ค้นหาชื่อ...">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <select class="filter-select" id="list-filter-rank" onchange="applyListFilter()">
+              <option value="">ทุกยศ</option>
+              <optgroup label="— ชั้นประทวน —">
+                <option value="ส.ต.">ส.ต.</option>
+                <option value="ส.ท.">ส.ท.</option>
+                <option value="ส.อ.">ส.อ.</option>
+                <option value="จ.ส.ต.">จ.ส.ต.</option>
+                <option value="จ.ส.ท.">จ.ส.ท.</option>
+                <option value="จ.ส.อ.">จ.ส.อ.</option>
+              </optgroup>
+              <optgroup label="— ชั้นสัญญาบัตร —">
+                <option value="ร.ต.">ร.ต.</option>
+                <option value="ร.ท.">ร.ท.</option>
+                <option value="ร.อ.">ร.อ.</option>
+              </optgroup>
+            </select>
+            <select class="filter-select" id="list-filter-position" onchange="applyListFilter()">
+              <option value="">ทุกตำแหน่ง</option>
+              <option value="นายสิบยุทธการและการข่าว">นายสิบยุทธการและการข่าว</option>
+              <option value="นายสิบอาวุธหนัก">นายสิบอาวุธหนัก</option>
+              <option value="นายสิบอาวุธเบา">นายสิบอาวุธเบา</option>
+              <option value="พนักงานวิทยุ">พนักงานวิทยุ</option>
+              <option value="นายสิบพยาบาล">นายสิบพยาบาล</option>
+              <option value="นายสิบการช่างและทำลาย">นายสิบการช่างและทำลาย</option>
+            </select>
+            <select class="filter-select" id="list-filter-status" onchange="applyListFilter()">
+              <option value="">ทุกสถานะ</option>
+              <option value="ปฏิบัติงาน ณ ที่ตั้ง">ปฏิบัติงาน ณ ที่ตั้ง</option>
+              <option value="ราชการสนาม ชค.953">ราชการสนาม ชค.953</option>
+              <option value="ราชการสนาม บก.ควบคุม 2">ราชการสนาม บก.ควบคุม 2</option>
+              <option value="ฝึกศึกษา">ฝึกศึกษา</option>
+              <option value="ฝึกอบรม">ฝึกอบรม</option>
+              <option value="ราชการ">ราชการ</option>
+              <option value="ราชการต่างหน่วย">ราชการต่างหน่วย</option>
+            </select>
+            <input type="text" class="form-input" id="list-filter-name" style="width:180px;padding:5px 10px;" placeholder="🔍 ค้นหาชื่อ..." oninput="applyListFilter()">
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;" onclick="clearListFilter()">🔄 ล้าง</button>
+            <span id="list-result-count" style="font-size:12px;color:var(--text-muted);white-space:nowrap;"></span>
           </div>
         </div>
         <div style="overflow-x:auto;">
@@ -856,6 +875,18 @@
               <option>ทัพภาคที่ 1</option><option>ทัพภาคที่ 2</option><option>ทัพภาคที่ 3</option><option>ทัพภาคที่ 4</option>
             </select>
           </div>
+          <div class="form-group"><label class="form-label">สถานะปัจจุบัน</label>
+            <select class="form-select form-input" id="edit-status">
+              <option value="">-- เลือกสถานะ --</option>
+              <option value="ปฏิบัติงาน ณ ที่ตั้ง">ปฏิบัติงาน ณ ที่ตั้ง</option>
+              <option value="ราชการสนาม ชค.953">ราชการสนาม ชค.953</option>
+              <option value="ราชการสนาม บก.ควบคุม 2">ราชการสนาม บก.ควบคุม 2</option>
+              <option value="ฝึกศึกษา">ฝึกศึกษา</option>
+              <option value="ฝึกอบรม">ฝึกอบรม</option>
+              <option value="ราชการ">ราชการ</option>
+              <option value="ราชการต่างหน่วย">ราชการต่างหน่วย</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="form-card">
@@ -1133,16 +1164,70 @@
       <div class="search-filters">
         <h3>🔍 เงื่อนไขการค้นหา</h3>
         <div class="filter-grid">
-          <div class="form-group"><label class="form-label">ชื่อ / สกุล</label><input type="text" class="form-input" placeholder="ค้นหาชื่อ-สกุล"></div>
-          <div class="form-group"><label class="form-label">ยศ</label><select class="form-select"><option value="">-- ทุกยศ --</option></select></div>
-          <div class="form-group"><label class="form-label">ตำแหน่ง</label><select class="form-select"><option value="">-- ทุกตำแหน่ง --</option></select></div>
-          <div class="form-group"><label class="form-label">เหล่า / สาขา</label><select class="form-select"><option value="">-- ทุกเหล่า --</option></select></div>
-          <div class="form-group"><label class="form-label">สถานะ</label><select class="form-select"><option value="">-- ทุกสถานะ --</option></select></div>
-          <div class="form-group"><label class="form-label">อายุราชการ (ปี)</label><div style="display:flex;gap:6px;"><input type="number" class="form-input" placeholder="ต่ำสุด" min="0"><input type="number" class="form-input" placeholder="สูงสุด" min="0"></div></div>
+          <div class="form-group">
+            <label class="form-label">ชื่อ / สกุล</label>
+            <input type="text" class="form-input" id="search-name" placeholder="ค้นหาชื่อ-สกุล">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ยศ</label>
+            <select class="form-select form-input" id="search-rank">
+              <option value="">-- ทุกยศ --</option>
+              <optgroup label="— ชั้นประทวน —">
+                <option value="ส.ต.">ส.ต.</option>
+                <option value="ส.ท.">ส.ท.</option>
+                <option value="ส.อ.">ส.อ.</option>
+                <option value="จ.ส.ต.">จ.ส.ต.</option>
+                <option value="จ.ส.ท.">จ.ส.ท.</option>
+                <option value="จ.ส.อ.">จ.ส.อ.</option>
+              </optgroup>
+              <optgroup label="— ชั้นสัญญาบัตร —">
+                <option value="ร.ต.">ร.ต.</option>
+                <option value="ร.ท.">ร.ท.</option>
+                <option value="ร.อ.">ร.อ.</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ตำแหน่ง</label>
+            <select class="form-select form-input" id="search-position">
+              <option value="">-- ทุกตำแหน่ง --</option>
+              <option value="นายสิบยุทธการและการข่าว">นายสิบยุทธการและการข่าว</option>
+              <option value="นายสิบอาวุธหนัก">นายสิบอาวุธหนัก</option>
+              <option value="นายสิบอาวุธเบา">นายสิบอาวุธเบา</option>
+              <option value="พนักงานวิทยุ">พนักงานวิทยุ</option>
+              <option value="นายสิบพยาบาล">นายสิบพยาบาล</option>
+              <option value="นายสิบการช่างและทำลาย">นายสิบการช่างและทำลาย</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">เหล่า / สาขา</label>
+            <input type="text" class="form-input" id="search-branch" placeholder="เช่น ทหารราบ">
+          </div>
+          <div class="form-group">
+            <label class="form-label">สถานะ</label>
+            <select class="form-select form-input" id="search-status">
+              <option value="">-- ทุกสถานะ --</option>
+              <option value="ปฏิบัติงาน ณ ที่ตั้ง">ปฏิบัติงาน ณ ที่ตั้ง</option>
+              <option value="ราชการสนาม ชค.953">ราชการสนาม ชค.953</option>
+              <option value="ราชการสนาม บก.ควบคุม 2">ราชการสนาม บก.ควบคุม 2</option>
+              <option value="ฝึกศึกษา">ฝึกศึกษา</option>
+              <option value="ฝึกอบรม">ฝึกอบรม</option>
+              <option value="ราชการ">ราชการ</option>
+              <option value="ราชการต่างหน่วย">ราชการต่างหน่วย</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">อายุราชการ (ปี)</label>
+            <div style="display:flex;gap:6px;">
+              <input type="number" class="form-input" id="search-svc-min" placeholder="ต่ำสุด" min="0">
+              <input type="number" class="form-input" id="search-svc-max" placeholder="สูงสุด" min="0">
+            </div>
+          </div>
         </div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
-          <button class="btn btn-ghost">🔄 ล้างตัวกรอง</button>
-          <button class="btn btn-primary">🔍 ค้นหา</button>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;align-items:center;">
+          <span id="search-result-count" style="font-size:12px;color:var(--text-muted);margin-right:auto;"></span>
+          <button class="btn btn-ghost" onclick="clearSearchFilter()">🔄 ล้างตัวกรอง</button>
+          <button class="btn btn-primary" onclick="applySearchFilter()">🔍 ค้นหา</button>
           <button class="btn btn-gold">📤 ส่งออก Excel</button>
         </div>
       </div>
@@ -1230,6 +1315,18 @@
           </div>
           <div class="form-group"><label class="form-label">เหล่า *</label><input type="text" class="form-input" id="add-branch" placeholder="เช่น ทหารราบ, ทหารช่าง"></div>
           <div class="form-group"><label class="form-label">เขตทัพภาค</label><select class="form-select form-input" id="add-region"><option>ทัพภาคที่ 1</option><option>ทัพภาคที่ 2</option><option>ทัพภาคที่ 3</option><option>ทัพภาคที่ 4</option></select></div>
+          <div class="form-group"><label class="form-label">สถานะปัจจุบัน *</label>
+            <select class="form-select form-input" id="add-status">
+              <option value="">-- เลือกสถานะ --</option>
+              <option>ปฏิบัติงาน ณ ที่ตั้ง</option>
+              <option>ราชการสนาม ชค.953</option>
+              <option>ราชการสนาม บก.ควบคุม 2</option>
+              <option>ฝึกศึกษา</option>
+              <option>ฝึกอบรม</option>
+              <option>ราชการ</option>
+              <option>ราชการต่างหน่วย</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="form-card">
@@ -1397,42 +1494,216 @@
     <!-- ===== SETTINGS ===== -->
     <div class="panel" id="panel-settings">
       <div class="breadcrumb"><span>หน้าหลัก</span><span class="sep">›</span><span>ตั้งค่าระบบ</span></div>
-      <div class="page-header"><div><h2>ตั้งค่าระบบ</h2><p>จัดการการเชื่อมต่อและตั้งค่าต่างๆ</p></div></div>
+      <div class="page-header"><div><h2>ตั้งค่าระบบ</h2><p>จัดการการเชื่อมต่อ Google Apps Script และตั้งค่าต่างๆ</p></div></div>
+
+      <!-- สถานะการเชื่อมต่อ -->
+      <div id="conn-status-bar" style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:var(--radius);margin-bottom:20px;border:1px solid var(--army-border);background:var(--bg-card);">
+        <div id="conn-dot" style="width:12px;height:12px;border-radius:50%;background:#ccc;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;" id="conn-status-text">ยังไม่ได้ตั้งค่าการเชื่อมต่อ</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="conn-status-sub">กรอก Google Apps Script URL แล้วกด "ทดสอบการเชื่อมต่อ"</div>
+        </div>
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="testConnection()">🔄 ทดสอบการเชื่อมต่อ</button>
+      </div>
+
+      <!-- Google Apps Script URL -->
       <div class="form-card">
-        <h4>📊 การเชื่อมต่อ Google Sheet</h4>
-        <div class="alert-box warn" style="margin-bottom:16px;">
-          <span class="ab-icon">⚠️</span>
-          <p>ยังไม่ได้เชื่อมต่อ Google Sheet — กรุณากรอก Spreadsheet ID และ API Key เพื่อเริ่มใช้งาน</p>
+        <h4>🔗 Google Apps Script Endpoint</h4>
+        <div style="background:var(--army-pale);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--text-secondary);line-height:1.7;">
+          <strong>วิธีการตั้งค่า:</strong><br>
+          1. เปิด Google Sheet → Extensions → Apps Script<br>
+          2. วาง Code ของ Web App แล้วกด Deploy → New Deployment → Web App<br>
+          3. ตั้ง Execute as: <strong>Me</strong> | Who has access: <strong>Anyone</strong><br>
+          4. คัดลอก Web App URL มาวางในช่องด้านล่าง
         </div>
         <div class="form-grid-2">
-          <div class="form-group"><label class="form-label">Google Spreadsheet ID</label><input type="text" class="form-input" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"></div>
-          <div class="form-group"><label class="form-label">Sheet Name</label><input type="text" class="form-input" placeholder="กำลังพล" value="กำลังพล"></div>
-          <div class="form-group"><label class="form-label">Google Service Account Key (JSON)</label><textarea class="form-input" placeholder='{"type": "service_account", ...}'></textarea></div>
-          <div class="form-group"><label class="form-label">ซิงค์อัตโนมัติ</label><select class="form-select form-input"><option>ทุก 1 ชั่วโมง</option><option>ทุก 6 ชั่วโมง</option><option>ทุกวัน (เที่ยงคืน)</option><option>ด้วยตนเอง</option></select></div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label class="form-label">Google Apps Script Web App URL *</label>
+            <input type="text" class="form-input" id="cfg-api-url"
+              placeholder="https://script.google.com/macros/s/XXXXXX/exec"
+              style="font-family:monospace;font-size:12px;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Spreadsheet ID</label>
+            <input type="text" class="form-input" id="cfg-sheet-id"
+              placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"
+              style="font-family:monospace;font-size:12px;">
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">ดูได้จาก URL ของ Google Sheet ของท่าน</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ชื่อ Sheet กำลังพล (Tab name)</label>
+            <input type="text" class="form-input" id="cfg-sheet-name" placeholder="กำลังพล" value="กำลังพล">
+          </div>
         </div>
         <div class="form-actions">
-          <button class="btn btn-primary">🔗 ทดสอบการเชื่อมต่อ</button>
-          <button class="btn btn-gold">💾 บันทึกการตั้งค่า</button>
+          <button class="btn btn-ghost" onclick="testConnection()">🔌 ทดสอบการเชื่อมต่อ</button>
+          <button class="btn btn-primary" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
+          <button class="btn btn-gold" onclick="syncNow()">🔄 ซิงค์ข้อมูลทันที</button>
         </div>
       </div>
+
+      <!-- Apps Script Code Helper -->
       <div class="form-card">
-        <h4>🗂️ การเชื่อมต่อ Google Drive</h4>
-        <div class="form-grid-2">
-          <div class="form-group"><label class="form-label">Folder ID สำหรับเก็บรูปภาพ</label><input type="text" class="form-input" placeholder="Google Drive Folder ID"></div>
-          <div class="form-group"><label class="form-label">Folder ID สำหรับเอกสาร PDF</label><input type="text" class="form-input" placeholder="Google Drive Folder ID"></div>
+        <h4 style="display:flex;justify-content:space-between;align-items:center;">
+          <span>📋 Google Apps Script Code (สำหรับ Paste)</span>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="copyScriptCode()">📋 คัดลอก Code</button>
+        </h4>
+        <div style="background:#1a2332;border-radius:var(--radius);padding:14px 16px;overflow-x:auto;max-height:280px;overflow-y:auto;">
+          <pre id="script-code-display" style="color:#c8a84b;font-size:11px;font-family:monospace;line-height:1.6;margin:0;white-space:pre;">// ===== วาง Code นี้ทั้งหมดใน Google Apps Script =====
+const SHEET_ID   = ''; // ใส่ Spreadsheet ID ของท่าน
+const SHEET_TABS = { personnel:'กำลังพล', promo:'เลื่อนยศ', courses:'หลักสูตร', ops:'ภารกิจ', docs:'เอกสาร' };
+
+function doGet(e) {
+  const p      = e.parameter;
+  const cb     = p.callback || '';
+  const action = p.action   || '';
+  const table  = p.table    || 'personnel';
+  let result;
+  try {
+    if      (action === 'getAll') result = getAllRows(table);
+    else if (action === 'getOne') result = getOneRow(table, p.id);
+    else result = { status:'error', message:'Unknown action' };
+  } catch(err) { result = { status:'error', message: err.toString() }; }
+  const json = JSON.stringify(result);
+  return cb
+    ? ContentService.createTextOutput(cb+'('+json+')').setMimeType(ContentService.MimeType.JAVASCRIPT)
+    : ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  let data;
+  try { data = JSON.parse(e.parameter.payload || e.postData.contents); }
+  catch(err) { return out({ status:'error', message:'Parse error' }); }
+  const action = data.action || '';
+  const table  = data.table  || 'personnel';
+  try {
+    if      (action === 'add')    return out(addRow(table, data));
+    else if (action === 'update') return out(updateRow(table, data));
+    else if (action === 'delete') return out(deleteRow(table, data.id || data.ID));
+    else return out({ status:'error', message:'Unknown action' });
+  } catch(err) { return out({ status:'error', message: err.toString() }); }
+}
+
+function out(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function getSheet(table) {
+  const ss   = SpreadsheetApp.openById(SHEET_ID);
+  const name = SHEET_TABS[table] || table;
+  let sh = ss.getSheetByName(name);
+  if (!sh) sh = ss.insertSheet(name);
+  return sh;
+}
+
+function getAllRows(table) {
+  const sh   = getSheet(table);
+  const vals = sh.getDataRange().getValues();
+  if (vals.length < 2) return { status:'ok', data:[] };
+  const headers = vals[0];
+  const data    = vals.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = row[i] !== undefined ? String(row[i]) : ''; });
+    return obj;
+  }).filter(r => r['ID'] && r['ID'] !== '');
+  return { status:'ok', data };
+}
+
+function getOneRow(table, id) {
+  const all = getAllRows(table);
+  const row = (all.data || []).find(r => r['ID'] === id);
+  return row ? { status:'ok', data:row } : { status:'error', message:'Not found' };
+}
+
+function addRow(table, data) {
+  const sh      = getSheet(table);
+  const vals    = sh.getDataRange().getValues();
+  const headers = vals.length > 0 ? vals[0] : Object.keys(data).filter(k => k !== 'action' && k !== 'table');
+  if (vals.length === 0) sh.appendRow(headers);
+  const newId = 'ID_' + Date.now();
+  data['ID']  = newId;
+  const row   = headers.map(h => data[h] !== undefined ? data[h] : '');
+  sh.appendRow(row);
+  return { status:'ok', id: newId };
+}
+
+function updateRow(table, data) {
+  const sh      = getSheet(table);
+  const vals    = sh.getDataRange().getValues();
+  if (vals.length < 2) return { status:'error', message:'No data' };
+  const headers = vals[0];
+  const idCol   = headers.indexOf('ID');
+  if (idCol < 0) return { status:'error', message:'No ID column' };
+  for (let i = 1; i < vals.length; i++) {
+    if (String(vals[i][idCol]) === String(data['ID'])) {
+      headers.forEach((h, ci) => {
+        if (h !== 'ID' && data[h] !== undefined)
+          sh.getRange(i+1, ci+1).setValue(data[h]);
+      });
+      return { status:'ok' };
+    }
+  }
+  return { status:'error', message:'Row not found' };
+}
+
+function deleteRow(table, id) {
+  const sh      = getSheet(table);
+  const vals    = sh.getDataRange().getValues();
+  if (vals.length < 2) return { status:'error', message:'No data' };
+  const idCol   = vals[0].indexOf('ID');
+  for (let i = vals.length - 1; i >= 1; i--) {
+    if (String(vals[i][idCol]) === String(id)) {
+      sh.deleteRow(i + 1);
+      return { status:'ok' };
+    }
+  }
+  return { status:'error', message:'Row not found' };
+}</pre>
         </div>
-        <div class="form-actions"><button class="btn btn-primary">🔗 เชื่อมต่อ Google Drive</button></div>
       </div>
+
+      <!-- การตั้งค่าการแจ้งเตือน -->
       <div class="form-card">
         <h4>🔔 ตั้งค่าการแจ้งเตือน</h4>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span>แจ้งเตือนเมื่อกำลังพลครบเกณฑ์เลื่อนยศ (ล่วงหน้า 60 วัน)</span><input type="checkbox" checked></label>
-          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span>แจ้งเตือนวันสอบ / วันส่งเอกสาร (ล่วงหน้า 30 วัน)</span><input type="checkbox" checked></label>
-          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span>แจ้งเตือนก่อนเกษียณ (ล่วงหน้า 1 ปี)</span><input type="checkbox" checked></label>
-          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span>แจ้งเตือนครบรอบปรับขั้นเงินเดือนประจำปี</span><input type="checkbox"></label>
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;cursor:pointer;">
+            <span>แจ้งเตือนเมื่อกำลังพลครบเกณฑ์เลื่อนยศ (ล่วงหน้า 60 วัน)</span>
+            <input type="checkbox" id="notif-promotion" checked style="width:16px;height:16px;cursor:pointer;">
+          </label>
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;cursor:pointer;">
+            <span>แจ้งเตือนวันสอบ / วันส่งเอกสาร (ล่วงหน้า 30 วัน)</span>
+            <input type="checkbox" id="notif-exam" checked style="width:16px;height:16px;cursor:pointer;">
+          </label>
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;cursor:pointer;">
+            <span>แจ้งเตือนก่อนเกษียณอายุราชการ 25 ปี (ล่วงหน้า 1 ปี)</span>
+            <input type="checkbox" id="notif-retire25" checked style="width:16px;height:16px;cursor:pointer;">
+          </label>
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;cursor:pointer;">
+            <span>แจ้งเตือนก่อนเกษียณอายุ 60 ปี (ล่วงหน้า 1 ปี)</span>
+            <input type="checkbox" id="notif-retire60" checked style="width:16px;height:16px;cursor:pointer;">
+          </label>
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;cursor:pointer;">
+            <span>แจ้งเตือนครบรอบปรับขั้นเงินเดือนประจำปี</span>
+            <input type="checkbox" id="notif-salary" style="width:16px;height:16px;cursor:pointer;">
+          </label>
         </div>
-        <div class="form-actions"><button class="btn btn-primary">💾 บันทึก</button></div>
+        <div class="form-actions"><button class="btn btn-primary" onclick="saveNotifSettings()">💾 บันทึก</button></div>
       </div>
+
+      <!-- ข้อมูลระบบ -->
+      <div class="form-card">
+        <h4>ℹ️ ข้อมูลระบบ</h4>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="di-label">เวอร์ชันระบบ</div><div class="di-value">v2.0</div></div>
+          <div class="detail-item"><div class="di-label">API URL ที่ใช้งาน</div><div class="di-value" id="info-api-url" style="font-size:11px;font-family:monospace;word-break:break-all;">ยังไม่ได้ตั้งค่า</div></div>
+          <div class="detail-item"><div class="di-label">กำลังพลในระบบ</div><div class="di-value" id="info-total">—</div></div>
+          <div class="detail-item"><div class="di-label">ซิงค์ล่าสุด</div><div class="di-value" id="info-last-sync">—</div></div>
+        </div>
+        <div class="form-actions" style="margin-top:12px;">
+          <button class="btn btn-ghost" style="color:#c0392b;border-color:#c0392b;" onclick="clearAllSettings()">🗑️ ล้างการตั้งค่าทั้งหมด</button>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -1468,6 +1739,7 @@ function showPanel(name) {
   if (name === 'courses')   loadCourses();
   if (name === 'ops')       loadOps();
   if (name === 'list')      loadPersonnel();
+  if (name === 'settings')  loadSettingsUI();
 }
 
 function switchTab(btn, tabId) {
@@ -1585,87 +1857,445 @@ const USERS = [
   { id: 'admin', pass: 'admin2', name: 'Admin', role: 'ผู้ดูแลระบบ', avatar: 'AD' }
 ];
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbzIvXZvUyh20jM8ci1dEYqSazI-VB6TXKBVgWtaXPdwB_GZvms2cXqo9LHcsVWFYXQ/exec';
+// ══════════════════════════════════════════════════
+//  CONFIG — ดึงจาก localStorage (ตั้งค่าในหน้าตั้งค่าระบบ)
+// ══════════════════════════════════════════════════
+function getAPIURL() {
+  return localStorage.getItem('cfg_api_url') || '';
+}
+function getSheetName() {
+  return localStorage.getItem('cfg_sheet_name') || 'กำลังพล';
+}
+function isConfigured() {
+  return !!getAPIURL();
+}
 
 async function callAPI(params) {
+  const url = getAPIURL();
+  if (!url) {
+    console.warn('API URL ยังไม่ได้ตั้งค่า — กรุณาตั้งค่าในหน้าตั้งค่าระบบ');
+    return { status: 'error', message: 'ยังไม่ได้ตั้งค่า API URL' };
+  }
   const cbName = 'cb_' + Date.now();
   const qs = new URLSearchParams({ ...params, callback: cbName }).toString();
-  const res  = await fetch(API_URL + '?' + qs);
+  const res  = await fetch(url + '?' + qs);
   const text = await res.text();
   const json = text.replace(new RegExp('^' + cbName + '\\('), '').replace(/\)$/, '');
   return JSON.parse(json);
 }
 
 async function callAPIPost(data) {
+  const url = getAPIURL();
+  if (!url) {
+    return { status: 'error', message: 'ยังไม่ได้ตั้งค่า API URL' };
+  }
   const form = new FormData();
   form.append('payload', JSON.stringify(data));
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    body: form
-  });
+  const res = await fetch(url, { method: 'POST', body: form });
   const text = await res.text();
   try { return JSON.parse(text); }
   catch(e) { return { status: 'ok', message: 'บันทึกสำเร็จ' }; }
 }
 
+// ══════════════════════════════════════════════════
+//  SETTINGS FUNCTIONS
+// ══════════════════════════════════════════════════
+function loadSettingsUI() {
+  const url   = localStorage.getItem('cfg_api_url')    || '';
+  const shId  = localStorage.getItem('cfg_sheet_id')   || '';
+  const shNm  = localStorage.getItem('cfg_sheet_name') || 'กำลังพล';
+
+  const urlEl  = document.getElementById('cfg-api-url');
+  const shIdEl = document.getElementById('cfg-sheet-id');
+  const shNmEl = document.getElementById('cfg-sheet-name');
+  if (urlEl)  urlEl.value  = url;
+  if (shIdEl) shIdEl.value = shId;
+  if (shNmEl) shNmEl.value = shNm;
+
+  // อัปเดต info section
+  const infoUrl = document.getElementById('info-api-url');
+  const infoTotal = document.getElementById('info-total');
+  if (infoUrl)   infoUrl.textContent   = url || 'ยังไม่ได้ตั้งค่า';
+  if (infoTotal) infoTotal.textContent = allPersonnelData.length + ' นาย';
+
+  const lastSync = localStorage.getItem('cfg_last_sync');
+  const infoSync = document.getElementById('info-last-sync');
+  if (infoSync) infoSync.textContent = lastSync || '—';
+
+  // โหลด notif settings
+  ['notif-promotion','notif-exam','notif-retire25','notif-retire60','notif-salary'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = localStorage.getItem(id) !== 'false';
+  });
+
+  updateConnectionStatus(url ? null : 'unconfigured');
+}
+
+function saveSettings() {
+  const url   = document.getElementById('cfg-api-url')?.value.trim()    || '';
+  const shId  = document.getElementById('cfg-sheet-id')?.value.trim()   || '';
+  const shNm  = document.getElementById('cfg-sheet-name')?.value.trim() || 'กำลังพล';
+
+  if (!url) { alert('⚠️ กรุณากรอก Google Apps Script URL'); return; }
+  if (!url.startsWith('https://script.google.com/macros/s/')) {
+    if (!confirm('URL ไม่ตรงรูปแบบ Google Apps Script\nต้องการบันทึกต่อหรือไม่?')) return;
+  }
+
+  localStorage.setItem('cfg_api_url',    url);
+  localStorage.setItem('cfg_sheet_id',   shId);
+  localStorage.setItem('cfg_sheet_name', shNm);
+
+  document.getElementById('info-api-url').textContent = url;
+  showToast('✅ บันทึกการตั้งค่าสำเร็จ');
+  updateConnectionStatus('saved');
+}
+
+function saveNotifSettings() {
+  ['notif-promotion','notif-exam','notif-retire25','notif-retire60','notif-salary'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) localStorage.setItem(id, el.checked);
+  });
+  showToast('✅ บันทึกการตั้งค่าการแจ้งเตือนแล้ว');
+}
+
+async function testConnection() {
+  const url = document.getElementById('cfg-api-url')?.value.trim() || getAPIURL();
+  if (!url) { alert('⚠️ กรุณากรอก URL ก่อนทดสอบ'); return; }
+
+  updateConnectionStatus('testing');
+  try {
+    const cbName = 'cb_test_' + Date.now();
+    const qs = new URLSearchParams({ action: 'getAll', table: 'personnel', callback: cbName }).toString();
+    const res  = await fetch(url + '?' + qs);
+    const text = await res.text();
+    const json = JSON.parse(text.replace(new RegExp('^' + cbName + '\\('), '').replace(/\)$/, ''));
+
+    if (json.status === 'ok') {
+      localStorage.setItem('cfg_last_sync', new Date().toLocaleString('th-TH'));
+      document.getElementById('info-last-sync').textContent = localStorage.getItem('cfg_last_sync');
+      updateConnectionStatus('ok', `เชื่อมต่อสำเร็จ — พบข้อมูล ${(json.data||[]).length} รายการ`);
+      showToast('✅ เชื่อมต่อสำเร็จ!');
+    } else {
+      updateConnectionStatus('error', 'ตอบกลับแต่ status ไม่ใช่ ok: ' + json.message);
+    }
+  } catch(e) {
+    updateConnectionStatus('error', 'เชื่อมต่อไม่ได้: ' + e.message);
+  }
+}
+
+async function syncNow() {
+  if (!isConfigured()) {
+    alert('⚠️ กรุณาบันทึกการตั้งค่าก่อน'); return;
+  }
+  updateConnectionStatus('testing');
+  try {
+    await loadPersonnel();
+    localStorage.setItem('cfg_last_sync', new Date().toLocaleString('th-TH'));
+    const infoSync = document.getElementById('info-last-sync');
+    const infoTotal = document.getElementById('info-total');
+    if (infoSync) infoSync.textContent = localStorage.getItem('cfg_last_sync');
+    if (infoTotal) infoTotal.textContent = allPersonnelData.length + ' นาย';
+    updateConnectionStatus('ok', `ซิงค์สำเร็จ — ${allPersonnelData.length} รายการ`);
+    showToast('✅ ซิงค์ข้อมูลสำเร็จ');
+  } catch(e) {
+    updateConnectionStatus('error', 'ซิงค์ไม่สำเร็จ: ' + e.message);
+  }
+}
+
+function updateConnectionStatus(state, detail) {
+  const dot  = document.getElementById('conn-dot');
+  const txt  = document.getElementById('conn-status-text');
+  const sub  = document.getElementById('conn-status-sub');
+  const bar  = document.getElementById('conn-status-bar');
+  if (!dot || !txt) return;
+
+  const map = {
+    'unconfigured': { color:'#ccc',          bg:'var(--bg-card)',  border:'var(--army-border)', text:'ยังไม่ได้ตั้งค่า',                  sub:'กรอก URL แล้วกดบันทึก' },
+    'saved':        { color:'var(--army-gold)', bg:'#fffdf0',      border:'#f0d070',             text:'บันทึก URL แล้ว — ยังไม่ได้ทดสอบ', sub:'กดทดสอบการเชื่อมต่อ' },
+    'testing':      { color:'#3a6ea8',         bg:'#eef3fb',       border:'#b0c8f0',             text:'⏳ กำลังทดสอบการเชื่อมต่อ...',      sub:'กรุณารอสักครู่' },
+    'ok':           { color:'var(--army-green)', bg:'#f0faf0',     border:'#b5d8b5',             text:'✅ เชื่อมต่อสำเร็จ',               sub:'' },
+    'error':        { color:'#c0392b',          bg:'#fdf0f0',      border:'#f0b0b0',             text:'❌ เชื่อมต่อไม่สำเร็จ',            sub:'' },
+  };
+  const s = map[state] || map['unconfigured'];
+  dot.style.background   = s.color;
+  txt.textContent        = s.text;
+  sub.textContent        = detail || s.sub;
+  bar.style.background   = s.bg;
+  bar.style.borderColor  = s.border;
+}
+
+function copyScriptCode() {
+  const code = document.getElementById('script-code-display')?.textContent || '';
+  navigator.clipboard.writeText(code).then(() => showToast('📋 คัดลอก Code แล้ว')).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = code; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('📋 คัดลอก Code แล้ว');
+  });
+}
+
+function clearAllSettings() {
+  if (!confirm('⚠️ ต้องการล้างการตั้งค่าทั้งหมดหรือไม่?\n(จะลบ URL, Sheet ID และการตั้งค่าอื่นๆ)')) return;
+  ['cfg_api_url','cfg_sheet_id','cfg_sheet_name','cfg_last_sync',
+   'notif-promotion','notif-exam','notif-retire25','notif-retire60','notif-salary'
+  ].forEach(k => localStorage.removeItem(k));
+  loadSettingsUI();
+  showToast('🗑️ ล้างการตั้งค่าแล้ว');
+}
+
+// ── Toast notification ────────────────────────────
+function showToast(msg, duration = 3000) {
+  let toast = document.getElementById('sys-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'sys-toast';
+    toast.style.cssText = `
+      position:fixed; bottom:24px; right:24px; z-index:9000;
+      background:var(--army-dark); color:#fff; border-radius:var(--radius);
+      padding:12px 20px; font-size:13px; font-family:'Sarabun',sans-serif;
+      box-shadow:0 4px 20px rgba(0,0,0,0.3); display:none;
+      border-left:4px solid var(--army-gold); max-width:320px;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { toast.style.display = 'none'; }, duration);
+}
+
+// ── cache ข้อมูลกำลังพลทั้งหมด ──────────────────────
+let allPersonnelData = [];
+
 async function loadPersonnel() {
   try {
     const json = await callAPI({ action: 'getAll' });
     if (json.status === 'ok') {
-      renderPersonnelTable(json.data);
-      updateDashboardStats(json.data);
+      allPersonnelData = json.data || [];
+      applyListFilter();
+      applyDashFilter();
+      updateDashboardStats(allPersonnelData);
     }
   } catch (err) {
     console.error('loadPersonnel error:', err);
   }
 }
 
+// ── helper สร้าง row ตาราง dashboard ──────────────────
+function makeDashRow(p, i) {
+  const status = p['สถานะ'] || 'ปฏิบัติงาน ณ ที่ตั้ง';
+  const statusClass = status.includes('สนาม') ? 'status-training'
+    : status.includes('ฝึก') ? 'status-detach'
+    : status.includes('ราชการ') && !status.includes('ณ') ? 'status-detach'
+    : 'status-active';
+  return `<tr onclick="openProfile('${p['ID']}')">
+    <td>${i+1}</td>
+    <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
+    <td style="font-size:12px;">${p['ตำแหน่ง'] || '—'}</td>
+    <td><span class="chip blue" style="font-size:11px;">${calcServiceDetail(p['วันเข้ารับราชการ']).text}</span></td>
+    <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;">${p['ขั้นเงินเดือน'] || '—'}</td>
+    <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${Number(p['เงินเดือนสุทธิ']||0).toLocaleString()} ฿</td>
+    <td><span class="status-badge ${statusClass}" style="font-size:11px;">● ${status}</span></td>
+    <td><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();openProfile('${p['ID']}')">ดูประวัติ →</button></td>
+  </tr>`;
+}
+
+// ── helper สร้าง row ตาราง list ────────────────────────
+function makeListRow(p, i) {
+  const status = p['สถานะ'] || 'ปฏิบัติงาน ณ ที่ตั้ง';
+  const statusClass = status.includes('สนาม') ? 'status-training'
+    : status.includes('ฝึก') ? 'status-detach'
+    : status.includes('ราชการ') && !status.includes('ณ') ? 'status-detach'
+    : 'status-active';
+  return `<tr onclick="openProfile('${p['ID']}')">
+    <td>${i+1}</td>
+    <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
+    <td style="font-size:12px;">${p['เลขประจำตัว10หลัก'] || '—'}</td>
+    <td style="font-size:12px;">${p['ตำแหน่ง'] || '—'}</td>
+    <td style="font-size:12px;">${formatDateThai(p['วันเข้ารับราชการ'])}</td>
+    <td><span class="chip blue" style="font-size:11px;">${calcServiceDetail(p['วันเข้ารับราชการ']).text}</span></td>
+    <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;">${p['ขั้นเงินเดือน'] || '—'}</td>
+    <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${Number(p['เงินเดือนสุทธิ']||0).toLocaleString()} ฿</td>
+    <td><span class="status-badge ${statusClass}" style="font-size:11px;">● ${status}</span></td>
+    <td style="white-space:nowrap;">
+      <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();openProfile('${p['ID']}')">👁️ ดู</button>
+      <button class="btn btn-primary" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();editRecord('${p['ID']}')">✏️</button>
+      <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#c0392b;border-color:#c0392b;" onclick="event.stopPropagation();deleteRecord('${p['ID']}')">🗑️</button>
+    </td>
+  </tr>`;
+}
+
+// ── helper สร้าง row ตาราง search ─────────────────────
+function makeSearchRow(p) {
+  const status = p['สถานะ'] || 'ปฏิบัติงาน ณ ที่ตั้ง';
+  const statusClass = status.includes('สนาม') ? 'status-training'
+    : status.includes('ฝึก') ? 'status-detach'
+    : status.includes('ราชการ') && !status.includes('ณ') ? 'status-detach'
+    : 'status-active';
+  return `<tr onclick="openProfile('${p['ID']}')">
+    <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
+    <td style="font-size:12px;">${p['ตำแหน่ง'] || '—'}</td>
+    <td style="font-size:12px;">${p['เหล่า'] || '—'}</td>
+    <td><span class="chip blue" style="font-size:11px;">${calcServiceDetail(p['วันเข้ารับราชการ']).text}</span></td>
+    <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${Number(p['เงินเดือนสุทธิ']||0).toLocaleString()} ฿</td>
+    <td><span class="status-badge ${statusClass}" style="font-size:11px;">● ${status}</span></td>
+    <td>
+      <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();openProfile('${p['ID']}')">👁️ ดู</button>
+      <button class="btn btn-primary" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();editRecord('${p['ID']}')">✏️</button>
+    </td>
+  </tr>`;
+}
+
+// ── renderPersonnelTable (ใช้สำหรับ reload เต็ม) ──────
 function renderPersonnelTable(data) {
   const dashTbody = document.getElementById('dashboard-table');
   const fullTbody = document.getElementById('full-table');
-  const emptyRow = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูลกำลังพล</td></tr>`;
+  const emptyRow  = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูลกำลังพล</td></tr>`;
   if (!data || data.length === 0) {
     if (dashTbody) dashTbody.innerHTML = emptyRow;
     if (fullTbody) fullTbody.innerHTML = emptyRow;
     return;
   }
-  if (dashTbody) {
-    dashTbody.innerHTML = data.slice(0, 5).map((p, i) => `
-      <tr onclick="openProfile('${p['ID']}')">
-        <td>${i+1}</td>
-        <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
-        <td>${p['ตำแหน่ง'] || '—'}</td>
-        <td><span class="chip blue" style="font-size:11px;">${calcServiceDetail(p['วันเข้ารับราชการ']).text}</span></td>
-        <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;">${p['ขั้นเงินเดือน'] || '—'}</td>
-        <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${Number(p['เงินเดือนสุทธิ']||0).toLocaleString()} ฿</td>
-        <td><span class="status-badge status-active">● ปฏิบัติหน้าที่</span></td>
-        <td><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();openProfile('${p['ID']}')">ดูประวัติ →</button></td>
-      </tr>`).join('');
+  if (dashTbody) dashTbody.innerHTML = data.slice(0, 5).map((p, i) => makeDashRow(p, i)).join('');
+  if (fullTbody)  fullTbody.innerHTML = data.map((p, i) => makeListRow(p, i)).join('');
+}
+
+// ── filter สำหรับ Dashboard ───────────────────────────
+function applyDashFilter() {
+  const status = document.getElementById('dash-filter-status')?.value || '';
+  const filtered = status
+    ? allPersonnelData.filter(p => (p['สถานะ'] || 'ปฏิบัติงาน ณ ที่ตั้ง') === status)
+    : allPersonnelData;
+  const dashTbody = document.getElementById('dashboard-table');
+  if (!dashTbody) return;
+  if (!filtered.length) {
+    dashTbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">ไม่พบข้อมูลที่ตรงกับตัวกรอง</td></tr>`;
+    return;
   }
-  if (fullTbody) {
-    fullTbody.innerHTML = data.map((p, i) => `
-      <tr onclick="openProfile('${p['ID']}')">
-        <td>${i+1}</td>
-        <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
-        <td>${p['เลขประจำตัว10หลัก'] || '—'}</td>
-        <td>${p['ตำแหน่ง'] || '—'}</td>
-        <td>${formatDateThai(p['วันเข้ารับราชการ'])}</td>
-        <td><span class="chip blue">${calcServiceDetail(p['วันเข้ารับราชการ']).text}</span></td>
-        <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;">${p['ขั้นเงินเดือน'] || '—'}</td>
-        <td style="font-family:'Chakra Petch',sans-serif;font-weight:600;color:var(--army-green);">${Number(p['เงินเดือนสุทธิ']||0).toLocaleString()} ฿</td>
-        <td><span class="status-badge status-active">● ปฏิบัติหน้าที่</span></td>
-        <td>
-          <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();openProfile('${p['ID']}')">👁️ ดู</button>
-          <button class="btn btn-primary" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();editRecord('${p['ID']}')">✏️</button>
-          <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#c0392b;border-color:#c0392b;" onclick="event.stopPropagation();deleteRecord('${p['ID']}')">🗑️</button>
-        </td>
-      </tr>`).join('');
+  dashTbody.innerHTML = filtered.slice(0, 5).map((p, i) => makeDashRow(p, i)).join('');
+}
+
+// ── toggle ยศกลุ่ม (สัญญาบัตร/ประทวน/พลทหาร/ทั้งหมด) ──
+const RANK_GROUPS = {
+  'สัญญาบัตร': ['ร.ต.','ร.ท.','ร.อ.'],
+  'ประทวน':    ['ส.ต.','ส.ท.','ส.อ.','จ.ส.ต.','จ.ส.ท.','จ.ส.อ.'],
+  'พลทหาร':   ['พลฯ','พลทหาร','พล.ทหาร']
+};
+let currentRankGroup = '';
+
+function setRankGroup(btn, group) {
+  document.querySelectorAll('.toggle-row .toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentRankGroup = group;
+  // รีเซ็ต rank dropdown ถ้าเลือก group
+  const rankSel = document.getElementById('list-filter-rank');
+  if (rankSel) rankSel.selectedIndex = 0;
+  applyListFilter();
+}
+
+// ── filter สำหรับ List ────────────────────────────────
+function applyListFilter() {
+  const rank     = document.getElementById('list-filter-rank')?.value     || '';
+  const position = document.getElementById('list-filter-position')?.value || '';
+  const status   = document.getElementById('list-filter-status')?.value   || '';
+  const name     = (document.getElementById('list-filter-name')?.value    || '').trim().toLowerCase();
+
+  let filtered = allPersonnelData.filter(p => {
+    // rank group toggle (ทั้งหมด/สัญญาบัตร/ประทวน/พลทหาร)
+    if (currentRankGroup && RANK_GROUPS[currentRankGroup]) {
+      if (!RANK_GROUPS[currentRankGroup].includes(p['ยศ'])) return false;
+    }
+    if (rank     && p['ยศ']       !== rank)                                         return false;
+    if (position && p['ตำแหน่ง'] !== position)                                     return false;
+    if (status   && (p['สถานะ'] || 'ปฏิบัติงาน ณ ที่ตั้ง') !== status)           return false;
+    if (name) {
+      const full = `${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`.toLowerCase();
+      if (!full.includes(name)) return false;
+    }
+    return true;
+  });
+
+  const fullTbody = document.getElementById('full-table');
+  const countEl   = document.getElementById('list-result-count');
+  if (countEl) countEl.textContent = filtered.length ? `พบ ${filtered.length} รายการ` : '';
+
+  if (!fullTbody) return;
+  if (!filtered.length) {
+    fullTbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted);">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>`;
+    return;
   }
+  fullTbody.innerHTML = filtered.map((p, i) => makeListRow(p, i)).join('');
+}
+
+function clearListFilter() {
+  ['list-filter-rank','list-filter-position','list-filter-status','list-filter-name'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+  });
+  currentRankGroup = '';
+  document.querySelectorAll('.toggle-row .toggle-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  applyListFilter();
+}
+
+// ── filter สำหรับ Search panel ────────────────────────
+function applySearchFilter() {
+  const name     = (document.getElementById('search-name')?.value     || '').trim().toLowerCase();
+  const rank     = document.getElementById('search-rank')?.value      || '';
+  const position = document.getElementById('search-position')?.value  || '';
+  const branch   = (document.getElementById('search-branch')?.value   || '').trim().toLowerCase();
+  const status   = document.getElementById('search-status')?.value    || '';
+  const svcMin   = parseFloat(document.getElementById('search-svc-min')?.value) || 0;
+  const svcMax   = parseFloat(document.getElementById('search-svc-max')?.value) || 999;
+
+  let filtered = allPersonnelData.filter(p => {
+    if (rank     && p['ยศ']       !== rank)                                         return false;
+    if (position && p['ตำแหน่ง'] !== position)                                     return false;
+    if (status   && (p['สถานะ'] || 'ปฏิบัติงาน ณ ที่ตั้ง') !== status)           return false;
+    if (branch   && !(p['เหล่า'] || '').toLowerCase().includes(branch))             return false;
+    if (name) {
+      const full = `${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}`.toLowerCase();
+      if (!full.includes(name)) return false;
+    }
+    const svcYrs = calcServiceDetail(p['วันเข้ารับราชการ']).total;
+    if (svcYrs < svcMin || svcYrs > svcMax) return false;
+    return true;
+  });
+
+  const tbody   = document.getElementById('search-table');
+  const countEl = document.querySelector('#panel-search .table-header span');
+  if (countEl) countEl.textContent = `พบ ${filtered.length} รายการ`;
+  const countEl2 = document.getElementById('search-result-count');
+  if (countEl2) countEl2.textContent = filtered.length ? `พบ ${filtered.length} รายการ` : 'ไม่พบข้อมูลที่ตรงกัน';
+
+  if (!tbody) return;
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(p => makeSearchRow(p)).join('');
+}
+
+function clearSearchFilter() {
+  ['search-name','search-branch','search-svc-min','search-svc-max'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  ['search-rank','search-position','search-status'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.selectedIndex = 0;
+  });
+  const tbody = document.getElementById('search-table');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">กรอกเงื่อนไขแล้วกด "ค้นหา"</td></tr>`;
+  const countEl = document.getElementById('search-result-count');
+  if (countEl) countEl.textContent = '';
 }
 
 function updateDashboardStats(data) {
   const el = document.getElementById('stat-total');
   if (el) el.textContent = data.length;
+  const trainingEl = document.getElementById('stat-training');
+  if (trainingEl) trainingEl.textContent = data.filter(p => (p['สถานะ'] || '').includes('ฝึก')).length;
 }
 
 async function saveRecord() {
@@ -1689,6 +2319,7 @@ async function saveRecord() {
     'หน่วยงาน':             document.getElementById('add-unit')?.value           || '',
     'เหล่า':                 document.getElementById('add-branch')?.value         || '',
     'เขตทัพภาค':            document.getElementById('add-region')?.value         || '',
+    'สถานะ':                document.getElementById('add-status')?.value         || 'ปฏิบัติงาน ณ ที่ตั้ง',
     'เงินเดือนระดับ':       document.getElementById('add-salary-account')?.value || '',
     'ขั้นเงินเดือน':        document.getElementById('add-salary-step')?.value    || '',
     'เงินเดือนขั้นฐาน':    document.getElementById('add-salary-base')?.value     || '',
@@ -1960,6 +2591,13 @@ function loadEditForm(p) {
   const regSel = document.getElementById('edit-region');
   for(let o of regSel.options) if(o.value === p['เขตทัพภาค'] || o.text === p['เขตทัพภาค']) { regSel.value = o.value; break; }
 
+  // สถานะปัจจุบัน
+  const statusSel = document.getElementById('edit-status');
+  if (statusSel) {
+    const sv = p['สถานะ'] || '';
+    for(let o of statusSel.options) if(o.value === sv || o.text === sv) { statusSel.value = o.value; break; }
+  }
+
   // วันเข้ารับราชการ — สร้าง/อัปเดต dropdown
   buildEditJoinDate(p['วันเข้ารับราชการ']);
 
@@ -2082,6 +2720,7 @@ async function updateRecord() {
     'หน่วยงาน':             document.getElementById('edit-unit').value           || '',
     'เหล่า':                 document.getElementById('edit-branch').value         || '',
     'เขตทัพภาค':            document.getElementById('edit-region').value         || '',
+    'สถานะ':                document.getElementById('edit-status')?.value        || 'ปฏิบัติงาน ณ ที่ตั้ง',
     'เงินเดือนระดับ':       document.getElementById('edit-salary-account').value || '',
     'ขั้นเงินเดือน':        document.getElementById('edit-salary-step').value    || '',
     'เงินเดือนขั้นฐาน':    document.getElementById('edit-salary-base').value     || '',
@@ -2130,7 +2769,7 @@ function getJoinDate() {
 function resetAddForm() {
   const ids = ['add-rank','add-fname','add-lname','add-idcard','add-birthdate',
     'add-phone','add-marital','add-children','add-address','add-empid',
-    'add-position','add-unit','add-branch','add-region',
+    'add-position','add-unit','add-branch','add-region','add-status',
     'add-salary-account','add-salary-step','add-salary-base',
     'add-salary-extra','add-psr1','add-psr2','add-psr3','add-psr4','add-salary-net',
     'join-day','join-month','join-year','edit-record-id'];
@@ -2147,7 +2786,18 @@ function resetAddForm() {
 }
 
 window.addEventListener('load', () => {
-  loadPersonnel();
+  // โหลด URL จาก localStorage ก่อนดึงข้อมูล
+  if (isConfigured()) {
+    loadPersonnel();
+  } else {
+    // แสดงข้อความให้ตั้งค่า
+    ['dashboard-table','full-table'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted);">
+        ⚙️ ยังไม่ได้ตั้งค่า API — <span style="color:var(--army-green);cursor:pointer;font-weight:600;" onclick="showPanel('settings')">ไปตั้งค่าระบบ →</span>
+      </td></tr>`;
+    });
+  }
 });
 
 function formatDateThai(dateStr) {
