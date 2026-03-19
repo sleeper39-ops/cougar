@@ -5322,6 +5322,600 @@ setTimeout(fixOpsLabels, 500);
 
 console.log('[PATCH v4] Docs + Ops label + Font size fix loaded');
 </script>
- 
+ <!-- ══════════════════════════════════════════════════════
+     PATCH v5 — วางก่อน </body> ในไฟล์หลัก
+     1. ปรับ font ทุกหน้า: ราชการสนาม, แผนเลื่อนยศ, หลักสูตร, เงินเดือน
+     2. ปรับหน้าประวัติส่วนตัว: รูปใหญ่ขึ้น, ยศ+ชื่อ+ตำแหน่งใหญ่ขึ้น
+     3. ปรับ Quick Stats bar ให้ font ใหญ่ขึ้น
+     4. ปรับ detail-card ทุก tab ให้ font สม่ำเสมอ
+     ══════════════════════════════════════════════════════ -->
+<style>
+/* ══════════════════════════════════════════════════════
+   GLOBAL FONT SIZE UPGRADES
+   ══════════════════════════════════════════════════════ */
+
+/* ── ตารางทุกหน้า ── */
+table thead th {
+  font-size: 13.5px !important;
+  letter-spacing: 0.3px;
+}
+table tbody td {
+  font-size: 14.5px !important;
+}
+table tbody td strong {
+  font-size: 15px !important;
+  font-weight: 700;
+}
+
+/* ── Dashboard & List table ── */
+#dashboard-table td,
+#full-table td {
+  font-size: 14.5px !important;
+}
+#dashboard-table td strong,
+#full-table td strong {
+  font-size: 15px !important;
+}
+#dashboard-table .status-badge,
+#full-table .status-badge {
+  font-size: 13px !important;
+  padding: 5px 14px !important;
+}
+#dashboard-table .chip,
+#full-table .chip {
+  font-size: 13px !important;
+}
+
+/* ── ราชการสนาม (ops) ── */
+#panel-ops .page-header h2 { font-size: 26px !important; }
+#panel-ops .stat-card .stat-label { font-size: 14px !important; }
+#panel-ops .stat-card .stat-value { font-size: 36px !important; }
+#panel-ops .stat-card .stat-sub   { font-size: 14px !important; }
+#ops-table thead th { font-size: 13.5px !important; }
+#ops-table tbody td { font-size: 14.5px !important; }
+#ops-table tbody td strong { font-size: 15px !important; }
+#ops-form-card .form-label { font-size: 14px !important; }
+#ops-form-card .form-input,
+#ops-form-card .form-select { font-size: 14px !important; }
+
+/* ── แผนเลื่อนยศ/สอบ (promotion) ── */
+#panel-promotion .page-header h2 { font-size: 26px !important; }
+#promo-table thead th { font-size: 13.5px !important; }
+#promo-table tbody td { font-size: 14.5px !important; }
+#promo-table tbody td strong { font-size: 15px !important; }
+#promo-form-card .form-label { font-size: 14px !important; }
+#promo-form-card .form-input,
+#promo-form-card .form-select { font-size: 14px !important; }
+#panel-promotion .chip { font-size: 13px !important; }
+
+/* ── หลักสูตรการศึกษา (courses) ── */
+#panel-courses .page-header h2 { font-size: 26px !important; }
+#panel-courses .stat-card .stat-label { font-size: 14px !important; }
+#panel-courses .stat-card .stat-value { font-size: 36px !important; }
+#panel-courses .stat-card .stat-sub   { font-size: 14px !important; }
+#courses-table thead th { font-size: 13.5px !important; }
+#courses-table tbody td { font-size: 14.5px !important; }
+#courses-table tbody td strong { font-size: 15px !important; }
+#course-form-card .form-label { font-size: 14px !important; }
+#course-form-card .form-input,
+#course-form-card .form-select { font-size: 14px !important; }
+#panel-courses .chip { font-size: 13px !important; }
+
+/* ── เงินเดือน / ขั้นเงิน (salary) ── */
+#panel-salary .page-header h2 { font-size: 26px !important; }
+#panel-salary .stat-card .stat-label { font-size: 14px !important; }
+#panel-salary .stat-card .stat-value { font-size: 36px !important; }
+#panel-salary .stat-card .stat-sub   { font-size: 14px !important; }
+#salary-table thead th { font-size: 13.5px !important; }
+#salary-table tbody td { font-size: 14.5px !important; }
+#salary-table tbody td strong { font-size: 15px !important; }
+
+/* ══════════════════════════════════════════════════════
+   PROFILE PAGE UPGRADES
+   ══════════════════════════════════════════════════════ */
+
+/* ── รูปภาพใหญ่ขึ้น ── */
+#prof-photo {
+  width: 80px !important;
+  height: 96px !important;
+  border-radius: 10px !important;
+  font-size: 36px !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── ยศ ── */
+#prof-rank {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: var(--text-secondary) !important;
+  letter-spacing: 0.3px;
+}
+
+/* ── ชื่อ-สกุล ── */
+#prof-name {
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+/* ── ตำแหน่ง ── */
+#prof-pos {
+  font-size: 15px !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  margin-top: 4px !important;
+}
+
+/* ── Quick Stats bar (5 blocks) ── */
+#panel-profile .prof-quick-stat-label,
+#panel-profile [style*="font-size:10px"][style*="color:var(--text-muted)"] {
+  font-size: 12px !important;
+}
+
+/* เลขประจำตัว */
+#prof-empid {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+/* หน่วยงาน */
+#prof-unit {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+/* อายุราชการ */
+#prof-svc {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+/* ขั้นเงินเดือน */
+#prof-step {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+/* เงินเดือนสุทธิ */
+#prof-net {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+/* ── Quick Stats bar container labels ── */
+#panel-profile > div > div[style*="grid-template-columns:repeat(5"] > div > div:first-child {
+  font-size: 12px !important;
+  margin-bottom: 4px !important;
+}
+#panel-profile > div > div[style*="grid-template-columns:repeat(5"] > div > div:last-child {
+  font-size: 14px !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   DETAIL CARDS — ทุก tab ให้ font สม่ำเสมอ
+   ══════════════════════════════════════════════════════ */
+
+/* หัว section */
+.detail-card h4 {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+
+/* label ใน detail-item */
+.detail-item .di-label {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+}
+
+/* ค่าใน detail-item */
+.detail-item .di-value {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  margin-top: 3px;
+}
+
+/* ── Salary tab ── */
+.salary-bar .s-label { font-size: 16px !important; }
+.salary-bar .s-value { font-size: 32px !important; }
+.salary-item .si-label { font-size: 12px !important; }
+.salary-item .si-value { font-size: 16px !important; }
+
+/* ── profile ops tab ── */
+#prof-tab-ops .detail-card h4 { font-size: 17px !important; }
+#prof-ops-list > div { font-size: 14px !important; }
+#prof-ops-list > div > div { font-size: 14px !important; }
+#prof-ops-list [style*="font-weight:600"][style*="font-size:13px"] {
+  font-size: 15px !important;
+}
+#prof-ops-list [style*="font-size:11px"] {
+  font-size: 12px !important;
+}
+#prof-ops-list [style*="font-size:10px"] {
+  font-size: 12px !important;
+}
+
+/* วันทวีคูณรวม */
+#prof-ops-total-dd { font-size: 20px !important; }
+
+/* ── profile courses tab ── */
+#prof-courses-list [style*="font-weight:600"][style*="font-size:13px"] {
+  font-size: 15px !important;
+}
+#prof-courses-list [style*="font-size:11px"] {
+  font-size: 12px !important;
+}
+#prof-courses-list [style*="font-size:10px"] {
+  font-size: 12px !important;
+}
+#prof-courses-list [style*="font-size:12.5px"] {
+  font-size: 14px !important;
+}
+
+/* ── profile pension tab ── */
+#prof-tab-pension [style*="font-size:10px"] {
+  font-size: 12px !important;
+}
+#prof-tab-pension [style*="font-size:13px"] {
+  font-size: 15px !important;
+}
+#prof-tab-pension [style*="font-size:20px"] {
+  font-size: 22px !important;
+}
+#prof-tab-pension [style*="font-size:12px"] {
+  font-size: 13px !important;
+}
+#pf-svc-now, #pf-dd-total, #pf-svc-total {
+  font-size: 15px !important;
+}
+#pf-pension, #pf-gratuity {
+  font-size: 22px !important;
+}
+#pf-retire25, #pf-retire60 { font-size: 13px !important; }
+#pf-right { font-size: 15px !important; }
+
+/* ── profile docs tab ── */
+#prof-docs-list [style*="font-size:12px"] {
+  font-size: 13.5px !important;
+}
+#prof-docs-list [style*="font-weight:600"] {
+  font-size: 14px !important;
+}
+
+/* ── Tab buttons ── */
+.tab-btn {
+  font-size: 14.5px !important;
+  padding: 13px 22px !important;
+}
+
+/* ── Pension table ── */
+#pension-table thead th { font-size: 13px !important; }
+#pension-table tbody td { font-size: 13.5px !important; }
+#pension-table .chip { font-size: 12.5px !important; }
+
+/* ══════════════════════════════════════════════════════
+   PROFILE HEADER — ทำให้ข้อมูลในกล่อง Quick Stats
+   แสดงชัดขึ้นด้วย JS override ด้านล่าง
+   ══════════════════════════════════════════════════════ */
+</style>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  PATCH v5 — Profile header & Quick Stats font fix
+//  ใช้ JS override renderProfile เพื่อ inject inline style
+// ════════════════════════════════════════════════════════
+
+(function() {
+  // ── override renderProfile ──────────────────────────────
+  const _origRenderProfile = window.renderProfile;
+
+  window.renderProfile = function(p) {
+    // เรียก original ก่อน
+    if (_origRenderProfile) _origRenderProfile(p);
+
+    // ── ปรับรูปภาพให้ใหญ่ขึ้น ──
+    const photoEl = document.getElementById('prof-photo');
+    if (photoEl) {
+      photoEl.style.width        = '88px';
+      photoEl.style.height       = '106px';
+      photoEl.style.borderRadius = '10px';
+      photoEl.style.fontSize     = '38px';
+      photoEl.style.flexShrink   = '0';
+      photoEl.style.border       = '2.5px solid var(--army-border)';
+      photoEl.style.boxShadow    = '0 4px 16px rgba(0,0,0,0.12)';
+    }
+
+    // ── ปรับยศ ──
+    const rankEl = document.getElementById('prof-rank');
+    if (rankEl) {
+      rankEl.style.fontSize   = '15px';
+      rankEl.style.fontWeight = '700';
+      rankEl.style.color      = 'var(--text-secondary)';
+      rankEl.style.letterSpacing = '0.3px';
+      rankEl.style.marginBottom  = '4px';
+      rankEl.style.display       = 'block';
+    }
+
+    // ── ปรับชื่อ ──
+    const nameEl = document.getElementById('prof-name');
+    if (nameEl) {
+      nameEl.style.fontSize   = '26px';
+      nameEl.style.fontWeight = '800';
+      nameEl.style.lineHeight = '1.2';
+      nameEl.style.color      = 'var(--text-primary)';
+    }
+
+    // ── ปรับตำแหน่ง ──
+    const posEl = document.getElementById('prof-pos');
+    if (posEl) {
+      posEl.style.fontSize   = '15px';
+      posEl.style.fontWeight = '500';
+      posEl.style.color      = 'var(--text-secondary)';
+      posEl.style.marginTop  = '4px';
+    }
+
+    // ── ปรับ Quick Stats 5 บล็อก ──
+    // เลขประจำตัว
+    const empidEl = document.getElementById('prof-empid');
+    if (empidEl) {
+      empidEl.style.fontSize   = '15px';
+      empidEl.style.fontWeight = '700';
+      empidEl.style.fontFamily = "'Chakra Petch', sans-serif";
+      // ปรับ label ของมัน (ก่อนหน้า)
+      const lbl = empidEl.previousElementSibling;
+      if (lbl) { lbl.style.fontSize = '12px'; lbl.style.marginBottom = '5px'; }
+    }
+
+    // หน่วยงาน
+    const unitEl = document.getElementById('prof-unit');
+    if (unitEl) {
+      unitEl.style.fontSize   = '14px';
+      unitEl.style.fontWeight = '700';
+      const lbl = unitEl.previousElementSibling;
+      if (lbl) { lbl.style.fontSize = '12px'; lbl.style.marginBottom = '5px'; }
+    }
+
+    // อายุราชการ
+    const svcEl = document.getElementById('prof-svc');
+    if (svcEl) {
+      svcEl.style.fontSize   = '12.5px';
+      svcEl.style.fontWeight = '700';
+      svcEl.style.color      = '#3a6ea8';
+      const lbl = svcEl.previousElementSibling;
+      if (lbl) { lbl.style.fontSize = '12px'; lbl.style.marginBottom = '5px'; }
+    }
+
+    // ขั้นเงินเดือน
+    const stepEl = document.getElementById('prof-step');
+    if (stepEl) {
+      stepEl.style.fontSize   = '16px';
+      stepEl.style.fontWeight = '700';
+      stepEl.style.fontFamily = "'Chakra Petch', sans-serif";
+      const lbl = stepEl.previousElementSibling;
+      if (lbl) { lbl.style.fontSize = '12px'; lbl.style.marginBottom = '5px'; }
+    }
+
+    // เงินเดือนสุทธิ
+    const netEl = document.getElementById('prof-net');
+    if (netEl) {
+      netEl.style.fontSize   = '16px';
+      netEl.style.fontWeight = '700';
+      netEl.style.fontFamily = "'Chakra Petch', sans-serif";
+      netEl.style.color      = 'var(--army-green)';
+      const lbl = netEl.previousElementSibling;
+      if (lbl) { lbl.style.fontSize = '12px'; lbl.style.marginBottom = '5px'; }
+    }
+
+    // ── ปรับ Quick Stats container padding ──
+    // (หา div ที่มี grid-template-columns:repeat(5,1fr))
+    setTimeout(() => {
+      const profileContent = document.getElementById('profile-content');
+      if (!profileContent) return;
+      profileContent.querySelectorAll('div[style*="grid-template-columns:repeat(5,1fr)"]').forEach(grid => {
+        grid.style.gap = '12px';
+        grid.style.marginBottom = '22px';
+        // ปรับแต่ละ cell
+        grid.querySelectorAll(':scope > div').forEach(cell => {
+          cell.style.padding     = '12px 14px';
+          cell.style.borderRadius = 'var(--radius)';
+          // label
+          const label = cell.querySelector('div:first-child');
+          if (label) label.style.fontSize = '12px';
+          // value
+          const value = cell.querySelector('div:last-child');
+          if (value && label !== value) value.style.fontSize = '14px';
+        });
+      });
+    }, 50);
+  };
+
+  // ── ปรับ detail-card ทุก tab ──────────────────────────
+  function upgradeDetailCards() {
+    // di-label และ di-value
+    document.querySelectorAll('.di-label').forEach(el => {
+      el.style.fontSize = '12px';
+      el.style.fontWeight = '600';
+      el.style.letterSpacing = '0.5px';
+    });
+    document.querySelectorAll('.di-value').forEach(el => {
+      el.style.fontSize = '16px';
+      el.style.fontWeight = '600';
+    });
+    // detail-card h4
+    document.querySelectorAll('.detail-card h4').forEach(el => {
+      el.style.fontSize = '17px';
+    });
+    // detail-item padding
+    document.querySelectorAll('.detail-item').forEach(el => {
+      el.style.padding = '13px 16px';
+    });
+  }
+
+  // ── ปรับ ops panel rows ──────────────────────────────
+  function upgradeOpsPanelRows() {
+    // ใน prof-ops-list ปรับ grid rows ที่ inline style
+    const opsList = document.getElementById('prof-ops-list');
+    if (!opsList) return;
+    opsList.querySelectorAll('[style*="font-size:13px"]').forEach(el => {
+      el.style.fontSize = '15px';
+    });
+    opsList.querySelectorAll('[style*="font-size:12.5px"]').forEach(el => {
+      el.style.fontSize = '14px';
+    });
+    opsList.querySelectorAll('[style*="font-size:11px"]').forEach(el => {
+      el.style.fontSize = '12.5px';
+    });
+    opsList.querySelectorAll('[style*="font-size:10px"]').forEach(el => {
+      el.style.fontSize = '12px';
+    });
+  }
+
+  // ── ปรับ courses panel rows ──────────────────────────
+  function upgradeCoursesPanelRows() {
+    const coursesList = document.getElementById('prof-courses-list');
+    if (!coursesList) return;
+    coursesList.querySelectorAll('[style*="font-size:13px"]').forEach(el => {
+      el.style.fontSize = '15px';
+    });
+    coursesList.querySelectorAll('[style*="font-size:12.5px"]').forEach(el => {
+      el.style.fontSize = '14px';
+    });
+    coursesList.querySelectorAll('[style*="font-size:11px"]').forEach(el => {
+      el.style.fontSize = '12.5px';
+    });
+    coursesList.querySelectorAll('[style*="font-size:10px"]').forEach(el => {
+      el.style.fontSize = '12px';
+    });
+  }
+
+  // ── ปรับ pension tab ─────────────────────────────────
+  function upgradePensionTab() {
+    const tab = document.getElementById('prof-tab-pension');
+    if (!tab) return;
+    tab.querySelectorAll('[style*="font-size:10px"]').forEach(el => {
+      el.style.fontSize = '12px';
+    });
+    tab.querySelectorAll('[style*="font-size:13px"]').forEach(el => {
+      el.style.fontSize = '15px';
+    });
+    tab.querySelectorAll('[style*="font-size:20px"]').forEach(el => {
+      el.style.fontSize = '22px';
+    });
+  }
+
+  // ── override loadProfileRelated เพื่อเรียก upgrade หลังโหลดข้อมูล ──
+  const _origLoadProfileRelated = window.loadProfileRelated;
+  window.loadProfileRelated = async function(id, p) {
+    if (_origLoadProfileRelated) await _origLoadProfileRelated(id, p);
+    setTimeout(() => {
+      upgradeDetailCards();
+      upgradeOpsPanelRows();
+      upgradeCoursesPanelRows();
+      upgradePensionTab();
+    }, 150);
+  };
+
+  // ── ปรับทุก tab เมื่อ click ──────────────────────────
+  const _origSwitchTab = window.switchTab;
+  window.switchTab = function(btn, tabId) {
+    if (_origSwitchTab) _origSwitchTab(btn, tabId);
+    setTimeout(() => {
+      upgradeDetailCards();
+      upgradeOpsPanelRows();
+      upgradeCoursesPanelRows();
+      upgradePensionTab();
+    }, 100);
+  };
+
+  // ── ปรับ salary tab display ──────────────────────────
+  function upgradeSalaryPanel() {
+    const panel = document.getElementById('panel-salary');
+    if (!panel) return;
+    panel.querySelectorAll('.si-label').forEach(el => {
+      el.style.fontSize = '12px';
+    });
+    panel.querySelectorAll('.si-value').forEach(el => {
+      el.style.fontSize = '16px';
+    });
+    panel.querySelectorAll('.s-label').forEach(el => {
+      el.style.fontSize = '16px';
+    });
+    panel.querySelectorAll('.s-value').forEach(el => {
+      el.style.fontSize = '32px';
+    });
+  }
+
+  // ── override loadSalary เพื่อเรียกหลังโหลด ──────────
+  const _origLoadSalary = window.loadSalary;
+  window.loadSalary = async function() {
+    if (_origLoadSalary) await _origLoadSalary();
+    setTimeout(upgradeSalaryPanel, 100);
+  };
+
+  // ── ปรับ promo / courses / ops tables ────────────────
+  function upgradeAllTables() {
+    const tableIds = ['promo-table','courses-table','ops-table','salary-table','pension-table'];
+    tableIds.forEach(id => {
+      const tbody = document.getElementById(id);
+      if (!tbody) return;
+      tbody.querySelectorAll('td').forEach(td => {
+        td.style.fontSize = '14.5px';
+      });
+      tbody.querySelectorAll('td strong').forEach(el => {
+        el.style.fontSize = '15px';
+      });
+      tbody.querySelectorAll('.chip').forEach(el => {
+        el.style.fontSize = '13px';
+        el.style.padding  = '4px 12px';
+      });
+    });
+    // ปรับ thead ด้วย
+    tableIds.forEach(id => {
+      const tbody = document.getElementById(id);
+      if (!tbody) return;
+      const thead = tbody.closest('table')?.querySelector('thead');
+      if (thead) {
+        thead.querySelectorAll('th').forEach(th => {
+          th.style.fontSize = '13.5px';
+        });
+      }
+    });
+  }
+
+  // override loadPromo, loadCourses, loadOps, loadPension
+  ['loadPromo','loadCourses','loadOps','loadPension'].forEach(fnName => {
+    const orig = window[fnName];
+    if (orig) {
+      window[fnName] = async function() {
+        await orig.apply(this, arguments);
+        setTimeout(upgradeAllTables, 150);
+      };
+    }
+  });
+
+  // ── showPanel override เพื่อ apply upgrades ──────────
+  const _origShowPanelV5 = window.showPanel;
+  window.showPanel = function(name) {
+    if (_origShowPanelV5) _origShowPanelV5(name);
+    setTimeout(() => {
+      upgradeAllTables();
+      if (name === 'salary') upgradeSalaryPanel();
+    }, 200);
+  };
+
+  // ── ปรับทันทีหลัง DOM โหลด ──────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      upgradeAllTables();
+      upgradeDetailCards();
+    }, 400);
+  });
+
+  // safety timeout
+  setTimeout(() => {
+    upgradeAllTables();
+    upgradeDetailCards();
+  }, 800);
+
+  console.log('[PATCH v5] Font + Profile UI loaded');
+})();
+</script>
+
 </body>
 </html>
