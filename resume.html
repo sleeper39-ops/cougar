@@ -3962,21 +3962,6 @@ function calcRetirementAge60(birthDateStr) {
   return `<div style="font-size:11px;font-weight:600;color:#3a6ea8;">อีก ${ymd.text}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${retireDay} ${retireMonth} ${retireYear}</div>`;
 }
 
-  // วันเกษียณอายุ 60 ปี
-  const retireDate = new Date(birthDate.getFullYear() + 60, birthDate.getMonth(), birthDate.getDate());
-  const now        = new Date();
-
-  if (retireDate <= now) return '<span class="chip green" style="font-size:11px;">✅ เกษียณแล้ว</span>';
-
-  const diffMs   = retireDate - now;
-  const diffDays = Math.floor(diffMs / (24 * 3600 * 1000));
-  const ymd      = daysToYMD(diffDays);
-  const retireYear  = retireDate.getFullYear() + 543;
-  const retireMonth = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][retireDate.getMonth()];
-  const retireDay   = retireDate.getDate();
-  return `<div style="font-size:11px;font-weight:600;color:#3a6ea8;">อีก ${ymd.text}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${retireDay} ${retireMonth} ${retireYear}</div>`;
-}
-
 async function loadPension() {
   try {
     const [jsonP, jsonO] = await Promise.all([
