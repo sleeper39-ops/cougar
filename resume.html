@@ -5123,5 +5123,205 @@ setTimeout(fixOpsLabels, 500);
 console.log('[PATCH v4] Docs display + Ops label fix loaded');
 </script>
 
+   <!-- ══════════════════════════════════════════════════════
+     PATCH v4 — วางก่อน </body>
+     1. แก้หน้าเอกสารสำคัญ — โหลดและแสดงไฟล์หลังอัปโหลด
+     2. เปลี่ยนคำ "ปฏิบัติงาน" → "ราชการสนาม" ทุกที่
+     3. เพิ่มขนาด font ตารางรายชื่อ dashboard
+     ══════════════════════════════════════════════════════ -->
+<style>
+/* ── ขนาด font ตารางรายชื่อกำลังพล dashboard ให้เท่ากับ card อื่น ── */
+#dashboard-table td,
+#dashboard-table th,
+#full-table td,
+#full-table th {
+  font-size: 14px !important;
+}
+#dashboard-table td strong,
+#full-table td strong {
+  font-size: 14.5px !important;
+  font-weight: 700;
+}
+/* ขั้นเงิน + เงินเดือน */
+#dashboard-table td:nth-child(5),
+#dashboard-table td:nth-child(6),
+#full-table td:nth-child(7),
+#full-table td:nth-child(8) {
+  font-size: 14px !important;
+  font-family: 'Chakra Petch', sans-serif !important;
+  font-weight: 600;
+}
+/* สถานะ badge */
+#dashboard-table .status-badge,
+#full-table .status-badge {
+  font-size: 12.5px !important;
+  padding: 5px 13px !important;
+}
+/* chip อายุราชการ */
+#dashboard-table .chip,
+#full-table .chip {
+  font-size: 12.5px !important;
+}
+/* header column */
+#panel-dashboard thead th,
+#panel-list thead th {
+  font-size: 13px !important;
+}
+</style>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  PART 1: แก้หน้าเอกสารสำคัญ
+// ════════════════════════════════════════════════════════
+
+function fixDriveUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('data:')) return url;
+  let fid = '';
+  const m1 = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (m1) fid = m1[1];
+  const m2 = url.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+  if (m2) fid = m2[1];
+  const m3 = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]{10,})/);
+  if (m3) fid = m3[1];
+  if (!fid) return url;
+  return 'https://lh3.googleusercontent.com/d/' + fid;
+}
+
+async function loadDocs() {
+  try {
+    const json = await callAPI({ action: 'getAll', table: 'docs' });
+    allDocsData = (json.status === 'ok' && json.data) ? json.data : [];
+    renderDocCards(allDocsData, 'all');
+    updateDocStats(allDocsData);
+  } catch(e) {
+    console.error('loadDocs:', e);
+    allDocsData = [];
+    renderDocCards([], 'all');
+  }
+}
+
+function renderDocCards(data, cat) {
+  const container = document.getElementById('doc-cards-container');
+  if (!container) return;
+  const filtered = cat === 'all' ? data : data.filter(d => (d['หมวดหมู่'] || '').includes(cat));
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="es-icon">📭</div>
+      <p>${cat === 'all' ? 'ยังไม่มีเอกสารในระบบ — กด "อัปโหลดเอกสาร" เพื่อเพิ่ม' : 'ยังไม่มีเอกสารในหมวดนี้'}</p>
+    </div>`;
+    return;
+  }
+  const typeIcon = { pdf:'📄', doc:'📝', docx:'📝', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', zip:'📦', xlsx:'📊', pptx:'📊' };
+  const now = new Date();
+  container.innerHTML = filtered.map(d => {
+    const ext      = (d['ชื่อไฟล์'] || d['ชื่อเอกสาร'] || '').split('.').pop().toLowerCase();
+    const icon     = typeIcon[ext] || '📁';
+    const iconType = ['pdf'].includes(ext) ? 'pdf' : ['jpg','jpeg','png'].includes(ext) ? 'img' : ['zip'].includes(ext) ? 'zip' : 'word';
+    const exp      = d['วันหมดอายุ'] ? new Date(d['วันหมดอายุ']) : null;
+    const isNew    = d['วันที่อัปโหลด'] && (now - new Date(d['วันที่อัปโหลด'])) < 7 * 86400000;
+    const isExp    = exp && exp < now;
+    const nearExp  = exp && !isExp && (exp - now) < 30 * 86400000;
+    const rawUrl   = d['URLไฟล์'] || d['url'] || d['URL'] || '';
+    const openUrl  = rawUrl ? fixDriveUrl(rawUrl) : '';
+    const size     = d['ขนาดไฟล์'] ? (Number(d['ขนาดไฟล์']) / 1024).toFixed(0) + ' KB' : '—';
+    const owner    = d['เจ้าของ'] || d['ชื่อกำลังพล'] || '—';
+    const docName  = d['ชื่อเอกสาร'] || d['ชื่อไฟล์'] || '—';
+    const docDate  = d['วันที่เอกสาร'] || d['วันที่อัปโหลด'] || '—';
+    return `<div class="doc-card">
+      ${isNew  ? '<span class="dc-badge new">ใหม่</span>' : ''}
+      ${nearExp ? '<span class="dc-badge exp">ใกล้หมด</span>' : ''}
+      ${isExp  ? '<span class="dc-badge exp">หมดอายุ</span>' : ''}
+      <div class="dc-top">
+        <div class="dc-icon ${iconType}">${icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="dc-name" title="${docName}">${docName}</div>
+          <div class="dc-owner" style="font-size:11px;color:var(--text-muted);">${owner} • ${d['หมวดหมู่'] || '—'}</div>
+        </div>
+      </div>
+      <div class="dc-meta">
+        <span class="dc-date">${docDate}</span>
+        <span class="dc-size">${size}</span>
+      </div>
+      <div class="dc-actions">
+        ${openUrl
+          ? `<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;"
+               onclick="window.open('${openUrl}','_blank')">👁️ ดู</button>`
+          : `<span style="font-size:11px;color:var(--text-muted);">ไม่มี URL</span>`}
+        <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#c0392b;border-color:#c0392b;"
+          onclick="deleteDoc('${d['ID'] || ''}','${d['fileId'] || ''}')">🗑️ ลบ</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateDocStats(data) {
+  const now = new Date();
+  const in30 = data.filter(d => {
+    if (!d['วันหมดอายุ']) return false;
+    const exp = new Date(d['วันหมดอายุ']);
+    return !isNaN(exp) && exp > now && (exp - now) < 30 * 86400000;
+  }).length;
+  const thisMonth = data.filter(d => {
+    if (!d['วันที่อัปโหลด']) return false;
+    const up = new Date(d['วันที่อัปโหลด']);
+    return !isNaN(up) && up.getMonth() === now.getMonth() && up.getFullYear() === now.getFullYear();
+  }).length;
+  let totalSize = 0;
+  data.forEach(d => { totalSize += Number(d['ขนาดไฟล์']) || 0; });
+  const boxes = document.querySelectorAll('#panel-docs .ds-val');
+  if (boxes[0]) boxes[0].textContent = data.length;
+  if (boxes[1]) boxes[1].textContent = in30;
+  if (boxes[2]) boxes[2].textContent = thisMonth;
+  if (boxes[3]) boxes[3].textContent = (totalSize / 1024 / 1024).toFixed(1) + ' MB';
+  const firstTab = document.querySelector('#panel-docs .doc-cat-tab');
+  if (firstTab) firstTab.textContent = `📂 ทั้งหมด (${data.length})`;
+}
+
+function filterDocs(cat, btn) {
+  document.querySelectorAll('.doc-cat-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderDocCards(allDocsData, cat);
+}
+
+// ════════════════════════════════════════════════════════
+//  PART 2: เปลี่ยนคำ "ปฏิบัติงาน" → "ราชการสนาม"
+// ════════════════════════════════════════════════════════
+
+function fixOpsLabels() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (btn.textContent.includes('ปฏิบัติงาน') && !btn.textContent.includes('ราชการสนาม'))
+      btn.textContent = '🗺️ ราชการสนาม';
+  });
+  document.querySelectorAll('.breadcrumb span').forEach(span => {
+    if (span.textContent === 'การปฏิบัติงานราชการสนาม') span.textContent = 'ราชการสนาม';
+  });
+  document.querySelectorAll('.page-header h2').forEach(h2 => {
+    if (h2.textContent === 'การปฏิบัติงานราชการสนาม') h2.textContent = 'ราชการสนาม';
+  });
+  const tt = document.getElementById('topbar-title');
+  if (tt && tt.textContent === 'การปฏิบัติงานราชการสนาม') tt.textContent = 'ราชการสนาม';
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (item.innerHTML.includes('การปฏิบัติงานราชการสนาม'))
+      item.innerHTML = item.innerHTML.replace('การปฏิบัติงานราชการสนาม', 'ราชการสนาม');
+  });
+  document.querySelectorAll('#prof-tab-ops .detail-card h4 span').forEach(span => {
+    if (span.textContent.includes('ปฏิบัติงาน')) span.textContent = '🗺️ ประวัติราชการสนาม';
+  });
+}
+
+const _origShowPanel = window.showPanel;
+window.showPanel = function(name) {
+  if (_origShowPanel) _origShowPanel(name);
+  const tt = document.getElementById('topbar-title');
+  if (name === 'ops' && tt) tt.textContent = 'ราชการสนาม';
+  setTimeout(fixOpsLabels, 50);
+};
+
+setTimeout(fixOpsLabels, 500);
+
+console.log('[PATCH v4] Docs + Ops label + Font size fix loaded');
+</script>
+ 
 </body>
 </html>
