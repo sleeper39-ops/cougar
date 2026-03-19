@@ -540,6 +540,7 @@
             <button class="toggle-btn" onclick="setRankGroup(this,'ประทวน')">ประทวน</button>
             <button class="toggle-btn" onclick="setRankGroup(this,'พลทหาร')">พลทหาร</button>
           </div>
+          <button class="btn btn-ghost" style="font-size:12px;" onclick="loadPersonnel()">🔄 รีเฟรช</button>
           <button class="btn btn-primary" onclick="showPanel('add')">+ เพิ่มใหม่</button>
         </div>
       </div>
@@ -1993,9 +1994,17 @@ function showPanel(name) {
   if (name === 'promotion') loadPromo();
   if (name === 'courses')   loadCourses();
   if (name === 'ops')       loadOps();
-  if (name === 'list')      loadPersonnel();
   if (name === 'settings')  loadSettingsUI();
   if (name === 'docs')      initDocsPanel();
+  // list และ dashboard — ใช้ cache ถ้ามี, โหลดใหม่เฉพาะครั้งแรก
+  if (name === 'list') {
+    if (allPersonnelData.length > 0) { applyListFilter(); }
+    else { loadPersonnel(); }
+  }
+  if (name === 'dashboard') {
+    if (allPersonnelData.length > 0) { applyDashFilter(); updateDashboardStats(allPersonnelData); }
+    else { loadPersonnel(); }
+  }
 }
 
 function switchTab(btn, tabId) {
@@ -2659,13 +2668,38 @@ async function updateProfileStatus(newStatus) {
 // ══════════════════════════════════════════════════
 //  PHOTO UPLOAD — preview + upload to Drive (or store base64)
 // ══════════════════════════════════════════════════
+// ── บีบอัดรูปด้วย Canvas ก่อน upload ────────────────
+function compressImage(file, maxWidthPx, qualityJpeg) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        // ลดขนาดถ้าใหญ่เกิน maxWidthPx
+        if (w > maxWidthPx) { h = Math.round(h * maxWidthPx / w); w = maxWidthPx; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', qualityJpeg);
+        const base64  = dataUrl.split(',')[1];
+        resolve({ dataUrl, base64, mimeType: 'image/jpeg' });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function previewPhoto(input, previewId, urlId) {
   const file = input.files?.[0];
   if (!file) return;
 
-  // ตรวจสอบขนาดไฟล์ (สูงสุด 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    showToast('❌ ไฟล์ขนาดใหญ่เกิน 5MB', 4000);
+  // รองรับสูงสุด 15MB
+  if (file.size > 15 * 1024 * 1024) {
+    showToast('❌ ไฟล์ขนาดใหญ่เกิน 15MB', 4000);
     input.value = '';
     return;
   }
@@ -2675,50 +2709,57 @@ function previewPhoto(input, previewId, urlId) {
   const statusId = previewId.replace('-preview', '-status');
   const statusEl = document.getElementById(statusId);
 
-  // อ่านไฟล์เป็น Base64 ก่อนเสมอ
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const base64DataUrl = e.target.result;
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted);">⏳ กำลังประมวลผล...</span>';
+
+  // บีบอัดรูปก่อนเสมอ (max 1200px, quality 0.85) เพื่อลดขนาด
+  compressImage(file, 1200, 0.85).then(({ dataUrl, base64, mimeType }) => {
 
     // แสดง preview ทันที
     if (preview) {
-      preview.innerHTML = `<img src="${base64DataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">`;
+      preview.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">`;
     }
 
     // ตรวจสอบว่าตั้งค่า Drive ไว้หรือยัง
     const imgFolderId = localStorage.getItem('cfg_drive_img_id');
     if (!imgFolderId || !isConfigured()) {
-      // ไม่มี Drive → เก็บ Base64 ไว้ใน hidden field (จะบันทึกลง Sheet โดยตรง)
-      if (urlEl) urlEl.value = base64DataUrl;
+      // ไม่มี Drive → เก็บ dataUrl ไว้ใน hidden field (บันทึกลง Sheet โดยตรง)
+      if (urlEl) urlEl.value = dataUrl;
       if (statusEl) statusEl.innerHTML = '<span style="color:var(--army-gold);">⚠️ ไม่มี Drive<br>บันทึกรูปใน Sheet</span>';
       showToast('⚠️ ยังไม่ตั้งค่า Drive — รูปจะเก็บใน Sheet โดยตรง');
       return;
     }
 
-    // มี Drive → อัปโหลดไปยัง Drive
+    // มี Drive → สร้าง Blob จาก base64 แล้วอัปโหลด
     if (statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted);">⏳ กำลังอัปโหลด...</span>';
-    uploadFileToDriveAPI(file, 'img').then(res => {
+
+    // สร้าง File object จาก base64 ที่บีบอัดแล้ว
+    const byteStr = atob(base64);
+    const arr = new Uint8Array(byteStr.length);
+    for (let i = 0; i < byteStr.length; i++) arr[i] = byteStr.charCodeAt(i);
+    const compressedFile = new File([arr], file.name.replace(/\.\w+$/, '.jpg'), { type: mimeType });
+
+    uploadFileToDriveAPI(compressedFile, 'img').then(res => {
       if (res.status === 'ok') {
         if (urlEl) urlEl.value = res.viewUrl || res.url || '';
         if (statusEl) statusEl.innerHTML = `<span style="color:var(--army-green);">✅ อัปโหลดสำเร็จ</span>`;
         showToast('✅ อัปโหลดรูปสำเร็จ');
       } else {
-        // Drive ล้มเหลว → fallback เก็บ base64
-        if (urlEl) urlEl.value = base64DataUrl;
+        // Drive ล้มเหลว → fallback เก็บ dataUrl
+        if (urlEl) urlEl.value = dataUrl;
         if (statusEl) statusEl.innerHTML = `<span style="color:#c0392b;">❌ Drive ผิดพลาด<br>บันทึกรูปใน Sheet แทน</span>`;
         showToast('⚠️ Drive ผิดพลาด — บันทึกรูปใน Sheet แทน', 4000);
       }
     }).catch(e => {
-      // เชื่อมต่อไม่ได้ → fallback เก็บ base64
-      if (urlEl) urlEl.value = base64DataUrl;
+      // เชื่อมต่อไม่ได้ → fallback เก็บ dataUrl
+      if (urlEl) urlEl.value = dataUrl;
       if (statusEl) statusEl.innerHTML = `<span style="color:#c0392b;">❌ เชื่อมต่อไม่ได้<br>บันทึกรูปใน Sheet แทน</span>`;
       showToast('⚠️ เชื่อมต่อไม่ได้ — บันทึกรูปใน Sheet แทน', 4000);
     });
-  };
-  reader.onerror = () => {
-    showToast('❌ อ่านไฟล์ไม่ได้', 4000);
-  };
-  reader.readAsDataURL(file);
+
+  }).catch(e => {
+    showToast('❌ ประมวลผลรูปไม่ได้: ' + e.message, 4000);
+    if (statusEl) statusEl.innerHTML = `<span style="color:#c0392b;">❌ อ่านรูปไม่ได้</span>`;
+  });
 }
 
 // ══════════════════════════════════════════════════
@@ -3757,43 +3798,60 @@ window.addEventListener('load', () => {
   }
 });
 
+// ── แปลง year string ให้เป็น ค.ศ. เสมอ ─────────────
+// เกณฑ์: ปี > 2400 = พ.ศ. (ลบ 543), ปี < 100 = 2-digit ค.ศ. (บวก 1900)
+function toAD(year) {
+  const y = parseInt(year);
+  if (isNaN(y)) return NaN;
+  if (y > 2400)  return y - 543;  // พ.ศ. → ค.ศ.
+  if (y < 100)   return y + 1900; // 2-digit ค.ศ.
+  return y;                        // ค.ศ. อยู่แล้ว
+}
+// แปลง ค.ศ. → พ.ศ.
+function toBE(yearAD) { return yearAD + 543; }
+
+// ── แปลง date string ทุกรูปแบบเป็น Date object (ค.ศ.) ─
+function parseAnyDate(dateStr) {
+  if (!dateStr || dateStr === '—') return null;
+  const s = (dateStr + '').trim();
+  const monthNumMap = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+  const thaiMonthMap = {'มกราคม':0,'กุมภาพันธ์':1,'มีนาคม':2,'เมษายน':3,'พฤษภาคม':4,'มิถุนายน':5,
+    'กรกฎาคม':6,'สิงหาคม':7,'กันยายน':8,'ตุลาคม':9,'พฤศจิกายน':10,'ธันวาคม':11};
+
+  // "Mon Nov 25 1988 ..." หรือ "Fri Oct 01 2562 ..."
+  const jsMatch = s.match(/\w+\s+(\w+)\s+(\d{1,2})\s+(\d{2,4})/);
+  if (jsMatch && monthNumMap[jsMatch[1]] !== undefined) {
+    return new Date(toAD(jsMatch[3]), monthNumMap[jsMatch[1]], parseInt(jsMatch[2]));
+  }
+
+  // "25 พฤศจิกายน 2531" หรือ "1 ตุลาคม 2562"
+  const thaiMatch = s.match(/^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/);
+  if (thaiMatch && thaiMonthMap[thaiMatch[2]] !== undefined) {
+    return new Date(toAD(thaiMatch[3]), thaiMonthMap[thaiMatch[2]], parseInt(thaiMatch[1]));
+  }
+
+  // "1988-11-25" ISO
+  const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    return new Date(toAD(isoMatch[1]), parseInt(isoMatch[2]) - 1, parseInt(isoMatch[3]));
+  }
+
+  return null;
+}
+
 function formatDateThai(dateStr) {
   if (!dateStr || dateStr === '—') return '—';
-  const monthMap = { Jan:'มกราคม',Feb:'กุมภาพันธ์',Mar:'มีนาคม',Apr:'เมษายน',
-    May:'พฤษภาคม',Jun:'มิถุนายน',Jul:'กรกฎาคม',Aug:'สิงหาคม',
-    Sep:'กันยายน',Oct:'ตุลาคม',Nov:'พฤศจิกายน',Dec:'ธันวาคม' };
-  const m = dateStr.match(/\w+\s+(\w+)\s+(\d+)\s+(\d+)/);
-  if (m) {
-    const day   = parseInt(m[2]);
-    const month = monthMap[m[1]] || m[1];
-    let   year  = parseInt(m[3]);
-    if (year < 2500) year += 543;
-    return `${day} ${month} ${year}`;
-  }
-  return dateStr;
+  const thaiMonths = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+    'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const d = parseAnyDate(dateStr);
+  if (!d || isNaN(d)) return dateStr;
+  return `${d.getDate()} ${thaiMonths[d.getMonth()]} ${toBE(d.getFullYear())}`;
 }
 
 function calcServiceDetail(joinDateStr) {
   if (!joinDateStr) return { years:0, months:0, days:0, total:0, text:'—' };
-  const monthNumMap = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
-  const thaiMonthMap = {'มกราคม':0,'กุมภาพันธ์':1,'มีนาคม':2,'เมษายน':3,'พฤษภาคม':4,'มิถุนายน':5,'กรกฎาคม':6,'สิงหาคม':7,'กันยายน':8,'ตุลาคม':9,'พฤศจิกายน':10,'ธันวาคม':11};
-  let joinDate;
-  const m = joinDateStr.match(/\w+\s+(\w+)\s+(\d+)\s+(\d+)/);
-  if (m) {
-    let year = parseInt(m[3]);
-    if (year > 2400) year -= 543;
-    joinDate = new Date(year, monthNumMap[m[1]] ?? 0, parseInt(m[2]));
-  } else {
-    const parts = joinDateStr.trim().split(' ');
-    if (parts.length === 3 && thaiMonthMap[parts[1]] !== undefined) {
-      let y = parseInt(parts[2]);
-      if (y > 2400) y -= 543;
-      joinDate = new Date(y, thaiMonthMap[parts[1]], parseInt(parts[0]));
-    } else {
-      joinDate = new Date(joinDateStr);
-    }
-  }
-  if (isNaN(joinDate)) return { years:0, months:0, days:0, total:0, text:'—' };
+  const joinDate = parseAnyDate(joinDateStr);
+  if (!joinDate || isNaN(joinDate)) return { years:0, months:0, days:0, total:0, text:'—' };
   const now   = new Date();
   let years   = now.getFullYear() - joinDate.getFullYear();
   let months  = now.getMonth()    - joinDate.getMonth();
@@ -3882,22 +3940,7 @@ function daysToYMD(totalDays) {
 
 // ── คำนวณเวลาคงเหลือก่อนเกษียณ (อายุราชการครบ 25 ปี รวมวันทวีคูณ) ──
 function calcRetirement(joinDateStr, extraDays) {
-  const thaiMonthMap = {'มกราคม':0,'กุมภาพันธ์':1,'มีนาคม':2,'เมษายน':3,'พฤษภาคม':4,'มิถุนายน':5,'กรกฎาคม':6,'สิงหาคม':7,'กันยายน':8,'ตุลาคม':9,'พฤศจิกายน':10,'ธันวาคม':11};
-  const monthNumMap  = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
-  let joinDate;
-  const m = joinDateStr ? joinDateStr.match(/\w+\s+(\w+)\s+(\d+)\s+(\d+)/) : null;
-  if (m) {
-    let year = parseInt(m[3]);
-    if (year > 2400) year -= 543;
-    joinDate = new Date(year, monthNumMap[m[1]] ?? 0, parseInt(m[2]));
-  } else if (joinDateStr) {
-    const parts = joinDateStr.trim().split(' ');
-    if (parts.length === 3 && thaiMonthMap[parts[1]] !== undefined) {
-      let y = parseInt(parts[2]);
-      if (y > 2400) y -= 543;
-      joinDate = new Date(y, thaiMonthMap[parts[1]], parseInt(parts[0]));
-    }
-  }
+  const joinDate = parseAnyDate(joinDateStr);
   if (!joinDate || isNaN(joinDate)) return '—';
 
   // วันเกษียณ = วันเข้าราชการ + 25 ปี - วันทวีคูณ
@@ -3907,10 +3950,9 @@ function calcRetirement(joinDateStr, extraDays) {
 
   if (retireDate <= now) return '<span class="chip green" style="font-size:11px;">✅ ครบแล้ว</span>';
 
-  const diffMs   = retireDate - now;
-  const diffDays = Math.floor(diffMs / (24 * 3600 * 1000));
+  const diffDays = Math.floor((retireDate - now) / (24 * 3600 * 1000));
   const ymd      = daysToYMD(diffDays);
-  const retireYear  = retireDate.getFullYear() + 543;
+  const retireYear  = toBE(retireDate.getFullYear());
   const retireMonth = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][retireDate.getMonth()];
   const retireDay   = retireDate.getDate();
   return `<div style="font-size:11px;font-weight:600;color:var(--army-green);">อีก ${ymd.text}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${retireDay} ${retireMonth} ${retireYear}</div>`;
@@ -3918,45 +3960,18 @@ function calcRetirement(joinDateStr, extraDays) {
 
 // ── คำนวณเวลาคงเหลือก่อนเกษียณอายุ 60 ปี (จากวันเกิด) ──
 function calcRetirementAge60(birthDateStr) {
-  if (!birthDateStr || birthDateStr === '—') return '—';
-  let birthDate;
-
-  // รูปแบบ "25 พฤศจิกายน 2531" (พ.ศ.)
-  const thaiMatch = (birthDateStr+'').trim().match(/^(\d{1,2})\s+(\S+)\s+(\d{4})$/);
-  if (thaiMatch && THAI_MONTH_MAP[thaiMatch[2]]) {
-    let y = parseInt(thaiMatch[3]);
-    if (y > 2400) y -= 543; // แปลงเป็น ค.ศ.
-    birthDate = new Date(y, THAI_MONTH_MAP[thaiMatch[2]] - 1, parseInt(thaiMatch[1]));
-  }
-
-  // รูปแบบ ISO "YYYY-MM-DD" (ค.ศ.)
-  if (!birthDate || isNaN(birthDate)) {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(birthDateStr)) {
-      birthDate = new Date(birthDateStr);
-    }
-  }
-
-  // รูปแบบจาก Sheet "Mon Nov 25 1988 ..."
-  if (!birthDate || isNaN(birthDate)) {
-    const sheetMonthMap = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
-    const m = (birthDateStr+'').match(/\w+\s+(\w+)\s+(\d+)\s+(\d{4})/);
-    if (m && sheetMonthMap[m[1]] !== undefined) {
-      birthDate = new Date(parseInt(m[3]), sheetMonthMap[m[1]], parseInt(m[2]));
-    }
-  }
-
+  const birthDate = parseAnyDate(birthDateStr);
   if (!birthDate || isNaN(birthDate)) return '—';
 
-  // วันเกษียณอายุ 60 ปี
+  // วันเกษียณอายุ 60 ปี (ค.ศ.)
   const retireDate = new Date(birthDate.getFullYear() + 60, birthDate.getMonth(), birthDate.getDate());
   const now        = new Date();
 
   if (retireDate <= now) return '<span class="chip green" style="font-size:11px;">✅ เกษียณแล้ว</span>';
 
-  const diffMs   = retireDate - now;
-  const diffDays = Math.floor(diffMs / (24 * 3600 * 1000));
-  const ymd      = daysToYMD(diffDays);
-  const retireYear  = retireDate.getFullYear() + 543;
+  const diffDays    = Math.floor((retireDate - now) / (24 * 3600 * 1000));
+  const ymd         = daysToYMD(diffDays);
+  const retireYear  = toBE(retireDate.getFullYear());
   const retireMonth = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][retireDate.getMonth()];
   const retireDay   = retireDate.getDate();
   return `<div style="font-size:11px;font-weight:600;color:#3a6ea8;">อีก ${ymd.text}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${retireDay} ${retireMonth} ${retireYear}</div>`;
