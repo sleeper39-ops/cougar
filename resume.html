@@ -5916,6 +5916,655 @@ table tbody td strong {
   console.log('[PATCH v5] Font + Profile UI loaded');
 })();
 </script>
+<!-- ══════════════════════════════════════════════════════════
+     PATCH v6 — วางก่อน </body> ในไฟล์หลัก (โค้ดที่ 2)
+     อัพเดตหน้าเอกสารสำคัญ: นำระบบอัพโหลดจาก E-Doc Enterprise
+     มาแทนของเดิม คงหัวข้อ โทนสี และโครงสร้างบล็อกเดิมทั้งหมด
+     ══════════════════════════════════════════════════════════ -->
+
+<!-- ── 1. โหลด SweetAlert2 (สำหรับระบบอัพโหลด) ─────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- ── 2. CSS เพิ่มเติมสำหรับหน้า Docs ─────────────────────── -->
+<style>
+/* ── ไอคอนไฟล์ SVG (จาก E-Doc) ── */
+.edoc-type-icon { width: 48px; height: 48px; flex-shrink: 0; }
+.edoc-type-icon svg { width: 48px; height: 48px; display: block; }
+
+/* ── Lightbox ── */
+#edoc-lightbox {
+  display: none; position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.88);
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+}
+#edoc-lightbox.open { display: flex; }
+#edoc-lightbox-close {
+  position: absolute; top: 16px; right: 20px;
+  background: rgba(255,255,255,0.15); border: none;
+  color: #fff; font-size: 24px; cursor: pointer;
+  border-radius: 50%; width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s; z-index: 10;
+}
+#edoc-lightbox-close:hover { background: rgba(255,255,255,0.3); }
+@keyframes edoc-spin { to { transform: rotate(360deg); } }
+
+/* ── doc-card แบบใหม่ (ใช้สไตล์ army) ── */
+.edoc-card {
+  background: var(--bg-card);
+  border: 1px solid var(--army-border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  transition: var(--transition);
+  position: relative;
+}
+.edoc-card:hover {
+  border-color: var(--army-green);
+  box-shadow: 0 4px 16px rgba(45,80,22,0.12);
+  transform: translateY(-2px);
+}
+.edoc-card .edc-badge {
+  position: absolute; top: 10px; right: 10px;
+  padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700;
+}
+.edoc-card .edc-badge.new { background: #e8f5e8; color: #2d6a2d; }
+.edoc-card .edc-badge.exp { background: #fde8e8; color: #a32d2d; }
+.edoc-card .edc-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.edoc-card .edc-info { flex: 1; min-width: 0; }
+.edoc-card .edc-name { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.4; margin-bottom: 4px; }
+.edoc-card .edc-cat { font-size: 10px; font-weight: 700; color: var(--army-green); background: var(--army-pale); padding: 2px 8px; border-radius: 6px; display: inline-block; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid var(--army-border); }
+.edoc-card .edc-meta { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--army-border); padding-top: 8px; margin-top: 8px; }
+.edoc-card .edc-date { font-size: 11px; color: var(--text-muted); }
+.edoc-card .edc-size { font-size: 11px; color: var(--text-muted); }
+.edoc-card .edc-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+/* ── Progress bar ── */
+.edoc-progress-wrap { background: var(--army-border); border-radius: 4px; height: 8px; overflow: hidden; }
+.edoc-progress-bar { height: 100%; border-radius: 4px; background: var(--army-green); width: 0%; transition: width 0.3s; }
+
+/* ── Upload zone ── */
+.edoc-drop-zone {
+  border: 2px dashed var(--army-border); border-radius: var(--radius);
+  padding: 28px 20px; text-align: center; cursor: pointer;
+  transition: var(--transition); background: var(--bg-light);
+}
+.edoc-drop-zone:hover, .edoc-drop-zone.drag-over {
+  border-color: var(--army-green); background: #edf4e8;
+}
+.edoc-drop-zone .edz-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.6; }
+.edoc-drop-zone h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.edoc-drop-zone p { font-size: 12px; color: var(--text-muted); }
+
+/* ── Swal custom สีทหาร ── */
+.swal2-confirm.swal-army { background: var(--army-green) !important; }
+.swal2-cancel.swal-ghost  { background: var(--bg-light) !important; color: var(--text-secondary) !important; border: 1.5px solid var(--army-border) !important; }
+
+/* ── Admin badge (ใน docs panel) ── */
+#docs-admin-badge {
+  display: none; background: rgba(200,168,75,0.2); color: var(--army-gold);
+  border: 1px solid rgba(200,168,75,0.35); border-radius: 20px;
+  font-size: 11px; font-weight: 600; padding: 3px 12px;
+  align-items: center; gap: 5px;
+}
+#docs-admin-badge.show { display: inline-flex; }
+
+/* ── SweetAlert2 font override ── */
+.swal2-popup { font-family: 'Sarabun', sans-serif !important; }
+.swal2-input, .swal2-file, .swal2-select { font-family: 'Sarabun', sans-serif !important; border-radius: 8px !important; }
+</style>
+
+<!-- ── 3. SVG Icon definitions (inline, ไม่ต้องโหลด CDN) ─────── -->
+<script>
+// ════════════════════════════════════════════════════════════
+//  PATCH v6 — E-Doc Upload System สำหรับหน้าเอกสารสำคัญ
+//  คงโครงสร้าง/โทนสี/หัวข้อเดิม เพิ่มระบบ Upload + Icons
+// ════════════════════════════════════════════════════════════
+
+// ── E-DOC Script URL (จาก E-Doc Enterprise) ──────────────
+const EDOC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCemLCIZ1_G3MXmimKAo5FNe6ifhLbrAAT1VzLMD9N9T8GCqFpz3YwYLtLc2ey7XE/exec";
+
+// ── State ──────────────────────────────────────────────────
+let edocDocuments = [];
+let edocIsAdmin   = false;
+const EDOC_IMAGE_TYPES = new Set(['jpg','jpeg','png','gif','webp']);
+
+// ── SVG Icons ─────────────────────────────────────────────
+const EDOC_SVG = {
+  excel: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="8" fill="#1D6F42"/><rect x="24" y="6" width="18" height="36" rx="3" fill="white" opacity="0.95"/><rect x="27" y="10" width="4" height="3" rx="0.5" fill="#1D6F42" opacity="0.7"/><rect x="33" y="10" width="6" height="3" rx="0.5" fill="#1D6F42" opacity="0.7"/><rect x="27" y="15" width="4" height="3" rx="0.5" fill="#1D6F42" opacity="0.5"/><rect x="33" y="15" width="6" height="3" rx="0.5" fill="#1D6F42" opacity="0.5"/><rect x="27" y="20" width="4" height="3" rx="0.5" fill="#1D6F42" opacity="0.7"/><rect x="33" y="20" width="6" height="3" rx="0.5" fill="#1D6F42" opacity="0.7"/><rect x="5" y="8" width="22" height="32" rx="3" fill="#217346"/><text x="16" y="30" font-size="18" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial">X</text></svg>`,
+  word: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="8" fill="#2B579A"/><rect x="24" y="6" width="18" height="36" rx="3" fill="white" opacity="0.95"/><rect x="27" y="11" width="12" height="2" rx="1" fill="#2B579A" opacity="0.6"/><rect x="27" y="16" width="12" height="2" rx="1" fill="#2B579A" opacity="0.4"/><rect x="27" y="21" width="9" height="2" rx="1" fill="#2B579A" opacity="0.6"/><rect x="27" y="26" width="12" height="2" rx="1" fill="#2B579A" opacity="0.4"/><rect x="5" y="8" width="22" height="32" rx="3" fill="#2B579A"/><text x="16" y="30" font-size="18" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial">W</text></svg>`,
+  ppt: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="8" fill="#C43E1C"/><rect x="24" y="6" width="18" height="36" rx="3" fill="white" opacity="0.95"/><circle cx="35" cy="20" r="7" fill="none" stroke="#C43E1C" stroke-width="2" opacity="0.25"/><path d="M35 13 A7 7 0 0 1 42 20 L35 20 Z" fill="#C43E1C" opacity="0.7"/><rect x="5" y="8" width="22" height="32" rx="3" fill="#C43E1C"/><text x="16" y="30" font-size="18" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial">P</text></svg>`,
+  rar: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><ellipse cx="24" cy="12" rx="17" ry="5.5" fill="#c0392b"/><rect x="7" y="12" width="34" height="9" fill="#c0392b"/><ellipse cx="24" cy="21" rx="17" ry="5.5" fill="#2980b9"/><rect x="7" y="21" width="34" height="9" fill="#2980b9"/><ellipse cx="24" cy="30" rx="17" ry="5.5" fill="#27ae60"/><rect x="7" y="30" width="34" height="9" fill="#27ae60"/><ellipse cx="24" cy="39" rx="17" ry="5.5" fill="#27ae60"/><rect x="20" y="6" width="8" height="36" fill="#d4860a"/><circle cx="24" cy="24" r="2" fill="#f0c040"/></svg>`,
+  video: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="23" fill="#1565C0"/><rect x="9" y="16" width="22" height="16" rx="3" fill="white"/><polygon points="32,18 40,13 40,35 32,30" fill="white"/></svg>`,
+  audio: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="2" width="30" height="38" rx="3" fill="white" stroke="#d0d8e8" stroke-width="1"/><rect x="4" y="2" width="30" height="9" rx="3" fill="#5DADE2"/><rect x="4" y="8" width="30" height="3" fill="#5DADE2"/><text x="19" y="32" font-size="20" fill="#5DADE2" text-anchor="middle" font-family="serif">♫</text></svg>`,
+  photo: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="23" fill="#00897B"/><rect x="11" y="11" width="26" height="26" rx="1" fill="white"/><rect x="13" y="13" width="22" height="20" fill="#4DB6AC" opacity="0.3"/><polygon points="13,33 20,22 25,28 30,23 35,33" fill="#455A64" opacity="0.8"/><circle cx="20" cy="19" r="2.5" fill="#F9A825"/></svg>`,
+  pdf: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="2" width="30" height="40" rx="3" fill="#F44336"/><rect x="4" y="2" width="30" height="12" rx="3" fill="#B71C1C"/><rect x="4" y="10" width="30" height="4" fill="#B71C1C"/><text x="19" y="33" font-size="10" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial">PDF</text><rect x="30" y="2" width="14" height="14" rx="2" fill="#FFCDD2"/><path d="M30 2 L44 16 L30 16 Z" fill="#EF9A9A"/></svg>`,
+  link: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#1E88E5"/><path d="M20 18 L16 18 A8 8 0 0 0 16 34 L20 34 L20 30 L16 30 A4 4 0 0 1 16 22 L20 22 Z" fill="white"/><path d="M28 18 L32 18 A8 8 0 0 1 32 34 L28 34 L28 30 L32 30 A4 4 0 0 0 32 22 L28 22 Z" fill="white"/><rect x="18" y="22" width="12" height="4" rx="2" fill="white"/></svg>`,
+  default: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="2" width="30" height="40" rx="3" fill="#90A4AE"/><rect x="16" y="16" width="14" height="2" rx="1" fill="white" opacity="0.8"/><rect x="10" y="21" width="20" height="2" rx="1" fill="white" opacity="0.6"/><rect x="10" y="26" width="17" height="2" rx="1" fill="white" opacity="0.8"/><rect x="30" y="2" width="14" height="14" rx="2" fill="#B0BEC5"/><path d="M30 2 L44 16 L30 16 Z" fill="#90A4AE"/></svg>`,
+};
+
+const EDOC_TYPE_MAP = {
+  xlsx:'excel', xls:'excel', csv:'excel',
+  doc:'word', docx:'word',
+  ppt:'ppt', pptx:'ppt',
+  rar:'rar', zip:'rar', '7z':'rar',
+  mp4:'video', mov:'video', avi:'video', mkv:'video',
+  mp3:'audio', wav:'audio', m4a:'audio',
+  jpg:'photo', jpeg:'photo', png:'photo', gif:'photo', webp:'photo',
+  pdf:'pdf',
+  link:'link',
+};
+
+function edocGetIcon(ext) {
+  const key = EDOC_TYPE_MAP[(ext||'').toLowerCase()] || 'default';
+  return `<div class="edoc-type-icon" title=".${ext}">${EDOC_SVG[key]}</div>`;
+}
+
+// ── Lightbox ──────────────────────────────────────────────
+function edocOpenLightbox(url) {
+  const previewUrl = edocToDrivePreview(url);
+  const frame   = document.getElementById('edoc-lightbox-frame');
+  const spinner = document.getElementById('edoc-lightbox-spinner');
+  spinner.style.display = 'flex';
+  frame.src = previewUrl;
+  document.getElementById('edoc-lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function edocCloseLightbox(e, force) {
+  if (force || (e && e.target === document.getElementById('edoc-lightbox'))) {
+    document.getElementById('edoc-lightbox').classList.remove('open');
+    document.getElementById('edoc-lightbox-frame').src = '';
+    document.getElementById('edoc-lightbox-spinner').style.display = 'flex';
+    document.body.style.overflow = '';
+  }
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') edocCloseLightbox(null,true); });
+
+function edocToDrivePreview(url) {
+  const m = (url||'').match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]{10,})/);
+  if (m) return 'https://drive.google.com/file/d/' + m[1] + '/preview';
+  const m2 = (url||'').match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (m2) return 'https://drive.google.com/file/d/' + m2[1] + '/preview';
+  return url;
+}
+
+// ── toThaiDate ────────────────────────────────────────────
+function edocToThaiDate(raw) {
+  if (!raw) return '—';
+  let day, month, year;
+  const iso = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) { year=parseInt(iso[1]); month=parseInt(iso[2]); day=parseInt(iso[3]); }
+  else { const d=new Date(raw); if(!isNaN(d)){day=d.getDate();month=d.getMonth()+1;year=d.getFullYear();} else return String(raw); }
+  if (year < 2500) year += 543;
+  return `${day}/${month}/${year}`;
+}
+function edocToTimestamp(raw) {
+  if (!raw) return 0;
+  const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return new Date(`${m[1]}-${m[2]}-${m[3]}`).getTime();
+  const d = new Date(raw); return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+// ── Load ──────────────────────────────────────────────────
+async function edocLoadDocs() {
+  try {
+    const res    = await fetch(EDOC_SCRIPT_URL, { method:'POST', body:JSON.stringify({action:'getList'}) });
+    const result = await res.json();
+    if (result.status === 'success') {
+      edocDocuments = result.data.sort((a,b) => edocToTimestamp(b.date) - edocToTimestamp(a.date));
+      edocUpdateCategoryDropdown();
+      edocRenderList();
+      edocUpdateStats();
+    } else { edocRenderEmpty(); }
+  } catch(err) { console.warn('[E-Doc] loadDocs error:', err); edocRenderEmpty(); }
+}
+
+function edocRenderEmpty() {
+  const g = document.getElementById('edoc-grid-container');
+  if (g) g.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="es-icon">📭</div><p>ยังไม่มีเอกสาร หรือยังไม่ได้เชื่อมต่อระบบ E-Doc</p></div>`;
+}
+
+// ── Render ────────────────────────────────────────────────
+function edocRenderList() {
+  const container = document.getElementById('edoc-grid-container');
+  if (!container) return;
+  const search = (document.getElementById('edoc-search-input')?.value || '').toLowerCase();
+  const cat    = document.getElementById('edoc-filter-category')?.value || '';
+
+  const filtered = edocDocuments.filter(d =>
+    d.name.toLowerCase().includes(search) && (!cat || d.category === cat)
+  );
+
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="es-icon">📭</div><p>ไม่พบเอกสาร</p></div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(doc => {
+    const ext        = (doc.name || '').split('.').pop().toLowerCase();
+    const isImage    = EDOC_IMAGE_TYPES.has(ext);
+    const isLink     = ext === 'link' || (doc.type === 'link');
+    const iconKey    = isLink ? 'link' : ext;
+    const iconHtml   = edocGetIcon(iconKey);
+    const dispDate   = edocToThaiDate(doc.date);
+    const deleteBtn  = edocIsAdmin
+      ? `<button onclick="edocDeleteDoc('${doc.id}')" style="position:absolute;top:8px;right:8px;width:26px;height:26px;background:#fde8e8;color:#c0392b;border:1px solid #f0b0b0;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;" title="ลบ">✕</button>` : '';
+
+    const actionBtns = isImage
+      ? `<button onclick="edocOpenLightbox('${doc.url}')" class="btn btn-ghost" style="font-size:11px;padding:3px 10px;flex:1;">🖼️ ดูรูป</button>
+         <a href="${doc.url}" target="_blank" class="btn btn-primary" style="font-size:11px;padding:3px 10px;flex:1;text-decoration:none;text-align:center;">⬇️ ดาวน์โหลด</a>`
+      : `<a href="${doc.url}" target="_blank" class="btn btn-ghost" style="font-size:11px;padding:3px 10px;flex:1;text-decoration:none;text-align:center;">👁️ ดูตัวอย่าง</a>
+         <a href="${doc.url}" target="_blank" class="btn btn-primary" style="font-size:11px;padding:3px 10px;flex:1;text-decoration:none;text-align:center;">⬇️ ดาวน์โหลด</a>`;
+
+    return `<div class="edoc-card" style="position:relative;">
+      ${deleteBtn}
+      <div class="edc-top">
+        ${iconHtml}
+        <div class="edc-info">
+          <div class="edc-name" title="${doc.name}">${doc.name}</div>
+          <span class="edc-cat">${doc.category || '—'}</span>
+        </div>
+      </div>
+      <div class="edc-meta">
+        <span class="edc-date">📅 ${dispDate}</span>
+        <span class="edc-size" style="font-size:10px;color:var(--text-muted);">.${ext.toUpperCase()}</span>
+      </div>
+      <div class="edc-actions">${actionBtns}</div>
+    </div>`;
+  }).join('');
+}
+
+function edocUpdateStats() {
+  const total = edocDocuments.length;
+  const images = edocDocuments.filter(d => EDOC_IMAGE_TYPES.has((d.name||'').split('.').pop().toLowerCase())).length;
+  const docs   = total - images;
+  // อัพเดต stat boxes เดิมของระบบ army ถ้ามี
+  const b = document.querySelectorAll('#panel-docs .ds-val');
+  if (b[0]) b[0].textContent = total;
+  if (b[2]) b[2].textContent = docs;
+  if (b[3]) b[3].textContent = images + ' รูป';
+  // อัพเดต badge นับ
+  const badge = document.getElementById('edoc-total-badge');
+  if (badge) badge.textContent = `ทั้งหมด ${total} รายการ`;
+}
+
+function edocUpdateCategoryDropdown() {
+  const sel = document.getElementById('edoc-filter-category');
+  if (!sel) return;
+  const cur  = sel.value;
+  const cats = ['เอกสาร','รูปภาพ','มัลติมีเดีย', ...new Set(edocDocuments.map(d=>d.category))].filter(Boolean);
+  sel.innerHTML = '<option value="">ทุกหมวดหมู่</option>';
+  [...new Set(cats)].forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
+  sel.value = cur;
+}
+
+// ── Admin Toggle ──────────────────────────────────────────
+async function edocToggleAdmin() {
+  if (!edocIsAdmin) {
+    const { value: password } = await Swal.fire({
+      title: '🔐 รหัสผ่านแอดมิน E-Doc',
+      input: 'password',
+      inputPlaceholder: 'กรอกรหัสผ่าน',
+      showCancelButton: true,
+      confirmButtonText: 'ยืนยัน',
+      confirmButtonColor: '#2d5016',
+      cancelButtonText: 'ยกเลิก',
+      customClass: { popup: 'swal2-popup' }
+    });
+    if (!password) return;
+    Swal.fire({ title: 'กำลังตรวจสอบ...', didOpen: () => Swal.showLoading() });
+    try {
+      const res = await fetch(EDOC_SCRIPT_URL, { method:'POST', body:JSON.stringify({action:'checkAuth', password}) });
+      const r   = await res.json();
+      if (r.status === 'success') {
+        edocIsAdmin = true;
+        edocApplyAdminUI();
+        Swal.fire({ icon:'success', title:'เข้าสู่โหมดแอดมิน', timer:1200, showConfirmButton:false });
+      } else {
+        Swal.fire('ล้มเหลว', 'รหัสผ่านไม่ถูกต้อง', 'error');
+      }
+    } catch(e) { Swal.fire('ผิดพลาด', 'เชื่อมต่อไม่ได้', 'error'); }
+  } else {
+    edocIsAdmin = false;
+    edocApplyAdminUI();
+  }
+}
+
+function edocApplyAdminUI() {
+  const badge  = document.getElementById('docs-admin-badge');
+  const addBtn = document.getElementById('edoc-add-btn');
+  const adminBtn = document.getElementById('edoc-admin-btn');
+  if (badge)  badge.classList.toggle('show', edocIsAdmin);
+  if (addBtn) addBtn.classList.toggle('hidden', !edocIsAdmin);
+  if (adminBtn) {
+    adminBtn.textContent = edocIsAdmin ? '🔓 ปิดแอดมิน' : '🔐 จัดการระบบ';
+    adminBtn.style.background = edocIsAdmin ? 'var(--army-gold)' : '';
+    adminBtn.style.color      = edocIsAdmin ? 'var(--army-dark)' : '';
+  }
+  edocRenderList();
+}
+
+// ── Add Document ──────────────────────────────────────────
+async function edocAddDocument() {
+  let uploadType = 'file';
+  const { value: formValues } = await Swal.fire({
+    title: '📤 เพิ่มเอกสารใหม่',
+    html: `<div class="text-left mt-4" style="text-align:left;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <label id="edoc-input-label" style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">1. เลือกไฟล์ (ไม่เกิน 20MB)</label>
+        <button type="button" id="edoc-toggle-method" style="font-size:11px;color:var(--army-green);font-weight:600;background:none;border:none;cursor:pointer;text-decoration:underline;">สลับเป็นวางลิงก์</button>
+      </div>
+      <div id="edoc-file-area">
+        <input id="edoc-swal-file" type="file" class="swal2-file" style="width:100%;margin:0!important;border-radius:8px!important;">
+      </div>
+      <div id="edoc-link-area" style="display:none;">
+        <input id="edoc-swal-link" class="swal2-input" placeholder="วางลิงก์ Google Drive หรือ URL..." style="width:100%;margin:4px 0!important;border-radius:8px!important;">
+      </div>
+      <div style="margin-top:14px;">
+        <label style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">2. หมวดหมู่</label>
+        <select id="edoc-swal-cat" class="swal2-input" style="width:100%;margin:6px 0 0!important;border-radius:8px!important;">
+          <option value="เอกสาร">📄 เอกสาร</option>
+          <option value="รูปภาพ">🖼️ รูปภาพ</option>
+          <option value="มัลติมีเดีย">🎬 มัลติมีเดีย</option>
+          <option value="วันทวีคูณ">📅 วันทวีคูณ</option>
+          <option value="ราชการสนาม">🗺️ ราชการสนาม</option>
+          <option value="หลักสูตร">🎓 หลักสูตร</option>
+          <option value="บำเหน็จบำนาญ">🏦 บำเหน็จ/บำนาญ</option>
+          <option value="คำสั่ง">📜 คำสั่ง/หนังสือราชการ</option>
+        </select>
+      </div>
+    </div>`,
+    showCancelButton: true,
+    confirmButtonText: '💾 บันทึก',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#2d5016',
+    didOpen: () => {
+      document.getElementById('edoc-toggle-method').onclick = () => {
+        uploadType = uploadType === 'file' ? 'link' : 'file';
+        document.getElementById('edoc-file-area').style.display = uploadType === 'file' ? 'block' : 'none';
+        document.getElementById('edoc-link-area').style.display = uploadType === 'link' ? 'block' : 'none';
+        document.getElementById('edoc-input-label').textContent = uploadType === 'file' ? '1. เลือกไฟล์ (ไม่เกิน 20MB)' : '1. วางลิงก์เอกสาร';
+        document.getElementById('edoc-toggle-method').textContent = uploadType === 'file' ? 'สลับเป็นวางลิงก์' : 'สลับเป็นอัพโหลดไฟล์';
+      };
+    },
+    preConfirm: () => {
+      const cat = document.getElementById('edoc-swal-cat').value;
+      if (uploadType === 'file') {
+        const file = document.getElementById('edoc-swal-file').files[0];
+        if (!file) return Swal.showValidationMessage('กรุณาเลือกไฟล์');
+        if (file.size > 20 * 1024 * 1024) return Swal.showValidationMessage('ไฟล์ใหญ่เกิน 20MB');
+        return { type:'file', file, category:cat };
+      } else {
+        const link = document.getElementById('edoc-swal-link').value;
+        if (!link || !link.includes('http')) return Swal.showValidationMessage('กรุณาวางลิงก์ที่ถูกต้อง');
+        return { type:'link', link, category:cat };
+      }
+    }
+  });
+  if (!formValues) return;
+  if (formValues.type === 'file') edocUploadProcess(formValues.file, formValues.category);
+  else edocSaveLinkProcess(formValues.link, formValues.category);
+}
+
+// ── Upload Process ─────────────────────────────────────────
+async function edocUploadProcess(file, category) {
+  let interval;
+  Swal.fire({
+    title: '⏳ กำลังอัพโหลดไฟล์...',
+    html: `<div style="margin-top:12px;">
+      <div class="edoc-progress-wrap"><div id="edoc-swal-bar" class="edoc-progress-bar"></div></div>
+      <p id="edoc-swal-pct" style="font-size:13px;font-weight:600;color:var(--text-muted);margin-top:8px;text-align:center;">0%</p>
+    </div>`,
+    allowOutsideClick: false, showConfirmButton: false,
+    didOpen: () => {
+      let p = 0;
+      interval = setInterval(() => {
+        if (p < 90) {
+          p += 5;
+          const bar = document.getElementById('edoc-swal-bar');
+          const pct = document.getElementById('edoc-swal-pct');
+          if (bar) bar.style.width = p + '%';
+          if (pct) pct.textContent = p + '%';
+        }
+      }, 400);
+    }
+  });
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = async () => {
+    try {
+      const res = await fetch(EDOC_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action:'upload', base64:reader.result, fileName:file.name, category })
+      });
+      edocFinishProcess(await res.json(), interval);
+    } catch(e) { edocFinishProcess({ status:'error', message:e.message }, interval); }
+  };
+}
+
+async function edocSaveLinkProcess(link, category) {
+  Swal.fire({ title:'⏳ กำลังบันทึก...', didOpen:()=>Swal.showLoading() });
+  try {
+    const res = await fetch(EDOC_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'upload', base64:'link', fileName:link, category })
+    });
+    edocFinishProcess(await res.json());
+  } catch(e) { edocFinishProcess({ status:'error', message:e.message }); }
+}
+
+function edocFinishProcess(res, interval) {
+  if (interval) clearInterval(interval);
+  if (res.status === 'success') {
+    const bar = document.getElementById('edoc-swal-bar');
+    const pct = document.getElementById('edoc-swal-pct');
+    if (bar) bar.style.width = '100%';
+    if (pct) pct.textContent = '100%';
+    setTimeout(() => {
+      Swal.fire({ icon:'success', title:'✅ อัพโหลดสำเร็จ!', timer:1500, showConfirmButton:false });
+      edocLoadDocs();
+    }, 500);
+  } else {
+    Swal.fire('❌ ผิดพลาด', res.message, 'error');
+  }
+}
+
+// ── Delete ─────────────────────────────────────────────────
+async function edocDeleteDoc(id) {
+  const result = await Swal.fire({
+    title: 'ยืนยันการลบ?', text: 'เอกสารนี้จะถูกลบออกจากระบบถาวร', icon: 'warning',
+    showCancelButton: true, confirmButtonColor: '#c0392b', cancelButtonColor: '#64748b',
+    confirmButtonText: 'ลบเลย!', cancelButtonText: 'ยกเลิก'
+  });
+  if (!result.isConfirmed) return;
+  Swal.fire({ title:'⏳ กำลังลบ...', didOpen:()=>Swal.showLoading() });
+  try {
+    const res = await fetch(EDOC_SCRIPT_URL, { method:'POST', body:JSON.stringify({action:'delete',id}) });
+    const r   = await res.json();
+    if (r.status === 'success') {
+      Swal.fire({ icon:'success', title:'ลบสำเร็จ', timer:1000, showConfirmButton:false });
+      edocLoadDocs();
+    } else throw new Error(r.message);
+  } catch(e) { Swal.fire('ผิดพลาด', e.message, 'error'); }
+}
+
+// ── Filter ────────────────────────────────────────────────
+function edocFilterData() { edocRenderList(); }
+
+// ── Hook เข้ากับ initDocsPanel ────────────────────────────
+// Override initDocsPanel เพื่อโหลด E-Doc ด้วย
+const _origInitDocsPanel = window.initDocsPanel;
+window.initDocsPanel = function() {
+  // โหลด E-Doc documents
+  edocLoadDocs();
+  // เรียก original ด้วยถ้ามี (สำหรับ doc upload modal เดิม)
+  if (_origInitDocsPanel) {
+    try { _origInitDocsPanel(); } catch(e) {}
+  }
+};
+
+console.log('[PATCH v6] E-Doc upload system loaded');
+</script>
+
+<!-- ── 4. Lightbox HTML ──────────────────────────────────── -->
+<div id="edoc-lightbox" onclick="edocCloseLightbox(event)">
+  <button id="edoc-lightbox-close" onclick="edocCloseLightbox(null,true)">✕</button>
+  <div id="edoc-lightbox-content" style="max-width:92vw;max-height:88vh;width:900px;position:relative;border-radius:12px;overflow:hidden;background:#111;">
+    <div id="edoc-lightbox-spinner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#111;z-index:2;">
+      <div style="width:40px;height:40px;border:4px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:edoc-spin 0.8s linear infinite;"></div>
+    </div>
+    <iframe id="edoc-lightbox-frame" src="" style="width:100%;height:80vh;border:none;display:block;" allowfullscreen
+      onload="document.getElementById('edoc-lightbox-spinner').style.display='none'"></iframe>
+  </div>
+</div>
+
+<!-- ── 5. Override panel-docs HTML ──────────────────────── -->
+<script>
+// แทนที่เนื้อหาใน panel-docs ด้วย UI ใหม่ (คง header/สถิติเดิม + เพิ่ม E-Doc grid)
+document.addEventListener('DOMContentLoaded', function() {
+  const panel = document.getElementById('panel-docs');
+  if (!panel) return;
+
+  // ── สร้าง content ใหม่ทั้งหมดภายใน panel-docs ──
+  panel.innerHTML = `
+    <!-- Breadcrumb เดิม -->
+    <div class="breadcrumb">
+      <span>หน้าหลัก</span><span class="sep">›</span><span>เอกสารสำคัญ</span>
+    </div>
+
+    <!-- Page Header เดิม + ปุ่มใหม่ -->
+    <div class="page-header">
+      <div>
+        <h2>เอกสารสำคัญ</h2>
+        <p>จัดเก็บและจัดการเอกสารราชการทางทหาร</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span id="docs-admin-badge"><span>🛡️</span> โหมดแอดมิน</span>
+        <button id="edoc-add-btn" class="btn btn-primary hidden" onclick="edocAddDocument()" style="display:none;">
+          ☁️ อัพโหลดเอกสาร
+        </button>
+        <button id="edoc-admin-btn" class="btn btn-ghost" onclick="edocToggleAdmin()">
+          🔐 จัดการระบบ
+        </button>
+        <button class="btn btn-ghost" onclick="edocLoadDocs()">🔄 รีเฟรช</button>
+      </div>
+    </div>
+
+    <!-- Stat Row เดิม (ค่าจะ update ผ่าน JS) -->
+    <div class="doc-stat-row">
+      <div class="doc-stat"><div class="ds-icon">📁</div><div class="ds-info"><div class="ds-val" id="edoc-stat-total">0</div><div class="ds-label">ไฟล์ทั้งหมด</div></div></div>
+      <div class="doc-stat"><div class="ds-icon">📄</div><div class="ds-info"><div class="ds-val" id="edoc-stat-docs">—</div><div class="ds-label">เอกสาร</div></div></div>
+      <div class="doc-stat"><div class="ds-icon">🖼️</div><div class="ds-info"><div class="ds-val" id="edoc-stat-img">—</div><div class="ds-label">รูปภาพ</div></div></div>
+      <div class="doc-stat"><div class="ds-icon">🔗</div><div class="ds-info"><div class="ds-val" id="edoc-stat-link">—</div><div class="ds-label">ลิงก์/อื่นๆ</div></div></div>
+    </div>
+
+    <!-- Search + Filter row (สไตล์ army) -->
+    <div class="table-card" style="margin-bottom:20px;">
+      <div class="table-header" style="flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:1;">
+          <div class="search-bar" style="width:260px;">
+            <span>🔍</span>
+            <input type="text" id="edoc-search-input" placeholder="ค้นหาชื่อไฟล์..."
+              oninput="edocFilterData()"
+              style="border:none;background:none;font-size:14px;width:100%;font-family:'Sarabun',sans-serif;color:var(--text-primary);outline:none;">
+          </div>
+          <select id="edoc-filter-category" class="filter-select" onchange="edocFilterData()">
+            <option value="">ทุกหมวดหมู่</option>
+          </select>
+          <span id="edoc-total-badge" style="font-size:12px;color:var(--text-muted);white-space:nowrap;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Tabs (คงสไตล์ดั้งเดิม) -->
+    <div class="doc-cat-tabs">
+      <button class="doc-cat-tab active" onclick="edocSetCat('',this)">📂 ทั้งหมด</button>
+      <button class="doc-cat-tab" onclick="edocSetCat('เอกสาร',this)">📄 เอกสาร</button>
+      <button class="doc-cat-tab" onclick="edocSetCat('รูปภาพ',this)">🖼️ รูปภาพ</button>
+      <button class="doc-cat-tab" onclick="edocSetCat('มัลติมีเดีย',this)">🎬 มัลติมีเดีย</button>
+      <button class="doc-cat-tab" onclick="edocSetCat('วันทวีคูณ',this)">📅 วันทวีคูณ</button>
+      <button class="doc-cat-tab" onclick="edocSetCat('ราชการสนาม',this)">🗺️ ราชการสนาม</button>
+      <button class="doc-cat-tab" onclick="edocSetCat('หลักสูตร',this)">🎓 หลักสูตร</button>
+      <button class="doc-cat-tab" onclick="edocSetCat('บำเหน็จบำนาญ',this)">🏦 บำเหน็จ/บำนาญ</button>
+      <button class="doc-cat-tab" onclick="edocSetCat('คำสั่ง',this)">📜 คำสั่ง/หนังสือราชการ</button>
+    </div>
+
+    <!-- Document Grid -->
+    <div id="edoc-grid-container" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:24px;">
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="es-icon">⏳</div>
+        <p>กำลังโหลดเอกสาร...</p>
+      </div>
+    </div>
+
+    <!-- Upload Zone (คงสไตล์เดิม) -->
+    <div class="doc-upload-zone" onclick="edocIsAdmin ? edocAddDocument() : edocToggleAdmin()" style="margin-bottom:8px;">
+      <div class="duz-icon">☁️</div>
+      <h4>อัพโหลดเอกสาร / เพิ่มลิงก์</h4>
+      <p id="edoc-upload-hint">คลิกเพื่อเข้าสู่ระบบแอดมินก่อนอัพโหลด — รองรับ PDF, Word, Excel, รูปภาพ, ZIP และ Google Drive Link</p>
+    </div>
+  `;
+
+  // ── ซ่อน/แสดง add btn และ hint ตามสถานะ admin ──
+  const addBtn = document.getElementById('edoc-add-btn');
+  if (addBtn) addBtn.style.display = 'none'; // ซ่อนตอนแรก
+
+  // ── เริ่มโหลดข้อมูล ──
+  edocLoadDocs();
+});
+
+// ── Set Category via tab ──────────────────────────────────
+function edocSetCat(cat, btn) {
+  document.querySelectorAll('.doc-cat-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const sel = document.getElementById('edoc-filter-category');
+  if (sel) { sel.value = cat; edocFilterData(); }
+}
+
+// ── Override edocUpdateStats ──────────────────────────────
+const _origEdocUpdateStats = window.edocUpdateStats;
+window.edocUpdateStats = function() {
+  const total = edocDocuments.length;
+  const images = edocDocuments.filter(d => EDOC_IMAGE_TYPES.has((d.name||'').split('.').pop().toLowerCase())).length;
+  const docs   = edocDocuments.filter(d => {
+    const ext = (d.name||'').split('.').pop().toLowerCase();
+    return ['pdf','doc','docx','xls','xlsx','ppt','pptx'].includes(ext);
+  }).length;
+  const links  = edocDocuments.filter(d => {
+    const ext = (d.name||'').split('.').pop().toLowerCase();
+    return !EDOC_IMAGE_TYPES.has(ext) && !['pdf','doc','docx','xls','xlsx','ppt','pptx'].includes(ext);
+  }).length;
+
+  const s1 = document.getElementById('edoc-stat-total');
+  const s2 = document.getElementById('edoc-stat-docs');
+  const s3 = document.getElementById('edoc-stat-img');
+  const s4 = document.getElementById('edoc-stat-link');
+  if (s1) s1.textContent = total;
+  if (s2) s2.textContent = docs;
+  if (s3) s3.textContent = images;
+  if (s4) s4.textContent = links;
+
+  const badge = document.getElementById('edoc-total-badge');
+  if (badge) badge.textContent = total > 0 ? `พบ ${total} รายการ` : '';
+
+  // อัพ upload hint
+  const hint = document.getElementById('edoc-upload-hint');
+  if (hint) {
+    hint.textContent = edocIsAdmin
+      ? 'คลิกเพื่ออัพโหลดไฟล์หรือเพิ่มลิงก์ — รองรับ PDF, Word, Excel, รูปภาพ, ZIP และ Google Drive Link'
+      : 'คลิกเพื่อเข้าสู่ระบบแอดมินก่อนอัพโหลด — รองรับ PDF, Word, Excel, รูปภาพ, ZIP และ Google Drive Link';
+  }
+};
+
+// ── Override edocApplyAdminUI เพื่อจัดการ edoc-add-btn ───
+const _origEdocApplyAdminUI = window.edocApplyAdminUI;
+window.edocApplyAdminUI = function() {
+  if (_origEdocApplyAdminUI) _origEdocApplyAdminUI();
+  const addBtn = document.getElementById('edoc-add-btn');
+  if (addBtn) addBtn.style.display = edocIsAdmin ? 'inline-flex' : 'none';
+  window.edocUpdateStats && window.edocUpdateStats();
+};
+</script>
 
 </body>
 </html>
