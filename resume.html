@@ -699,15 +699,39 @@
         <div class="detail-card">
           <h4>📐 สูตรคำนวณบำนาญ</h4>
           <div style="background:var(--army-pale);border-radius:var(--radius);padding:14px;font-size:13px;line-height:1.8;">
-            <div>บำนาญ = <strong>(เงินเดือนเดือนสุดท้าย × อายุราชการ) ÷ 50</strong></div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">สิทธิ์บำนาญ: อายุราชการ ≥ 25 ปี หรือ ≥ 10 ปี (บางกรณี)</div>
+            <div>บำนาญ = <strong>(เงินเดือนเดือนสุดท้าย × อายุราชการรวม) ÷ 50</strong></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">สิทธิ์บำนาญ: อายุราชการรวมวันทวีคูณ <strong>≥ 25 ปี</strong></div>
           </div>
         </div>
         <div class="detail-card">
           <h4>📐 สูตรคำนวณบำเหน็จ</h4>
           <div style="background:var(--army-pale);border-radius:var(--radius);padding:14px;font-size:13px;line-height:1.8;">
-            <div>บำเหน็จ = <strong>เงินเดือนเดือนสุดท้าย × อายุราชการ</strong></div>
+            <div>บำเหน็จ = <strong>เงินเดือนเดือนสุดท้าย × อายุราชการรวม</strong></div>
             <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">สิทธิ์บำเหน็จ: อายุราชการ ≥ 1 ปี</div>
+          </div>
+        </div>
+      </div>
+      <!-- กรอบเบี้ยหวัด -->
+      <div class="detail-card" style="margin-bottom:20px;border-left:4px solid var(--army-gold);">
+        <h4>🪙 ข้อมูลเบี้ยหวัดทหาร (สำหรับผู้ลาออก)</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:var(--army-pale);border-radius:var(--radius);padding:14px;font-size:13px;line-height:2;">
+            <div style="font-weight:700;color:var(--army-dark);margin-bottom:6px;font-size:13.5px;">📋 เงื่อนไขการขอรับเบี้ยหวัด</div>
+            <div>• อายุราชการ <strong>ไม่น้อยกว่า 10 ปี</strong> (หรือเกิน 9 ปี 6 เดือน)</div>
+            <div>• ต้องลาออกขณะ<strong>ยังไม่พ้นกองหนุนชั้นที่ 2</strong></div>
+            <div style="font-size:11px;color:var(--text-muted);padding-left:12px;">(อายุประมาณ 39–45 ปี ขึ้นกับยศ)</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:#fff8e1;border:1px solid #f0d070;border-radius:var(--radius);padding:12px 14px;">
+              <div style="font-size:11px;color:#7a5a00;margin-bottom:4px;">💰 เบี้ยหวัด (ก่อนอายุ 45 ปี)</div>
+              <div style="font-size:20px;font-weight:700;font-family:'Chakra Petch',sans-serif;color:#7a5a00;">11,000 บาท/เดือน</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">จ่ายตั้งแต่วันที่ลาออก จนถึงอายุ 45 ปี</div>
+            </div>
+            <div style="background:#e8f5e8;border:1px solid #b5d8b5;border-radius:var(--radius);padding:12px 14px;">
+              <div style="font-size:11px;color:var(--status-active);margin-bottom:4px;">🏦 ปรับเป็นบำนาญ (หลังอายุ 45 ปี)</div>
+              <div style="font-size:13px;font-weight:600;color:var(--status-active);">บำนาญตลอดชีวิต</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">คำนวณตามสูตรบำนาญปกติ × อายุราชการ ÷ 50</div>
+            </div>
           </div>
         </div>
       </div>
@@ -721,13 +745,14 @@
               <th>อายุราชการ</th>
               <th>วันทวีคูณ</th>
               <th>รวมอายุราชการ</th>
-              <th>เกษียณอายุราชการ</th>
+              <th>เกษียณอายุราชการ (25 ปี บำนาญ)</th>
+              <th>เกษียณอายุ (60 ปี)</th>
               <th>เงินเดือนสุทธิ</th>
               <th>บำเหน็จคาด</th>
               <th>บำนาญคาด/เดือน</th>
               <th>สิทธิ์</th>
             </tr></thead>
-            <tbody id="pension-table"><tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted);">กำลังโหลด...</td></tr></tbody>
+            <tbody id="pension-table"><tr><td colspan="11" style="text-align:center;padding:32px;color:var(--text-muted);">กำลังโหลด...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -1705,11 +1730,8 @@ function daysToYMD(totalDays) {
   return { years, months, days, text: text.trim() };
 }
 
-// ── คำนวณเวลาคงเหลือก่อนเกษียณ (อายุ 60 ปี) ──
+// ── คำนวณเวลาคงเหลือก่อนเกษียณ (อายุราชการครบ 25 ปี รวมวันทวีคูณ) ──
 function calcRetirement(joinDateStr, extraDays) {
-  // เกษียณ = วันเข้าราชการ + 60 ปี - วันทวีคูณ (วันทวีคูณช่วยให้เกษียณเร็วขึ้น/ลดอายุราชการที่ต้องทำ)
-  // แต่ในระบบไทย: เกษียณตามอายุ 60 ปี หรือ อายุราชการครบ 30 ปี (ขึ้นกับเงื่อนไข)
-  // ที่นี่ใช้: อายุราชการครบ 30 ปีรวมวันทวีคูณ
   const thaiMonthMap = {'มกราคม':0,'กุมภาพันธ์':1,'มีนาคม':2,'เมษายน':3,'พฤษภาคม':4,'มิถุนายน':5,'กรกฎาคม':6,'สิงหาคม':7,'กันยายน':8,'ตุลาคม':9,'พฤศจิกายน':10,'ธันวาคม':11};
   const monthNumMap  = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
   let joinDate;
@@ -1728,26 +1750,53 @@ function calcRetirement(joinDateStr, extraDays) {
   }
   if (!joinDate || isNaN(joinDate)) return '—';
 
-  // วันเกษียณ = วันเข้าราชการ + 30 ปี - วันทวีคูณ
-  const retireMs   = joinDate.getTime() + (30 * 365.25 * 24 * 3600 * 1000) - ((extraDays || 0) * 24 * 3600 * 1000);
+  // วันเกษียณ = วันเข้าราชการ + 25 ปี - วันทวีคูณ
+  const retireMs   = joinDate.getTime() + (25 * 365.25 * 24 * 3600 * 1000) - ((extraDays || 0) * 24 * 3600 * 1000);
   const retireDate = new Date(retireMs);
   const now        = new Date();
 
-  if (retireDate <= now) return '<span class="chip green">เกษียณแล้ว</span>';
+  if (retireDate <= now) return '<span class="chip green" style="font-size:11px;">✅ ครบแล้ว</span>';
 
   const diffMs   = retireDate - now;
   const diffDays = Math.floor(diffMs / (24 * 3600 * 1000));
   const ymd      = daysToYMD(diffDays);
-  // แสดงวันเกษียณ (พ.ศ.)
   const retireYear  = retireDate.getFullYear() + 543;
   const retireMonth = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][retireDate.getMonth()];
   const retireDay   = retireDate.getDate();
-  return `<div style="font-size:12px;font-weight:600;color:var(--army-green);">${ymd.text}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">เกษียณ ${retireDay} ${retireMonth} ${retireYear}</div>`;
+  return `<div style="font-size:11px;font-weight:600;color:var(--army-green);">อีก ${ymd.text}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${retireDay} ${retireMonth} ${retireYear}</div>`;
+}
+
+// ── คำนวณเวลาคงเหลือก่อนเกษียณอายุ 60 ปี (จากวันเกิด) ──
+function calcRetirementAge60(birthDateStr) {
+  if (!birthDateStr || birthDateStr === '—') return '—';
+  // รองรับรูปแบบ ISO date (YYYY-MM-DD) จาก input[type=date]
+  let birthDate;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(birthDateStr)) {
+    // ค.ศ. format
+    birthDate = new Date(birthDateStr);
+  } else {
+    // ลองแปลงรูปแบบอื่น
+    birthDate = new Date(birthDateStr);
+  }
+  if (isNaN(birthDate)) return '—';
+
+  // วันเกษียณอายุ 60 ปี
+  const retireDate = new Date(birthDate.getFullYear() + 60, birthDate.getMonth(), birthDate.getDate());
+  const now        = new Date();
+
+  if (retireDate <= now) return '<span class="chip green" style="font-size:11px;">✅ เกษียณแล้ว</span>';
+
+  const diffMs   = retireDate - now;
+  const diffDays = Math.floor(diffMs / (24 * 3600 * 1000));
+  const ymd      = daysToYMD(diffDays);
+  const retireYear  = retireDate.getFullYear() + 543;
+  const retireMonth = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][retireDate.getMonth()];
+  const retireDay   = retireDate.getDate();
+  return `<div style="font-size:11px;font-weight:600;color:#3a6ea8;">อีก ${ymd.text}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${retireDay} ${retireMonth} ${retireYear}</div>`;
 }
 
 async function loadPension() {
   try {
-    // ดึงข้อมูลพร้อมกัน: personnel + ops
     const [jsonP, jsonO] = await Promise.all([
       callAPI({ action: 'getAll', table: 'personnel' }),
       callAPI({ action: 'getAll', table: 'ops' })
@@ -1756,7 +1805,7 @@ async function loadPension() {
 
     const tbody = document.getElementById('pension-table');
     if (!jsonP.data.length) {
-      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูล</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--text-muted);">ยังไม่มีข้อมูล</td></tr>';
       return;
     }
 
@@ -1765,7 +1814,7 @@ async function loadPension() {
     const doubleDaysMap = {};
     opsData.forEach(op => {
       const pid  = op['ID_กำลังพล'];
-      const days = parseDoubleDaysToDays(op['หมายเหตุ']); // field วันทวีคูณเก็บใน หมายเหตุ
+      const days = parseDoubleDaysToDays(op['หมายเหตุ']);
       if (pid) doubleDaysMap[pid] = (doubleDaysMap[pid] || 0) + days;
     });
 
@@ -1783,8 +1832,9 @@ async function loadPension() {
       const pension      = net > 0 ? Math.round((net * totalYrs) / 50) : 0;
       const gratuity     = net > 0 ? Math.round(net * totalYrs) : 0;
       const right        = totalYrs >= 25 ? 'บำนาญ' : totalYrs >= 10 ? 'บำเหน็จ/บำนาญ' : totalYrs >= 1 ? 'บำเหน็จ' : 'ยังไม่มีสิทธิ์';
-      const rightColor   = totalYrs >= 10 ? 'var(--army-green)' : '#9a7420';
+      const rightColor   = totalYrs >= 25 ? 'var(--army-green)' : totalYrs >= 10 ? '#3a6ea8' : '#9a7420';
       const retireHtml   = calcRetirement(p['วันเข้ารับราชการ'], extraDays);
+      const retire60Html = calcRetirementAge60(p['วันเกิด']);
 
       return `<tr>
         <td><strong>${p['ยศ']} ${p['ชื่อ']} ${p['นามสกุล']}</strong></td>
@@ -1795,6 +1845,7 @@ async function loadPension() {
           : '<span style="color:var(--text-muted);font-size:12px;">—</span>'}</td>
         <td><span class="chip green">${totalYMD.text}</span></td>
         <td>${retireHtml}</td>
+        <td>${retire60Html}</td>
         <td style="font-family:'Chakra Petch',sans-serif;">${net.toLocaleString()} ฿</td>
         <td style="color:#9a7420;font-weight:700;">${gratuity.toLocaleString()} ฿</td>
         <td style="color:var(--army-green);font-weight:700;">${pension.toLocaleString()} ฿/เดือน</td>
