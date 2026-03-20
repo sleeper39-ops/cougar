@@ -2333,19 +2333,21 @@ async function gasGet(action, params){
 async function gasPost(action, body){
   const gasUrl = getGasUrl();
   if(!gasUrl) throw new Error('ยังไม่ได้ตั้งค่า Apps Script URL');
-  const payload = JSON.stringify({ action, ...body });
-  const form = new URLSearchParams({ action, payload });
-  console.log('[GAS POST] action=', action);
-  const resp = await fetch(gasUrl, {
-    method: 'POST',
+  // ส่ง raw JSON — action ใส่ใน URL param ด้วยเพื่อ parse ง่าย
+  // ไม่ใช้ form-urlencoded เพราะ base64 มีตัวอักษร +/= ที่จะเสียหายเมื่อ encode
+  const url = gasUrl + '?action=' + encodeURIComponent(action);
+  const jsonBody = JSON.stringify({ action, ...body });
+  console.log('[GAS POST] action=', action, 'bodyLen=', jsonBody.length);
+  const resp = await fetch(url, {
+    method:   'POST',
     redirect: 'follow',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: form.toString()
+    headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
+    body:     jsonBody
   });
   const text = await resp.text();
-  console.log('[GAS POST response]', text.slice(0, 200));
+  console.log('[GAS POST response]', text.slice(0, 300));
   try { return JSON.parse(text); }
-  catch(e) { throw new Error('Parse error: ' + text.slice(0, 100)); }
+  catch(e) { throw new Error('ตอบกลับไม่ถูกต้อง: ' + text.slice(0, 150)); }
 }
 
 function showUploadProgress(show, text, pct, detail){
@@ -2426,34 +2428,42 @@ async function handleFileUpload(event){
   if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังอัปโหลด...'; }
 
   let successCount=0, failCount=0;
+  const failedFiles=[];
   for(let i=0; i<files.length; i++){
     try{
       const doc = await uploadSingleFile(files[i], i, files.length);
-      // ตรวจว่ามีไฟล์ชื่อเดิมอยู่แล้วหรือไม่
       const existIdx = docsData.findIndex(d=>d.name===doc.name);
       if(existIdx>=0) docsData[existIdx]=doc; else docsData.push(doc);
       successCount++;
     } catch(e){
       failCount++;
+      failedFiles.push(files[i].name+': '+e.message);
       console.error('Upload failed:',files[i].name, e.message);
-      showUploadProgress(true,`❌ อัปโหลดไม่สำเร็จ: ${files[i].name}`,
-        Math.round(((i+1)/files.length)*100), e.message);
     }
   }
 
   if(btn){ btn.disabled=false; btn.textContent='📎 เลือกไฟล์อัปโหลด'; }
-  showUploadProgress(true,
-    failCount===0 ? `✅ อัปโหลดสำเร็จ ${successCount}/${files.length} ไฟล์` : `⚠️ สำเร็จ ${successCount} ล้มเหลว ${failCount}`,
-    100, 'กำลังโหลดรายการจาก Drive...'
-  );
   event.target.value='';
-  renderDocs(currentDocFilter);          // แสดงทันทีจาก memory
-  autoSave('documents');                 // บันทึก metadata ไป Firebase
-  // โหลดรายการจาก Drive ใหม่ให้ข้อมูลอัปเดต
+
+  if(failCount>0){
+    // มีไฟล์ล้มเหลว — แสดง error
+    showUploadProgress(true, `❌ อัปโหลดล้มเหลว ${failCount} ไฟล์`, 100,
+      failedFiles.join('\n')
+    );
+    showFbStatus(`⚠️ อัปโหลดสำเร็จ ${successCount}/${files.length} ไฟล์`, 'orange');
+    setTimeout(()=>showUploadProgress(false), 6000);
+  } else {
+    // ทุกไฟล์สำเร็จ — ปิด progress bar ทันที แสดงใน topbar แทน
+    showUploadProgress(false);
+    showFbStatus(`✅ อัปโหลดสำเร็จ ${successCount} ไฟล์ — กำลังโหลดรายการ...`, 'green');
+  }
+
+  renderDocs(currentDocFilter);
+  autoSave('documents');
+  // โหลดรายการจาก Drive ให้ข้อมูล URL อัปเดต
   setTimeout(async ()=>{
     await loadDocsFromDrive();
-    showUploadProgress(false);
-  }, 1500);
+  }, 1200);
 }
 
 // โหลดรายการไฟล์จาก Drive ผ่าน Apps Script
