@@ -164,12 +164,26 @@ tbody tr:last-child td{border-bottom:none;}
 .pen-lbl{font-size:13px;color:var(--text-2);margin-bottom:5px;font-weight:600;}
 .pen-val{font-size:20px;font-weight:700;}
 .pen-sub{font-size:12px;color:var(--text-3);margin-top:4px;}
-.docs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
-.doc-card{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:all .18s;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;}
-.doc-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);transform:translateY(-2px);}
-.doc-card-img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#f1f5ff;display:block;}
-.doc-card-ico{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:42px;background:#f8faff;}
-.doc-card-body{padding:10px 12px;flex:1;display:flex;flex-direction:column;}
+.docs-grid{width:100%;}
+.doc-card{display:none;}/* legacy unused */
+.doc-card-img{display:none;}
+.doc-card-ico{display:none;}
+.doc-card-body{display:none;}
+/* Doc table */
+.doc-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.doc-table thead th{background:var(--blue);color:#fff;padding:9px 10px;font-weight:600;font-size:13px;white-space:nowrap;}
+.doc-table thead th:first-child{border-radius:var(--radius) 0 0 0;}
+.doc-table thead th:last-child{border-radius:0 var(--radius) 0 0;}
+.doc-table tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+.doc-table tbody tr:hover{background:var(--blue-pale);}
+.doc-table tbody tr:last-child{border-bottom:none;}
+.doc-table td{padding:9px 10px;vertical-align:middle;}
+.doc-table .td-num{color:var(--text-3);text-align:center;width:40px;}
+.doc-table .td-ico{width:34px;text-align:center;}
+.doc-status{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.doc-status.on-drive{background:#ecfeff;color:#0891b2;}
+.doc-status.local{background:#f0fdf4;color:#16a34a;}
+.doc-status.pending{background:#fff7ed;color:#c2410c;}
 .doc-ico{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
 .doc-ico.pdf{background:#fff5f5;color:var(--accent-red);}
 .doc-ico.img{background:var(--blue-pale);color:var(--blue);}
@@ -448,7 +462,9 @@ tbody tr:last-child td{border-bottom:none;}
         </div>
         <div id="uploadDetail" style="font-size:12px;color:var(--text-2);margin-top:6px;"></div>
       </div>
-      <div class="docs-grid" id="docsGrid"></div>
+      <div class="tcard" style="padding:0;overflow:hidden;">
+        <div id="docsGrid"></div>
+      </div>
     </div>
 
   </main>
@@ -2217,52 +2233,73 @@ function filterDocs(cat,el){
 function renderDocs(cat, pidFilter){
   const filtered=(cat==='all'?docsData:docsData.filter(d=>d.cat===cat))
     .filter(d=>!pidFilter||d.pid===pidFilter||d.pid===0);
-  const icoMap={pdf:'pdf 📄',img:'img 🖼️',xls:'xls 📊'};
-  const cats={order:'คำสั่ง',double:'วันทวีคูณ',pension:'บำเหน็จ',photo:'รูปภาพ',cert:'ประกาศนียบัตร'};
-  document.getElementById('docsGrid').innerHTML=(filtered.length===0?
-    `<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-3);">
-      <div style="font-size:32px;margin-bottom:10px">📁</div>
+  const icoMap={pdf:'📄',img:'🖼️',xls:'📊',doc:'📝'};
+  const cats={order:'คำสั่ง/หนังสือ',double:'วันทวีคูณ',pension:'บำเหน็จ/บำนาญ',photo:'รูปภาพ',cert:'ประกาศนียบัตร'};
+  const el = document.getElementById('docsGrid');
+  if(!filtered.length){
+    el.innerHTML=`<div style="text-align:center;padding:56px 20px;color:var(--text-3);">
+      <div style="font-size:36px;margin-bottom:12px">📁</div>
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">ยังไม่มีเอกสาร</div>
       <div style="font-size:13px;">กดปุ่ม <b>📎 เลือกไฟล์อัปโหลด</b> เพื่อเพิ่มเอกสาร</div>
-    </div>`:
-    filtered.map(d=>{
-      const parts=(icoMap[d.type]||'pdf 📄').split(' ');
-      const hasDrive = d.driveUrl||d.downloadUrl;
-
-      // Preview area — รูปภาพแสดงเต็ม, ไฟล์อื่นแสดง icon
-      const preview = d.localData && d.type==='img'
-        ? `<img src="${d.localData}" class="doc-card-img" onclick="event.stopPropagation();openImgModal('${d.id}')">`
-        : d.driveUrl && d.type==='img'
-          ? `<img src="${d.driveUrl}" class="doc-card-img" onerror="this.style.display='none';this.nextSibling.style.display='flex'" onclick="event.stopPropagation();window.open('${d.driveUrl}','_blank')"><div class="doc-card-ico" style="display:none;">${parts[1]}</div>`
-          : `<div class="doc-card-ico">${parts[1]}</div>`;
-
-      // ปุ่ม — เฉพาะ ดู + ดาวน์โหลด + ลบ (ไม่มีปุ่มลูกศรซ้ำ)
-      const viewBtn = d.driveUrl
-        ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">👁️ ดู</a>`
+    </div>`;
+    return;
+  }
+  const rows = filtered.map((d,i)=>{
+    const ico = icoMap[d.type]||'📄';
+    const catLabel = cats[d.cat]||d.cat||'—';
+    // thumbnail สำหรับรูปภาพ
+    const thumb = d.type==='img' && (d.localData||d.driveUrl)
+      ? `<img src="${d.localData||d.driveUrl}" style="width:36px;height:36px;object-fit:cover;border-radius:5px;cursor:pointer;vertical-align:middle;" onclick="openImgModal('${d.id}')" onerror="this.outerHTML='🖼️'">`
+      : `<span style="font-size:20px;">${ico}</span>`;
+    // ปุ่มไฟล์
+    const viewBtn = d.driveUrl
+      ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" style="font-size:12px;" onclick="event.stopPropagation()">👁️ ดู</a>`
+      : '';
+    const dlBtn = d.downloadUrl
+      ? `<a href="${d.downloadUrl}" target="_blank" class="btn btn-outline btn-sm" style="font-size:12px;" onclick="event.stopPropagation()">⬇️ โหลด</a>`
+      : d.localData
+        ? `<a href="${d.localData}" download="${d.name}" class="btn btn-outline btn-sm" style="font-size:12px;" onclick="event.stopPropagation()">⬇️ โหลด</a>`
         : '';
-      const dlBtn = d.downloadUrl
-        ? `<a href="${d.downloadUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ ดาวน์โหลด</a>`
-        : d.localData
-          ? `<a href="${d.localData}" download="${d.name}" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ ดาวน์โหลด</a>`
-          : `<button class="btn btn-outline btn-sm" style="opacity:.4" disabled>☁️ ยังไม่อัปโหลด</button>`;
-
-      return `<div class="doc-card">
-        ${preview}
-        <div class="doc-card-body">
-          <div class="doc-name" title="${d.name}">${d.name}</div>
-          <div class="doc-meta">${d.date} • ${d.size||'—'}</div>
-          <div style="display:flex;gap:3px;margin-top:6px;flex-wrap:wrap;">
-            ${Object.entries(cats).map(([k,v])=>`<button onclick="event.stopPropagation();(function(){var x=docsData.find(function(i){return String(i.id)==='${d.id}';});if(x)x.cat='${k}';renderDocs(currentDocFilter);})()" style="padding:1px 7px;font-size:11px;border-radius:4px;border:1px solid var(--border);background:${d.cat===k?'var(--blue)':'transparent'};color:${d.cat===k?'#fff':'var(--text-3)'};cursor:pointer;font-family:inherit;">${v}</button>`).join('')}
-          </div>
-          <div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap;">
-            ${viewBtn}
-            ${dlBtn}
-            <button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteDoc('${d.id}','${d.fileId||''}')">🗑️</button>
-          </div>
+    // สถานะ
+    const statusBadge = d.fileId||d.driveUrl
+      ? `<span class="doc-status on-drive">☁️ Drive</span>`
+      : d.localData
+        ? `<span class="doc-status local">💾 เครื่อง</span>`
+        : `<span class="doc-status pending">⏳ รอ</span>`;
+    // หมวดหมู่ dropdown
+    const catOpts = Object.entries(cats).map(([k,v])=>
+      `<option value="${k}" ${d.cat===k?'selected':''}>${v}</option>`
+    ).join('');
+    return `<tr>
+      <td class="td-num">${i+1}</td>
+      <td class="td-ico">${thumb}</td>
+      <td style="min-width:180px;max-width:280px;">
+        <div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${d.name}">${d.name}</div>
+        <div style="font-size:11px;color:var(--text-3);">${d.size||'—'}</div>
+      </td>
+      <td style="color:var(--text-2);font-size:12.5px;">${d.date||'—'}</td>
+      <td>
+        <select class="fsel" style="font-size:12px;padding:3px 6px;height:28px;" onchange="(function(el){var x=docsData.find(function(i){return String(i.id)==='${d.id}';});if(x){x.cat=el.value;renderDocs(currentDocFilter);}})(this)">
+          ${catOpts}
+        </select>
+      </td>
+      <td>
+        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+          ${viewBtn}${dlBtn}
         </div>
-      </div>`;
-    }).join('')
-  );
+      </td>
+      <td>${statusBadge}</td>
+      <td style="text-align:center;">
+        <button class="btn btn-red btn-sm btn-icon" onclick="event.stopPropagation();deleteDoc('${d.id}','${d.fileId||''}')">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+  el.innerHTML=`<table class="doc-table">
+    <thead><tr>
+      <th>ที่</th><th></th><th>ชื่อไฟล์</th><th>วันที่</th><th>หมวดหมู่</th><th>ไฟล์</th><th>สถานะ</th><th>ลบ</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
 }
 
 // ===================== EDUCATION MODAL =====================
