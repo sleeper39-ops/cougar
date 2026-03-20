@@ -431,7 +431,7 @@ tbody tr:last-child td{border-bottom:none;}
         </select>
         <button class="btn btn-blue" onclick="document.getElementById('fileUploadInput').click()">📎 เลือกไฟล์อัปโหลด</button>
         <input type="file" id="fileUploadInput" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" style="display:none" onchange="handleFileUpload(event)">
-        <button class="btn btn-outline btn-sm" onclick="autoSave('documents')" title="ซิงค์รายการไปยัง Firebase">☁️ ซิงค์ Firebase</button>
+        <button class="btn btn-outline btn-sm" onclick="syncDocsToDrive()" title="ซิงค์รายการไปยัง Google Drive">🔗 ซิงค์ Drive</button>
         <button class="btn btn-outline btn-sm" onclick="downloadAllDocs()" title="ดาวน์โหลดทั้งหมด">⬇️ โหลดทั้งหมด</button>
       </div>
       <!-- Upload progress -->
@@ -727,7 +727,34 @@ tbody tr:last-child td{border-bottom:none;}
         </div>
         <div>
           <label class="flabel">ระยะเวลา</label>
-          <input class="finput" id="e_duration" placeholder="เช่น 1 ปี, 6 เดือน">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <select class="fsel-form" id="e_dur_y" style="flex:1;min-width:80px;">
+              <option value="0">0 ปี</option>
+              <option value="1">1 ปี</option><option value="2">2 ปี</option>
+              <option value="3">3 ปี</option><option value="4">4 ปี</option>
+              <option value="5">5 ปี</option>
+            </select>
+            <select class="fsel-form" id="e_dur_m" style="flex:1;min-width:80px;">
+              <option value="0">0 เดือน</option>
+              <option value="1">1 เดือน</option><option value="2">2 เดือน</option>
+              <option value="3">3 เดือน</option><option value="4">4 เดือน</option>
+              <option value="5">5 เดือน</option><option value="6">6 เดือน</option>
+              <option value="7">7 เดือน</option><option value="8">8 เดือน</option>
+              <option value="9">9 เดือน</option><option value="10">10 เดือน</option>
+              <option value="11">11 เดือน</option>
+            </select>
+            <select class="fsel-form" id="e_dur_w" style="flex:1;min-width:90px;">
+              <option value="0">0 สัปดาห์</option>
+              <option value="1">1 สัปดาห์</option><option value="2">2 สัปดาห์</option>
+              <option value="3">3 สัปดาห์</option><option value="4">4 สัปดาห์</option>
+            </select>
+            <select class="fsel-form" id="e_dur_d" style="flex:1;min-width:70px;">
+              <option value="0">0 วัน</option>
+              <option value="1">1 วัน</option><option value="2">2 วัน</option>
+              <option value="3">3 วัน</option><option value="4">4 วัน</option>
+              <option value="5">5 วัน</option><option value="6">6 วัน</option>
+            </select>
+          </div>
         </div>
         <div>
           <label class="flabel">ผลการเรียน</label>
@@ -1253,24 +1280,46 @@ function serviceYears(start){
     const d=parseThaiBEDate(start);
     if(!d) return '—';
     const now=new Date();
-    let yrs=now.getFullYear()-d.getFullYear();
-    const mDiff=now.getMonth()-d.getMonth();
-    if(mDiff<0||(mDiff===0&&now.getDate()<d.getDate())) yrs--;
-    return yrs+' ปี';
+    let y=now.getFullYear()-d.getFullYear();
+    let m=now.getMonth()-d.getMonth();
+    let days=now.getDate()-d.getDate();
+    if(days<0){
+      m--;
+      const prevMonth=new Date(now.getFullYear(),now.getMonth(),0);
+      days+=prevMonth.getDate();
+    }
+    if(m<0){ y--; m+=12; }
+    let parts=[];
+    if(y>0) parts.push(y+' ปี');
+    if(m>0) parts.push(m+' เดือน');
+    if(days>0) parts.push(days+' วัน');
+    return parts.length>0 ? parts.join(' ') : '0 วัน';
   }catch(e){return '—';}
 }
 
-// Returns double days formatted as "X ปี Y เดือน"
+// serviceYearsDecimal — คืนค่าทศนิยมสำหรับการคำนวณ
+function serviceYearsDecimal(start){
+  try{
+    const d=parseThaiBEDate(start);
+    if(!d) return 0;
+    const now=new Date();
+    return (now-d)/(1000*60*60*24*365.25);
+  }catch(e){return 0;}
+}
+
 function formatDouble(days){
-  if(!days && days!==0) return 'กำลังนับ...';
+  if(days===null||days===undefined) return 'กำลังนับ...';
+  days=parseInt(days)||0;
   if(days===0) return '0 วัน';
   const yrs=Math.floor(days/365);
   const rem=days%365;
-  const months=Math.floor(rem/30);
-  if(yrs>0&&months>0) return `${yrs} ปี ${months} เดือน`;
-  if(yrs>0&&months===0) return `${yrs} ปี`;
-  if(yrs===0&&months>0) return `${months} เดือน`;
-  return `${days} วัน`;
+  const mths=Math.floor(rem/30);
+  const d=rem%30;
+  let parts=[];
+  if(yrs>0) parts.push(yrs+' ปี');
+  if(mths>0) parts.push(mths+' เดือน');
+  if(d>0) parts.push(d+' วัน');
+  return parts.length>0 ? parts.join(' ') : '0 วัน';
 }
 
 function getTotalDouble(pid){
@@ -1803,36 +1852,38 @@ function renderPension(){
   const p=personnel.find(x=>x.id===id);
   if(!p){document.getElementById('pensionContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูข้อมูล</div>';return;}
   const totalDoubleDays=getTotalDouble(p.id);
-  const totalDoubleYears=totalDoubleDays/365;
+  const totalDoubleYears=totalDoubleDays/365.25;
 
-  // คำนวณอายุราชการปกติเป็นปี (ทศนิยม)
-  let serviceYrsNum=0;
-  try{
-    const sp=p.start.split('/');
-    const startDate=new Date(parseInt(sp[2])-543,parseInt(sp[1])-1,parseInt(sp[0]));
-    const now=new Date();
-    serviceYrsNum=(now-startDate)/(1000*60*60*24*365.25);
-  }catch(e){}
-
+  // คำนวณอายุราชการปกติ (ทศนิยม)
+  const serviceYrsNum = serviceYearsDecimal(p.start);
   const totalServiceYrs = serviceYrsNum + totalDoubleYears;
+
+  // แสดงอายุราชการรวมแบบ ปี เดือน วัน
+  const totalDaysAll = Math.round(totalServiceYrs * 365.25);
+  const tvY = Math.floor(totalDaysAll/365);
+  const tvM = Math.floor((totalDaysAll%365)/30);
+  const tvD = totalDaysAll%365%30;
+  const svcTotalParts = [];
+  if(tvY>0) svcTotalParts.push(tvY+' ปี');
+  if(tvM>0) svcTotalParts.push(tvM+' เดือน');
+  if(tvD>0) svcTotalParts.push(tvD+' วัน');
+  const svcTotal = svcTotalParts.join(' ') || '0 วัน';
 
   let startBE=0,birthBE=0;
   try{const sp=p.start.split('/');startBE=parseInt(sp[2]);const bp=p.dob.split('/');birthBE=parseInt(bp[2]);}catch(e){}
 
-  // วันเกษียณ 25 ปี = วันที่ครบ 25 ปีราชการ + วันทวีคูณ (คิดย้อนกลับ)
-  const doubleYrsFloor = Math.floor(totalDoubleYears*10)/10;
+  // วันเกษียณ 25 ปี หักด้วยปีทวีคูณ
   const retire25Adjusted = startBE + 25 - Math.floor(totalDoubleYears);
   const retire60 = birthBE + 60;
   const curBE = new Date().getFullYear()+543;
 
-  // บำเหน็จ = เงินเดือน × อายุราชการรวม(ปี)
-  const gratuity = Math.round(p.salary * totalServiceYrs);
-  // บำนาญ = เงินเดือน × 70% (หากอายุราชการรวม ≥ 25 ปี) หรือตามสูตร 2% × ปี × เงินเดือน
-  const pensionRate = Math.min(totalServiceYrs * 2, 70) / 100;
+  // บำเหน็จ = เงินเดือน × อายุราชการรวม(ปี) ตามกฎหมาย ปัดเศษลง
+  const gratuity = Math.round(p.salary * Math.floor(totalServiceYrs));
+  // บำนาญ = 2% × จำนวนปีราชการรวม × เงินเดือน สูงสุดไม่เกิน 70%
+  const pensionRate = Math.min(Math.floor(totalServiceYrs) * 2, 70) / 100;
   const pension = Math.round(p.salary * pensionRate);
 
   const svcDisplay = serviceYears(p.start);
-  const svcTotal = `${Math.floor(totalServiceYrs)} ปี ${Math.round((totalServiceYrs%1)*12)} เดือน`;
 
   document.getElementById('pensionContent').innerHTML=`
     <div class="tcard">
@@ -1960,12 +2011,38 @@ function renderDocs(cat, pidFilter){
 
 // ===================== EDUCATION MODAL =====================
 let nextEduId = 1;
+// Duration helpers
+function buildDuration(){
+  const y=parseInt(document.getElementById('e_dur_y').value)||0;
+  const m=parseInt(document.getElementById('e_dur_m').value)||0;
+  const w=parseInt(document.getElementById('e_dur_w').value)||0;
+  const d=parseInt(document.getElementById('e_dur_d').value)||0;
+  const parts=[];
+  if(y>0) parts.push(y+' ปี');
+  if(m>0) parts.push(m+' เดือน');
+  if(w>0) parts.push(w+' สัปดาห์');
+  if(d>0) parts.push(d+' วัน');
+  return parts.join(' ')||'—';
+}
+function parseDuration(str){
+  // Parse stored string like "1 ปี 6 เดือน 2 สัปดาห์ 3 วัน" back to fields
+  if(!str||str==='—') return {y:0,m:0,w:0,d:0};
+  const yM=str.match(/(\d+)\s*ปี/);   const mM=str.match(/(\d+)\s*เดือน/);
+  const wM=str.match(/(\d+)\s*สัปดาห์/); const dM=str.match(/(\d+)\s*วัน/);
+  return {y:yM?parseInt(yM[1]):0, m:mM?parseInt(mM[1]):0, w:wM?parseInt(wM[1]):0, d:dM?parseInt(dM[1]):0};
+}
+function setDurationFields(str){
+  const v=parseDuration(str);
+  ['y','m','w','d'].forEach(k=>{ const el=document.getElementById('e_dur_'+k); if(el) el.value=v[k]; });
+}
+
 function openAddEduModal(){
   document.getElementById('eduModalTitle').textContent='＋ เพิ่มหลักสูตรการศึกษา';
   document.getElementById('e_editId').value='';
   ['e_pid','e_course','e_school','e_year','e_pct'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('e_grade').value='';
   document.getElementById('e_status').value='done';
+  ['e_dur_y','e_dur_m','e_dur_w','e_dur_d'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value='0'; });
   document.getElementById('eduModal').classList.add('open');
 }
 function openEditEduModal(id){
@@ -1979,6 +2056,7 @@ function openEditEduModal(id){
   document.getElementById('e_grade').value=item.grade||'';
   document.getElementById('e_pct').value=item.pct||'';
   document.getElementById('e_status').value=item.status||'done';
+  setDurationFields(item.duration||'');
   document.getElementById('eduModal').classList.add('open');
 }
 function saveEdu(){
@@ -1988,6 +2066,7 @@ function saveEdu(){
   const obj={ id:0, pid, course,
     school: document.getElementById('e_school').value.trim(),
     year: parseInt(document.getElementById('e_year').value)||0,
+    duration: buildDuration(),
     grade: document.getElementById('e_grade').value,
     pct: parseInt(document.getElementById('e_pct').value)||0,
     status: document.getElementById('e_status').value
@@ -1996,6 +2075,42 @@ function saveEdu(){
   if(editId){ const i=eduData.findIndex(x=>x.id==editId); if(i>-1){ obj.id=parseInt(editId); eduData[i]=obj; } }
   else { obj.id=nextEduId++; if(eduData.length>0) nextEduId=Math.max(...eduData.map(x=>x.id))+1; eduData.push(obj); }
   closeModal('eduModal'); renderEdu(); autoSave('education');
+}
+
+// Sync docs to Google Drive via Apps Script / direct link
+async function syncDocsToDrive(){
+  // Check if Apps Script URL is set (same GAS URL used for sheets)
+  const gasUrl = localStorage.getItem('gas_url')||'';
+  if(!gasUrl){
+    // Fallback: open Drive settings
+    showFbStatus('⚠️ กรุณาตั้งค่า Apps Script URL ก่อน (⚙️)', 'orange');
+    openSettingsModal();
+    return;
+  }
+  showFbStatus('🔗 กำลังซิงค์เอกสารไป Drive...', 'blue');
+  try{
+    // Send doc metadata (without localData) to Apps Script for logging
+    const payload = docsData.map(d=>({
+      id:d.id, pid:d.pid, name:d.name, person:d.person,
+      date:d.date, type:d.type, cat:d.cat, size:d.size,
+      driveUrl:d.driveUrl||''
+    }));
+    const resp = await fetch(gasUrl+'?action=saveDocs', {
+      method:'POST', body: JSON.stringify({docs:payload}),
+      headers:{'Content-Type':'text/plain'}
+    });
+    const text = await resp.text();
+    const data = JSON.parse(text);
+    if(data.status==='ok'||data.saved){
+      showFbStatus(`✅ ซิงค์ Drive สำเร็จ — ${payload.length} รายการ`, 'green');
+    } else {
+      throw new Error(data.error||'Unknown response');
+    }
+  }catch(e){
+    // If no Apps Script, fall back to Firebase
+    showFbStatus('⚠️ ไม่สามารถซิงค์ Drive ได้ — บันทึกลง Firebase แทน', 'orange');
+    autoSave('documents');
+  }
 }
 
 // ===================== FIELD MODAL =====================
