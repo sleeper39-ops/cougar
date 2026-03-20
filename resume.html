@@ -220,7 +220,7 @@ tbody tr:last-child td{border-bottom:none;}
         <input class="login-input" type="password" id="loginPass" placeholder="กรอกรหัสผ่าน" autocomplete="current-password">
       </div>
       <button class="btn-login" onclick="doLogin()">🔓 เข้าสู่ระบบ</button>
-      <div class="login-hint">ระบบสำหรับเจ้าหน้าที่ที่ได้รับสิทธิ์เท่านั้น</div>
+      <div class="login-hint">ผู้ใช้: <b>admin</b> &nbsp;|&nbsp; รหัสผ่าน: <b>admin2</b></div>
     </div>
   </div>
 </div>
@@ -1034,8 +1034,13 @@ function doLogin(){
     document.getElementById('loginPass').value='';
   }
 }
-document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter') doLogin();});
-document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter') document.getElementById('loginPass').focus();});
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter') doLogin();});
+  document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter') document.getElementById('loginPass').focus();});
+  document.querySelectorAll('.overlay').forEach(o=>{
+    o.addEventListener('click',e=>{if(e.target===o) o.classList.remove('open');});
+  });
+});
 
 function doLogout(){
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -1621,9 +1626,6 @@ function renderDocs(cat){
 
 // ===================== MODAL HELPERS =====================
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.overlay').forEach(o=>{
-  o.addEventListener('click',e=>{if(e.target===o) o.classList.remove('open');});
-});
 </script>
 </body>
 </html>
