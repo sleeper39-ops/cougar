@@ -235,9 +235,10 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
   <div style="flex:1"></div>
   <div class="topbar-right">
-    <span id="gsStatus" style="font-size:13px;font-weight:600;display:none;padding:0 6px;"></span>
-    <button id="btnGoogleConnect" class="btn btn-outline btn-sm" onclick="connectGoogle()" style="gap:6px;font-size:13px;">🔗 เชื่อมต่อ Google</button>
-    <button class="btn btn-outline btn-sm" onclick="openSettingsModal()" title="ตั้งค่า Google API" style="padding:7px 10px;">⚙️</button>
+    <span id="fbStatus" style="font-size:13px;font-weight:600;display:none;padding:0 8px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    <button class="btn btn-outline btn-sm" id="btnSync" onclick="fbSyncAll()" title="บันทึกทุกอย่างไป Firebase" style="font-size:13px;">☁️ ซิงค์</button>
+    <button class="btn btn-outline btn-sm" id="btnLoad" onclick="fbLoadAll()" title="โหลดข้อมูลจาก Firebase" style="font-size:13px;">📥 โหลด</button>
+    <button class="btn btn-outline btn-sm" onclick="openSettingsModal()" title="ตั้งค่า Firebase" style="padding:7px 10px;">⚙️</button>
     <div class="admin-badge"><div class="admin-av">A</div>Admin</div>
     <button class="btn-logout" onclick="doLogout()">🚪 ออกจากระบบ</button>
   </div>
@@ -294,9 +295,7 @@ tbody tr:last-child td{border-bottom:none;}
           <option value="s7">ราชการต่างหน่วย</option>
         </select>
         <button class="btn btn-blue" onclick="openAddModal()">＋ เพิ่มกำลังพล</button>
-        <button class="btn btn-outline btn-sm" onclick="syncPersonnel()" title="บันทึกไปยัง Google Sheets">☁️ ซิงค์</button>
-        <button class="btn btn-outline btn-sm" onclick="loadAllFromSheets()" title="โหลดข้อมูลจาก Google Sheets">🔄 โหลด</button>
-        <button class="btn btn-outline btn-sm">📤 ส่งออก</button>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">📤 CSV</button>
       </div>
       <div class="tcard">
         <div class="tcard-head">
@@ -430,7 +429,7 @@ tbody tr:last-child td{border-bottom:none;}
       <div class="toolbar">
         <select class="fsel" style="min-width:200px"><option>-- กำลังพลทั้งหมด --</option></select>
         <button class="btn btn-blue" onclick="openDriveFilePicker()">📎 อัปโหลดจาก Drive</button>
-        <button class="btn btn-outline btn-sm" onclick="syncDocs()" title="บันทึกรายการเอกสารไป Sheets">☁️ ซิงค์</button>
+        <button class="btn btn-outline btn-sm" onclick="autoSave('documents')" title="บันทึกรายการเอกสารไป Firebase">☁️ ซิงค์</button>
       </div>
       <div class="docs-grid" id="docsGrid"></div>
     </div>
@@ -628,41 +627,43 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
-<!-- MODAL: GOOGLE SETTINGS -->
+<!-- MODAL: FIREBASE SETTINGS -->
 <div class="overlay" id="settingsModal">
   <div class="modal modal-sm">
-    <div class="mhead" style="background:linear-gradient(135deg,#1a3a6b,#1a6fd4)">
-      <div class="mhead-title" style="color:#fff">⚙️ ตั้งค่า Google API</div>
-      <button class="mclose" onclick="closeModal('settingsModal')" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1)">✕</button>
+    <div class="mhead" style="background:linear-gradient(135deg,#f57c00,#ff9800)">
+      <div class="mhead-title" style="color:#fff">🔥 ตั้งค่า Firebase Realtime Database</div>
+      <button class="mclose" onclick="closeModal('settingsModal')" style="border-color:rgba(255,255,255,.4);color:#fff;background:rgba(255,255,255,.15)">✕</button>
     </div>
     <div class="form-body">
-      <div style="background:var(--blue-pale);border:1.5px solid rgba(26,111,212,.2);border-radius:var(--radius);padding:12px 14px;margin-bottom:18px;font-size:13px;color:var(--text-2);line-height:1.7;">
-        <strong style="color:var(--blue);">📋 วิธีตั้งค่า:</strong><br>
-        1. ไปที่ <a href="https://console.cloud.google.com" target="_blank" style="color:var(--blue)">Google Cloud Console</a><br>
-        2. สร้างโปรเจกต์ → เปิดใช้ <b>Sheets API</b> และ <b>Drive API</b><br>
-        3. สร้าง OAuth 2.0 Client ID (Web application) + API Key<br>
-        4. เพิ่ม <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px">https://claude.ai</code> ใน Authorized JS origins<br>
-        5. สร้าง Google Sheet ที่มี Sheet ชื่อ: <b>Personnel, Education, Training, Field, Promotion, Documents</b>
+      <div style="background:#fff8f0;border:1.5px solid #ffcc80;border-radius:var(--radius);padding:14px 16px;margin-bottom:18px;font-size:13px;line-height:1.9;color:#5d4037;">
+        <div style="font-weight:700;color:#e65100;margin-bottom:6px;">🔥 วิธีตั้งค่า Firebase (ทำครั้งเดียว)</div>
+        <b>1.</b> ไปที่ <a href="https://console.firebase.google.com" target="_blank" style="color:#e65100;font-weight:600;">console.firebase.google.com</a><br>
+        <b>2.</b> สร้างโปรเจกต์ใหม่ → เลือก <b>Realtime Database</b> → Create database<br>
+        <b>3.</b> เลือก <b>Start in test mode</b> (อ่าน/เขียนได้โดยไม่ต้อง login 30 วัน)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;หรือตั้ง Rules เป็น <code style="background:#ffe0b2;padding:1px 5px;border-radius:3px;">"read":true,"write":true</code> ถาวร<br>
+        <b>4.</b> คัดลอก <b>Database URL</b> รูปแบบ: <code style="background:#ffe0b2;padding:1px 5px;border-radius:3px;font-size:11px;">https://xxx-default-rtdb.firebaseio.com</code><br>
+        <b>5.</b> ไปที่ Project Settings → General → Web API Key → คัดลอก <b>API Key</b>
       </div>
-      <div class="fgrid" style="grid-template-columns:1fr;gap:12px">
+      <div class="fgrid" style="grid-template-columns:1fr;gap:14px">
         <div>
-          <label class="flabel">OAuth 2.0 Client ID <span>*</span></label>
-          <input class="finput" id="cfg_clientId" placeholder="XXXX.apps.googleusercontent.com">
+          <label class="flabel">Firebase Database URL <span>*</span></label>
+          <input class="finput" id="cfg_fbUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" style="font-size:13px;">
+          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">ไม่ต้องใส่ / ต่อท้าย</div>
         </div>
         <div>
-          <label class="flabel">API Key <span>*</span></label>
-          <input class="finput" id="cfg_apiKey" placeholder="AIzaSy...">
+          <label class="flabel">Web API Key <span>*</span></label>
+          <input class="finput" id="cfg_fbKey" placeholder="AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" style="font-size:13px;">
+          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">Project Settings → General → Web API Key</div>
         </div>
         <div>
-          <label class="flabel">Google Sheet ID <span>*</span></label>
-          <input class="finput" id="cfg_sheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
-          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">จาก URL: docs.google.com/spreadsheets/d/<b>[SHEET_ID]</b>/edit</div>
+          <label class="flabel">ชื่อ Node (ไม่บังคับ)</label>
+          <input class="finput" id="cfg_fbNode" placeholder="aps_data" style="font-size:13px;">
+          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">ชื่อ root node ใน database (ค่าเริ่มต้น: aps_data)</div>
         </div>
-        <div>
-          <label class="flabel">Google Drive Folder ID (ไม่บังคับ)</label>
-          <input class="finput" id="cfg_driveId" placeholder="1ABC...xyz">
-          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">โฟลเดอร์สำหรับเก็บเอกสาร — ว่างไว้ = ใช้ My Drive</div>
-        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-sm" onclick="testFbConnection()" style="background:#fff8f0;border:1.5px solid #ffcc80;color:#e65100;font-size:13px;font-weight:600;">🔌 ทดสอบการเชื่อมต่อ</button>
+        <span id="fbTestResult" style="font-size:13px;font-weight:600;"></span>
       </div>
     </div>
     <div class="form-actions">
@@ -761,282 +762,223 @@ let nextTrainId=1;
 let deleteTargetId=null;
 let deleteTargetType='personnel';
 
-// ===================== GOOGLE INTEGRATION CONFIG =====================
-// ผู้ดูแลระบบกรอก Client ID และ Sheet/Drive IDs ในหน้าตั้งค่า
-let GS_CONFIG = {
-  clientId: localStorage.getItem('gs_client_id')||'',
-  sheetId:  localStorage.getItem('gs_sheet_id')||'',
-  driveId:  localStorage.getItem('gs_drive_id')||'',
-  apiKey:   localStorage.getItem('gs_api_key')||''
-};
-let gapi_loaded = false;
-let gis_loaded  = false;
-let tokenClient = null;
-let accessToken = null;
+// ===================== FIREBASE REALTIME DATABASE =====================
+// ใช้ REST API ของ Firebase โดยตรง — ไม่ต้อง OAuth, ไม่ต้อง SDK
+// เรียก fetch() ไปยัง https://PROJECT.firebaseio.com/NODE/COLLECTION.json?auth=APIKEY
 
-// Sheet names mapping
-const SHEET_NAMES = {
-  personnel:  'Personnel',
-  edu:        'Education',
-  training:   'Training',
-  field:      'Field',
-  promotion:  'Promotion',
-  docs:       'Documents'
+let FB = {
+  url:  localStorage.getItem('fb_url')  || '',
+  key:  localStorage.getItem('fb_key')  || '',
+  node: localStorage.getItem('fb_node') || 'aps_data'
 };
 
-// ===================== GOOGLE API LOADER =====================
-function loadGoogleApis(){
-  if(!GS_CONFIG.clientId||!GS_CONFIG.apiKey) return;
-  // Load GAPI
-  const s1=document.createElement('script');
-  s1.src='https://apis.google.com/js/api.js';
-  s1.onload=()=>{
-    gapi.load('client',async()=>{
-      await gapi.client.init({apiKey:GS_CONFIG.apiKey,discoveryDocs:['https://sheets.googleapis.com/$discovery/rest?version=v4','https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']});
-      gapi_loaded=true;
-      maybeInitGIS();
+// สร้าง endpoint URL
+function fbEndpoint(collection) {
+  return `${FB.url}/${FB.node}/${collection}.json?auth=${FB.key}`;
+}
+
+// แสดงสถานะใน topbar
+function showFbStatus(msg, color) {
+  const el = document.getElementById('fbStatus');
+  if (!el) return;
+  const cm = { green:'#16a34a', red:'#e53e3e', orange:'#e65100', gray:'#64748b', blue:'#1a6fd4' };
+  el.textContent = msg;
+  el.style.color  = cm[color] || cm.gray;
+  el.style.display = 'block';
+}
+
+// เซ็ตสถานะปุ่ม loading
+function setBtnLoading(id, loading, label) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.textContent = loading ? '⏳ ...' : label;
+}
+
+// PUT ข้อมูล collection ทั้งชุด (replace)
+async function fbPut(collection, data) {
+  if (!FB.url || !FB.key) return false;
+  try {
+    const resp = await fetch(fbEndpoint(collection), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
-  };
-  document.head.appendChild(s1);
-  // Load GIS
-  const s2=document.createElement('script');
-  s2.src='https://accounts.google.com/gsi/client';
-  s2.onload=()=>{ gis_loaded=true; maybeInitGIS(); };
-  document.head.appendChild(s2);
-}
-
-function maybeInitGIS(){
-  if(!gapi_loaded||!gis_loaded) return;
-  tokenClient=google.accounts.oauth2.initTokenClient({
-    client_id:GS_CONFIG.clientId,
-    scope:'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive',
-    callback:async(resp)=>{
-      if(resp.error){showGsStatus('❌ เชื่อมต่อไม่สำเร็จ: '+resp.error,'red');return;}
-      accessToken=resp.access_token;
-      gapi.client.setToken({access_token:accessToken});
-      showGsStatus('✅ เชื่อมต่อสำเร็จ — กำลังโหลดข้อมูล...','green');
-      updateGoogleBtn(true);
-      await loadAllFromSheets();
-    }
-  });
-}
-
-function updateGoogleBtn(connected){
-  const btn=document.getElementById('btnGoogleConnect');
-  if(!btn) return;
-  if(connected){
-    btn.innerHTML='<span style="color:#16a34a">●</span> เชื่อมต่อแล้ว';
-    btn.style.borderColor='#86efac';
-    btn.style.color='#16a34a';
-  } else {
-    btn.innerHTML='🔗 เชื่อมต่อ Google';
-    btn.style.borderColor='';btn.style.color='';
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return true;
+  } catch(e) {
+    showFbStatus('❌ บันทึกล้มเหลว: ' + e.message, 'red');
+    return false;
   }
 }
 
-function connectGoogle(){
-  if(!GS_CONFIG.clientId||!GS_CONFIG.apiKey){
-    openSettingsModal();
-    showGsStatus('⚠️ กรุณากรอก Client ID และ API Key ก่อน','orange');
-    return;
+// GET ข้อมูล collection
+async function fbGet(collection) {
+  if (!FB.url || !FB.key) return null;
+  try {
+    const resp = await fetch(fbEndpoint(collection));
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return await resp.json();
+  } catch(e) {
+    showFbStatus('❌ โหลดล้มเหลว: ' + e.message, 'red');
+    return null;
   }
-  if(!tokenClient){ loadGoogleApis(); setTimeout(connectGoogle,1500); return; }
-  tokenClient.requestAccessToken({prompt:''});
 }
 
-function disconnectGoogle(){
-  if(accessToken) google.accounts.oauth2.revoke(accessToken,()=>{});
-  accessToken=null;
-  updateGoogleBtn(false);
-  showGsStatus('ยกเลิกการเชื่อมต่อแล้ว','gray');
-}
+// โหลดทุก collection พร้อมกัน
+async function fbLoadAll() {
+  if (!FB.url || !FB.key) { openSettingsModal(); return; }
+  setBtnLoading('btnLoad', true, '📥 โหลด');
+  showFbStatus('📥 กำลังโหลดข้อมูล...', 'gray');
+  try {
+    const resp = await fetch(`${FB.url}/${FB.node}.json?auth=${FB.key}`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const d = await resp.json() || {};
 
-function showGsStatus(msg,color){
-  const el=document.getElementById('gsStatus');
-  if(!el) return;
-  const colors={green:'#16a34a',red:'#e53e3e',orange:'#d97706',gray:'#64748b'};
-  el.textContent=msg;
-  el.style.color=colors[color]||colors.gray;
-  el.style.display='block';
-}
+    personnel     = objToArr(d.personnel)  || [];
+    eduData       = objToArr(d.education)  || [];
+    trainingData  = objToArr(d.training)   || [];
+    fieldData     = objToArr(d.field)      || [];
+    promotionData = objToArr(d.promotion)  || [];
+    docsData      = objToArr(d.documents)  || [];
 
-// ===================== SHEETS READ/WRITE =====================
-async function loadAllFromSheets(){
-  if(!accessToken||!GS_CONFIG.sheetId) return;
-  try{
-    showGsStatus('📥 กำลังโหลดข้อมูลจาก Google Sheets...','gray');
-    const ranges=Object.values(SHEET_NAMES).map(n=>n+'!A:ZZ');
-    const resp=await gapi.client.sheets.spreadsheets.values.batchGet({spreadsheetId:GS_CONFIG.sheetId,ranges});
-    const vr=resp.result.valueRanges||[];
-    personnel  = parseSheet(vr[0]?.values, parsePersonnelRow);
-    eduData    = parseSheet(vr[1]?.values, parseEduRow);
-    trainingData=parseSheet(vr[2]?.values, parseTrainingRow);
-    fieldData  = parseSheet(vr[3]?.values, parseFieldRow);
-    promotionData=parseSheet(vr[4]?.values, parsePromotionRow);
-    docsData   = parseSheet(vr[5]?.values, parseDocsRow);
-    nextId = personnel.length>0 ? Math.max(...personnel.map(p=>p.id))+1 : 1;
-    nextTrainId= trainingData.length>0 ? Math.max(...trainingData.map(t=>t.id))+1 : 1;
+    nextId      = personnel.length    > 0 ? Math.max(...personnel.map(p=>Number(p.id)||0))    + 1 : 1;
+    nextTrainId = trainingData.length > 0 ? Math.max(...trainingData.map(t=>Number(t.id)||0)) + 1 : 1;
+
     renderPersonnel(); renderEdu(); renderTraining(); renderField();
     renderPromotion(); renderSalary(); renderDocs('all'); populateSelects();
-    showGsStatus(`✅ โหลดสำเร็จ — กำลังพล ${personnel.length} นาย`,'green');
-  } catch(e){
-    showGsStatus('❌ โหลดข้อมูลล้มเหลว: '+e.message,'red');
-    console.error(e);
+    showFbStatus(`✅ โหลดสำเร็จ — กำลังพล ${personnel.length} นาย`, 'green');
+  } catch(e) {
+    showFbStatus('❌ ' + e.message, 'red');
   }
+  setBtnLoading('btnLoad', false, '📥 โหลด');
 }
 
-function parseSheet(rows, parser){
-  if(!rows||rows.length<2) return [];
-  const header=rows[0];
-  return rows.slice(1).filter(r=>r&&r.some(c=>c)).map(r=>parser(header,r)).filter(Boolean);
-}
-
-const h=(header,row,col)=>{ const i=header.indexOf(col); return i>=0?row[i]||'':''; };
-const n=(header,row,col)=>{ const v=h(header,row,col); return v?parseFloat(v)||0:0; };
-
-function parsePersonnelRow(header,row){
-  const id=parseInt(h(header,row,'id'));
-  if(!id) return null;
-  return {id,rank:h(header,row,'rank'),fname:h(header,row,'fname'),lname:h(header,row,'lname'),
-    idno:h(header,row,'idno'),cid:h(header,row,'cid'),blood:h(header,row,'blood'),
-    tel:h(header,row,'tel'),pos:h(header,row,'pos'),unit:h(header,row,'unit'),
-    company:h(header,row,'company'),branch:h(header,row,'branch'),start:h(header,row,'start'),
-    status:h(header,row,'status')||'s1',dob:h(header,row,'dob'),grade:h(header,row,'grade'),
-    step:parseFloat(h(header,row,'step'))||0,base:n(header,row,'base'),prd:n(header,row,'prd'),
-    psr1:n(header,row,'psr1'),psr2:n(header,row,'psr2'),psr3:n(header,row,'psr3'),
-    psr4:n(header,row,'psr4'),salary:n(header,row,'salary')};
-}
-function parseEduRow(header,row){
-  const id=parseInt(h(header,row,'id')); if(!id) return null;
-  return {id,pid:parseInt(h(header,row,'pid'))||0,course:h(header,row,'course'),
-    school:h(header,row,'school'),year:parseInt(h(header,row,'year'))||0,
-    duration:h(header,row,'duration'),grade:h(header,row,'grade'),
-    pct:n(header,row,'pct'),status:h(header,row,'status')||'done'};
-}
-function parseTrainingRow(header,row){
-  const id=parseInt(h(header,row,'id')); if(!id) return null;
-  return {id,pid:parseInt(h(header,row,'pid'))||0,course:h(header,row,'course'),
-    org:h(header,row,'org'),start:h(header,row,'start'),end:h(header,row,'end'),
-    hours:n(header,row,'hours'),result:h(header,row,'result'),status:h(header,row,'status')||'done'};
-}
-function parseFieldRow(header,row){
-  const id=parseInt(h(header,row,'id')); if(!id) return null;
-  const dbl=h(header,row,'double');
-  return {id,pid:parseInt(h(header,row,'pid'))||0,mission:h(header,row,'mission'),
-    area:h(header,row,'area'),start:h(header,row,'start'),end:h(header,row,'end'),
-    pos:h(header,row,'pos'),double:dbl?parseInt(dbl):null,status:h(header,row,'status')||'done'};
-}
-function parsePromotionRow(header,row){
-  const id=parseInt(h(header,row,'id')); if(!id) return null;
-  return {id,pid:parseInt(h(header,row,'pid'))||0,rank:h(header,row,'rank'),
-    target:h(header,row,'target'),condition:h(header,row,'condition'),
-    exam:h(header,row,'exam'),pct:n(header,row,'pct'),status:h(header,row,'status')||'prep'};
-}
-function parseDocsRow(header,row){
-  const id=parseInt(h(header,row,'id')); if(!id) return null;
-  return {id,pid:parseInt(h(header,row,'pid'))||0,name:h(header,row,'name'),
-    person:h(header,row,'person'),date:h(header,row,'date'),
-    type:h(header,row,'type')||'pdf',cat:h(header,row,'cat')||'order',size:h(header,row,'size')};
-}
-
-// Generic row-to-array serializer
-const PERSONNEL_HEADER=['id','rank','fname','lname','idno','cid','blood','tel','pos','unit','company','branch','start','status','dob','grade','step','base','prd','psr1','psr2','psr3','psr4','salary'];
-const EDU_HEADER=['id','pid','course','school','year','duration','grade','pct','status'];
-const TRAINING_HEADER=['id','pid','course','org','start','end','hours','result','status'];
-const FIELD_HEADER=['id','pid','mission','area','start','end','pos','double','status'];
-const PROMOTION_HEADER=['id','pid','rank','target','condition','exam','pct','status'];
-const DOCS_HEADER=['id','pid','name','person','date','type','cat','size'];
-
-function objToRow(header,obj){ return header.map(k=>obj[k]!==undefined&&obj[k]!==null?String(obj[k]):''); }
-
-async function saveSheetData(sheetName, header, rows){
-  if(!accessToken||!GS_CONFIG.sheetId) return false;
-  try{
-    const values=[header, ...rows.map(r=>objToRow(header,r))];
-    await gapi.client.sheets.spreadsheets.values.update({
-      spreadsheetId:GS_CONFIG.sheetId,
-      range:sheetName+'!A1',
-      valueInputOption:'RAW',
-      resource:{values}
+// บันทึกทุก collection พร้อมกัน
+async function fbSyncAll() {
+  if (!FB.url || !FB.key) { openSettingsModal(); return; }
+  setBtnLoading('btnSync', true, '☁️ ซิงค์');
+  showFbStatus('💾 กำลังบันทึกข้อมูล...', 'blue');
+  try {
+    const payload = {
+      personnel:  arrToObj(personnel),
+      education:  arrToObj(eduData),
+      training:   arrToObj(trainingData),
+      field:      arrToObj(fieldData),
+      promotion:  arrToObj(promotionData),
+      documents:  arrToObj(docsData)
+    };
+    const resp = await fetch(`${FB.url}/${FB.node}.json?auth=${FB.key}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
-    return true;
-  } catch(e){ console.error('saveSheetData',e); return false; }
-}
-
-async function syncPersonnel(){
-  const ok=await saveSheetData(SHEET_NAMES.personnel,PERSONNEL_HEADER,personnel);
-  showGsStatus(ok?'💾 บันทึก Personnel สำเร็จ':'❌ บันทึกล้มเหลว',ok?'green':'red');
-}
-async function syncEdu(){  await saveSheetData(SHEET_NAMES.edu,EDU_HEADER,eduData); }
-async function syncTraining(){ await saveSheetData(SHEET_NAMES.training,TRAINING_HEADER,trainingData); }
-async function syncField(){ await saveSheetData(SHEET_NAMES.field,FIELD_HEADER,fieldData); }
-async function syncPromotion(){ await saveSheetData(SHEET_NAMES.promotion,PROMOTION_HEADER,promotionData); }
-async function syncDocs(){ await saveSheetData(SHEET_NAMES.docs,DOCS_HEADER,docsData); }
-
-// ===================== GOOGLE DRIVE =====================
-async function openDriveFilePicker(){
-  if(!accessToken){ 
-    alert('กรุณาเชื่อมต่อ Google ก่อน — กดปุ่ม 🔗 เชื่อมต่อ Google ที่ด้านบน'); 
-    return; 
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    showFbStatus(`✅ ซิงค์สำเร็จ — ${personnel.length} นาย`, 'green');
+  } catch(e) {
+    showFbStatus('❌ ' + e.message, 'red');
   }
-  // Load picker API via gapi if not yet loaded
-  if(typeof google==='undefined'||!google.picker){
-    gapi.load('picker',()=>buildDrivePicker());
-  } else {
-    buildDrivePicker();
+  setBtnLoading('btnSync', false, '☁️ ซิงค์');
+}
+
+// Auto-save collection เดียวหลัง write
+async function autoSave(collection) {
+  if (!FB.url || !FB.key) return;
+  const map = {
+    personnel: personnel, education: eduData, training: trainingData,
+    field: fieldData, promotion: promotionData, documents: docsData
+  };
+  const data = map[collection];
+  if (!data) return;
+  showFbStatus('💾 กำลังบันทึก...', 'blue');
+  const ok = await fbPut(collection, arrToObj(data));
+  if (ok) showFbStatus(`✅ บันทึก ${collection} สำเร็จ`, 'green');
+}
+
+// Firebase เก็บ object key-value — แปลง array ↔ object
+function arrToObj(arr) {
+  if (!arr || !arr.length) return {};
+  const o = {};
+  arr.forEach(item => { o['id_' + item.id] = item; });
+  return o;
+}
+function objToArr(obj) {
+  if (!obj) return [];
+  return Object.values(obj).filter(Boolean);
+}
+
+// ทดสอบการเชื่อมต่อ
+async function testFbConnection() {
+  const url = document.getElementById('cfg_fbUrl').value.trim();
+  const key = document.getElementById('cfg_fbKey').value.trim();
+  const node = document.getElementById('cfg_fbNode').value.trim() || 'aps_data';
+  const el = document.getElementById('fbTestResult');
+  if (!url || !key) { el.textContent = '⚠️ กรุณากรอก URL และ API Key'; el.style.color='#e65100'; return; }
+  el.textContent = '⏳ กำลังทดสอบ...'; el.style.color = '#64748b';
+  try {
+    const resp = await fetch(`${url}/${node}/ping.json?auth=${key}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ts: Date.now() })
+    });
+    if (resp.ok || resp.status === 200) {
+      el.textContent = '✅ เชื่อมต่อสำเร็จ! Firebase พร้อมใช้งาน';
+      el.style.color = '#16a34a';
+    } else {
+      throw new Error(`HTTP ${resp.status} — ตรวจสอบ URL, API Key หรือ Rules`);
+    }
+  } catch(e) {
+    el.textContent = '❌ ' + e.message;
+    el.style.color = '#e53e3e';
   }
 }
 
-function buildDrivePicker(){
-  const view=new google.picker.DocsView()
-    .setIncludeFolders(true)
-    .setParent(GS_CONFIG.driveId||'root')
-    .setMimeTypes('image/png,image/jpeg,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  const picker=new google.picker.PickerBuilder()
-    .addView(view)
-    .setOAuthToken(accessToken)
-    .setDeveloperKey(GS_CONFIG.apiKey)
-    .setCallback(pickerCallback)
-    .build();
-  picker.setVisible(true);
-}
-
-function pickerCallback(data){
-  if(data.action===google.picker.Action.PICKED){
-    const file=data.docs[0];
-    const newDoc={id:Date.now(),pid:0,name:file.name,person:'—',
-      date:new Date().toLocaleDateString('th-TH'),type:file.mimeType.includes('pdf')?'pdf':file.mimeType.includes('image')?'img':'xls',
-      cat:'order',size:file.sizeBytes?(Math.round(file.sizeBytes/1024/10.24)/100)+' MB':'—',
-      driveId:file.id,driveUrl:file.url};
-    docsData.push(newDoc);
-    renderDocs(currentDocFilter);
-    syncDocs();
-  }
-}
-
-// ===================== SETTINGS MODAL =====================
-function openSettingsModal(){
-  document.getElementById('cfg_clientId').value=GS_CONFIG.clientId;
-  document.getElementById('cfg_apiKey').value=GS_CONFIG.apiKey;
-  document.getElementById('cfg_sheetId').value=GS_CONFIG.sheetId;
-  document.getElementById('cfg_driveId').value=GS_CONFIG.driveId;
+// Settings modal
+function openSettingsModal() {
+  document.getElementById('cfg_fbUrl').value  = FB.url;
+  document.getElementById('cfg_fbKey').value  = FB.key;
+  document.getElementById('cfg_fbNode').value = FB.node;
+  document.getElementById('fbTestResult').textContent = '';
   document.getElementById('settingsModal').classList.add('open');
 }
 
-function saveSettings(){
-  GS_CONFIG.clientId=document.getElementById('cfg_clientId').value.trim();
-  GS_CONFIG.apiKey=document.getElementById('cfg_apiKey').value.trim();
-  GS_CONFIG.sheetId=document.getElementById('cfg_sheetId').value.trim();
-  GS_CONFIG.driveId=document.getElementById('cfg_driveId').value.trim();
-  localStorage.setItem('gs_client_id',GS_CONFIG.clientId);
-  localStorage.setItem('gs_api_key',GS_CONFIG.apiKey);
-  localStorage.setItem('gs_sheet_id',GS_CONFIG.sheetId);
-  localStorage.setItem('gs_drive_id',GS_CONFIG.driveId);
+function saveSettings() {
+  FB.url  = document.getElementById('cfg_fbUrl').value.trim().replace(/\/$/, '');
+  FB.key  = document.getElementById('cfg_fbKey').value.trim();
+  FB.node = document.getElementById('cfg_fbNode').value.trim() || 'aps_data';
+  localStorage.setItem('fb_url',  FB.url);
+  localStorage.setItem('fb_key',  FB.key);
+  localStorage.setItem('fb_node', FB.node);
   closeModal('settingsModal');
-  showGsStatus('💾 บันทึกการตั้งค่าแล้ว','green');
-  // Re-init APIs with new keys
-  gapi_loaded=false; gis_loaded=false; tokenClient=null;
-  loadGoogleApis();
+  showFbStatus('💾 บันทึก URL แล้ว — กด 📥 โหลด เพื่อดึงข้อมูล', 'green');
+}
+
+// Export CSV
+function exportCSV() {
+  if (!personnel.length) { alert('ไม่มีข้อมูลกำลังพล'); return; }
+  const hdr = ['ยศ','ชื่อ','สกุล','เลขประจำตัว','ตำแหน่ง','สังกัด','วันเข้ารับราชการ','ระดับ','ขั้น','เงินเดือนสุทธิ'];
+  const rows = personnel.map(p=>[p.rank,p.fname,p.lname,p.idno,p.pos,p.unit,p.start,p.grade?GRADE_LABELS[p.grade]:'',p.step,p.salary]);
+  const csv = [hdr,...rows].map(r=>r.map(c=>'"'+(String(c||'').replace(/"/g,'""'))+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download = 'personnel_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+// Drive picker stub
+function openDriveFilePicker() {
+  const url = prompt('กรอก URL ไฟล์จาก Google Drive (ต้องเป็น Public link):','');
+  if (!url) return;
+  const name = url.split('/').pop().split('?')[0] || 'ไฟล์จาก Drive';
+  const newDoc = {
+    id: Date.now(), pid: 0, name,
+    person: '—', date: new Date().toLocaleDateString('th-TH'),
+    type: name.endsWith('.pdf')?'pdf': name.match(/\.(jpg|jpeg|png)$/i)?'img':'xls',
+    cat: 'order', size: '—', driveUrl: url
+  };
+  docsData.push(newDoc);
+  renderDocs(currentDocFilter);
+  autoSave('documents');
 }
 
 // ===================== HELPERS =====================
@@ -1117,10 +1059,10 @@ function initApp(){
   renderPersonnel(); renderEdu(); renderTraining(); renderField();
   renderPromotion(); renderSalary(); renderDocs('all');
   populateSelects();
-  // Load Google APIs if config exists
-  if(GS_CONFIG.clientId && GS_CONFIG.apiKey){
-    loadGoogleApis();
-    showGsStatus('⏳ กำลังโหลด Google API...','gray');
+  if(FB.url && FB.key){
+    showFbStatus('🔥 Firebase พร้อม — กด 📥 โหลด เพื่อดึงข้อมูล','orange');
+  } else {
+    showFbStatus('⚙️ ยังไม่ได้ตั้งค่า Firebase — กดปุ่ม ⚙️','gray');
   }
 }
 function populateSelects(){
@@ -1347,7 +1289,7 @@ function savePersonnel(){
   }
   closeModal('addModal');
   renderPersonnel();renderSalary();populateSelects();
-  if(accessToken) syncPersonnel();
+  autoSave('personnel');
 }
 
 // ===================== DELETE =====================
@@ -1362,12 +1304,12 @@ function confirmDelete(){
     personnel=personnel.filter(p=>p.id!==deleteTargetId);
     closeModal('confirmModal');
     renderPersonnel();renderSalary();populateSelects();
-    if(accessToken) syncPersonnel();
+    autoSave('personnel');
   } else if(deleteTargetType==='training'){
     trainingData=trainingData.filter(t=>t.id!==deleteTargetId);
     closeModal('confirmModal');
     renderTraining();
-    if(accessToken) syncTraining();
+    autoSave('training');
   }
   deleteTargetId=null;
 }
@@ -1427,9 +1369,8 @@ function saveTraining(){
   }
   closeModal('trainingModal');
   renderTraining();
+  autoSave('training');
 }
-
-function renderTraining(){
   const q=(document.getElementById('trainSearch')?.value||'').toLowerCase();
   const sc={done:'pill-teal',ongoing:'pill-blue',pending:'pill-yellow'};
   const sl={done:'เสร็จสิ้น',ongoing:'กำลังอบรม',pending:'รอเริ่ม'};
@@ -1668,7 +1609,7 @@ function renderDocs(cat){
           ${d.driveId?`<div style="font-size:11px;color:var(--accent-teal);margin-top:3px;">☁️ Google Drive</div>`:''}
           <div style="margin-top:9px;display:flex;gap:5px">
             ${viewBtn}
-            <button class="btn btn-red btn-sm" onclick="event.stopPropagation();if(confirm('ลบ?')){docsData=docsData.filter(x=>x.id!=${d.id});renderDocs(currentDocFilter);if(accessToken)syncDocs();}">🗑️</button>
+            <button class="btn btn-red btn-sm" onclick="event.stopPropagation();if(confirm('ลบ?')){docsData=docsData.filter(x=>x.id!=${d.id});renderDocs(currentDocFilter);autoSave('documents');}">🗑️</button>
           </div>
         </div>
       </div>`;
