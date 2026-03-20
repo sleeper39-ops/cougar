@@ -292,7 +292,7 @@ tbody tr:last-child td{border-bottom:none;}
           <option value="s7">ราชการต่างหน่วย</option>
         </select>
         <button class="btn btn-blue" onclick="openAddModal()">＋ เพิ่มกำลังพล</button>
-        <button class="btn btn-outline btn-sm" onclick="exportCSV()">📤 CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="exportPDF()">📄 ส่งออก PDF</button>
       </div>
       <div class="tcard">
         <div class="tcard-head">
@@ -1124,8 +1124,10 @@ async function fbLoadAll() {
       if(ex){ Object.assign(ex, fd); } else { docsData.push(fd); }
     });
 
-    nextId      = personnel.length    > 0 ? Math.max(...personnel.map(p=>Number(p.id)||0))    + 1 : 1;
-    nextTrainId = trainingData.length > 0 ? Math.max(...trainingData.map(t=>Number(t.id)||0)) + 1 : 1;
+    nextId         = personnel.length    > 0 ? Math.max(...personnel.map(p=>Number(p.id)||0))       + 1 : 1;
+    nextTrainId    = trainingData.length > 0 ? Math.max(...trainingData.map(t=>Number(t.id)||0))    + 1 : 1;
+    nextEduId      = eduData.length      > 0 ? Math.max(...eduData.map(e=>Number(e.id)||0))         + 1 : 1;
+    nextFieldId    = fieldData.length    > 0 ? Math.max(...fieldData.map(f=>Number(f.id)||0))       + 1 : 1;
 
     renderPersonnel(); renderEdu(); renderTraining(); renderField();
     renderPromotion(); renderSalary(); renderDocs('all'); populateSelects();
@@ -1260,15 +1262,190 @@ function saveSettings() {
 }
 
 // Export CSV
-function exportCSV() {
+// ===================== PDF EXPORT =====================
+// ใช้ window.print() + @media print CSS — ไม่ต้องพึ่ง library ภายนอก
+
+function exportPDF() {
   if (!personnel.length) { alert('ไม่มีข้อมูลกำลังพล'); return; }
-  const hdr = ['ยศ','ชื่อ','สกุล','เลขประจำตัว','ตำแหน่ง','สังกัด','วันเข้ารับราชการ','ระดับ','ขั้น','เงินเดือนสุทธิ'];
-  const rows = personnel.map(p=>[p.rank,p.fname,p.lname,p.idno,p.pos,p.unit,p.start,p.grade?GRADE_LABELS[p.grade]:'',p.step,p.salary]);
-  const csv = [hdr,...rows].map(r=>r.map(c=>'"'+(String(c||'').replace(/"/g,'""'))+'"').join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
-  a.download = 'personnel_'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();
+
+  // สร้าง HTML ของรายชื่อ
+  const rows = personnel.map((p,i) => {
+    const svc = serviceYears(p.start);
+    const dbl = formatDouble(getTotalDouble(p.id));
+    return `<tr>
+      <td style="text-align:center">${i+1}</td>
+      <td>${p.rank} ${p.fname} ${p.lname}</td>
+      <td>${p.idno||'—'}</td>
+      <td>${p.pos||'—'}</td>
+      <td>${p.unit||'—'}</td>
+      <td>${p.start||'—'}</td>
+      <td>${svc}</td>
+      <td>${dbl}</td>
+      <td style="text-align:right">${(p.salary||0).toLocaleString()}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+    <title>รายชื่อกำลังพล</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family:'Sarabun',sans-serif; font-size:11pt; color:#111; padding:15mm; }
+      h2 { text-align:center; font-size:16pt; font-weight:700; margin-bottom:4px; }
+      .sub { text-align:center; font-size:10pt; color:#555; margin-bottom:14px; }
+      .line { border-top:2px solid #1a6fd4; margin-bottom:14px; }
+      table { width:100%; border-collapse:collapse; font-size:9.5pt; }
+      th { background:#1a6fd4; color:#fff; padding:6px 5px; text-align:left; font-weight:600; }
+      td { padding:5px; border-bottom:1px solid #e2e8f0; vertical-align:top; }
+      tr:nth-child(even) td { background:#f8faff; }
+      .footer { margin-top:20px; font-size:9pt; color:#888; text-align:right; }
+      @page { size:A4 landscape; margin:10mm; }
+    </style>
+  </head><body>
+    <h2>รายชื่อกำลังพล</h2>
+    <div class="sub">ระบบบันทึกประวัติกำลังพล กองทัพบก • พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})}</div>
+    <div class="line"></div>
+    <table>
+      <thead><tr>
+        <th style="width:35px">ที่</th>
+        <th>ยศ ชื่อ-สกุล</th>
+        <th>เลขประจำตัว</th>
+        <th>ตำแหน่ง</th>
+        <th>สังกัด</th>
+        <th>วันเข้ารับราชการ</th>
+        <th>อายุราชการ</th>
+        <th>วันทวีคูณ</th>
+        <th style="text-align:right">เงินเดือน (บาท)</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="footer">จำนวนกำลังพลทั้งสิ้น ${personnel.length} นาย</div>
+  </body></html>`;
+
+  openPrintWindow(html, 'รายชื่อกำลังพล');
+}
+
+function exportProfilePDF(pid) {
+  const p = personnel.find(x=>String(x.id)===String(pid));
+  if (!p) return;
+  const totalDoubleDays = getTotalDouble(p.id);
+  const totalDoubleYears = totalDoubleDays/365.25;
+  const serviceYrsNum = serviceYearsDecimal(p.start);
+  const totalServiceYrs = serviceYrsNum + totalDoubleYears;
+  const totalDaysAll = Math.round(totalServiceYrs*365.25);
+  const tvY=Math.floor(totalDaysAll/365), tvM=Math.floor((totalDaysAll%365)/30), tvD=totalDaysAll%365%30;
+  const svcTotal=[tvY?tvY+' ปี':'',tvM?tvM+' เดือน':'',tvD?tvD+' วัน':''].filter(Boolean).join(' ')||'0 วัน';
+  const gratuity = Math.round(p.salary * Math.floor(totalServiceYrs));
+  const pensionRate = Math.min(Math.floor(totalServiceYrs)*2,70)/100;
+  const pension = Math.round(p.salary * pensionRate);
+
+  // หลักสูตร
+  const edu = eduData.filter(e=>String(e.pid)===String(pid));
+  const eduRows = edu.length ? edu.map(e=>`<tr><td>${e.course}</td><td>${e.school||'—'}</td><td>${e.year||'—'}</td><td>${e.duration||'—'}</td><td>${e.grade||'—'}</td></tr>`).join('') : '<tr><td colspan="5" style="color:#999;text-align:center">ไม่มีข้อมูล</td></tr>';
+
+  // ราชการสนาม
+  const fields = fieldData.filter(f=>String(f.pid)===String(pid));
+  const fieldRows = fields.length ? fields.map(f=>`<tr><td>${f.mission}</td><td>${f.area||'—'}</td><td>${f.start||'—'}</td><td>${f.end||'ปัจจุบัน'}</td><td>${formatDouble(f.double)}</td></tr>`).join('') : '<tr><td colspan="5" style="color:#999;text-align:center">ไม่มีข้อมูล</td></tr>';
+
+  const html = `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+    <title>ประวัติ ${p.rank}${p.fname} ${p.lname}</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family:'Sarabun',sans-serif; font-size:11pt; color:#111; padding:15mm; }
+      .header { display:flex; align-items:center; gap:16px; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid #1a6fd4; }
+      .avatar { width:70px; height:70px; background:#1a6fd4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:32px; color:#fff; flex-shrink:0; }
+      .header-info h1 { font-size:18pt; font-weight:700; }
+      .header-info .sub { font-size:10pt; color:#555; margin-top:3px; }
+      .badge { display:inline-block; background:#e8f4fd; color:#1a6fd4; border-radius:4px; padding:2px 8px; font-size:9pt; margin-right:6px; }
+      .section { margin-bottom:16px; }
+      .sec-title { font-size:11pt; font-weight:700; color:#1a6fd4; border-left:3px solid #1a6fd4; padding-left:8px; margin-bottom:8px; }
+      .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px 12px; }
+      .grid-item label { font-size:8.5pt; color:#666; display:block; }
+      .grid-item span { font-size:10pt; font-weight:600; }
+      table { width:100%; border-collapse:collapse; font-size:9.5pt; margin-top:4px; }
+      th { background:#1a6fd4; color:#fff; padding:5px; text-align:left; font-size:9pt; }
+      td { padding:4px 5px; border-bottom:1px solid #e2e8f0; }
+      tr:nth-child(even) td { background:#f8faff; }
+      .summary { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px; }
+      .sum-card { background:#f0f7ff; border:1px solid #bee3f8; border-radius:6px; padding:8px 10px; }
+      .sum-card .lbl { font-size:8.5pt; color:#555; }
+      .sum-card .val { font-size:13pt; font-weight:700; color:#1a6fd4; }
+      .footer { margin-top:20px; font-size:9pt; color:#888; border-top:1px solid #e2e8f0; padding-top:8px; display:flex; justify-content:space-between; }
+      @page { size:A4 portrait; margin:10mm; }
+    </style>
+  </head><body>
+    <div class="header">
+      <div class="avatar">🪖</div>
+      <div class="header-info">
+        <h1>${p.rank} ${p.fname} ${p.lname}</h1>
+        <div class="sub">
+          <span class="badge">📌 ${p.pos||'—'}</span>
+          <span class="badge">🏢 ${p.unit||'—'}</span>
+          <span class="badge">⚔️ ${p.branch||'—'}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">ข้อมูลส่วนตัว / ราชการ</div>
+      <div class="grid">
+        <div class="grid-item"><label>เลขประจำตัว</label><span>${p.idno||'—'}</span></div>
+        <div class="grid-item"><label>เลขบัตรประชาชน</label><span>${p.cid||'—'}</span></div>
+        <div class="grid-item"><label>วันเกิด</label><span>${p.dob||'—'}</span></div>
+        <div class="grid-item"><label>กรุ๊ปเลือด</label><span>${p.blood||'—'}</span></div>
+        <div class="grid-item"><label>วันเข้ารับราชการ</label><span>${p.start||'—'}</span></div>
+        <div class="grid-item"><label>อายุราชการ</label><span>${serviceYears(p.start)}</span></div>
+        <div class="grid-item"><label>วันทวีคูณ</label><span>${formatDouble(totalDoubleDays)}</span></div>
+        <div class="grid-item"><label>อายุราชการรวม</label><span>${svcTotal}</span></div>
+        <div class="grid-item"><label>ระดับ/ขั้น</label><span>${p.grade?GRADE_LABELS[p.grade]:'—'} / ${p.step||'—'}</span></div>
+        <div class="grid-item"><label>เงินเดือนสุทธิ</label><span>${(p.salary||0).toLocaleString()} ฿</span></div>
+        <div class="grid-item"><label>กองร้อย</label><span>${p.company||'—'}</span></div>
+        <div class="grid-item"><label>โทรศัพท์</label><span>${p.tel||'—'}</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">หลักสูตรการศึกษา</div>
+      <table><thead><tr><th>หลักสูตร</th><th>สถานศึกษา</th><th>ปี</th><th>ระยะเวลา</th><th>ผล</th></tr></thead>
+      <tbody>${eduRows}</tbody></table>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">ราชการสนาม / วันทวีคูณ</div>
+      <table><thead><tr><th>ภารกิจ</th><th>พื้นที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>วันทวีคูณ</th></tr></thead>
+      <tbody>${fieldRows}</tbody></table>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">บำเหน็จ/บำนาญโดยประมาณ</div>
+      <div class="summary">
+        <div class="sum-card"><div class="lbl">อายุราชการรวม</div><div class="val">${svcTotal}</div></div>
+        <div class="sum-card"><div class="lbl">💰 บำเหน็จ (เงินก้อน)</div><div class="val">${gratuity.toLocaleString()} ฿</div></div>
+        <div class="sum-card"><div class="lbl">📅 บำนาญ/เดือน (${Math.round(pensionRate*100)}%)</div><div class="val">${pension.toLocaleString()} ฿</div></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>ระบบบันทึกประวัติกำลังพล กองทัพบก</span>
+      <span>พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})}</span>
+    </div>
+  </body></html>`;
+
+  openPrintWindow(html, `ประวัติ_${p.rank}${p.fname}_${p.lname}`);
+}
+
+// เปิด popup window แล้ว print อัตโนมัติ
+function openPrintWindow(html, title) {
+  const w = window.open('', '_blank', 'width=900,height=700');
+  if (!w) { alert('กรุณาอนุญาต popup สำหรับ PDF'); return; }
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  // รอ font โหลดก่อน print
+  setTimeout(()=>{ w.print(); }, 800);
 }
 
 // Drive picker stub
@@ -1343,7 +1520,7 @@ function formatDouble(days){
 }
 
 function getTotalDouble(pid){
-  return fieldData.filter(f=>f.pid===pid).reduce((a,f)=>a+(f.double||0),0);
+  return fieldData.filter(f=>String(f.pid)===String(pid)).reduce((a,f)=>a+(f.double||0),0);
 }
 
 // ===================== AUTH =====================
@@ -1513,7 +1690,7 @@ function renderPersonnel(){
 
 // ===================== DETAIL MODAL =====================
 function openDetail(id){
-  const p=personnel.find(x=>x.id===id);
+  const p=personnel.find(x=>String(x.id)===String(id));
   if(!p) return;
   const fds=fieldData.filter(f=>f.pid===id);
   const totalDouble=getTotalDouble(id);
@@ -1600,7 +1777,7 @@ function openAddModal(){
 }
 
 function openEditModal(id){
-  const p=personnel.find(x=>x.id===id);if(!p) return;
+  const p=personnel.find(x=>String(x.id)===String(id));if(!p) return;
   document.getElementById('addModalTitle').textContent='✏️ แก้ไขข้อมูลกำลังพล';
   document.getElementById('f_editId').value=id;
   ['rank','fname','lname','dob','cid','blood','tel','idno','pos','unit','company','branch','start','status','grade','prd'].forEach(k=>{
@@ -1686,7 +1863,7 @@ function renderEdu(){
   const sc={done:'pill-teal',studying:'pill-blue',pending:'pill-yellow'};
   const sl={done:'สำเร็จ',studying:'กำลังศึกษา',pending:'รอสมัคร'};
   document.getElementById('eduBody').innerHTML=eduData.map(e=>{
-    const p=personnel.find(x=>x.id===e.pid);
+    const p=personnel.find(x=>String(x.id)===String(e.pid));
     const nm=p?`${p.rank} ${p.fname} ${p.lname}`:'—';
     return `<tr>
       <td><div class="name-cell"><div class="ava">${nm.charAt(0)}</div>${nm}</div></td>
@@ -1696,7 +1873,7 @@ function renderEdu(){
       <td><span class="pill ${sc[e.status]||'pill-blue'}"><span class="pill-dot"></span>${sl[e.status]||e.status}</span></td>
       <td><div style="display:flex;gap:5px">
         <button class="btn btn-outline btn-sm btn-icon" onclick="openEditEduModal(${e.id})">✏️</button>
-        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){eduData=eduData.filter(x=>x.id!==${e.id});renderEdu();autoSave('education');}">🗑️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){eduData=eduData.filter(x=>String(x.id)!==String(${e.id}));renderEdu();autoSave('education');}">🗑️</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1718,8 +1895,9 @@ function saveTraining(){
   const pid=parseInt(document.getElementById('t_pid').value);
   const course=document.getElementById('t_course').value.trim();
   if(!pid||!course){alert('กรุณาเลือกกำลังพลและกรอกชื่อหลักสูตร');return;}
+  const newTrainId = trainingData.length>0 ? Math.max(...trainingData.map(x=>Number(x.id)||0))+1 : 1;
   const obj={
-    id:nextTrainId++,pid,course,
+    id:newTrainId,pid,course,
     org:document.getElementById('t_org').value.trim(),
     start:document.getElementById('t_start').value.trim(),
     end:document.getElementById('t_end').value.trim(),
@@ -1744,12 +1922,12 @@ function renderTraining(){
   const sc={done:'pill-teal',ongoing:'pill-blue',pending:'pill-yellow'};
   const sl={done:'เสร็จสิ้น',ongoing:'กำลังอบรม',pending:'รอเริ่ม'};
   const filtered=trainingData.filter(t=>{
-    const p=personnel.find(x=>x.id===t.pid);
+    const p=personnel.find(x=>String(x.id)===String(t.pid));
     const nm=p?`${p.rank}${p.fname}${p.lname}`:'';
     return !q||(nm+t.course+t.org).toLowerCase().includes(q);
   });
   document.getElementById('trainingBody').innerHTML=filtered.map(t=>{
-    const p=personnel.find(x=>x.id===t.pid);
+    const p=personnel.find(x=>String(x.id)===String(t.pid));
     const nm=p?`${p.rank} ${p.fname} ${p.lname}`:'—';
     const resultPill=t.result==='ผ่าน'||t.result==='ดีมาก'||t.result==='ดี'?'pill-green':t.result==='ไม่ผ่าน'?'pill-red':'pill-gray';
     return `<tr>
@@ -1770,7 +1948,7 @@ function renderTraining(){
 }
 
 function editTraining(id){
-  const t=trainingData.find(x=>x.id===id);if(!t) return;
+  const t=trainingData.find(x=>String(x.id)===String(id));if(!t) return;
   document.getElementById('trainingModalTitle').textContent='✏️ แก้ไขการฝึกอบรม';
   document.getElementById('t_editId').value=id;
   document.getElementById('t_pid').value=t.pid||'';
@@ -1787,7 +1965,7 @@ function editTraining(id){
 // ===================== FIELD =====================
 function renderField(){
   document.getElementById('fieldBody').innerHTML=fieldData.map(f=>{
-    const p=personnel.find(x=>x.id===f.pid);
+    const p=personnel.find(x=>String(x.id)===String(f.pid));
     const nm=p?`${p.rank} ${p.fname} ${p.lname}`:'—';
     return `<tr>
       <td><div class="name-cell"><div class="ava">${nm.charAt(0)}</div>${nm}</div></td>
@@ -1797,7 +1975,7 @@ function renderField(){
       <td><span class="pill ${f.status==='active'?'pill-red':'pill-teal'}"><span class="pill-dot"></span>${f.status==='active'?'ปฏิบัติการ':'สิ้นสุดแล้ว'}</span></td>
       <td><div style="display:flex;gap:5px">
         <button class="btn btn-outline btn-sm btn-icon" onclick="openEditFieldModal(${f.id})">✏️</button>
-        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){fieldData=fieldData.filter(x=>x.id!=${f.id});renderField();autoSave('field');}">🗑️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){fieldData=fieldData.filter(x=>String(x.id)!==String(${f.id}));renderField();autoSave('field');}">🗑️</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1808,7 +1986,7 @@ function renderPromotion(){
   const sc={review:'pill-blue',prep:'pill-yellow',done:'pill-teal'};
   const sl={review:'อยู่ระหว่างพิจารณา',prep:'เตรียมสอบ',done:'ผ่านแล้ว'};
   document.getElementById('promotionBody').innerHTML=promotionData.map(pr=>{
-    const p=personnel.find(x=>x.id===pr.pid);
+    const p=personnel.find(x=>String(x.id)===String(pr.pid));
     const nm=p?`${p.rank} ${p.fname} ${p.lname}`:'—';
     return `<tr>
       <td><div class="name-cell"><div class="ava">${nm.charAt(0)}</div>${nm}</div></td>
@@ -1821,7 +1999,7 @@ function renderPromotion(){
       <td><span class="pill ${sc[pr.status]||'pill-blue'}"><span class="pill-dot"></span>${sl[pr.status]||pr.status}</span></td>
       <td><div style="display:flex;gap:5px">
         <button class="btn btn-outline btn-sm btn-icon" onclick="openEditPromotionModal(${pr.id})">✏️</button>
-        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){promotionData=promotionData.filter(x=>x.id!=${pr.id});renderPromotion();autoSave('promotion');}">🗑️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){promotionData=promotionData.filter(x=>String(x.id)!==String(${pr.id}));renderPromotion();autoSave('promotion');}">🗑️</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1844,7 +2022,7 @@ function renderSalary(){
 // ===================== PROFILE =====================
 function renderProfile(){
   const id=parseInt(document.getElementById('profileSelect').value);
-  const p=personnel.find(x=>x.id===id);
+  const p=personnel.find(x=>String(x.id)===String(id));
   if(!p){document.getElementById('profileContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูประวัติ</div>';return;}
   document.getElementById('profileContent').innerHTML=`
     <div class="phdr">
@@ -1859,7 +2037,7 @@ function renderProfile(){
       </div>
       <div style="display:flex;gap:7px;flex-shrink:0">
         <button class="btn btn-blue btn-sm" onclick="openEditModal(${p.id})">✏️ แก้ไข</button>
-        <button class="btn btn-outline btn-sm">🖨️ พิมพ์</button>
+        <button class="btn btn-outline btn-sm" onclick="exportProfilePDF(${p.id})">📄 ส่งออก PDF</button>
       </div>
     </div>
     <div class="dsec">
@@ -1900,7 +2078,7 @@ function renderProfile(){
 // ===================== PENSION =====================
 function renderPension(){
   const id=parseInt(document.getElementById('pensionSelect').value);
-  const p=personnel.find(x=>x.id===id);
+  const p=personnel.find(x=>String(x.id)===String(id));
   if(!p){document.getElementById('pensionContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูข้อมูล</div>';return;}
   const totalDoubleDays=getTotalDouble(p.id);
   const totalDoubleYears=totalDoubleDays/365.25;
@@ -2085,7 +2263,7 @@ function openAddEduModal(){
   document.getElementById('eduModal').classList.add('open');
 }
 function openEditEduModal(id){
-  const item=eduData.find(x=>x.id===id); if(!item) return;
+  const item=eduData.find(x=>String(x.id)===String(id)); if(!item) return;
   document.getElementById('eduModalTitle').textContent='✏️ แก้ไขหลักสูตร';
   document.getElementById('e_editId').value=id;
   document.getElementById('e_pid').value=item.pid||'';
@@ -2111,8 +2289,14 @@ function saveEdu(){
     status: document.getElementById('e_status').value
   };
   const editId=document.getElementById('e_editId').value;
-  if(editId){ const i=eduData.findIndex(x=>x.id==editId); if(i>-1){ obj.id=parseInt(editId); eduData[i]=obj; } }
-  else { obj.id=nextEduId++; if(eduData.length>0) nextEduId=Math.max(...eduData.map(x=>x.id))+1; eduData.push(obj); }
+  if(editId){
+    const i=eduData.findIndex(x=>x.id==editId);
+    if(i>-1){ obj.id=parseInt(editId); eduData[i]=obj; }
+  } else {
+    obj.id = eduData.length>0 ? Math.max(...eduData.map(x=>Number(x.id)||0))+1 : 1;
+    nextEduId = obj.id+1;
+    eduData.push(obj);
+  }
   closeModal('eduModal'); renderEdu(); autoSave('education');
 }
 
@@ -2171,7 +2355,7 @@ function openAddFieldModal(){
   document.getElementById('fieldModal').classList.add('open');
 }
 function openEditFieldModal(id){
-  const item=fieldData.find(x=>x.id===id); if(!item) return;
+  const item=fieldData.find(x=>String(x.id)===String(id)); if(!item) return;
   document.getElementById('fieldModalTitle').textContent='✏️ แก้ไขราชการสนาม';
   document.getElementById('fd_editId').value=id;
   document.getElementById('fd_pid').value=item.pid||'';
@@ -2205,7 +2389,7 @@ function saveField(){
   };
   const editId=document.getElementById('fd_editId').value;
   if(editId){ const i=fieldData.findIndex(x=>x.id==editId); if(i>-1){ obj.id=parseInt(editId); fieldData[i]=obj; } }
-  else { obj.id=fieldData.length>0?Math.max(...fieldData.map(x=>x.id))+1:1; fieldData.push(obj); }
+  else { obj.id=fieldData.length>0?Math.max(...fieldData.map(x=>Number(x.id)||0))+1:1; fieldData.push(obj); }
   closeModal('fieldModal'); renderField(); autoSave('field');
 }
 
@@ -2218,7 +2402,7 @@ function openAddPromotionModal(){
   document.getElementById('promotionModal').classList.add('open');
 }
 function openEditPromotionModal(id){
-  const item=promotionData.find(x=>x.id===id); if(!item) return;
+  const item=promotionData.find(x=>String(x.id)===String(id)); if(!item) return;
   document.getElementById('promotionModalTitle').textContent='✏️ แก้ไขแผนเลื่อนยศ';
   document.getElementById('pr_editId').value=id;
   document.getElementById('pr_pid').value=item.pid||'';
@@ -2243,7 +2427,7 @@ function savePromotion(){
   };
   const editId=document.getElementById('pr_editId').value;
   if(editId){ const i=promotionData.findIndex(x=>x.id==editId); if(i>-1){ obj.id=parseInt(editId); promotionData[i]=obj; } }
-  else { obj.id=promotionData.length>0?Math.max(...promotionData.map(x=>x.id))+1:1; promotionData.push(obj); }
+  else { obj.id=promotionData.length>0?Math.max(...promotionData.map(x=>Number(x.id)||0))+1:1; promotionData.push(obj); }
   closeModal('promotionModal'); renderPromotion(); autoSave('promotion');
 }
 
