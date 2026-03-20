@@ -141,8 +141,15 @@ tbody tr:last-child td{border-bottom:none;}
 .finput-calc{background:var(--bg-2);color:var(--blue);font-weight:700;cursor:default;}
 .form-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid var(--border);background:var(--bg-1);border-radius:0 0 var(--radius-lg) var(--radius-lg);}
 .phdr{display:flex;gap:20px;align-items:flex-start;padding:20px 22px;background:linear-gradient(135deg,var(--blue-pale) 0%,var(--bg-white) 60%);border-bottom:1px solid var(--border);}
-.pphoto{width:90px;height:110px;border-radius:var(--radius);background:var(--bg-2);border:2px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;position:relative;overflow:hidden;}
-.pphoto-lbl{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.35);font-size:10px;padding:3px;text-align:center;color:#fff;}
+.pphoto{width:90px;height:110px;border-radius:var(--radius);background:var(--bg-2);border:2px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;}
+.pphoto img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.pphoto-lbl{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);font-size:10px;padding:3px;text-align:center;color:#fff;z-index:1;}
+.pphoto-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;}
+.pphoto-actions{display:flex;gap:4px;}
+.pphoto-actions button{font-size:11px;padding:3px 7px;border-radius:4px;border:1px solid var(--border);background:var(--bg-white);cursor:pointer;font-family:inherit;transition:all .15s;}
+.pphoto-actions button:hover{background:var(--blue-pale);border-color:var(--blue);color:var(--blue);}
+.pphoto-actions button.del{color:var(--accent-red);}
+.pphoto-actions button.del:hover{background:#fff5f5;border-color:var(--accent-red);}
 .pname{font-size:22px;font-weight:700;color:var(--text-1);margin-bottom:4px;}
 .pid{color:var(--blue);font-size:14px;font-weight:600;margin-bottom:10px;}
 .ptags{display:flex;flex-wrap:wrap;gap:6px;}
@@ -251,8 +258,8 @@ tbody tr:last-child td{border-bottom:none;}
   <div style="flex:1"></div>
   <div class="topbar-right">
     <span id="fbStatus" style="font-size:13px;font-weight:600;display:none;padding:0 8px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-    <button class="btn btn-outline btn-sm" onclick="openSettingsModal()" title="ตั้งค่า Firebase / Apps Script" style="padding:7px 12px;">⚙️ ตั้งค่า</button>
-    <div class="admin-badge"><div class="admin-av">A</div>Admin</div>
+    <button class="btn btn-outline btn-sm admin-only" onclick="openSettingsModal()" title="ตั้งค่า Firebase / Apps Script" style="padding:7px 12px;">⚙️ ตั้งค่า</button>
+    <div class="admin-badge"><div class="admin-av" id="roleAv">A</div><span id="roleBadge">Admin</span></div>
     <button class="btn-logout" onclick="doLogout()">🚪 ออกจากระบบ</button>
   </div>
 </header>
@@ -308,7 +315,7 @@ tbody tr:last-child td{border-bottom:none;}
           <option value="s6">ราชการ</option>
           <option value="s7">ราชการต่างหน่วย</option>
         </select>
-        <button class="btn btn-blue" onclick="openAddModal()">＋ เพิ่มกำลังพล</button>
+        <button class="btn btn-blue admin-only" onclick="openAddModal()">＋ เพิ่มกำลังพล</button>
         <button class="btn btn-outline btn-sm" onclick="exportPDF()">📄 ส่งออก PDF</button>
       </div>
       <div class="tcard">
@@ -348,7 +355,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="section-page" id="sec-education">
       <div class="toolbar">
         <div class="search-wrap" style="max-width:300px"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหา..."></div>
-        <button class="btn btn-blue" onclick="openAddEduModal()">＋ เพิ่มหลักสูตร</button>
+        <button class="btn btn-blue admin-only" onclick="openAddEduModal()">＋ เพิ่มหลักสูตร</button>
       </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">หลักสูตรการศึกษา</div></div>
@@ -363,7 +370,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="section-page" id="sec-training">
       <div class="toolbar">
         <div class="search-wrap" style="max-width:300px"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหา..." id="trainSearch" oninput="renderTraining()"></div>
-        <button class="btn btn-blue" onclick="openAddTrainingModal()">＋ เพิ่มการฝึกอบรม</button>
+        <button class="btn btn-blue admin-only" onclick="openAddTrainingModal()">＋ เพิ่มการฝึกอบรม</button>
       </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">ประวัติการฝึกอบรม</div></div>
@@ -378,7 +385,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="section-page" id="sec-field">
       <div class="toolbar">
         <div class="search-wrap" style="max-width:300px"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหา..."></div>
-        <button class="btn btn-blue" onclick="openAddFieldModal()">＋ เพิ่มราชการสนาม</button>
+        <button class="btn btn-blue admin-only" onclick="openAddFieldModal()">＋ เพิ่มราชการสนาม</button>
       </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">ราชการสนาม / วันทวีคูณ</div></div>
@@ -391,7 +398,7 @@ tbody tr:last-child td{border-bottom:none;}
 
     <!-- ===== PROMOTION ===== -->
     <div class="section-page" id="sec-promotion">
-      <div class="toolbar"><button class="btn btn-blue" onclick="openAddPromotionModal()">＋ เพิ่มแผน</button></div>
+      <div class="toolbar"><button class="btn btn-blue admin-only" onclick="openAddPromotionModal()">＋ เพิ่มแผน</button></div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">แผนเลื่อนยศ / สอบเลื่อนฐานะ</div></div>
         <table>
@@ -442,13 +449,13 @@ tbody tr:last-child td{border-bottom:none;}
           <button class="stab" onclick="filterDocs('photo',this)">รูปภาพ</button>
           <button class="stab" onclick="filterDocs('cert',this)">ประกาศนียบัตร</button>
         </div>
-        <button class="btn btn-outline btn-sm" onclick="openDriveSettingsModal()" title="ตั้งค่า Google Drive / Apps Script" style="flex-shrink:0;gap:6px;">⚙️ ตั้งค่า Drive</button>
+        <button class="btn btn-outline btn-sm admin-only" onclick="openDriveSettingsModal()" title="ตั้งค่า Google Drive / Apps Script" style="flex-shrink:0;gap:6px;">⚙️ ตั้งค่า Drive</button>
       </div>
       <div class="toolbar">
         <select class="fsel" style="min-width:200px" id="docPersonFilter" onchange="filterDocsByPerson()">
           <option value="">-- กำลังพลทั้งหมด --</option>
         </select>
-        <button class="btn btn-blue" onclick="document.getElementById('fileUploadInput').click()" id="btnUpload">📎 เลือกไฟล์อัปโหลด</button>
+        <button class="btn btn-blue admin-only" onclick="document.getElementById('fileUploadInput').click()" id="btnUpload">📎 เลือกไฟล์อัปโหลด</button>
         <input type="file" id="fileUploadInput" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" style="display:none" onchange="handleFileUpload(event)">
       </div>
       <!-- Upload progress -->
@@ -1161,6 +1168,7 @@ async function fbLoadAll() {
 
     renderPersonnel(); renderEdu(); renderTraining(); renderField();
     renderPromotion(); renderSalary(); renderDocs('all'); populateSelects();
+    restorePhotos(); // restore รูปจาก localStorage หลังโหลด Firebase
     showFbStatus(`✅ ซิงค์สำเร็จ — กำลังพล ${personnel.length} นาย`, 'green');
   } catch(e) {
     showFbStatus('❌ ' + e.message, 'red');
@@ -1230,9 +1238,9 @@ function arrToObj(arr) {
   const o = {};
   arr.forEach(item => {
     if(item && item.id !== undefined) {
-      // Strip localData (base64) before saving — too large for Firebase REST (causes HTTP 400)
       const clean = Object.assign({}, item);
-      delete clean.localData;
+      delete clean.localData; // base64 docs — ใหญ่เกิน Firebase
+      delete clean.photo;     // base64 รูปกำลังพล — เก็บใน localStorage แทน
       o['id_' + item.id] = clean;
     }
   });
@@ -1408,7 +1416,7 @@ function exportProfilePDF(pid) {
     </style>
   </head><body>
     <div class="header">
-      <div class="avatar">🪖</div>
+      <div class="avatar">${p.photo ? `<img src="${p.photo}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;">` : '🪖'}</div>
       <div class="header-info">
         <h1>${p.rank} ${p.fname} ${p.lname}</h1>
         <div class="sub">
@@ -1486,7 +1494,7 @@ function openDriveFilePicker() {
   const newDoc = {
     id: Date.now(), pid: 0, name,
     person: '—', date: new Date().toLocaleDateString('th-TH'),
-    type: name.endsWith('.pdf')?'pdf': name.match(/\.(jpg|jpeg|png)$/i)?'img':'xls',
+    type: getFileType(name),
     cat: 'order', size: '—', driveUrl: url
   };
   docsData.push(newDoc);
@@ -1554,13 +1562,23 @@ function getTotalDouble(pid){
 }
 
 // ===================== AUTH =====================
+// ===================== ROLE =====================
+var CURRENT_ROLE = ''; // 'admin' | 'user'
+function isAdmin(){ return CURRENT_ROLE==='admin'; }
+
 function doLogin(){
   var u=(document.getElementById('loginUser').value||'').trim();
   var p=(document.getElementById('loginPass').value||'').trim();
   var err=document.getElementById('loginErr');
-  if(u==='admin'&&p==='admin2'){
+  var role='';
+  if(u==='admin'&&p==='admin2') role='admin';
+  else if(u==='user'&&p==='user') role='user';
+
+  if(role){
     err.style.display='none';
+    CURRENT_ROLE=role;
     sessionStorage.setItem('aps_logged_in','1');
+    sessionStorage.setItem('aps_role',role);
     showApp();
     initApp();
   } else {
@@ -1573,16 +1591,33 @@ function showApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('topbar').style.display='flex';
   document.getElementById('appBody').style.display='flex';
+  applyRoleUI();
 }
 
 function doLogout(){
+  CURRENT_ROLE='';
   sessionStorage.removeItem('aps_logged_in');
   sessionStorage.removeItem('aps_active_sec');
+  sessionStorage.removeItem('aps_role');
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('topbar').style.display='none';
   document.getElementById('appBody').style.display='none';
   document.getElementById('loginUser').value='';
   document.getElementById('loginPass').value='';
+}
+
+// ซ่อน/แสดง UI ตาม role
+function applyRoleUI(){
+  var isAd = isAdmin();
+  // admin badge text
+  var badge = document.getElementById('roleBadge');
+  if(badge) badge.textContent = isAd ? 'Admin' : 'User (ดูอย่างเดียว)';
+  var av = document.getElementById('roleAv');
+  if(av){ av.textContent = isAd ? 'A' : 'U'; av.style.background = isAd ? '' : 'linear-gradient(135deg,#0891b2,#06b6d4)'; }
+  // ปุ่ม admin-only: เพิ่ม/แก้ไข/ลบ/อัปโหลด
+  document.querySelectorAll('.admin-only').forEach(function(el){
+    el.style.display = isAd ? '' : 'none';
+  });
 }
 
 (function(){
@@ -1593,8 +1628,8 @@ function doLogout(){
 
   // ======= RESTORE SESSION เมื่อ refresh =======
   if(sessionStorage.getItem('aps_logged_in')==='1'){
+    CURRENT_ROLE = sessionStorage.getItem('aps_role')||'admin';
     showApp();
-    // restore active section
     var lastSec = sessionStorage.getItem('aps_active_sec')||'personnel';
     var btn = document.querySelector('.si[data-sec="'+lastSec+'"]');
     // ต้อง initApp ก่อนแล้วค่อย navTo
@@ -1709,8 +1744,8 @@ function renderPersonnel(){
         <td><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></td>
         <td onclick="event.stopPropagation()">
           <div style="display:flex;gap:5px">
-            <button class="btn btn-outline btn-sm btn-icon" onclick="openEditModal(${p.id})" title="แก้ไข">✏️</button>
-            <button class="btn btn-red btn-sm btn-icon" onclick="askDelete(${p.id},'${p.rank} ${p.fname} ${p.lname}','personnel')" title="ลบ">🗑️</button>
+            ${isAdmin()?`<button class="btn btn-outline btn-sm btn-icon" onclick="openEditModal(${p.id})" title="แก้ไข">✏️</button>
+            <button class="btn btn-red btn-sm btn-icon" onclick="askDelete(${p.id},'${p.rank} ${p.fname} ${p.lname}','personnel')" title="ลบ">🗑️</button>`:''}
           </div>
         </td>
       </tr>`).join('');
@@ -1789,6 +1824,7 @@ function openDetail(id){
 
 // ===================== ADD/EDIT PERSONNEL =====================
 function openAddModal(){
+  if(!isAdmin()){ alert("ไม่มีสิทธิ์เพิ่มข้อมูล"); return; }
   document.getElementById('addModalTitle').textContent='＋ เพิ่มกำลังพล';
   document.getElementById('f_editId').value='';
   ['fname','lname','idno','cid','tel','dob','start','psr1','psr2','psr3','psr4'].forEach(k=>{
@@ -1902,8 +1938,8 @@ function renderEdu(){
       <td><div>${e.grade}</div>${e.pct>0?`<div class="prog" style="width:90px"><div class="prog-fill ${e.pct>80?'prog-gold':'prog-blue'}" style="width:${e.pct}%"></div></div>`:''}</td>
       <td><span class="pill ${sc[e.status]||'pill-blue'}"><span class="pill-dot"></span>${sl[e.status]||e.status}</span></td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm btn-icon" onclick="openEditEduModal(${e.id})">✏️</button>
-        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){eduData=eduData.filter(x=>String(x.id)!==String(${e.id}));renderEdu();autoSave('education');}">🗑️</button>
+        ${isAdmin()?`<button class="btn btn-outline btn-sm btn-icon" onclick="openEditEduModal(${e.id})">✏️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){eduData=eduData.filter(x=>String(x.id)!==String(${e.id}));renderEdu();autoSave('education');}">🗑️</button>`:''}
       </div></td>
     </tr>`;
   }).join('');
@@ -1971,7 +2007,7 @@ function renderTraining(){
       <td><span class="pill ${sc[t.status]||'pill-gray'}"><span class="pill-dot"></span>${sl[t.status]||t.status}</span></td>
       <td onclick="event.stopPropagation()"><div style="display:flex;gap:5px">
         <button class="btn btn-outline btn-sm btn-icon" onclick="editTraining(${t.id})">✏️</button>
-        <button class="btn btn-red btn-sm btn-icon" onclick="askDelete(${t.id},'${t.course}','training')">🗑️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="if(isAdmin())askDelete(${t.id},'${t.course}','training')">🗑️</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -2004,8 +2040,8 @@ function renderField(){
       <td style="font-weight:800;color:var(--accent-gold)">${formatDouble(f.double)}</td>
       <td><span class="pill ${f.status==='active'?'pill-red':'pill-teal'}"><span class="pill-dot"></span>${f.status==='active'?'ปฏิบัติการ':'สิ้นสุดแล้ว'}</span></td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm btn-icon" onclick="openEditFieldModal(${f.id})">✏️</button>
-        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){fieldData=fieldData.filter(x=>String(x.id)!==String(${f.id}));renderField();autoSave('field');}">🗑️</button>
+        ${isAdmin()?`<button class="btn btn-outline btn-sm btn-icon" onclick="openEditFieldModal(${f.id})">✏️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){fieldData=fieldData.filter(x=>String(x.id)!==String(${f.id}));renderField();autoSave('field');}">🗑️</button>`:''}
       </div></td>
     </tr>`;
   }).join('');
@@ -2028,8 +2064,8 @@ function renderPromotion(){
         <div class="prog" style="width:80px"><div class="prog-fill ${pr.pct>80?'prog-gold':'prog-blue'}" style="width:${pr.pct}%"></div></div></td>
       <td><span class="pill ${sc[pr.status]||'pill-blue'}"><span class="pill-dot"></span>${sl[pr.status]||pr.status}</span></td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm btn-icon" onclick="openEditPromotionModal(${pr.id})">✏️</button>
-        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){promotionData=promotionData.filter(x=>String(x.id)!==String(${pr.id}));renderPromotion();autoSave('promotion');}">🗑️</button>
+        ${isAdmin()?`<button class="btn btn-outline btn-sm btn-icon" onclick="openEditPromotionModal(${pr.id})">✏️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){promotionData=promotionData.filter(x=>String(x.id)!==String(${pr.id}));renderPromotion();autoSave('promotion');}">🗑️</button>`:''}
       </div></td>
     </tr>`;
   }).join('');
@@ -2056,7 +2092,17 @@ function renderProfile(){
   if(!p){document.getElementById('profileContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูประวัติ</div>';return;}
   document.getElementById('profileContent').innerHTML=`
     <div class="phdr">
-      <div class="pphoto">🪖<div class="pphoto-lbl">รูปถ่าย</div></div>
+      <div class="pphoto-wrap">
+        <div class="pphoto" onclick="document.getElementById('photoInput_${p.id}').click()">
+          ${p.photo ? `<img src="${p.photo}" alt="รูปถ่าย">` : `<span>🪖</span>`}
+          <div class="pphoto-lbl">${p.photo ? 'เปลี่ยนรูป' : 'รูปถ่าย'}</div>
+        </div>
+        <input type="file" id="photoInput_${p.id}" accept="image/*" style="display:none" onchange="uploadPersonnelPhoto(${p.id},this)">
+        <div class="pphoto-actions">
+          ${isAdmin()?`<button onclick="document.getElementById('photoInput_${p.id}').click()" title="อัปโหลดรูปภาพ">📷 อัปโหลด</button>
+          ${p.photo ? '<button class=\"del\" onclick=\"deletePersonnelPhoto('+p.id+')\" title=\"ลบรูปภาพ\">🗑️ ลบ</button>' : ''}`:''}
+        </div>
+      </div>
       <div style="flex:1">
         <div class="pname">${p.rank} ${p.fname} ${p.lname}</div>
         <div class="ptags">
@@ -2066,7 +2112,7 @@ function renderProfile(){
         </div>
       </div>
       <div style="display:flex;gap:7px;flex-shrink:0">
-        <button class="btn btn-blue btn-sm" onclick="openEditModal(${p.id})">✏️ แก้ไข</button>
+        ${isAdmin()?`<button class="btn btn-blue btn-sm" onclick="openEditModal(${p.id})">✏️ แก้ไข</button>`:''}
         <button class="btn btn-outline btn-sm" onclick="exportProfilePDF(${p.id})">📄 ส่งออก PDF</button>
       </div>
     </div>
@@ -2147,7 +2193,17 @@ function renderPension(){
   document.getElementById('pensionContent').innerHTML=`
     <div class="tcard">
       <div class="phdr" style="padding:16px 22px">
-        <div class="pphoto" style="width:60px;height:60px;font-size:24px">🪖</div>
+        <div class="pphoto-wrap">
+          <div class="pphoto" style="width:90px;height:110px;" onclick="${isAdmin()?'document.getElementById(\'penPhotoInput_'+p.id+'\').click()':''}">
+            ${p.photo ? `<img src="${p.photo}" alt="รูปถ่าย">` : `<span style="font-size:36px;">🪖</span>`}
+            <div class="pphoto-lbl">${p.photo ? 'เปลี่ยนรูป' : 'รูปถ่าย'}</div>
+          </div>
+          <input type="file" id="penPhotoInput_${p.id}" accept="image/*" style="display:none" onchange="uploadPersonnelPhoto(${p.id},this)">
+          ${isAdmin()?`<div class="pphoto-actions">
+            <button onclick="${isAdmin()?'document.getElementById(\'penPhotoInput_'+p.id+'\').click()':''}">📷 อัปโหลด</button>
+            ${p.photo ? '<button class=\"del\" onclick=\"deletePersonnelPhoto('+p.id+')\" >🗑️ ลบ</button>' : ''}
+          </div>`:''}
+        </div>
         <div>
           <div class="pname" style="font-size:17px">${p.rank} ${p.fname} ${p.lname}</div>
           <div class="ptags" style="margin-top:6px">
@@ -2233,7 +2289,6 @@ function filterDocs(cat,el){
 function renderDocs(cat, pidFilter){
   const filtered=(cat==='all'?docsData:docsData.filter(d=>d.cat===cat))
     .filter(d=>!pidFilter||d.pid===pidFilter||d.pid===0);
-  const icoMap={pdf:'📄',img:'🖼️',xls:'📊',doc:'📝'};
   const cats={order:'คำสั่ง/หนังสือ',double:'วันทวีคูณ',pension:'บำเหน็จ/บำนาญ',photo:'รูปภาพ',cert:'ประกาศนียบัตร'};
   const el = document.getElementById('docsGrid');
   if(!filtered.length){
@@ -2245,12 +2300,17 @@ function renderDocs(cat, pidFilter){
     return;
   }
   const rows = filtered.map((d,i)=>{
-    const ico = icoMap[d.type]||'📄';
+    const ico = getFileIcon(d.name);
+    const extInfo = getExtLabel(d.name);
     const catLabel = cats[d.cat]||d.cat||'—';
-    // thumbnail สำหรับรูปภาพ
+
+    // thumbnail สำหรับรูปภาพ — แสดงรูปจริง; ไฟล์อื่น — แสดง icon + ext badge
     const thumb = d.type==='img' && (d.localData||d.driveUrl)
-      ? `<img src="${d.localData||d.driveUrl}" style="width:36px;height:36px;object-fit:cover;border-radius:5px;cursor:pointer;vertical-align:middle;" onclick="openImgModal('${d.id}')" onerror="this.outerHTML='🖼️'">`
-      : `<span style="font-size:20px;">${ico}</span>`;
+      ? `<img src="${d.localData||d.driveUrl}" style="width:38px;height:38px;object-fit:cover;border-radius:6px;cursor:pointer;vertical-align:middle;display:block;" onclick="openImgModal('${d.id}')" onerror="this.outerHTML='<span style=\\'font-size:22px;\\'>🖼️</span>'">`
+      : `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+           <span style="font-size:22px;line-height:1;">${ico}</span>
+           <span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;background:${extInfo.bg};color:${extInfo.color};">${extInfo.label}</span>
+         </div>`;
     // ปุ่มไฟล์
     const viewBtn = d.driveUrl
       ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" style="font-size:12px;" onclick="event.stopPropagation()">👁️ ดู</a>`
@@ -2656,7 +2716,7 @@ async function uploadSingleFile(file, idx, total){
 
   const base64 = await fileToBase64(file);
   const ext = file.name.split('.').pop().toLowerCase();
-  const type = ['pdf'].includes(ext)?'pdf':['jpg','jpeg','png','gif','webp'].includes(ext)?'img':'xls';
+  const type = getFileType(file.name);
 
   const result = await gasPost('uploadFile', {
     fileName:  file.name,
@@ -2760,7 +2820,7 @@ async function loadDocsFromDrive(){
     let added=0;
     files.forEach(f=>{
       const ext=(f.fileName||'').split('.').pop().toLowerCase();
-      const type=['pdf'].includes(ext)?'pdf':['jpg','jpeg','png','gif','webp'].includes(ext)?'img':'xls';
+      const type=getFileType(f.fileName);
       const existing = docsData.find(d=>String(d.fileId)===String(f.fileId));
       if(!existing){
         docsData.push({
@@ -2816,6 +2876,7 @@ function changeDriveUrl(){
 
 // ลบเอกสาร — ลบจาก Drive (ถ้ามี fileId) + ลบจาก local
 async function deleteDoc(docId, fileId){
+  if(!isAdmin()){ alert("ไม่มีสิทธิ์ลบเอกสาร"); return; }
   if(!confirm('ลบเอกสารนี้?\n'+(fileId?'(จะลบจาก Google Drive ด้วย)':'(ลบเฉพาะในระบบ)'))) return;
   // ลบจาก Drive ถ้ามี fileId
   if(fileId){
@@ -2833,7 +2894,61 @@ async function deleteDoc(docId, fileId){
   autoSave('documents');
 }
 
-// ===================== IMAGE LIGHTBOX =====================
+// ===================== FILE ICON HELPERS =====================
+function getFileIcon(filename){
+  const ext = (filename||'').split('.').pop().toLowerCase();
+  const map = {
+    // รูปภาพ
+    jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🎞️', webp:'🖼️', bmp:'🖼️', svg:'🎨', heic:'🖼️', heif:'🖼️',
+    // เอกสาร Word
+    doc:'📝', docx:'📝',
+    // Excel / ตาราง
+    xls:'📊', xlsx:'📊', csv:'📊', ods:'📊',
+    // PowerPoint
+    ppt:'📋', pptx:'📋', odp:'📋',
+    // PDF
+    pdf:'📕',
+    // ข้อความ
+    txt:'📄', rtf:'📄',
+    // บีบอัด
+    zip:'🗜️', rar:'🗜️', '7z':'🗜️', tar:'🗜️',
+    // วิดีโอ
+    mp4:'🎥', avi:'🎥', mov:'🎥', mkv:'🎥',
+    // เสียง
+    mp3:'🎵', wav:'🎵', m4a:'🎵',
+  };
+  return map[ext] || '📁';
+}
+
+function getFileType(filename){
+  const ext = (filename||'').split('.').pop().toLowerCase();
+  if(['jpg','jpeg','png','gif','webp','bmp','svg','heic','heif'].includes(ext)) return 'img';
+  if(['pdf'].includes(ext)) return 'pdf';
+  if(['xls','xlsx','csv','ods'].includes(ext)) return 'xls';
+  if(['doc','docx','rtf'].includes(ext)) return 'doc';
+  if(['ppt','pptx','odp'].includes(ext)) return 'ppt';
+  if(['zip','rar','7z','tar'].includes(ext)) return 'zip';
+  if(['mp4','avi','mov','mkv'].includes(ext)) return 'video';
+  if(['mp3','wav','m4a'].includes(ext)) return 'audio';
+  return 'other';
+}
+
+function getExtLabel(filename){
+  const ext = (filename||'').split('.').pop().toUpperCase();
+  const colors = {
+    PDF:'#e53e3e', JPG:'#3b82f6', JPEG:'#3b82f6', PNG:'#3b82f6', GIF:'#8b5cf6',
+    WEBP:'#3b82f6', DOC:'#1565c0', DOCX:'#1565c0', XLS:'#16a34a', XLSX:'#16a34a',
+    CSV:'#16a34a', PPT:'#ea580c', PPTX:'#ea580c', ZIP:'#92400e', RAR:'#92400e',
+    MP4:'#7c3aed', MP3:'#be185d', TXT:'#64748b'
+  };
+  const bg = {
+    PDF:'#fff5f5', JPG:'#eff6ff', JPEG:'#eff6ff', PNG:'#eff6ff', GIF:'#f5f3ff',
+    WEBP:'#eff6ff', DOC:'#eff6ff', DOCX:'#eff6ff', XLS:'#f0fdf4', XLSX:'#f0fdf4',
+    CSV:'#f0fdf4', PPT:'#fff7ed', PPTX:'#fff7ed', ZIP:'#fffbeb', RAR:'#fffbeb',
+    MP4:'#f5f3ff', MP3:'#fdf2f8', TXT:'#f8fafc'
+  };
+  return { label: ext||'FILE', color: colors[ext]||'#64748b', bg: bg[ext]||'#f8fafc' };
+}
 function openImgModal(docId){
   const d = docsData.find(x=>String(x.id)===String(docId));
   if(!d) return;
@@ -2845,6 +2960,49 @@ function openImgModal(docId){
   else if(d.downloadUrl){ dlEl.href=d.downloadUrl; dlEl.download=d.name; dlEl.style.display='inline-flex'; }
   else { dlEl.style.display='none'; }
   document.getElementById('imgModal').classList.add('open');
+}
+
+// ===================== PERSONNEL PHOTO =====================
+// รูปภาพเก็บใน localStorage (key: aps_photo_<pid>) ไม่ส่งไป Firebase เพราะ base64 ใหญ่เกิน
+
+function getPersonnelPhoto(pid){ return localStorage.getItem('aps_photo_'+pid)||''; }
+function setPersonnelPhoto(pid, dataUrl){ localStorage.setItem('aps_photo_'+pid, dataUrl); }
+function delPersonnelPhoto(pid){ localStorage.removeItem('aps_photo_'+pid); }
+
+// หลัง load จาก Firebase ให้ restore รูปจาก localStorage ให้ทุกคน
+function restorePhotos(){
+  personnel.forEach(p=>{ const ph=getPersonnelPhoto(p.id); if(ph) p.photo=ph; else delete p.photo; });
+}
+
+function uploadPersonnelPhoto(pid, input){
+  const file = input.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ alert('กรุณาเลือกไฟล์รูปภาพ'); return; }
+  if(file.size > 10*1024*1024){ alert('ไฟล์รูปภาพต้องไม่เกิน 10MB'); input.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const p = personnel.find(x=>String(x.id)===String(pid));
+    if(!p) return;
+    p.photo = e.target.result;
+    setPersonnelPhoto(pid, e.target.result); // เก็บใน localStorage
+    input.value='';
+    renderProfile();
+    // อัปเดตหน้า pension ถ้าเลือกอยู่
+    const penId = document.getElementById('pensionSelect')?.value;
+    if(penId && String(penId)===String(pid)) renderPension();
+  };
+  reader.readAsDataURL(file);
+}
+
+function deletePersonnelPhoto(pid){
+  if(!confirm('ลบรูปภาพของกำลังพลนี้?')) return;
+  const p = personnel.find(x=>String(x.id)===String(pid));
+  if(!p) return;
+  delete p.photo;
+  delPersonnelPhoto(pid); // ลบจาก localStorage
+  renderProfile();
+  const penId = document.getElementById('pensionSelect')?.value;
+  if(penId && String(penId)===String(pid)) renderPension();
 }
 
 // ===================== MODAL HELPERS =====================
