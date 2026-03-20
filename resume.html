@@ -1378,6 +1378,8 @@ function saveTraining(){
   renderTraining();
   autoSave('training');
 }
+
+function renderTraining(){
   const q=(document.getElementById('trainSearch')?.value||'').toLowerCase();
   const sc={done:'pill-teal',ongoing:'pill-blue',pending:'pill-yellow'};
   const sl={done:'เสร็จสิ้น',ongoing:'กำลังอบรม',pending:'รอเริ่ม'};
