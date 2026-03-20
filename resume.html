@@ -233,10 +233,8 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
   <div style="flex:1"></div>
   <div class="topbar-right">
-    <span id="fbStatus" style="font-size:13px;font-weight:600;display:none;padding:0 8px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-    <button class="btn btn-outline btn-sm" id="btnSync" onclick="fbSyncAll()" title="บันทึกทุกอย่างไป Firebase" style="font-size:13px;">☁️ ซิงค์</button>
-    <button class="btn btn-outline btn-sm" id="btnLoad" onclick="fbLoadAll()" title="โหลดข้อมูลจาก Firebase" style="font-size:13px;">📥 โหลด</button>
-    <button class="btn btn-outline btn-sm" onclick="openSettingsModal()" title="ตั้งค่า Firebase" style="padding:7px 10px;">⚙️</button>
+    <span id="fbStatus" style="font-size:13px;font-weight:600;display:none;padding:0 8px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    <button class="btn btn-outline btn-sm" onclick="openSettingsModal()" title="ตั้งค่า Firebase / Apps Script" style="padding:7px 12px;">⚙️ ตั้งค่า</button>
     <div class="admin-badge"><div class="admin-av">A</div>Admin</div>
     <button class="btn-logout" onclick="doLogout()">🚪 ออกจากระบบ</button>
   </div>
@@ -417,23 +415,24 @@ tbody tr:last-child td{border-bottom:none;}
 
     <!-- ===== DOCUMENTS ===== -->
     <div class="section-page" id="sec-documents">
-      <div class="stabs" id="docTabs">
-        <button class="stab active" onclick="filterDocs('all',this)">ทั้งหมด</button>
-        <button class="stab" onclick="filterDocs('order',this)">คำสั่ง/หนังสือ</button>
-        <button class="stab" onclick="filterDocs('double',this)">วันทวีคูณ</button>
-        <button class="stab" onclick="filterDocs('pension',this)">บำเหน็จ/บำนาญ</button>
-        <button class="stab" onclick="filterDocs('photo',this)">รูปภาพ</button>
-        <button class="stab" onclick="filterDocs('cert',this)">ประกาศนียบัตร</button>
+      <!-- Header row with title + settings button -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div class="stabs" id="docTabs" style="margin-bottom:0;">
+          <button class="stab active" onclick="filterDocs('all',this)">ทั้งหมด</button>
+          <button class="stab" onclick="filterDocs('order',this)">คำสั่ง/หนังสือ</button>
+          <button class="stab" onclick="filterDocs('double',this)">วันทวีคูณ</button>
+          <button class="stab" onclick="filterDocs('pension',this)">บำเหน็จ/บำนาญ</button>
+          <button class="stab" onclick="filterDocs('photo',this)">รูปภาพ</button>
+          <button class="stab" onclick="filterDocs('cert',this)">ประกาศนียบัตร</button>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="openDriveSettingsModal()" title="ตั้งค่า Google Drive / Apps Script" style="flex-shrink:0;gap:6px;">⚙️ ตั้งค่า Drive</button>
       </div>
       <div class="toolbar">
         <select class="fsel" style="min-width:200px" id="docPersonFilter" onchange="filterDocsByPerson()">
           <option value="">-- กำลังพลทั้งหมด --</option>
         </select>
-        <button class="btn btn-blue" onclick="document.getElementById('fileUploadInput').click()">📎 เลือกไฟล์อัปโหลด</button>
+        <button class="btn btn-blue" onclick="document.getElementById('fileUploadInput').click()" id="btnUpload">📎 เลือกไฟล์อัปโหลด</button>
         <input type="file" id="fileUploadInput" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" style="display:none" onchange="handleFileUpload(event)">
-        <button class="btn btn-outline btn-sm" onclick="syncDocsToDrive()" title="เปิด Google Drive โฟลเดอร์">🔗 เปิด Drive</button>
-        <button class="btn btn-outline btn-sm" onclick="changeDriveUrl()" title="เปลี่ยน URL โฟลเดอร์ Drive" style="padding:7px 9px;">📁</button>
-        <button class="btn btn-outline btn-sm" onclick="downloadAllDocs()" title="ดาวน์โหลดทั้งหมด">⬇️ โหลดทั้งหมด</button>
       </div>
       <!-- Upload progress -->
       <div id="uploadProgress" style="display:none;background:var(--blue-pale);border:1.5px solid rgba(26,111,212,.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;">
@@ -911,28 +910,41 @@ tbody tr:last-child td{border-bottom:none;}
 <div class="overlay" id="driveSettingsModal">
   <div class="modal modal-sm">
     <div class="mhead" style="background:linear-gradient(135deg,#1565c0,#1976d2)">
-      <div class="mhead-title" style="color:#fff">☁️ ตั้งค่า Google Drive สำหรับอัปโหลด</div>
+      <div class="mhead-title" style="color:#fff">☁️ ตั้งค่า Google Drive Upload</div>
       <button class="mclose" onclick="closeModal('driveSettingsModal')" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1)">✕</button>
     </div>
     <div class="form-body">
-      <div style="background:#e3f2fd;border:1.5px solid #90caf9;border-radius:var(--radius);padding:14px;margin-bottom:16px;font-size:13px;line-height:1.8;color:#1565c0;">
-        <b>วิธีตั้งค่า Google Drive Upload:</b><br>
-        1. ไปที่ <a href="https://console.cloud.google.com" target="_blank" style="color:#1565c0;font-weight:700;">Google Cloud Console</a><br>
-        2. สร้าง Service Account → Download JSON key<br>
-        3. Share โฟลเดอร์ Drive ให้ email ของ Service Account<br>
-        4. หรือใช้ <b>Google Drive API</b> + OAuth token<br><br>
-        <b style="color:#e53e3e;">⚠️ หมายเหตุ:</b> การอัปโหลดไฟล์ไป Drive จาก browser โดยตรงต้องใช้ OAuth 2.0 — แนะนำให้ใช้ผ่าน Apps Script หรือ backend server แทน<br><br>
-        ตอนนี้ระบบจะ <b>บันทึกข้อมูลเอกสารลง Firebase</b> และแสดงตัวอย่างไฟล์ในระบบไว้ก่อน
+      <div style="background:#e3f2fd;border:1.5px solid #90caf9;border-radius:var(--radius);padding:14px;margin-bottom:16px;font-size:13px;line-height:1.85;color:#1565c0;">
+        <b>📋 วิธีตั้งค่า (ใช้ Apps Script เดียวกับ Firebase)</b><br>
+        1. ใช้ <b>Apps Script Web App URL</b> เดิมที่ deploy ไว้แล้ว<br>
+        2. กรอก <b>Google Drive Folder ID</b> ที่ต้องการเก็บไฟล์<br>
+        &nbsp;&nbsp;&nbsp;(จาก URL: drive.google.com/drive/folders/<b>[ID]</b>)<br>
+        3. ตรวจสอบว่าในไฟล์ <code style="background:#bbdefb;padding:1px 5px;border-radius:3px;">Code.gs</code><br>
+        &nbsp;&nbsp;&nbsp;แก้ <code style="background:#bbdefb;padding:1px 5px;border-radius:3px;">var FOLDER_ID = 'YOUR_FOLDER_ID'</code> ให้ถูกต้อง
       </div>
-      <div class="fgrid" style="grid-template-columns:1fr;gap:12px;">
+      <div class="fgrid" style="grid-template-columns:1fr;gap:14px;">
         <div>
-          <label class="flabel">Google Drive Folder ID (ถ้ามี)</label>
-          <input class="finput" id="drv_folderId" placeholder="1ABC...xyz (จาก URL ของโฟลเดอร์ Drive)">
+          <label class="flabel">Apps Script Web App URL <span>*</span></label>
+          <input class="finput" id="drv_gasUrl" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:13px;">
+          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">URL เดียวกับที่ใช้ใน Firebase Settings</div>
         </div>
+        <div>
+          <label class="flabel">Google Drive Folder ID</label>
+          <input class="finput" id="drv_folderId" placeholder="1ABC...xyz">
+          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">ดู Folder ID จาก URL ของโฟลเดอร์ใน Drive</div>
+        </div>
+        <div>
+          <label class="flabel">Drive Folder URL (สำหรับเปิด)</label>
+          <input class="finput" id="drv_folderUrl" placeholder="https://drive.google.com/drive/folders/..." style="font-size:13px;">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn btn-outline btn-sm" onclick="testDriveConnection()" style="font-size:13px;">🔌 ทดสอบ</button>
+        <span id="driveTestResult" style="font-size:13px;font-weight:600;align-self:center;"></span>
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-outline" onclick="closeModal('driveSettingsModal')">ปิด</button>
+      <button class="btn btn-outline" onclick="closeModal('driveSettingsModal')">ยกเลิก</button>
       <button class="btn btn-blue" onclick="saveDriveSettings()">💾 บันทึก</button>
     </div>
   </div>
@@ -1092,8 +1104,7 @@ async function fbGet(collection) {
 
 // โหลดทุก collection พร้อมกัน
 async function fbLoadAll() {
-  if (!FB.url || !FB.key) { openSettingsModal(); return; }
-  setBtnLoading('btnLoad', true, '📥 โหลด');
+  if (!FB.url || !FB.key) return;
   showFbStatus('📥 กำลังโหลดข้อมูล...', 'gray');
   try {
     const resp = await fetch(`${FB.url}/${FB.node}.json?auth=${FB.key}`);
@@ -1105,18 +1116,23 @@ async function fbLoadAll() {
     trainingData  = objToArr(d.training)   || [];
     fieldData     = objToArr(d.field)      || [];
     promotionData = objToArr(d.promotion)  || [];
-    docsData      = objToArr(d.documents)  || [];
+    // docsData จาก Firebase เก็บเฉพาะ metadata (ไม่มี localData)
+    const fbDocs  = objToArr(d.documents)  || [];
+    // Merge: รักษา localData ที่มีอยู่แล้วในหน่วยความจำ
+    fbDocs.forEach(fd=>{
+      const ex = docsData.find(x=>String(x.id)===String(fd.id));
+      if(ex){ Object.assign(ex, fd); } else { docsData.push(fd); }
+    });
 
     nextId      = personnel.length    > 0 ? Math.max(...personnel.map(p=>Number(p.id)||0))    + 1 : 1;
     nextTrainId = trainingData.length > 0 ? Math.max(...trainingData.map(t=>Number(t.id)||0)) + 1 : 1;
 
     renderPersonnel(); renderEdu(); renderTraining(); renderField();
     renderPromotion(); renderSalary(); renderDocs('all'); populateSelects();
-    showFbStatus(`✅ โหลดสำเร็จ — กำลังพล ${personnel.length} นาย`, 'green');
+    showFbStatus(`✅ ซิงค์สำเร็จ — กำลังพล ${personnel.length} นาย`, 'green');
   } catch(e) {
     showFbStatus('❌ ' + e.message, 'red');
   }
-  setBtnLoading('btnLoad', false, '📥 โหลด');
 }
 
 // บันทึกทุก collection พร้อมกัน
@@ -1128,7 +1144,7 @@ async function fbSyncAll() {
     if (confirm) fbLoadAll();
     return;
   }
-  setBtnLoading('btnSync', true, '☁️ ซิงค์');
+
   showFbStatus('💾 กำลังบันทึกข้อมูล...', 'blue');
   try {
     const payload = {
@@ -1149,7 +1165,7 @@ async function fbSyncAll() {
   } catch(e) {
     showFbStatus('❌ ' + e.message, 'red');
   }
-  setBtnLoading('btnSync', false, '☁️ ซิงค์');
+
 }
 
 // Auto-save collection เดียวหลัง write — ใช้ PATCH เพื่อไม่ลบ collection อื่น
@@ -1377,11 +1393,16 @@ function initApp(){
   renderPersonnel(); renderEdu(); renderTraining(); renderField();
   renderPromotion(); renderSalary(); renderDocs('all');
   populateSelects();
+  // Auto-sync Firebase ทันทีที่ login
   if(FB.url && FB.key){
-    showFbStatus('🔥 Firebase พร้อม — กำลังโหลดข้อมูล...','orange');
-    fbLoadAll();
+    showFbStatus('🔄 กำลังซิงค์ข้อมูลอัตโนมัติ...','blue');
+    fbLoadAll().then(()=>{
+      // Auto-load docs จาก Drive หลัง Firebase โหลดเสร็จ
+      const gasUrl = getGasUrl();
+      if(gasUrl){ setTimeout(()=>loadDocsFromDrive(), 800); }
+    });
   } else {
-    showFbStatus('⚙️ ยังไม่ได้ตั้งค่า Firebase — กดปุ่ม ⚙️','gray');
+    showFbStatus('⚙️ ยังไม่ได้ตั้งค่า — กด ⚙️ ตั้งค่า','gray');
   }
 }
 function populateSelects(){
@@ -1992,8 +2013,13 @@ function renderDocs(cat, pidFilter){
       const thumb = d.localData && d.type==='img'
         ? `<img src="${d.localData}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;">`
         : `<div class="doc-ico ${parts[0]}" style="flex-shrink:0;">${parts[1]}</div>`;
-      const viewBtn = (d.driveUrl ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">👁️ ดู</a>` : '')
-        + (d.localData ? `<a href="${d.localData}" download="${d.name}" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ ดาวน์โหลด</a>` : (!d.driveUrl ? `<button class="btn btn-outline btn-sm" style="opacity:.4" disabled>👁️ ดู</button>` : ''));
+      const hasDrive = d.driveUrl||d.downloadUrl;
+      const viewBtn =
+        (d.driveUrl ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">👁️ ดู</a>` : '') +
+        (d.downloadUrl ? `<a href="${d.downloadUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ Drive</a>` : '') +
+        (d.localData && d.type==='img' ? `<a href="${d.localData}" download="${d.name}" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️</a>` : '') +
+        (!hasDrive && !d.localData ? `<button class="btn btn-outline btn-sm" style="opacity:.4" disabled>☁️ ยังไม่อัปโหลด</button>` : '') +
+        (d.driveUrl||d.fileId ? `<span style="font-size:10px;color:var(--accent-teal);padding:2px 6px;background:#ecfeff;border-radius:4px;">✅ Drive</span>` : '');
       return `<div class="doc-card">
         ${thumb}
         <div style="flex:1;min-width:0;">
@@ -2002,16 +2028,14 @@ function renderDocs(cat, pidFilter){
           <div style="display:flex;gap:3px;margin-top:5px;flex-wrap:wrap;">
             ${Object.entries(cats).map(([k,v])=>`<button onclick="event.stopPropagation();(function(){var x=docsData.find(function(i){return i.id==${d.id};});if(x)x.cat='${k}';renderDocs(currentDocFilter);})()" style="padding:1px 7px;font-size:11px;border-radius:4px;border:1px solid var(--border);background:${d.cat===k?'var(--blue)':'transparent'};color:${d.cat===k?'#fff':'var(--text-3)'};cursor:pointer;font-family:inherit;">${v}</button>`).join('')}
           </div>
-          <div style="margin-top:8px;display:flex;gap:5px;">
+          <div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap;">
             ${viewBtn}
-            <button class="btn btn-red btn-sm" onclick="event.stopPropagation();if(confirm('ลบ?')){docsData=docsData.filter(function(x){return x.id!==${d.id};});renderDocs(currentDocFilter);autoSave('documents');}">🗑️</button>
+            <button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteDoc('${d.id}','${d.fileId||''}')">🗑️</button>
           </div>
         </div>
       </div>`;
     }).join('')
-  )+`<div class="doc-card" style="border-style:dashed;justify-content:center;align-items:center;cursor:pointer;background:transparent;min-height:100px" onclick="document.getElementById('fileUploadInput').click()">
-    <div style="text-align:center;color:var(--text-3)"><div style="font-size:24px;margin-bottom:6px">📎</div><div style="font-size:12.5px;font-weight:600">เพิ่มเอกสาร</div></div>
-  </div>`;
+  );
 }
 
 // ===================== EDUCATION MODAL =====================
@@ -2214,10 +2238,42 @@ function populateAllModalSelects(){
 // ===================== FILE UPLOAD TO DRIVE =====================
 let DRIVE_FOLDER_ID = localStorage.getItem('drive_folder_id')||'';
 
+// ===================== DRIVE SETTINGS MODAL =====================
+function openDriveSettingsModal(){
+  document.getElementById('drv_gasUrl').value   = localStorage.getItem('gas_url')||'';
+  document.getElementById('drv_folderId').value = localStorage.getItem('drive_folder_id')||'';
+  document.getElementById('drv_folderUrl').value= localStorage.getItem('drive_folder_url')||'';
+  document.getElementById('driveTestResult').textContent='';
+  document.getElementById('driveSettingsModal').classList.add('open');
+}
+
 function saveDriveSettings(){
-  DRIVE_FOLDER_ID = document.getElementById('drv_folderId').value.trim();
-  localStorage.setItem('drive_folder_id', DRIVE_FOLDER_ID);
+  const gasUrl    = document.getElementById('drv_gasUrl').value.trim();
+  const folderId  = document.getElementById('drv_folderId').value.trim();
+  const folderUrl = document.getElementById('drv_folderUrl').value.trim();
+  // sync gas_url ไปด้วย (ใช้ช่องเดียวกับ Firebase settings)
+  if(gasUrl){ localStorage.setItem('gas_url', gasUrl); }
+  if(folderId)  localStorage.setItem('drive_folder_id',  folderId);
+  if(folderUrl) localStorage.setItem('drive_folder_url', folderUrl);
+  DRIVE_FOLDER_ID = folderId;
   closeModal('driveSettingsModal');
+  showFbStatus('💾 บันทึกการตั้งค่า Drive แล้ว','green');
+}
+
+async function testDriveConnection(){
+  const gasUrl = document.getElementById('drv_gasUrl').value.trim();
+  const el = document.getElementById('driveTestResult');
+  if(!gasUrl){ el.style.color='#e65100'; el.textContent='⚠️ กรุณากรอก Apps Script URL'; return; }
+  el.style.color='#64748b'; el.textContent='⏳ กำลังทดสอบ...';
+  try{
+    const resp = await fetch(gasUrl+'?action=ping',{
+      method:'POST', headers:{'Content-Type':'text/plain'}, body:'{}'
+    });
+    const data = JSON.parse(await resp.text());
+    if(data.status==='ok'){
+      el.style.color='#16a34a'; el.textContent='✅ เชื่อมต่อสำเร็จ — '+data.sheetName;
+    } else throw new Error(data.error||'Unknown');
+  }catch(e){ el.style.color='#e53e3e'; el.textContent='❌ '+e.message; }
 }
 
 function filterDocsByPerson(){
@@ -2225,78 +2281,216 @@ function filterDocsByPerson(){
   renderDocs(currentDocFilter, pid ? parseInt(pid) : null);
 }
 
+// ===================== GOOGLE DRIVE via APPS SCRIPT =====================
+// อ่าน GAS URL จาก Firebase settings (ใช้ช่องเดียวกัน) หรือจาก localStorage แยก
+function getDriveGasUrl(){
+  return localStorage.getItem('drive_gas_url') || FB.url && '';
+}
+
+function openDriveFolder(){
+  const url = localStorage.getItem('drive_folder_url')||'';
+  if(!url){
+    const nu = window.prompt('กรอก URL โฟลเดอร์ Google Drive:\n(เปิดโฟลเดอร์ใน Drive → copy URL)','');
+    if(nu && nu.trim()){ localStorage.setItem('drive_folder_url',nu.trim()); window.open(nu.trim(),'_blank'); }
+  } else {
+    window.open(url,'_blank');
+  }
+}
+
+// อ่าน GAS URL จาก settings
+function getGasUrl(){
+  return localStorage.getItem('gas_url')||'';
+}
+
+function showUploadProgress(show, text, pct, detail){
+  const prog = document.getElementById('uploadProgress');
+  if(!prog) return;
+  if(!show){ prog.style.display='none'; return; }
+  prog.style.display='block';
+  const txt = document.getElementById('uploadStatusText');
+  const bar = document.getElementById('uploadBar');
+  const det = document.getElementById('uploadDetail');
+  if(txt) txt.textContent = text||'';
+  if(bar) bar.style.width = (pct||0)+'%';
+  if(det) det.textContent = detail||'';
+}
+
+// แปลงไฟล์เป็น base64
+function fileToBase64(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// อัปโหลดไฟล์ไป Google Drive ผ่าน Apps Script
+async function uploadSingleFile(file, idx, total){
+  const gasUrl = getGasUrl();
+  if(!gasUrl) throw new Error('ยังไม่ได้ตั้งค่า Apps Script URL — กด ⚙️ ที่แถบบน');
+
+  showUploadProgress(true,
+    `⏳ กำลังอัปโหลด ${idx+1}/${total}: ${file.name}`,
+    Math.round((idx/total)*100),
+    `ขนาด: ${(file.size/1024).toFixed(1)} KB — กำลังส่งไป Google Drive...`
+  );
+
+  const base64 = await fileToBase64(file);
+  const ext = file.name.split('.').pop().toLowerCase();
+  const type = ['pdf'].includes(ext)?'pdf':['jpg','jpeg','png','gif','webp'].includes(ext)?'img':'xls';
+
+  const payload = {
+    action:   'uploadFile',
+    fileName: file.name,
+    mimeType: file.type || 'application/octet-stream',
+    data:     base64,
+    subFolder: 'APS_Documents'
+  };
+
+  const resp = await fetch(gasUrl+'?action=uploadFile', {
+    method: 'POST',
+    headers: {'Content-Type':'text/plain'},
+    body: JSON.stringify(payload)
+  });
+  const result = JSON.parse(await resp.text());
+  if(result.error) throw new Error(result.error);
+
+  return {
+    id: result.fileId || (Date.now()+Math.random()),
+    pid: 0,
+    name: result.fileName || file.name,
+    person: '—',
+    date: new Date().toLocaleDateString('th-TH'),
+    type, cat: type==='img'?'photo':'order',
+    size: result.size ? (result.size/1024).toFixed(1)+' KB' : (file.size/1024).toFixed(1)+' KB',
+    driveUrl: result.viewUrl || '',
+    downloadUrl: result.driveUrl || '',
+    fileId: result.fileId || '',
+    localData: type==='img' ? ('data:'+file.type+';base64,'+base64) : null
+  };
+}
+
 async function handleFileUpload(event){
   const files = Array.from(event.target.files);
   if(!files.length) return;
-  const prog = document.getElementById('uploadProgress');
-  const bar  = document.getElementById('uploadBar');
-  const txt  = document.getElementById('uploadStatusText');
-  const det  = document.getElementById('uploadDetail');
-  prog.style.display='block';
-  for(let i=0; i<files.length; i++){
-    const file = files[i];
-    const pct  = Math.round(((i)/files.length)*100);
-    bar.style.width  = pct+'%';
-    txt.textContent  = `⏳ กำลังอัปโหลด ${i+1}/${files.length}: ${file.name}`;
-    det.textContent  = `ขนาด: ${(file.size/1024).toFixed(1)} KB`;
-    await uploadFileToDrive(file);
+
+  const gasUrl = getGasUrl();
+  if(!gasUrl){
+    alert('⚠️ ยังไม่ได้ตั้งค่า Apps Script URL\n\nกด ⚙️ ที่แถบด้านบน แล้วกรอก Web App URL ของ Apps Script ที่ deploy แล้ว');
+    event.target.value='';
+    return;
   }
-  bar.style.width='100%';
-  txt.textContent='✅ อัปโหลดสำเร็จทั้งหมด '+files.length+' ไฟล์';
-  det.textContent='';
-  event.target.value=''; // reset input
-  setTimeout(()=>{ prog.style.display='none'; },3000);
+
+  showUploadProgress(true,'⏳ เตรียมอัปโหลด...',0,'');
+  const btn = document.getElementById('btnUpload');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังอัปโหลด...'; }
+
+  let successCount=0, failCount=0;
+  for(let i=0; i<files.length; i++){
+    try{
+      const doc = await uploadSingleFile(files[i], i, files.length);
+      // ตรวจว่ามีไฟล์ชื่อเดิมอยู่แล้วหรือไม่
+      const existIdx = docsData.findIndex(d=>d.name===doc.name);
+      if(existIdx>=0) docsData[existIdx]=doc; else docsData.push(doc);
+      successCount++;
+    } catch(e){
+      failCount++;
+      console.error('Upload failed:',files[i].name, e.message);
+      showUploadProgress(true,`❌ อัปโหลดไม่สำเร็จ: ${files[i].name}`,
+        Math.round(((i+1)/files.length)*100), e.message);
+    }
+  }
+
+  if(btn){ btn.disabled=false; btn.textContent='📎 เลือกไฟล์อัปโหลดไป Drive'; }
+  showUploadProgress(true,
+    failCount===0 ? `✅ อัปโหลดสำเร็จ ${successCount}/${files.length} ไฟล์` : `⚠️ สำเร็จ ${successCount} ล้มเหลว ${failCount}`,
+    100, ''
+  );
+  setTimeout(()=>showUploadProgress(false), 4000);
+  event.target.value='';
   renderDocs(currentDocFilter);
   autoSave('documents');
 }
 
-async function uploadFileToDrive(file){
-  // ถ้าไม่มี token ให้บันทึก metadata ลงระบบก่อน แล้วแสดง preview ด้วย FileReader
-  return new Promise((resolve)=>{
-    const reader = new FileReader();
-    reader.onload = function(e){
-      const ext = file.name.split('.').pop().toLowerCase();
-      const type = ['pdf'].includes(ext)?'pdf': ['jpg','jpeg','png','gif','webp'].includes(ext)?'img':'xls';
-      const cat  = type==='pdf'?'order': type==='img'?'photo':'order';
-      const newDoc = {
-        id: Date.now()+Math.random(),
-        pid: 0,
-        name: file.name,
-        person: '—',
-        date: new Date().toLocaleDateString('th-TH'),
-        type, cat,
-        size: (file.size/1024).toFixed(1)+' KB',
-        localData: type==='img' ? e.target.result : null,
-        driveUrl: null
-      };
-      docsData.push(newDoc);
-      resolve();
-    };
-    if(['jpg','jpeg','png','gif','webp'].includes(file.name.split('.').pop().toLowerCase())){
-      reader.readAsDataURL(file);
-    } else {
-      reader.readAsArrayBuffer(file);
-      reader.onload = ()=>{
-        const ext = file.name.split('.').pop().toLowerCase();
-        const type = ['pdf'].includes(ext)?'pdf':'xls';
+// โหลดรายการไฟล์จาก Drive ผ่าน Apps Script
+async function loadDocsFromDrive(){
+  const gasUrl = getGasUrl();
+  if(!gasUrl){ alert('ยังไม่ได้ตั้งค่า Apps Script URL — กด ⚙️'); return; }
+  showFbStatus('🔄 กำลังโหลดรายการไฟล์จาก Drive...','blue');
+  try{
+    const resp = await fetch(gasUrl+'?action=listFiles', {
+      method:'POST', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({action:'listFiles', subFolder:'APS_Documents'})
+    });
+    const result = JSON.parse(await resp.text());
+    if(result.error) throw new Error(result.error);
+    const files = result.files||[];
+    // merge เข้า docsData — เพิ่มเฉพาะที่ยังไม่มี
+    let added=0;
+    files.forEach(f=>{
+      const ext=(f.fileName||'').split('.').pop().toLowerCase();
+      const type=['pdf'].includes(ext)?'pdf':['jpg','jpeg','png','gif','webp'].includes(ext)?'img':'xls';
+      if(!docsData.find(d=>d.fileId===f.fileId)){
         docsData.push({
-          id: Date.now()+Math.random(), pid:0, name:file.name, person:'—',
-          date: new Date().toLocaleDateString('th-TH'), type, cat:'order',
-          size: (file.size/1024).toFixed(1)+' KB', localData:null, driveUrl:null
+          id: f.fileId, pid:0, name:f.fileName, person:'—',
+          date:f.created||'—', type, cat:type==='img'?'photo':'order',
+          size:f.size?(f.size/1024).toFixed(1)+' KB':'—',
+          driveUrl:f.viewUrl||'', downloadUrl:f.driveUrl||'',
+          fileId:f.fileId, localData:null
         });
-        resolve();
-      };
-    }
+        added++;
+      }
+    });
+    renderDocs(currentDocFilter);
+    showFbStatus(`✅ โหลดจาก Drive สำเร็จ — ${files.length} ไฟล์ (เพิ่มใหม่ ${added})`, 'green');
+  }catch(e){
+    showFbStatus('❌ โหลดจาก Drive ล้มเหลว: '+e.message,'red');
+  }
+}
+
+function downloadAllDocs(){
+  const withUrl = docsData.filter(d=>d.driveUrl||d.downloadUrl||d.localData);
+  if(!withUrl.length){ alert('ไม่มีไฟล์ที่สามารถดาวน์โหลดได้'); return; }
+  withUrl.forEach(d=>{
+    const url = d.downloadUrl||d.driveUrl||d.localData;
+    const a=document.createElement('a');
+    a.href=url; a.target='_blank';
+    if(d.localData) a.download=d.name;
+    a.click();
   });
 }
-// Download all docs that have localData
-function downloadAllDocs(){
-  const withData = docsData.filter(d=>d.localData);
-  if(!withData.length){ alert('ไม่มีไฟล์ที่โหลดได้ในขณะนี้ (ไฟล์ต้องอัปโหลดจากเครื่องก่อน)'); return; }
-  withData.forEach(d=>{
-    const a=document.createElement('a');
-    a.href=d.localData; a.download=d.name; a.click();
-  });
+
+function syncDocsToDrive(){ autoSave('documents'); }
+function changeDriveUrl(){
+  const cur=localStorage.getItem('drive_folder_url')||'';
+  const nu=window.prompt('URL โฟลเดอร์ Google Drive:',cur);
+  if(nu===null) return;
+  if(nu.trim()){ localStorage.setItem('drive_folder_url',nu.trim()); showFbStatus('✅ บันทึก Drive URL','green'); }
+  else { localStorage.removeItem('drive_folder_url'); showFbStatus('ลบ Drive URL แล้ว','gray'); }
+}
+
+// ลบเอกสาร — ลบจาก Drive (ถ้ามี fileId) + ลบจาก local
+async function deleteDoc(docId, fileId){
+  if(!confirm('ลบเอกสารนี้?\n'+(fileId?'(จะลบจาก Google Drive ด้วย)':'(ลบเฉพาะในระบบ)'))) return;
+  // ลบจาก Drive ถ้ามี fileId
+  if(fileId){
+    const gasUrl = getGasUrl();
+    if(gasUrl){
+      try{
+        const resp = await fetch(gasUrl+'?action=deleteFile',{
+          method:'POST', headers:{'Content-Type':'text/plain'},
+          body: JSON.stringify({action:'deleteFile', fileId})
+        });
+        const r = JSON.parse(await resp.text());
+        if(r.error) console.warn('Drive delete warn:',r.error);
+      }catch(e){ console.warn('Drive delete failed:',e); }
+    }
+  }
+  // ลบจาก local
+  docsData = docsData.filter(function(x){ return String(x.id)!==String(docId); });
+  renderDocs(currentDocFilter);
+  autoSave('documents');
 }
 
 // ===================== MODAL HELPERS =====================
