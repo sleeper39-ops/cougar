@@ -2394,20 +2394,31 @@ async function uploadSingleFile(file, idx, total){
     subFolder: 'APS_Documents'
   });
 
-  // ถ้า Apps Script ส่ง fileId กลับมา = สำเร็จ (แม้ error บางส่วนเช่น getDownloadUrl)
-  if(result.error && !result.fileId) throw new Error(result.error);
+  console.log('[uploadSingleFile] result:', JSON.stringify(result).slice(0,200));
 
+  // ถ้าได้ fileId กลับมา = สำเร็จเสมอ ไม่ว่าจะมี error field อื่นหรือไม่
+  // ถ้าไม่มี fileId แต่มี error = ล้มเหลวจริง
+  if(!result.fileId && result.error) {
+    throw new Error(result.error);
+  }
+
+  // ถ้าไม่มีทั้ง fileId และ error = response ผิดรูปแบบ
+  if(!result.fileId && !result.status) {
+    throw new Error('Apps Script ตอบกลับผิดรูปแบบ — ลอง Deploy ใหม่');
+  }
+
+  const fileId = result.fileId || '';
   return {
-    id:          result.fileId || (Date.now()+Math.random()),
+    id:          fileId || (Date.now()+Math.random()),
     pid:         0,
     name:        result.fileName || file.name,
     person:      '—',
     date:        new Date().toLocaleDateString('th-TH'),
     type, cat:   type==='img'?'photo':'order',
     size:        result.size ? (result.size/1024).toFixed(1)+' KB' : (file.size/1024).toFixed(1)+' KB',
-    driveUrl:    result.viewUrl  || '',
-    downloadUrl: result.driveUrl || '',
-    fileId:      result.fileId   || '',
+    driveUrl:    result.viewUrl  || (fileId ? 'https://drive.google.com/file/d/'+fileId+'/view' : ''),
+    downloadUrl: result.driveUrl || (fileId ? 'https://drive.google.com/uc?export=download&id='+fileId : ''),
+    fileId:      fileId,
     localData:   type==='img' ? ('data:'+file.type+';base64,'+base64) : null
   };
 }
