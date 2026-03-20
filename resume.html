@@ -431,7 +431,8 @@ tbody tr:last-child td{border-bottom:none;}
         </select>
         <button class="btn btn-blue" onclick="document.getElementById('fileUploadInput').click()">📎 เลือกไฟล์อัปโหลด</button>
         <input type="file" id="fileUploadInput" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" style="display:none" onchange="handleFileUpload(event)">
-        <button class="btn btn-outline btn-sm" onclick="syncDocsToDrive()" title="ซิงค์รายการไปยัง Google Drive">🔗 ซิงค์ Drive</button>
+        <button class="btn btn-outline btn-sm" onclick="syncDocsToDrive()" title="เปิด Google Drive โฟลเดอร์">🔗 เปิด Drive</button>
+        <button class="btn btn-outline btn-sm" onclick="changeDriveUrl()" title="เปลี่ยน URL โฟลเดอร์ Drive" style="padding:7px 9px;">📁</button>
         <button class="btn btn-outline btn-sm" onclick="downloadAllDocs()" title="ดาวน์โหลดทั้งหมด">⬇️ โหลดทั้งหมด</button>
       </div>
       <!-- Upload progress -->
@@ -726,35 +727,22 @@ tbody tr:last-child td{border-bottom:none;}
           <input class="finput" id="e_year" type="number" placeholder="2567">
         </div>
         <div>
-          <label class="flabel">ระยะเวลา</label>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <select class="fsel-form" id="e_dur_y" style="flex:1;min-width:80px;">
-              <option value="0">0 ปี</option>
-              <option value="1">1 ปี</option><option value="2">2 ปี</option>
-              <option value="3">3 ปี</option><option value="4">4 ปี</option>
-              <option value="5">5 ปี</option>
-            </select>
-            <select class="fsel-form" id="e_dur_m" style="flex:1;min-width:80px;">
-              <option value="0">0 เดือน</option>
-              <option value="1">1 เดือน</option><option value="2">2 เดือน</option>
-              <option value="3">3 เดือน</option><option value="4">4 เดือน</option>
-              <option value="5">5 เดือน</option><option value="6">6 เดือน</option>
-              <option value="7">7 เดือน</option><option value="8">8 เดือน</option>
-              <option value="9">9 เดือน</option><option value="10">10 เดือน</option>
-              <option value="11">11 เดือน</option>
-            </select>
-            <select class="fsel-form" id="e_dur_w" style="flex:1;min-width:90px;">
-              <option value="0">0 สัปดาห์</option>
-              <option value="1">1 สัปดาห์</option><option value="2">2 สัปดาห์</option>
-              <option value="3">3 สัปดาห์</option><option value="4">4 สัปดาห์</option>
-            </select>
-            <select class="fsel-form" id="e_dur_d" style="flex:1;min-width:70px;">
-              <option value="0">0 วัน</option>
-              <option value="1">1 วัน</option><option value="2">2 วัน</option>
-              <option value="3">3 วัน</option><option value="4">4 วัน</option>
-              <option value="5">5 วัน</option><option value="6">6 วัน</option>
-            </select>
-          </div>
+          <label class="flabel">ระยะเวลา (สัปดาห์)</label>
+          <select class="fsel-form" id="e_dur_w">
+            <option value="0">-- เลือกระยะเวลา --</option>
+            <option value="1">1 สัปดาห์</option>
+            <option value="2">2 สัปดาห์</option>
+            <option value="3">3 สัปดาห์</option>
+            <option value="4">4 สัปดาห์</option>
+            <option value="5">5 สัปดาห์</option>
+            <option value="6">6 สัปดาห์</option>
+            <option value="7">7 สัปดาห์</option>
+            <option value="8">8 สัปดาห์</option>
+            <option value="9">9 สัปดาห์</option>
+            <option value="10">10 สัปดาห์</option>
+            <option value="11">11 สัปดาห์</option>
+            <option value="12">12 สัปดาห์</option>
+          </select>
         </div>
         <div>
           <label class="flabel">ผลการเรียน</label>
@@ -1134,6 +1122,12 @@ async function fbLoadAll() {
 // บันทึกทุก collection พร้อมกัน
 async function fbSyncAll() {
   if (!FB.url || !FB.key) { openSettingsModal(); return; }
+  // Guard: ห้ามซิงค์ถ้าข้อมูลกำลังพลว่างเปล่า (ป้องกัน overwrite ข้อมูลใน Firebase)
+  if (personnel.length === 0) {
+    const confirm = window.confirm('⚠️ ข้อมูลกำลังพลในหน้าจอว่างเปล่า!\n\nถ้าซิงค์ตอนนี้จะ ลบข้อมูลทั้งหมดใน Firebase\n\nกด OK เพื่อโหลดข้อมูลจาก Firebase ก่อน หรือ Cancel เพื่อยกเลิก');
+    if (confirm) fbLoadAll();
+    return;
+  }
   setBtnLoading('btnSync', true, '☁️ ซิงค์');
   showFbStatus('💾 กำลังบันทึกข้อมูล...', 'blue');
   try {
@@ -1158,7 +1152,7 @@ async function fbSyncAll() {
   setBtnLoading('btnSync', false, '☁️ ซิงค์');
 }
 
-// Auto-save collection เดียวหลัง write
+// Auto-save collection เดียวหลัง write — ใช้ PATCH เพื่อไม่ลบ collection อื่น
 async function autoSave(collection) {
   if (!FB.url || !FB.key) return;
   const map = {
@@ -1167,9 +1161,19 @@ async function autoSave(collection) {
   };
   const data = map[collection];
   if (!data) return;
-  showFbStatus('💾 กำลังบันทึก...', 'blue');
-  const ok = await fbPut(collection, arrToObj(data));
-  if (ok) showFbStatus(`✅ บันทึก ${collection} สำเร็จ`, 'green');
+  showFbStatus('💾 กำลังบันทึก ' + collection + '...', 'blue');
+  try {
+    // PATCH updates only this collection, leaves others intact
+    const resp = await fetch(`${FB.url}/${FB.node}.json?auth=${FB.key}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [collection]: arrToObj(data) })
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    showFbStatus(`✅ บันทึก ${collection} สำเร็จ`, 'green');
+  } catch(e) {
+    showFbStatus('❌ ' + e.message, 'red');
+  }
 }
 
 // Firebase เก็บ object key-value — แปลง array ↔ object
@@ -1374,7 +1378,8 @@ function initApp(){
   renderPromotion(); renderSalary(); renderDocs('all');
   populateSelects();
   if(FB.url && FB.key){
-    showFbStatus('🔥 Firebase พร้อม — กด 📥 โหลด เพื่อดึงข้อมูล','orange');
+    showFbStatus('🔥 Firebase พร้อม — กำลังโหลดข้อมูล...','orange');
+    fbLoadAll();
   } else {
     showFbStatus('⚙️ ยังไม่ได้ตั้งค่า Firebase — กดปุ่ม ⚙️','gray');
   }
@@ -2011,29 +2016,15 @@ function renderDocs(cat, pidFilter){
 
 // ===================== EDUCATION MODAL =====================
 let nextEduId = 1;
-// Duration helpers
+// Duration helpers — weeks only
 function buildDuration(){
-  const y=parseInt(document.getElementById('e_dur_y').value)||0;
-  const m=parseInt(document.getElementById('e_dur_m').value)||0;
   const w=parseInt(document.getElementById('e_dur_w').value)||0;
-  const d=parseInt(document.getElementById('e_dur_d').value)||0;
-  const parts=[];
-  if(y>0) parts.push(y+' ปี');
-  if(m>0) parts.push(m+' เดือน');
-  if(w>0) parts.push(w+' สัปดาห์');
-  if(d>0) parts.push(d+' วัน');
-  return parts.join(' ')||'—';
-}
-function parseDuration(str){
-  // Parse stored string like "1 ปี 6 เดือน 2 สัปดาห์ 3 วัน" back to fields
-  if(!str||str==='—') return {y:0,m:0,w:0,d:0};
-  const yM=str.match(/(\d+)\s*ปี/);   const mM=str.match(/(\d+)\s*เดือน/);
-  const wM=str.match(/(\d+)\s*สัปดาห์/); const dM=str.match(/(\d+)\s*วัน/);
-  return {y:yM?parseInt(yM[1]):0, m:mM?parseInt(mM[1]):0, w:wM?parseInt(wM[1]):0, d:dM?parseInt(dM[1]):0};
+  return w>0 ? w+' สัปดาห์' : '—';
 }
 function setDurationFields(str){
-  const v=parseDuration(str);
-  ['y','m','w','d'].forEach(k=>{ const el=document.getElementById('e_dur_'+k); if(el) el.value=v[k]; });
+  const wM=str ? str.match(/(\d+)\s*สัปดาห์/) : null;
+  const el=document.getElementById('e_dur_w');
+  if(el) el.value = wM ? parseInt(wM[1]) : 0;
 }
 
 function openAddEduModal(){
@@ -2042,7 +2033,7 @@ function openAddEduModal(){
   ['e_pid','e_course','e_school','e_year','e_pct'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('e_grade').value='';
   document.getElementById('e_status').value='done';
-  ['e_dur_y','e_dur_m','e_dur_w','e_dur_d'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value='0'; });
+  const dw=document.getElementById('e_dur_w'); if(dw) dw.value='0';
   document.getElementById('eduModal').classList.add('open');
 }
 function openEditEduModal(id){
@@ -2077,39 +2068,46 @@ function saveEdu(){
   closeModal('eduModal'); renderEdu(); autoSave('education');
 }
 
-// Sync docs to Google Drive via Apps Script / direct link
+// Sync docs to Google Drive — opens Drive folder or prompts for URL
 async function syncDocsToDrive(){
-  // Check if Apps Script URL is set (same GAS URL used for sheets)
-  const gasUrl = localStorage.getItem('gas_url')||'';
-  if(!gasUrl){
-    // Fallback: open Drive settings
-    showFbStatus('⚠️ กรุณาตั้งค่า Apps Script URL ก่อน (⚙️)', 'orange');
-    openSettingsModal();
-    return;
-  }
-  showFbStatus('🔗 กำลังซิงค์เอกสารไป Drive...', 'blue');
-  try{
-    // Send doc metadata (without localData) to Apps Script for logging
-    const payload = docsData.map(d=>({
-      id:d.id, pid:d.pid, name:d.name, person:d.person,
-      date:d.date, type:d.type, cat:d.cat, size:d.size,
-      driveUrl:d.driveUrl||''
-    }));
-    const resp = await fetch(gasUrl+'?action=saveDocs', {
-      method:'POST', body: JSON.stringify({docs:payload}),
-      headers:{'Content-Type':'text/plain'}
-    });
-    const text = await resp.text();
-    const data = JSON.parse(text);
-    if(data.status==='ok'||data.saved){
-      showFbStatus(`✅ ซิงค์ Drive สำเร็จ — ${payload.length} รายการ`, 'green');
-    } else {
-      throw new Error(data.error||'Unknown response');
+  // ดึง Drive folder URL ที่บันทึกไว้
+  let folderUrl = localStorage.getItem('drive_folder_url')||'';
+
+  if(!folderUrl){
+    // ครั้งแรก — ให้กรอก URL โฟลเดอร์ Google Drive
+    folderUrl = window.prompt(
+      '📁 กรอก URL โฟลเดอร์ Google Drive ที่ต้องการอัปโหลดเอกสาร:\n\n' +
+      'วิธีหา URL:\n' +
+      '1. เปิด Google Drive\n' +
+      '2. คลิกขวาที่โฟลเดอร์ → Get link\n' +
+      '3. Copy URL มาวาง\n\n' +
+      '(URL จะถูกจำไว้สำหรับครั้งต่อไป)',
+      ''
+    );
+    if(!folderUrl || !folderUrl.trim()){
+      showFbStatus('ยกเลิกการซิงค์ Drive', 'gray');
+      return;
     }
-  }catch(e){
-    // If no Apps Script, fall back to Firebase
-    showFbStatus('⚠️ ไม่สามารถซิงค์ Drive ได้ — บันทึกลง Firebase แทน', 'orange');
-    autoSave('documents');
+    localStorage.setItem('drive_folder_url', folderUrl.trim());
+  }
+
+  // เปิด Google Drive โฟลเดอร์ในแท็บใหม่
+  window.open(folderUrl.trim(), '_blank');
+  showFbStatus('✅ เปิด Google Drive แล้ว — อัปโหลดไฟล์ด้วยตนเองในแท็บใหม่', 'green');
+
+  // ถ้าต้องการเปลี่ยน URL โฟลเดอร์ ให้กดปุ่ม 📁
+}
+
+function changeDriveUrl(){
+  const cur = localStorage.getItem('drive_folder_url')||'';
+  const newUrl = window.prompt('เปลี่ยน URL โฟลเดอร์ Google Drive:\n(ว่างเปล่า = ลบออก)', cur);
+  if(newUrl === null) return; // กด Cancel
+  if(newUrl.trim()){
+    localStorage.setItem('drive_folder_url', newUrl.trim());
+    showFbStatus('✅ บันทึก Drive URL แล้ว', 'green');
+  } else {
+    localStorage.removeItem('drive_folder_url');
+    showFbStatus('🗑️ ลบ Drive URL แล้ว', 'gray');
   }
 }
 
