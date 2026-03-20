@@ -280,7 +280,8 @@ tbody tr:last-child td{border-bottom:none;}
           <option value="">ยศทั้งหมด</option>
           <option>พล.ต.</option><option>พ.อ.</option><option>พ.ท.</option><option>พ.ต.</option>
           <option>ร.อ.</option><option>ร.ท.</option><option>ร.ต.</option>
-          <option>จ.ส.อ.</option><option>ส.อ.</option><option>ส.ท.</option><option>ส.ต.</option>
+          <option>จ.ส.อ.</option><option>จ.ส.ท.</option><option>จ.ส.ต.</option>
+          <option>ส.อ.</option><option>ส.ท.</option><option>ส.ต.</option>
         </select>
         <select class="fsel" id="statusFilter" onchange="renderPersonnel()">
           <option value="">สถานะทั้งหมด</option>
@@ -332,7 +333,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="section-page" id="sec-education">
       <div class="toolbar">
         <div class="search-wrap" style="max-width:300px"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหา..."></div>
-        <button class="btn btn-blue">＋ เพิ่มหลักสูตร</button>
+        <button class="btn btn-blue" onclick="openAddEduModal()">＋ เพิ่มหลักสูตร</button>
       </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">หลักสูตรการศึกษา</div></div>
@@ -362,7 +363,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="section-page" id="sec-field">
       <div class="toolbar">
         <div class="search-wrap" style="max-width:300px"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหา..."></div>
-        <button class="btn btn-blue">＋ เพิ่มราชการสนาม</button>
+        <button class="btn btn-blue" onclick="openAddFieldModal()">＋ เพิ่มราชการสนาม</button>
       </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">ราชการสนาม / วันทวีคูณ</div></div>
@@ -375,7 +376,7 @@ tbody tr:last-child td{border-bottom:none;}
 
     <!-- ===== PROMOTION ===== -->
     <div class="section-page" id="sec-promotion">
-      <div class="toolbar"><button class="btn btn-blue">＋ เพิ่มแผน</button></div>
+      <div class="toolbar"><button class="btn btn-blue" onclick="openAddPromotionModal()">＋ เพิ่มแผน</button></div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">แผนเลื่อนยศ / สอบเลื่อนฐานะ</div></div>
         <table>
@@ -425,9 +426,23 @@ tbody tr:last-child td{border-bottom:none;}
         <button class="stab" onclick="filterDocs('cert',this)">ประกาศนียบัตร</button>
       </div>
       <div class="toolbar">
-        <select class="fsel" style="min-width:200px"><option>-- กำลังพลทั้งหมด --</option></select>
-        <button class="btn btn-blue" onclick="openDriveFilePicker()">📎 อัปโหลดจาก Drive</button>
-        <button class="btn btn-outline btn-sm" onclick="autoSave('documents')" title="บันทึกรายการเอกสารไป Firebase">☁️ ซิงค์</button>
+        <select class="fsel" style="min-width:200px" id="docPersonFilter" onchange="filterDocsByPerson()">
+          <option value="">-- กำลังพลทั้งหมด --</option>
+        </select>
+        <button class="btn btn-blue" onclick="document.getElementById('fileUploadInput').click()">📎 เลือกไฟล์อัปโหลด</button>
+        <input type="file" id="fileUploadInput" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" style="display:none" onchange="handleFileUpload(event)">
+        <button class="btn btn-outline btn-sm" onclick="autoSave('documents')" title="ซิงค์ไปยัง Firebase">☁️ ซิงค์</button>
+      </div>
+      <!-- Upload progress -->
+      <div id="uploadProgress" style="display:none;background:var(--blue-pale);border:1.5px solid rgba(26,111,212,.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:14px;font-weight:600;color:var(--blue);" id="uploadStatusText">⏳ กำลังอัปโหลด...</span>
+          <button onclick="document.getElementById('uploadProgress').style.display='none'" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-3);">✕</button>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+          <div id="uploadBar" style="height:100%;background:linear-gradient(90deg,var(--blue),var(--blue-light));border-radius:3px;width:0%;transition:width .3s;"></div>
+        </div>
+        <div id="uploadDetail" style="font-size:12px;color:var(--text-2);margin-top:6px;"></div>
       </div>
       <div class="docs-grid" id="docsGrid"></div>
     </div>
@@ -667,6 +682,213 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="form-actions">
       <button class="btn btn-outline" onclick="closeModal('settingsModal')">ยกเลิก</button>
       <button class="btn btn-blue" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADD EDUCATION -->
+<div class="overlay" id="eduModal">
+  <div class="modal modal-sm">
+    <div class="mhead">
+      <div class="mhead-title" id="eduModalTitle">＋ เพิ่มหลักสูตรการศึกษา</div>
+      <button class="mclose" onclick="closeModal('eduModal')">✕</button>
+    </div>
+    <div class="form-body">
+      <div class="fgrid">
+        <div style="grid-column:1/-1">
+          <label class="flabel">กำลังพล <span>*</span></label>
+          <select class="fsel-form" id="e_pid"><option value="">-- เลือกกำลังพล --</option></select>
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="flabel">ชื่อหลักสูตร <span>*</span></label>
+          <input class="finput" id="e_course" placeholder="เช่น หลักสูตรเสนาธิการทหารบก">
+        </div>
+        <div>
+          <label class="flabel">สถานศึกษา</label>
+          <input class="finput" id="e_school" placeholder="เช่น รร.สธ.ทบ.">
+        </div>
+        <div>
+          <label class="flabel">ปี พ.ศ. ที่เข้า</label>
+          <input class="finput" id="e_year" type="number" placeholder="2567">
+        </div>
+        <div>
+          <label class="flabel">ระยะเวลา</label>
+          <input class="finput" id="e_duration" placeholder="เช่น 1 ปี, 6 เดือน">
+        </div>
+        <div>
+          <label class="flabel">ผลการเรียน</label>
+          <select class="fsel-form" id="e_grade">
+            <option value="">-- เลือก --</option>
+            <option>ดีเยี่ยม</option><option>ดีมาก</option><option>ดี</option>
+            <option>พอใช้</option><option>ผ่าน</option><option>ไม่ผ่าน</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">คะแนน (%)</label>
+          <input class="finput" id="e_pct" type="number" min="0" max="100" placeholder="0-100">
+        </div>
+        <div>
+          <label class="flabel">สถานะ</label>
+          <select class="fsel-form" id="e_status">
+            <option value="done">สำเร็จแล้ว</option>
+            <option value="studying">กำลังศึกษา</option>
+            <option value="pending">รอสมัคร</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <input type="hidden" id="e_editId" value="">
+      <button class="btn btn-outline" onclick="closeModal('eduModal')">ยกเลิก</button>
+      <button class="btn btn-blue" onclick="saveEdu()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADD FIELD SERVICE -->
+<div class="overlay" id="fieldModal">
+  <div class="modal modal-sm">
+    <div class="mhead">
+      <div class="mhead-title" id="fieldModalTitle">＋ เพิ่มราชการสนาม</div>
+      <button class="mclose" onclick="closeModal('fieldModal')">✕</button>
+    </div>
+    <div class="form-body">
+      <div class="fgrid">
+        <div style="grid-column:1/-1">
+          <label class="flabel">กำลังพล <span>*</span></label>
+          <select class="fsel-form" id="fd_pid"><option value="">-- เลือกกำลังพล --</option></select>
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="flabel">ชื่อภารกิจ <span>*</span></label>
+          <input class="finput" id="fd_mission" placeholder="เช่น ควบคุมสถานการณ์ จชต.">
+        </div>
+        <div>
+          <label class="flabel">พื้นที่ปฏิบัติการ</label>
+          <input class="finput" id="fd_area" placeholder="เช่น ปัตตานี">
+        </div>
+        <div>
+          <label class="flabel">ตำแหน่ง</label>
+          <input class="finput" id="fd_pos" placeholder="เช่น ผบ.หมู่">
+        </div>
+        <div>
+          <label class="flabel">วันเริ่ม (ว/ด/ปปปป)</label>
+          <input class="finput" id="fd_start" placeholder="01/01/2567" maxlength="12">
+        </div>
+        <div>
+          <label class="flabel">วันสิ้นสุด (ว/ด/ปปปป)</label>
+          <input class="finput" id="fd_end" placeholder="31/12/2567" maxlength="12">
+        </div>
+        <div>
+          <label class="flabel">วันทวีคูณ (วัน)</label>
+          <input class="finput" id="fd_double" type="number" min="0" placeholder="365">
+        </div>
+        <div>
+          <label class="flabel">สถานะ</label>
+          <select class="fsel-form" id="fd_status">
+            <option value="done">สิ้นสุดแล้ว</option>
+            <option value="active">กำลังปฏิบัติการ</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <input type="hidden" id="fd_editId" value="">
+      <button class="btn btn-outline" onclick="closeModal('fieldModal')">ยกเลิก</button>
+      <button class="btn btn-blue" onclick="saveField()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADD PROMOTION PLAN -->
+<div class="overlay" id="promotionModal">
+  <div class="modal modal-sm">
+    <div class="mhead">
+      <div class="mhead-title" id="promotionModalTitle">＋ เพิ่มแผนเลื่อนยศ/สอบ</div>
+      <button class="mclose" onclick="closeModal('promotionModal')">✕</button>
+    </div>
+    <div class="form-body">
+      <div class="fgrid">
+        <div style="grid-column:1/-1">
+          <label class="flabel">กำลังพล <span>*</span></label>
+          <select class="fsel-form" id="pr_pid"><option value="">-- เลือกกำลังพล --</option></select>
+        </div>
+        <div>
+          <label class="flabel">ยศปัจจุบัน</label>
+          <select class="fsel-form" id="pr_rank">
+            <option value="">-- เลือก --</option>
+            <option>ส.ต.</option><option>ส.ท.</option><option>ส.อ.</option>
+            <option>จ.ส.ต.</option><option>จ.ส.ท.</option><option>จ.ส.อ.</option>
+            <option>ร.ต.</option><option>ร.ท.</option><option>ร.อ.</option>
+            <option>พ.ต.</option><option>พ.ท.</option><option>พ.อ.</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">ยศเป้าหมาย</label>
+          <select class="fsel-form" id="pr_target">
+            <option value="">-- เลือก --</option>
+            <option>ส.ท.</option><option>ส.อ.</option>
+            <option>จ.ส.ต.</option><option>จ.ส.ท.</option><option>จ.ส.อ.</option>
+            <option>ร.ต.</option><option>ร.ท.</option><option>ร.อ.</option>
+            <option>พ.ต.</option><option>พ.ท.</option><option>พ.อ.</option><option>พล.ต.</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="flabel">เงื่อนไข</label>
+          <input class="finput" id="pr_condition" placeholder="เช่น อายุราชการ ≥ 25 ปี + วทบ.">
+        </div>
+        <div>
+          <label class="flabel">วันสอบ/พิจารณา</label>
+          <input class="finput" id="pr_exam" placeholder="01/10/2568" maxlength="12">
+        </div>
+        <div>
+          <label class="flabel">ความพร้อม (%)</label>
+          <input class="finput" id="pr_pct" type="number" min="0" max="100" placeholder="0-100">
+        </div>
+        <div>
+          <label class="flabel">สถานะ</label>
+          <select class="fsel-form" id="pr_status">
+            <option value="prep">เตรียมสอบ</option>
+            <option value="review">อยู่ระหว่างพิจารณา</option>
+            <option value="done">ผ่านแล้ว</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <input type="hidden" id="pr_editId" value="">
+      <button class="btn btn-outline" onclick="closeModal('promotionModal')">ยกเลิก</button>
+      <button class="btn btn-blue" onclick="savePromotion()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DRIVE SETTINGS FOR UPLOAD -->
+<div class="overlay" id="driveSettingsModal">
+  <div class="modal modal-sm">
+    <div class="mhead" style="background:linear-gradient(135deg,#1565c0,#1976d2)">
+      <div class="mhead-title" style="color:#fff">☁️ ตั้งค่า Google Drive สำหรับอัปโหลด</div>
+      <button class="mclose" onclick="closeModal('driveSettingsModal')" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1)">✕</button>
+    </div>
+    <div class="form-body">
+      <div style="background:#e3f2fd;border:1.5px solid #90caf9;border-radius:var(--radius);padding:14px;margin-bottom:16px;font-size:13px;line-height:1.8;color:#1565c0;">
+        <b>วิธีตั้งค่า Google Drive Upload:</b><br>
+        1. ไปที่ <a href="https://console.cloud.google.com" target="_blank" style="color:#1565c0;font-weight:700;">Google Cloud Console</a><br>
+        2. สร้าง Service Account → Download JSON key<br>
+        3. Share โฟลเดอร์ Drive ให้ email ของ Service Account<br>
+        4. หรือใช้ <b>Google Drive API</b> + OAuth token<br><br>
+        <b style="color:#e53e3e;">⚠️ หมายเหตุ:</b> การอัปโหลดไฟล์ไป Drive จาก browser โดยตรงต้องใช้ OAuth 2.0 — แนะนำให้ใช้ผ่าน Apps Script หรือ backend server แทน<br><br>
+        ตอนนี้ระบบจะ <b>บันทึกข้อมูลเอกสารลง Firebase</b> และแสดงตัวอย่างไฟล์ในระบบไว้ก่อน
+      </div>
+      <div class="fgrid" style="grid-template-columns:1fr;gap:12px;">
+        <div>
+          <label class="flabel">Google Drive Folder ID (ถ้ามี)</label>
+          <input class="finput" id="drv_folderId" placeholder="1ABC...xyz (จาก URL ของโฟลเดอร์ Drive)">
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('driveSettingsModal')">ปิด</button>
+      <button class="btn btn-blue" onclick="saveDriveSettings()">💾 บันทึก</button>
     </div>
   </div>
 </div>
@@ -1077,6 +1299,7 @@ function populateSelects(){
   document.getElementById('profileSelect').innerHTML='<option value="">-- เลือกกำลังพล --</option>'+opts;
   document.getElementById('pensionSelect').innerHTML='<option value="">-- เลือกกำลังพล --</option>'+opts;
   document.getElementById('t_pid').innerHTML='<option value="">-- เลือกกำลังพล --</option>'+opts;
+  populateAllModalSelects();
 }
 
 // ===================== DASHBOARD STATS (REALTIME) =====================
@@ -1335,8 +1558,8 @@ function renderEdu(){
       <td><div>${e.grade}</div>${e.pct>0?`<div class="prog" style="width:90px"><div class="prog-fill ${e.pct>80?'prog-gold':'prog-blue'}" style="width:${e.pct}%"></div></div>`:''}</td>
       <td><span class="pill ${sc[e.status]||'pill-blue'}"><span class="pill-dot"></span>${sl[e.status]||e.status}</span></td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm btn-icon">✏️</button>
-        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){eduData=eduData.filter(x=>x.id!=${e.id});renderEdu();}">🗑️</button>
+        <button class="btn btn-outline btn-sm btn-icon" onclick="openEditEduModal(${e.id})">✏️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){eduData=eduData.filter(x=>x.id!==${e.id});renderEdu();autoSave('education');}">🗑️</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1436,8 +1659,8 @@ function renderField(){
       <td style="font-weight:800;color:var(--accent-gold)">${formatDouble(f.double)}</td>
       <td><span class="pill ${f.status==='active'?'pill-red':'pill-teal'}"><span class="pill-dot"></span>${f.status==='active'?'ปฏิบัติการ':'สิ้นสุดแล้ว'}</span></td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm btn-icon">✏️</button>
-        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){fieldData=fieldData.filter(x=>x.id!=${f.id});renderField();}">🗑️</button>
+        <button class="btn btn-outline btn-sm btn-icon" onclick="openEditFieldModal(${f.id})">✏️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){fieldData=fieldData.filter(x=>x.id!=${f.id});renderField();autoSave('field');}">🗑️</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1460,8 +1683,8 @@ function renderPromotion(){
         <div class="prog" style="width:80px"><div class="prog-fill ${pr.pct>80?'prog-gold':'prog-blue'}" style="width:${pr.pct}%"></div></div></td>
       <td><span class="pill ${sc[pr.status]||'pill-blue'}"><span class="pill-dot"></span>${sl[pr.status]||pr.status}</span></td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm btn-icon">✏️</button>
-        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){promotionData=promotionData.filter(x=>x.id!=${pr.id});renderPromotion();}">🗑️</button>
+        <button class="btn btn-outline btn-sm btn-icon" onclick="openEditPromotionModal(${pr.id})">✏️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="if(confirm('ลบ?')){promotionData=promotionData.filter(x=>x.id!=${pr.id});renderPromotion();autoSave('promotion');}">🗑️</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1597,39 +1820,258 @@ function filterDocs(cat,el){
   if(el) el.classList.add('active');
   renderDocs(cat);
 }
-function renderDocs(cat){
-  const filtered=cat==='all'?docsData:docsData.filter(d=>d.cat===cat);
+function renderDocs(cat, pidFilter){
+  const filtered=(cat==='all'?docsData:docsData.filter(d=>d.cat===cat))
+    .filter(d=>!pidFilter||d.pid===pidFilter||d.pid===0);
   const icoMap={pdf:'pdf 📄',img:'img 🖼️',xls:'xls 📊'};
+  const cats={order:'คำสั่ง',double:'วันทวีคูณ',pension:'บำเหน็จ',photo:'รูปภาพ',cert:'ประกาศนียบัตร'};
   document.getElementById('docsGrid').innerHTML=(filtered.length===0?
     `<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-3);">
       <div style="font-size:32px;margin-bottom:10px">📁</div>
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">ยังไม่มีเอกสาร</div>
-      <div style="font-size:13px;">กดปุ่ม <b>📎 อัปโหลดจาก Drive</b> เพื่อเพิ่มเอกสาร</div>
+      <div style="font-size:13px;">กดปุ่ม <b>📎 เลือกไฟล์อัปโหลด</b> เพื่อเพิ่มเอกสาร</div>
     </div>`:
     filtered.map(d=>{
       const parts=(icoMap[d.type]||'pdf 📄').split(' ');
-      const viewBtn=d.driveUrl?`<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">👁️ ดู</a>`
-        :`<button class="btn btn-outline btn-sm">👁️ ดู</button>`;
+      const thumb = d.localData && d.type==='img'
+        ? `<img src="${d.localData}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;">`
+        : `<div class="doc-ico ${parts[0]}" style="flex-shrink:0;">${parts[1]}</div>`;
+      const viewBtn = d.driveUrl
+        ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">👁️ ดู</a>`
+        : d.localData
+          ? `<a href="${d.localData}" download="${d.name}" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ โหลด</a>`
+          : `<button class="btn btn-outline btn-sm" style="opacity:.4" disabled>👁️ ดู</button>`;
       return `<div class="doc-card">
-        <div class="doc-ico ${parts[0]}">${parts[1]}</div>
-        <div style="flex:1">
-          <div class="doc-name">${d.name}</div>
-          <div class="doc-meta">${d.person} • ${d.date} • ${d.size||'—'}</div>
-          ${d.driveId?`<div style="font-size:11px;color:var(--accent-teal);margin-top:3px;">☁️ Google Drive</div>`:''}
-          <div style="margin-top:9px;display:flex;gap:5px">
+        ${thumb}
+        <div style="flex:1;min-width:0;">
+          <div class="doc-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${d.name}">${d.name}</div>
+          <div class="doc-meta">${d.date} • ${d.size||'—'}</div>
+          <div style="display:flex;gap:3px;margin-top:5px;flex-wrap:wrap;">
+            ${Object.entries(cats).map(([k,v])=>`<button onclick="event.stopPropagation();(function(){var x=docsData.find(function(i){return i.id==${d.id};});if(x)x.cat='${k}';renderDocs(currentDocFilter);})()" style="padding:1px 7px;font-size:11px;border-radius:4px;border:1px solid var(--border);background:${d.cat===k?'var(--blue)':'transparent'};color:${d.cat===k?'#fff':'var(--text-3)'};cursor:pointer;font-family:inherit;">${v}</button>`).join('')}
+          </div>
+          <div style="margin-top:8px;display:flex;gap:5px;">
             ${viewBtn}
-            <button class="btn btn-red btn-sm" onclick="event.stopPropagation();if(confirm('ลบ?')){docsData=docsData.filter(x=>x.id!=${d.id});renderDocs(currentDocFilter);autoSave('documents');}">🗑️</button>
+            <button class="btn btn-red btn-sm" onclick="event.stopPropagation();if(confirm('ลบ?')){docsData=docsData.filter(function(x){return x.id!==${d.id};});renderDocs(currentDocFilter);autoSave('documents');}">🗑️</button>
           </div>
         </div>
       </div>`;
     }).join('')
-  )+`<div class="doc-card" style="border-style:dashed;justify-content:center;align-items:center;cursor:pointer;background:transparent;min-height:100px" onclick="openDriveFilePicker()">
-    <div style="text-align:center;color:var(--text-3)"><div style="font-size:24px;margin-bottom:6px">☁️</div><div style="font-size:12.5px;font-weight:600">เพิ่มจาก Drive</div></div>
+  )+`<div class="doc-card" style="border-style:dashed;justify-content:center;align-items:center;cursor:pointer;background:transparent;min-height:100px" onclick="document.getElementById('fileUploadInput').click()">
+    <div style="text-align:center;color:var(--text-3)"><div style="font-size:24px;margin-bottom:6px">📎</div><div style="font-size:12.5px;font-weight:600">เพิ่มเอกสาร</div></div>
   </div>`;
 }
 
-// ===================== MODAL HELPERS =====================
-function closeModal(id){document.getElementById(id).classList.remove('open');}
+// ===================== EDUCATION MODAL =====================
+let nextEduId = 1;
+function openAddEduModal(){
+  document.getElementById('eduModalTitle').textContent='＋ เพิ่มหลักสูตรการศึกษา';
+  document.getElementById('e_editId').value='';
+  ['e_pid','e_course','e_school','e_year','e_pct'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('e_grade').value='';
+  document.getElementById('e_status').value='done';
+  document.getElementById('eduModal').classList.add('open');
+}
+function openEditEduModal(id){
+  const item=eduData.find(x=>x.id===id); if(!item) return;
+  document.getElementById('eduModalTitle').textContent='✏️ แก้ไขหลักสูตร';
+  document.getElementById('e_editId').value=id;
+  document.getElementById('e_pid').value=item.pid||'';
+  document.getElementById('e_course').value=item.course||'';
+  document.getElementById('e_school').value=item.school||'';
+  document.getElementById('e_year').value=item.year||'';
+  document.getElementById('e_grade').value=item.grade||'';
+  document.getElementById('e_pct').value=item.pct||'';
+  document.getElementById('e_status').value=item.status||'done';
+  document.getElementById('eduModal').classList.add('open');
+}
+function saveEdu(){
+  const pid=parseInt(document.getElementById('e_pid').value);
+  const course=document.getElementById('e_course').value.trim();
+  if(!pid||!course){ alert('กรุณาเลือกกำลังพลและกรอกชื่อหลักสูตร'); return; }
+  const obj={ id:0, pid, course,
+    school: document.getElementById('e_school').value.trim(),
+    year: parseInt(document.getElementById('e_year').value)||0,
+    grade: document.getElementById('e_grade').value,
+    pct: parseInt(document.getElementById('e_pct').value)||0,
+    status: document.getElementById('e_status').value
+  };
+  const editId=document.getElementById('e_editId').value;
+  if(editId){ const i=eduData.findIndex(x=>x.id==editId); if(i>-1){ obj.id=parseInt(editId); eduData[i]=obj; } }
+  else { obj.id=nextEduId++; if(eduData.length>0) nextEduId=Math.max(...eduData.map(x=>x.id))+1; eduData.push(obj); }
+  closeModal('eduModal'); renderEdu(); autoSave('education');
+}
+
+// ===================== FIELD MODAL =====================
+let nextFieldId = 1;
+function openAddFieldModal(){
+  document.getElementById('fieldModalTitle').textContent='＋ เพิ่มราชการสนาม';
+  document.getElementById('fd_editId').value='';
+  ['fd_pid','fd_mission','fd_area','fd_pos','fd_start','fd_end','fd_double'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('fd_status').value='done';
+  document.getElementById('fieldModal').classList.add('open');
+}
+function openEditFieldModal(id){
+  const item=fieldData.find(x=>x.id===id); if(!item) return;
+  document.getElementById('fieldModalTitle').textContent='✏️ แก้ไขราชการสนาม';
+  document.getElementById('fd_editId').value=id;
+  document.getElementById('fd_pid').value=item.pid||'';
+  document.getElementById('fd_mission').value=item.mission||'';
+  document.getElementById('fd_area').value=item.area||'';
+  document.getElementById('fd_pos').value=item.pos||'';
+  document.getElementById('fd_start').value=item.start||'';
+  document.getElementById('fd_end').value=item.end||'';
+  document.getElementById('fd_double').value=item.double||'';
+  document.getElementById('fd_status').value=item.status||'done';
+  document.getElementById('fieldModal').classList.add('open');
+}
+function saveField(){
+  const pid=parseInt(document.getElementById('fd_pid').value);
+  const mission=document.getElementById('fd_mission').value.trim();
+  if(!pid||!mission){ alert('กรุณาเลือกกำลังพลและกรอกชื่อภารกิจ'); return; }
+  const dbl=document.getElementById('fd_double').value;
+  const obj={ id:0, pid, mission,
+    area: document.getElementById('fd_area').value.trim(),
+    pos: document.getElementById('fd_pos').value.trim(),
+    start: document.getElementById('fd_start').value.trim(),
+    end: document.getElementById('fd_end').value.trim(),
+    double: dbl?parseInt(dbl):null,
+    status: document.getElementById('fd_status').value
+  };
+  const editId=document.getElementById('fd_editId').value;
+  if(editId){ const i=fieldData.findIndex(x=>x.id==editId); if(i>-1){ obj.id=parseInt(editId); fieldData[i]=obj; } }
+  else { obj.id=fieldData.length>0?Math.max(...fieldData.map(x=>x.id))+1:1; fieldData.push(obj); }
+  closeModal('fieldModal'); renderField(); autoSave('field');
+}
+
+// ===================== PROMOTION MODAL =====================
+function openAddPromotionModal(){
+  document.getElementById('promotionModalTitle').textContent='＋ เพิ่มแผนเลื่อนยศ/สอบ';
+  document.getElementById('pr_editId').value='';
+  ['pr_pid','pr_rank','pr_target','pr_condition','pr_exam','pr_pct'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('pr_status').value='prep';
+  document.getElementById('promotionModal').classList.add('open');
+}
+function openEditPromotionModal(id){
+  const item=promotionData.find(x=>x.id===id); if(!item) return;
+  document.getElementById('promotionModalTitle').textContent='✏️ แก้ไขแผนเลื่อนยศ';
+  document.getElementById('pr_editId').value=id;
+  document.getElementById('pr_pid').value=item.pid||'';
+  document.getElementById('pr_rank').value=item.rank||'';
+  document.getElementById('pr_target').value=item.target||'';
+  document.getElementById('pr_condition').value=item.condition||'';
+  document.getElementById('pr_exam').value=item.exam||'';
+  document.getElementById('pr_pct').value=item.pct||'';
+  document.getElementById('pr_status').value=item.status||'prep';
+  document.getElementById('promotionModal').classList.add('open');
+}
+function savePromotion(){
+  const pid=parseInt(document.getElementById('pr_pid').value);
+  if(!pid){ alert('กรุณาเลือกกำลังพล'); return; }
+  const obj={ id:0, pid,
+    rank: document.getElementById('pr_rank').value,
+    target: document.getElementById('pr_target').value,
+    condition: document.getElementById('pr_condition').value.trim(),
+    exam: document.getElementById('pr_exam').value.trim(),
+    pct: parseInt(document.getElementById('pr_pct').value)||0,
+    status: document.getElementById('pr_status').value
+  };
+  const editId=document.getElementById('pr_editId').value;
+  if(editId){ const i=promotionData.findIndex(x=>x.id==editId); if(i>-1){ obj.id=parseInt(editId); promotionData[i]=obj; } }
+  else { obj.id=promotionData.length>0?Math.max(...promotionData.map(x=>x.id))+1:1; promotionData.push(obj); }
+  closeModal('promotionModal'); renderPromotion(); autoSave('promotion');
+}
+
+// ===================== POPULATE SELECTS FOR NEW MODALS =====================
+function populateAllModalSelects(){
+  const opts=personnel.map(p=>`<option value="${p.id}">${p.rank} ${p.fname} ${p.lname}</option>`).join('');
+  ['e_pid','fd_pid','pr_pid'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML='<option value="">-- เลือกกำลังพล --</option>'+opts;
+  });
+  // Doc person filter
+  const df=document.getElementById('docPersonFilter');
+  if(df) df.innerHTML='<option value="">-- กำลังพลทั้งหมด --</option>'+opts;
+}
+
+// ===================== FILE UPLOAD TO DRIVE =====================
+let DRIVE_FOLDER_ID = localStorage.getItem('drive_folder_id')||'';
+
+function saveDriveSettings(){
+  DRIVE_FOLDER_ID = document.getElementById('drv_folderId').value.trim();
+  localStorage.setItem('drive_folder_id', DRIVE_FOLDER_ID);
+  closeModal('driveSettingsModal');
+}
+
+function filterDocsByPerson(){
+  const pid = document.getElementById('docPersonFilter').value;
+  renderDocs(currentDocFilter, pid ? parseInt(pid) : null);
+}
+
+async function handleFileUpload(event){
+  const files = Array.from(event.target.files);
+  if(!files.length) return;
+  const prog = document.getElementById('uploadProgress');
+  const bar  = document.getElementById('uploadBar');
+  const txt  = document.getElementById('uploadStatusText');
+  const det  = document.getElementById('uploadDetail');
+  prog.style.display='block';
+  for(let i=0; i<files.length; i++){
+    const file = files[i];
+    const pct  = Math.round(((i)/files.length)*100);
+    bar.style.width  = pct+'%';
+    txt.textContent  = `⏳ กำลังอัปโหลด ${i+1}/${files.length}: ${file.name}`;
+    det.textContent  = `ขนาด: ${(file.size/1024).toFixed(1)} KB`;
+    await uploadFileToDrive(file);
+  }
+  bar.style.width='100%';
+  txt.textContent='✅ อัปโหลดสำเร็จทั้งหมด '+files.length+' ไฟล์';
+  det.textContent='';
+  event.target.value=''; // reset input
+  setTimeout(()=>{ prog.style.display='none'; },3000);
+  renderDocs(currentDocFilter);
+  autoSave('documents');
+}
+
+async function uploadFileToDrive(file){
+  // ถ้าไม่มี token ให้บันทึก metadata ลงระบบก่อน แล้วแสดง preview ด้วย FileReader
+  return new Promise((resolve)=>{
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const ext = file.name.split('.').pop().toLowerCase();
+      const type = ['pdf'].includes(ext)?'pdf': ['jpg','jpeg','png','gif','webp'].includes(ext)?'img':'xls';
+      const cat  = type==='pdf'?'order': type==='img'?'photo':'order';
+      const newDoc = {
+        id: Date.now()+Math.random(),
+        pid: 0,
+        name: file.name,
+        person: '—',
+        date: new Date().toLocaleDateString('th-TH'),
+        type, cat,
+        size: (file.size/1024).toFixed(1)+' KB',
+        localData: type==='img' ? e.target.result : null,
+        driveUrl: null
+      };
+      docsData.push(newDoc);
+      resolve();
+    };
+    if(['jpg','jpeg','png','gif','webp'].includes(file.name.split('.').pop().toLowerCase())){
+      reader.readAsDataURL(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+      reader.onload = ()=>{
+        const ext = file.name.split('.').pop().toLowerCase();
+        const type = ['pdf'].includes(ext)?'pdf':'xls';
+        docsData.push({
+          id: Date.now()+Math.random(), pid:0, name:file.name, person:'—',
+          date: new Date().toLocaleDateString('th-TH'), type, cat:'order',
+          size: (file.size/1024).toFixed(1)+' KB', localData:null, driveUrl:null
+        });
+        resolve();
+      };
+    }
+  });
+}
+
 </script>
 </body>
 </html>
