@@ -142,7 +142,7 @@ tbody tr:last-child td{border-bottom:none;}
 .form-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid var(--border);background:var(--bg-1);border-radius:0 0 var(--radius-lg) var(--radius-lg);}
 .phdr{display:flex;gap:20px;align-items:flex-start;padding:20px 22px;background:linear-gradient(135deg,var(--blue-pale) 0%,var(--bg-white) 60%);border-bottom:1px solid var(--border);}
 .pphoto{width:90px;height:110px;border-radius:var(--radius);background:var(--bg-2);border:2px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;}
-.pphoto img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.pphoto img{width:100%;height:100%;object-fit:cover;object-position:center top;position:absolute;inset:0;}
 .pphoto-lbl{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);font-size:10px;padding:3px;text-align:center;color:#fff;z-index:1;}
 .pphoto-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;}
 .pphoto-actions{display:flex;gap:4px;}
@@ -342,14 +342,23 @@ tbody tr:last-child td{border-bottom:none;}
     </div>
 
     <!-- ===== PROFILE ===== -->
+    <!-- ===== PROFILE ===== -->
     <div class="section-page" id="sec-profile">
-      <div class="toolbar">
-        <select class="fsel" style="min-width:240px" id="profileSelect" onchange="renderProfile()">
-          <option value="">-- เลือกกำลังพล --</option>
+      <div class="toolbar" style="background:var(--blue-pale);border:1.5px solid rgba(26,111,212,.18);border-radius:var(--radius);padding:12px 18px;margin-bottom:16px;gap:12px;">
+        <span style="font-size:14px;font-weight:700;color:var(--blue);white-space:nowrap;">👤 เลือกกำลังพล</span>
+        <select class="fsel" style="min-width:280px;font-weight:600;" id="profileSelect" onchange="onProfileSelectChange()">
+          <option value="">-- เลือกชื่อกำลังพล --</option>
         </select>
       </div>
-      <div class="tcard" id="profileContent"><div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูประวัติ</div></div>
+      <div id="profileContent">
+        <div style="padding:64px;text-align:center;color:var(--text-3);">
+          <div style="font-size:40px;margin-bottom:14px">👆</div>
+          <div style="font-weight:700;font-size:16px;color:var(--text-2);margin-bottom:6px">กรุณาเลือกกำลังพล</div>
+          <div style="font-size:13px;">เลือกชื่อที่แถบด้านบน หรือคลิกชื่อในหน้ารายชื่อ</div>
+        </div>
+      </div>
     </div>
+
 
     <!-- ===== EDUCATION ===== -->
     <div class="section-page" id="sec-education">
@@ -429,11 +438,12 @@ tbody tr:last-child td{border-bottom:none;}
 
     <!-- ===== PENSION ===== -->
     <div class="section-page" id="sec-pension">
-      <div class="toolbar">
-        <select class="fsel" style="min-width:240px" id="pensionSelect" onchange="renderPension()">
-          <option value="">-- เลือกกำลังพล --</option>
-        </select>
+      <div id="penPersonBar" style="display:none;background:var(--blue-pale);border:1.5px solid rgba(26,111,212,.18);border-radius:var(--radius);padding:10px 16px;margin-bottom:14px;font-size:13.5px;font-weight:600;color:var(--blue);">
+        👤 <span id="penPersonName"></span>
       </div>
+      <select id="pensionSelect" style="display:none">
+        <option value="">-- เลือกกำลังพล --</option>
+      </select>
       <div id="pensionContent"><div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูข้อมูลบำเหน็จบำนาญ</div></div>
     </div>
 
@@ -452,7 +462,7 @@ tbody tr:last-child td{border-bottom:none;}
         <button class="btn btn-outline btn-sm admin-only" onclick="openDriveSettingsModal()" title="ตั้งค่า Google Drive / Apps Script" style="flex-shrink:0;gap:6px;">⚙️ ตั้งค่า Drive</button>
       </div>
       <div class="toolbar">
-        <select class="fsel" style="min-width:200px" id="docPersonFilter" onchange="filterDocsByPerson()">
+        <select class="fsel" style="min-width:200px;display:none;" id="docPersonFilter" onchange="filterDocsByPerson()">
           <option value="">-- กำลังพลทั้งหมด --</option>
         </select>
         <button class="btn btn-blue admin-only" onclick="document.getElementById('fileUploadInput').click()" id="btnUpload">📎 เลือกไฟล์อัปโหลด</button>
@@ -1416,7 +1426,9 @@ function exportProfilePDF(pid) {
     </style>
   </head><body>
     <div class="header">
-      <div class="avatar">${p.photo ? `<img src="${p.photo}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;">` : '🪖'}</div>
+      <div class="avatar" style="${p.photo?'padding:0;overflow:hidden;':''}">
+        ${p.photo ? `<img src="${p.photo}" style="width:70px;height:70px;object-fit:cover;object-position:center top;border-radius:8px;">` : '🪖'}
+      </div>
       <div class="header-info">
         <h1>${p.rank} ${p.fname} ${p.lname}</h1>
         <div class="sub">
@@ -1632,14 +1644,72 @@ function applyRoleUI(){
     showApp();
     var lastSec = sessionStorage.getItem('aps_active_sec')||'personnel';
     var btn = document.querySelector('.si[data-sec="'+lastSec+'"]');
-    // ต้อง initApp ก่อนแล้วค่อย navTo
     initApp();
     navTo(lastSec, btn);
+    // restore selected person
+    var lastPid = sessionStorage.getItem('aps_selected_pid')||'';
+    if(lastPid){
+      var selEl = document.getElementById('profileSelect');
+      if(selEl){ selEl.value=lastPid; onProfileSelectChange(); }
+    }
   }
 })();
 
 
-// ===================== NAV =====================
+// ===================== SELECTED PERSON =====================
+// profileSelect เป็น "ตัวเลือกหลัก" — ทุกหน้าย่อยใช้ค่านี้
+function getSelectedPid(){
+  const el = document.getElementById('profileSelect');
+  return el ? el.value : '';
+}
+function getSelectedPerson(){
+  const pid = getSelectedPid();
+  if(!pid) return null;
+  return personnel.find(x=>String(x.id)===String(pid))||null;
+}
+
+// Placeholder เมื่อยังไม่เลือกชื่อ
+function noSelectHTML(msg){
+  return `<div style="padding:64px 20px;text-align:center;color:var(--text-3);">
+    <div style="font-size:40px;margin-bottom:14px;">👆</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:6px;color:var(--text-2);">กรุณาเลือกกำลังพลก่อน</div>
+    <div style="font-size:13px;">${msg||'เลือกชื่อกำลังพลที่แถบด้านบน'}</div>
+  </div>`;
+}
+
+// เมื่อ profileSelect เปลี่ยน → sync ทุกหน้าย่อย
+function onProfileSelectChange(){
+  const pid = getSelectedPid();
+  const p = pid ? personnel.find(x=>String(x.id)===String(pid)) : null;
+  const pname = p ? `${p.rank} ${p.fname} ${p.lname}` : '';
+
+  // sync pensionSelect (hidden)
+  const penSel = document.getElementById('pensionSelect');
+  if(penSel) penSel.value = pid;
+
+  // อัปเดต pension name bar
+  const penBar = document.getElementById('penPersonBar');
+  const penName = document.getElementById('penPersonName');
+  if(penBar) penBar.style.display = pid ? 'block' : 'none';
+  if(penName) penName.textContent = pname;
+
+  // save to sessionStorage
+  if(pid) sessionStorage.setItem('aps_selected_pid', pid);
+  else sessionStorage.removeItem('aps_selected_pid');
+
+  // render ทุกหน้าย่อย
+  renderProfile();
+  renderEdu();
+  renderTraining();
+  renderField();
+  renderPromotion();
+  renderSalary();
+  renderPension();
+  const curCat = currentDocFilter||'all';
+  renderDocs(curCat, pid ? parseInt(pid) : null);
+}
+
+
 function navTo(sec, el){
   document.querySelectorAll('.section-page').forEach(s=>s.classList.remove('active'));
   const s=document.getElementById('sec-'+sec);
@@ -1731,7 +1801,10 @@ function renderPersonnel(){
     document.getElementById('personnelBody').innerHTML=filtered.map((p,i)=>`
       <tr onclick="openDetail(${p.id})">
         <td style="color:var(--text-3)">${i+1}</td>
-        <td><div class="name-cell"><div class="ava">${p.fname.charAt(0)}</div>
+        <td><div class="name-cell">
+          <div class="ava" style="${p.photo?'padding:0;overflow:hidden;':''}">
+            ${p.photo ? `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;">` : p.fname.charAt(0)}
+          </div>
           <div><div style="font-weight:700">${p.rank} ${p.fname} ${p.lname}</div>
           <div style="font-size:11px;color:var(--text-3)">${p.unit}</div></div></div></td>
         <td style="color:var(--blue);font-size:12px;font-weight:700">${p.idno}</td>
@@ -1755,71 +1828,15 @@ function renderPersonnel(){
 
 // ===================== DETAIL MODAL =====================
 function openDetail(id){
-  const p=personnel.find(x=>String(x.id)===String(id));
-  if(!p) return;
-  const fds=fieldData.filter(f=>f.pid===id);
-  const totalDouble=getTotalDouble(id);
-  const html=`
-    <div class="mhead">
-      <div class="mhead-title">รายละเอียดกำลังพล</div>
-      <button class="mclose" onclick="closeModal('detailModal')">✕</button>
-    </div>
-    <div class="phdr">
-      <div class="pphoto">🪖<div class="pphoto-lbl">รูปถ่าย</div></div>
-      <div style="flex:1">
-        <div class="pname">${p.rank} ${p.fname} ${p.lname}</div>
-        <div class="pid">${p.idno}</div>
-        <div class="ptags">
-          <span class="ptag">🏢 ${p.unit}</span><span class="ptag">📌 ${p.pos}</span>
-          <span class="ptag">📅 ${p.start}</span><span class="ptag">🩸 ${p.blood||'—'}</span>
-          <span class="pill ${STATUS_PILL[p.status]||'pill-blue'}" style="padding:4px 12px"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span>
-        </div>
-      </div>
-      <button class="btn btn-outline btn-sm" style="flex-shrink:0" onclick="closeModal('detailModal');openEditModal(${p.id})">✏️ แก้ไข</button>
-    </div>
-    <div style="overflow-y:auto;max-height:60vh">
-    <div class="dsec">
-      <div class="dsec-title">ข้อมูลส่วนตัว</div>
-      <div class="dg">
-        <div><div class="di-label">เลขบัตรประชาชน</div><div class="di-val" style="font-size:12.5px">${p.cid||'—'}</div></div>
-        <div><div class="di-label">วันเกิด</div><div class="di-val">${p.dob||'—'}</div></div>
-        <div><div class="di-label">กรุ๊ปเลือด</div><div class="di-val">${p.blood||'—'}</div></div>
-        <div><div class="di-label">เบอร์โทร</div><div class="di-val">${p.tel||'—'}</div></div>
-      </div>
-    </div>
-    <div class="dsec">
-      <div class="dsec-title">ข้อมูลราชการ</div>
-      <div class="dg">
-        <div><div class="di-label">เลขประจำตัว</div><div class="di-val hi">${p.idno}</div></div>
-        <div><div class="di-label">ตำแหน่ง</div><div class="di-val">${p.pos}</div></div>
-        <div><div class="di-label">สังกัด</div><div class="di-val">${p.unit}</div></div>
-        <div><div class="di-label">กองร้อย</div><div class="di-val">${p.company||'—'}</div></div>
-        <div><div class="di-label">เหล่า</div><div class="di-val">${p.branch||'—'}</div></div>
-        <div><div class="di-label">วันเข้ารับราชการ</div><div class="di-val">${p.start}</div></div>
-        <div><div class="di-label">อายุราชการ</div><div class="di-val g">${serviceYears(p.start)}</div></div>
-        <div><div class="di-label">วันทวีคูณรวม</div><div class="di-val" style="color:var(--accent-teal)">${formatDouble(totalDouble)}</div></div>
-        <div><div class="di-label">สถานะ</div><div class="di-val"><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></div></div>
-      </div>
-    </div>
-    <div class="dsec">
-      <div class="dsec-title">ข้อมูลเงินเดือน</div>
-      <div class="dg">
-        <div><div class="di-label">ระดับ/ขั้น</div><div class="di-val hi">${p.grade?GRADE_LABELS[p.grade]:'-'} / ${p.step}</div></div>
-        <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${(p.base||0).toLocaleString()} ฿</div></div>
-        <div><div class="di-label">เงินเพิ่ม พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} ฿</div></div>
-        <div><div class="di-label">พ.ส.ร. รวม</div><div class="di-val">${((p.psr1||0)+(p.psr2||0)+(p.psr3||0)+(p.psr4||0)).toLocaleString()} ฿</div></div>
-        <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val gold" style="font-size:18px">${(p.salary||0).toLocaleString()} ฿</div></div>
-      </div>
-    </div>
-    ${fds.length?`<div class="dsec" style="border:none">
-      <div class="dsec-title">ประวัติราชการสนาม</div>
-      ${fds.map(f=>`<div class="tl-item"><div class="tl-dot"></div>
-        <div><div class="tl-t">${f.mission} — ${f.area}</div>
-        <div class="tl-m">${f.start} ถึง ${f.end} • ${formatDouble(f.double)} • ตำแหน่ง ${f.pos}</div></div></div>`).join('')}
-    </div>`:''}
-    </div>`;
-  document.getElementById('detailContent').innerHTML=html;
-  document.getElementById('detailModal').classList.add('open');
+  // set profileSelect แล้วไปหน้าประวัติส่วนตัว
+  const sel = document.getElementById('profileSelect');
+  if(sel){
+    sel.value = String(id);
+    onProfileSelectChange();
+  }
+  // ไปหน้าประวัติส่วนตัว
+  const btn = document.querySelector('.si[data-sec="profile"]');
+  navTo('profile', btn);
 }
 
 // ===================== ADD/EDIT PERSONNEL =====================
@@ -1926,9 +1943,14 @@ function confirmDelete(){
 
 // ===================== EDUCATION =====================
 function renderEdu(){
+  const pid = getSelectedPid();
+  const body = document.getElementById('eduBody');
+  if(!pid){ body.innerHTML='<tr><td colspan="8">'+noSelectHTML()+'</td></tr>'; return; }
+  const filtered = eduData.filter(e=>String(e.pid)===String(pid));
   const sc={done:'pill-teal',studying:'pill-blue',pending:'pill-yellow'};
   const sl={done:'สำเร็จ',studying:'กำลังศึกษา',pending:'รอสมัคร'};
-  document.getElementById('eduBody').innerHTML=eduData.map(e=>{
+  if(!filtered.length){ body.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text-3);padding:32px;">ยังไม่มีข้อมูลหลักสูตรการศึกษา</td></tr>'; return; }
+  body.innerHTML=filtered.map(e=>{
     const p=personnel.find(x=>String(x.id)===String(e.pid));
     const nm=p?`${p.rank} ${p.fname} ${p.lname}`:'—';
     return `<tr>
@@ -1984,14 +2006,19 @@ function saveTraining(){
 }
 
 function renderTraining(){
+  const pid = getSelectedPid();
+  const body = document.getElementById('trainingBody');
+  if(!pid){ body.innerHTML='<tr><td colspan="9">'+noSelectHTML()+'</td></tr>'; return; }
   const q=(document.getElementById('trainSearch')?.value||'').toLowerCase();
   const sc={done:'pill-teal',ongoing:'pill-blue',pending:'pill-yellow'};
   const sl={done:'เสร็จสิ้น',ongoing:'กำลังอบรม',pending:'รอเริ่ม'};
   const filtered=trainingData.filter(t=>{
+    if(String(t.pid)!==String(pid)) return false;
     const p=personnel.find(x=>String(x.id)===String(t.pid));
     const nm=p?`${p.rank}${p.fname}${p.lname}`:'';
     return !q||(nm+t.course+t.org).toLowerCase().includes(q);
   });
+  if(!filtered.length){ body.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text-3);padding:32px;">ยังไม่มีข้อมูลการฝึกอบรม</td></tr>'; return; }
   document.getElementById('trainingBody').innerHTML=filtered.map(t=>{
     const p=personnel.find(x=>String(x.id)===String(t.pid));
     const nm=p?`${p.rank} ${p.fname} ${p.lname}`:'—';
@@ -2030,7 +2057,12 @@ function editTraining(id){
 
 // ===================== FIELD =====================
 function renderField(){
-  document.getElementById('fieldBody').innerHTML=fieldData.map(f=>{
+  const pid = getSelectedPid();
+  const body = document.getElementById('fieldBody');
+  if(!pid){ body.innerHTML='<tr><td colspan="9">'+noSelectHTML()+'</td></tr>'; return; }
+  const filtered = fieldData.filter(f=>String(f.pid)===String(pid));
+  if(!filtered.length){ body.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text-3);padding:32px;">ยังไม่มีข้อมูลราชการสนาม</td></tr>'; return; }
+  body.innerHTML=filtered.map(f=>{
     const p=personnel.find(x=>String(x.id)===String(f.pid));
     const nm=p?`${p.rank} ${p.fname} ${p.lname}`:'—';
     return `<tr>
@@ -2049,9 +2081,14 @@ function renderField(){
 
 // ===================== PROMOTION =====================
 function renderPromotion(){
+  const pid = getSelectedPid();
+  const body = document.getElementById('promotionBody');
+  if(!pid){ body.innerHTML='<tr><td colspan="8">'+noSelectHTML()+'</td></tr>'; return; }
+  const filtered = promotionData.filter(pr=>String(pr.pid)===String(pid));
   const sc={review:'pill-blue',prep:'pill-yellow',done:'pill-teal'};
   const sl={review:'อยู่ระหว่างพิจารณา',prep:'เตรียมสอบ',done:'ผ่านแล้ว'};
-  document.getElementById('promotionBody').innerHTML=promotionData.map(pr=>{
+  if(!filtered.length){ body.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text-3);padding:32px;">ยังไม่มีแผนเลื่อนยศ</td></tr>'; return; }
+  body.innerHTML=filtered.map(pr=>{
     const p=personnel.find(x=>String(x.id)===String(pr.pid));
     const nm=p?`${p.rank} ${p.fname} ${p.lname}`:'—';
     return `<tr>
@@ -2073,9 +2110,14 @@ function renderPromotion(){
 
 // ===================== SALARY =====================
 function renderSalary(){
-  document.getElementById('salaryBody').innerHTML=personnel.map(p=>`
+  const pid = getSelectedPid();
+  const el = document.getElementById('salaryBody');
+  if(!pid){ el.innerHTML='<tr><td colspan="9">'+noSelectHTML()+'</td></tr>'; return; }
+  const list = personnel.filter(p=>String(p.id)===String(pid));
+  if(!list.length){ el.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text-3);padding:32px;">ไม่พบข้อมูล</td></tr>'; return; }
+  el.innerHTML=list.map(p=>`
     <tr>
-      <td><div class="name-cell"><div class="ava">${p.fname.charAt(0)}</div>${p.rank} ${p.fname} ${p.lname}</div></td>
+      <td><div class="name-cell"><div class="ava" style="${p.photo?'padding:0;overflow:hidden;':''}">${p.photo?`<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`${p.fname.charAt(0)}`}</div>${p.rank} ${p.fname} ${p.lname}</div></td>
       <td>${p.grade?GRADE_LABELS[p.grade]:'-'} / ${p.step}</td>
       <td>${(p.base||0).toLocaleString()}</td><td>${(p.prd||0).toLocaleString()}</td>
       <td>${(p.psr1||0).toLocaleString()}</td><td>${(p.psr2||0).toLocaleString()}</td>
@@ -2093,8 +2135,8 @@ function renderProfile(){
   document.getElementById('profileContent').innerHTML=`
     <div class="phdr">
       <div class="pphoto-wrap">
-        <div class="pphoto" onclick="document.getElementById('photoInput_${p.id}').click()">
-          ${p.photo ? `<img src="${p.photo}" alt="รูปถ่าย">` : `<span>🪖</span>`}
+        <div class="pphoto" data-photo-pid="${p.id}" onclick="${isAdmin()?`document.getElementById('photoInput_${p.id}').click()`:''}">
+          ${p.photo ? `<img src="${p.photo}" alt="รูปถ่าย" style="width:100%;height:100%;object-fit:cover;object-position:center top;position:absolute;inset:0;">` : `<span>🪖</span>`}
           <div class="pphoto-lbl">${p.photo ? 'เปลี่ยนรูป' : 'รูปถ่าย'}</div>
         </div>
         <input type="file" id="photoInput_${p.id}" accept="image/*" style="display:none" onchange="uploadPersonnelPhoto(${p.id},this)">
@@ -2194,15 +2236,10 @@ function renderPension(){
     <div class="tcard">
       <div class="phdr" style="padding:16px 22px">
         <div class="pphoto-wrap">
-          <div class="pphoto" style="width:90px;height:110px;" onclick="${isAdmin()?'document.getElementById(\'penPhotoInput_'+p.id+'\').click()':''}">
-            ${p.photo ? `<img src="${p.photo}" alt="รูปถ่าย">` : `<span style="font-size:36px;">🪖</span>`}
-            <div class="pphoto-lbl">${p.photo ? 'เปลี่ยนรูป' : 'รูปถ่าย'}</div>
+          <div class="pphoto" data-photo-pid="${p.id}" style="width:90px;height:110px;cursor:default;">
+            ${p.photo ? `<img src="${p.photo}" alt="รูปถ่าย" style="width:100%;height:100%;object-fit:cover;object-position:center top;position:absolute;inset:0;">` : `<span style="font-size:36px;">🪖</span>`}
+            <div class="pphoto-lbl">รูปถ่าย</div>
           </div>
-          <input type="file" id="penPhotoInput_${p.id}" accept="image/*" style="display:none" onchange="uploadPersonnelPhoto(${p.id},this)">
-          ${isAdmin()?`<div class="pphoto-actions">
-            <button onclick="${isAdmin()?'document.getElementById(\'penPhotoInput_'+p.id+'\').click()':''}">📷 อัปโหลด</button>
-            ${p.photo ? '<button class=\"del\" onclick=\"deletePersonnelPhoto('+p.id+')\" >🗑️ ลบ</button>' : ''}
-          </div>`:''}
         </div>
         <div>
           <div class="pname" style="font-size:17px">${p.rank} ${p.fname} ${p.lname}</div>
@@ -2284,13 +2321,16 @@ function filterDocs(cat,el){
   currentDocFilter=cat;
   document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
   if(el) el.classList.add('active');
-  renderDocs(cat);
+  const pid = getSelectedPid();
+  renderDocs(cat, pid ? parseInt(pid) : null);
 }
 function renderDocs(cat, pidFilter){
-  const filtered=(cat==='all'?docsData:docsData.filter(d=>d.cat===cat))
-    .filter(d=>!pidFilter||d.pid===pidFilter||d.pid===0);
-  const cats={order:'คำสั่ง/หนังสือ',double:'วันทวีคูณ',pension:'บำเหน็จ/บำนาญ',photo:'รูปภาพ',cert:'ประกาศนียบัตร'};
+  const pid = pidFilter !== undefined ? pidFilter : (getSelectedPid() ? parseInt(getSelectedPid()) : null);
   const el = document.getElementById('docsGrid');
+  if(!pid){ el.innerHTML=noSelectHTML('เลือกชื่อกำลังพลที่แถบด้านบนเพื่อดูเอกสาร'); return; }
+  const filtered=(cat==='all'?docsData:docsData.filter(d=>d.cat===cat))
+    .filter(d=>!pid||String(d.pid)===String(pid)||d.pid===0);
+  const cats={order:'คำสั่ง/หนังสือ',double:'วันทวีคูณ',pension:'บำเหน็จ/บำนาญ',photo:'รูปภาพ',cert:'ประกาศนียบัตร'};
   if(!filtered.length){
     el.innerHTML=`<div style="text-align:center;padding:56px 20px;color:var(--text-3);">
       <div style="font-size:36px;margin-bottom:12px">📁</div>
@@ -2610,7 +2650,7 @@ async function testDriveConnection(){
 }
 
 function filterDocsByPerson(){
-  const pid = document.getElementById('docPersonFilter').value;
+  const pid = getSelectedPid();
   renderDocs(currentDocFilter, pid ? parseInt(pid) : null);
 }
 
@@ -2984,12 +3024,21 @@ function uploadPersonnelPhoto(pid, input){
     const p = personnel.find(x=>String(x.id)===String(pid));
     if(!p) return;
     p.photo = e.target.result;
-    setPersonnelPhoto(pid, e.target.result); // เก็บใน localStorage
+    setPersonnelPhoto(pid, e.target.result);
     input.value='';
+
+    // อัปเดต DOM รูปทันที — ทุก pphoto ที่มี data-pid ตรงกัน
+    updatePhotoDOM(pid, e.target.result);
+
+    // re-render profile เพื่ออัปเดตปุ่ม ลบ ด้วย
     renderProfile();
+
     // อัปเดตหน้า pension ถ้าเลือกอยู่
     const penId = document.getElementById('pensionSelect')?.value;
     if(penId && String(penId)===String(pid)) renderPension();
+
+    // อัปเดตหน้ารายชื่อ (avatar)
+    renderPersonnel();
   };
   reader.readAsDataURL(file);
 }
@@ -2999,10 +3048,23 @@ function deletePersonnelPhoto(pid){
   const p = personnel.find(x=>String(x.id)===String(pid));
   if(!p) return;
   delete p.photo;
-  delPersonnelPhoto(pid); // ลบจาก localStorage
+  delPersonnelPhoto(pid);
+  updatePhotoDOM(pid, null);
   renderProfile();
   const penId = document.getElementById('pensionSelect')?.value;
   if(penId && String(penId)===String(pid)) renderPension();
+  renderPersonnel();
+}
+
+// อัปเดตรูปใน DOM ทุกจุดที่มี data-photo-pid="pid"
+function updatePhotoDOM(pid, dataUrl){
+  document.querySelectorAll('[data-photo-pid="'+pid+'"]').forEach(function(el){
+    if(dataUrl){
+      el.innerHTML = '<img src="'+dataUrl+'" alt="รูปถ่าย" style="width:100%;height:100%;object-fit:cover;object-position:center top;position:absolute;inset:0;">';
+    } else {
+      el.innerHTML = '<span style="font-size:36px;">🪖</span>';
+    }
+  });
 }
 
 // ===================== MODAL HELPERS =====================
