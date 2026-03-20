@@ -164,15 +164,18 @@ tbody tr:last-child td{border-bottom:none;}
 .pen-lbl{font-size:13px;color:var(--text-2);margin-bottom:5px;font-weight:600;}
 .pen-val{font-size:20px;font-weight:700;}
 .pen-sub{font-size:12px;color:var(--text-3);margin-top:4px;}
-.docs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.doc-card{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;cursor:pointer;transition:all .18s;display:flex;gap:10px;align-items:flex-start;box-shadow:var(--shadow-sm);}
-.doc-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.docs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.doc-card{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:all .18s;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;}
+.doc-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.doc-card-img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#f1f5ff;display:block;}
+.doc-card-ico{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:42px;background:#f8faff;}
+.doc-card-body{padding:10px 12px;flex:1;display:flex;flex-direction:column;}
 .doc-ico{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
 .doc-ico.pdf{background:#fff5f5;color:var(--accent-red);}
 .doc-ico.img{background:var(--blue-pale);color:var(--blue);}
 .doc-ico.xls{background:#f0fdf4;color:var(--accent-green);}
-.doc-name{font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:3px;}
-.doc-meta{font-size:12px;color:var(--text-3);}
+.doc-name{font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.doc-meta{font-size:11px;color:var(--text-3);}
 .tl-item{display:flex;gap:12px;padding-bottom:18px;position:relative;}
 .tl-item::before{content:'';position:absolute;left:5px;top:14px;bottom:0;width:2px;background:var(--border);}
 .tl-item:last-child::before{display:none;}
@@ -946,6 +949,17 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="form-actions">
       <button class="btn btn-outline" onclick="closeModal('driveSettingsModal')">ยกเลิก</button>
       <button class="btn btn-blue" onclick="saveDriveSettings()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: IMAGE LIGHTBOX -->
+<div class="overlay" id="imgModal" style="background:rgba(0,0,0,.85);z-index:900;" onclick="closeModal('imgModal')">
+  <div style="max-width:90vw;max-height:90vh;position:relative;" onclick="event.stopPropagation()">
+    <button onclick="closeModal('imgModal')" style="position:absolute;top:-14px;right:-14px;width:32px;height:32px;border-radius:50%;background:#fff;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4);">✕</button>
+    <img id="imgModalSrc" src="" style="max-width:90vw;max-height:88vh;object-fit:contain;border-radius:8px;display:block;">
+    <div style="display:flex;justify-content:center;gap:8px;margin-top:10px;">
+      <a id="imgModalDl" href="" download="" class="btn btn-blue btn-sm" onclick="event.stopPropagation()">⬇️ ดาวน์โหลด</a>
     </div>
   </div>
 </div>
@@ -2213,25 +2227,36 @@ function renderDocs(cat, pidFilter){
     </div>`:
     filtered.map(d=>{
       const parts=(icoMap[d.type]||'pdf 📄').split(' ');
-      const thumb = d.localData && d.type==='img'
-        ? `<img src="${d.localData}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;">`
-        : `<div class="doc-ico ${parts[0]}" style="flex-shrink:0;">${parts[1]}</div>`;
       const hasDrive = d.driveUrl||d.downloadUrl;
-      const viewBtn =
-        (d.driveUrl ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">👁️ ดู</a>` : '') +
-        (d.downloadUrl ? `<a href="${d.downloadUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ ดาวน์โหลด</a>` : '') +
-        (d.localData && d.type==='img' ? `<a href="${d.localData}" download="${d.name}" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️</a>` : '') +
-        (!hasDrive && !d.localData ? `<button class="btn btn-outline btn-sm" style="opacity:.4" disabled>☁️ ยังไม่อัปโหลด</button>` : '');
+
+      // Preview area — รูปภาพแสดงเต็ม, ไฟล์อื่นแสดง icon
+      const preview = d.localData && d.type==='img'
+        ? `<img src="${d.localData}" class="doc-card-img" onclick="event.stopPropagation();openImgModal('${d.id}')">`
+        : d.driveUrl && d.type==='img'
+          ? `<img src="${d.driveUrl}" class="doc-card-img" onerror="this.style.display='none';this.nextSibling.style.display='flex'" onclick="event.stopPropagation();window.open('${d.driveUrl}','_blank')"><div class="doc-card-ico" style="display:none;">${parts[1]}</div>`
+          : `<div class="doc-card-ico">${parts[1]}</div>`;
+
+      // ปุ่ม — เฉพาะ ดู + ดาวน์โหลด + ลบ (ไม่มีปุ่มลูกศรซ้ำ)
+      const viewBtn = d.driveUrl
+        ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">👁️ ดู</a>`
+        : '';
+      const dlBtn = d.downloadUrl
+        ? `<a href="${d.downloadUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ ดาวน์โหลด</a>`
+        : d.localData
+          ? `<a href="${d.localData}" download="${d.name}" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ ดาวน์โหลด</a>`
+          : `<button class="btn btn-outline btn-sm" style="opacity:.4" disabled>☁️ ยังไม่อัปโหลด</button>`;
+
       return `<div class="doc-card">
-        ${thumb}
-        <div style="flex:1;min-width:0;">
-          <div class="doc-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${d.name}">${d.name}</div>
+        ${preview}
+        <div class="doc-card-body">
+          <div class="doc-name" title="${d.name}">${d.name}</div>
           <div class="doc-meta">${d.date} • ${d.size||'—'}</div>
-          <div style="display:flex;gap:3px;margin-top:5px;flex-wrap:wrap;">
-            ${Object.entries(cats).map(([k,v])=>`<button onclick="event.stopPropagation();(function(){var x=docsData.find(function(i){return i.id==${d.id};});if(x)x.cat='${k}';renderDocs(currentDocFilter);})()" style="padding:1px 7px;font-size:11px;border-radius:4px;border:1px solid var(--border);background:${d.cat===k?'var(--blue)':'transparent'};color:${d.cat===k?'#fff':'var(--text-3)'};cursor:pointer;font-family:inherit;">${v}</button>`).join('')}
+          <div style="display:flex;gap:3px;margin-top:6px;flex-wrap:wrap;">
+            ${Object.entries(cats).map(([k,v])=>`<button onclick="event.stopPropagation();(function(){var x=docsData.find(function(i){return String(i.id)==='${d.id}';});if(x)x.cat='${k}';renderDocs(currentDocFilter);})()" style="padding:1px 7px;font-size:11px;border-radius:4px;border:1px solid var(--border);background:${d.cat===k?'var(--blue)':'transparent'};color:${d.cat===k?'#fff':'var(--text-3)'};cursor:pointer;font-family:inherit;">${v}</button>`).join('')}
           </div>
           <div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap;">
             ${viewBtn}
+            ${dlBtn}
             <button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteDoc('${d.id}','${d.fileId||''}')">🗑️</button>
           </div>
         </div>
@@ -2769,6 +2794,20 @@ async function deleteDoc(docId, fileId){
   docsData = docsData.filter(function(x){ return String(x.id)!==String(docId); });
   renderDocs(currentDocFilter);
   autoSave('documents');
+}
+
+// ===================== IMAGE LIGHTBOX =====================
+function openImgModal(docId){
+  const d = docsData.find(x=>String(x.id)===String(docId));
+  if(!d) return;
+  const src = d.localData || d.driveUrl || '';
+  if(!src) return;
+  document.getElementById('imgModalSrc').src = src;
+  const dlEl = document.getElementById('imgModalDl');
+  if(d.localData){ dlEl.href=d.localData; dlEl.download=d.name; dlEl.style.display='inline-flex'; }
+  else if(d.downloadUrl){ dlEl.href=d.downloadUrl; dlEl.download=d.name; dlEl.style.display='inline-flex'; }
+  else { dlEl.style.display='none'; }
+  document.getElementById('imgModal').classList.add('open');
 }
 
 // ===================== MODAL HELPERS =====================
