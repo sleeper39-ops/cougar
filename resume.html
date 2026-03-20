@@ -2016,10 +2016,9 @@ function renderDocs(cat, pidFilter){
       const hasDrive = d.driveUrl||d.downloadUrl;
       const viewBtn =
         (d.driveUrl ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">👁️ ดู</a>` : '') +
-        (d.downloadUrl ? `<a href="${d.downloadUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ Drive</a>` : '') +
+        (d.downloadUrl ? `<a href="${d.downloadUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ ดาวน์โหลด</a>` : '') +
         (d.localData && d.type==='img' ? `<a href="${d.localData}" download="${d.name}" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️</a>` : '') +
-        (!hasDrive && !d.localData ? `<button class="btn btn-outline btn-sm" style="opacity:.4" disabled>☁️ ยังไม่อัปโหลด</button>` : '') +
-        (d.driveUrl||d.fileId ? `<span style="font-size:10px;color:var(--accent-teal);padding:2px 6px;background:#ecfeff;border-radius:4px;">✅ Drive</span>` : '');
+        (!hasDrive && !d.localData ? `<button class="btn btn-outline btn-sm" style="opacity:.4" disabled>☁️ ยังไม่อัปโหลด</button>` : '');
       return `<div class="doc-card">
         ${thumb}
         <div style="flex:1;min-width:0;">
@@ -2395,7 +2394,8 @@ async function uploadSingleFile(file, idx, total){
     subFolder: 'APS_Documents'
   });
 
-  if(result.error) throw new Error(result.error);
+  // ถ้า Apps Script ส่ง fileId กลับมา = สำเร็จ (แม้ error บางส่วนเช่น getDownloadUrl)
+  if(result.error && !result.fileId) throw new Error(result.error);
 
   return {
     id:          result.fileId || (Date.now()+Math.random()),
