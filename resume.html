@@ -1215,10 +1215,10 @@ function objToArr(obj) {
 
 // ทดสอบการเชื่อมต่อ
 async function testFbConnection() {
-  const url = document.getElementById('cfg_fbUrl').value.trim();
-  const key = document.getElementById('cfg_fbKey').value.trim();
+  const url  = document.getElementById('cfg_fbUrl').value.trim();
+  const key  = document.getElementById('cfg_fbKey').value.trim();
   const node = document.getElementById('cfg_fbNode').value.trim() || 'aps_data';
-  const el = document.getElementById('fbTestResult');
+  const el   = document.getElementById('fbTestResult');
   if (!url || !key) { el.textContent = '⚠️ กรุณากรอก URL และ API Key'; el.style.color='#e65100'; return; }
   el.textContent = '⏳ กำลังทดสอบ...'; el.style.color = '#64748b';
   try {
@@ -1228,10 +1228,10 @@ async function testFbConnection() {
       body: JSON.stringify({ ts: Date.now() })
     });
     if (resp.ok || resp.status === 200) {
-      el.textContent = '✅ เชื่อมต่อสำเร็จ! Firebase พร้อมใช้งาน';
+      el.textContent = '✅ เชื่อมต่อ Firebase สำเร็จ!';
       el.style.color = '#16a34a';
     } else {
-      throw new Error(`HTTP ${resp.status} — ตรวจสอบ URL, API Key หรือ Rules`);
+      throw new Error(`HTTP ${resp.status} — ตรวจสอบ URL, Key หรือ Rules`);
     }
   } catch(e) {
     el.textContent = '❌ ' + e.message;
@@ -2265,15 +2265,18 @@ async function testDriveConnection(){
   const el = document.getElementById('driveTestResult');
   if(!gasUrl){ el.style.color='#e65100'; el.textContent='⚠️ กรุณากรอก Apps Script URL'; return; }
   el.style.color='#64748b'; el.textContent='⏳ กำลังทดสอบ...';
+  // ชั่วคราว set gas_url เพื่อทดสอบ
+  const orig = localStorage.getItem('gas_url');
+  localStorage.setItem('gas_url', gasUrl);
   try{
-    const resp = await fetch(gasUrl+'?action=ping',{
-      method:'POST', headers:{'Content-Type':'text/plain'}, body:'{}'
-    });
-    const data = JSON.parse(await resp.text());
+    const data = await gasGet('ping',{});
     if(data.status==='ok'){
       el.style.color='#16a34a'; el.textContent='✅ เชื่อมต่อสำเร็จ — '+data.sheetName;
     } else throw new Error(data.error||'Unknown');
-  }catch(e){ el.style.color='#e53e3e'; el.textContent='❌ '+e.message; }
+  }catch(e){
+    el.style.color='#e53e3e'; el.textContent='❌ '+e.message;
+    if(orig) localStorage.setItem('gas_url',orig); else localStorage.removeItem('gas_url');
+  }
 }
 
 function filterDocsByPerson(){
@@ -2302,6 +2305,40 @@ function getGasUrl(){
   return localStorage.getItem('gas_url')||'';
 }
 
+// ============================================================
+//  CORS-safe fetch สำหรับ Apps Script
+//  Apps Script Web App รองรับ cross-origin ผ่าน:
+//  - GET: ?action=xxx&payload=JSON (ไม่มี preflight)
+//  - POST: form-urlencoded (ไม่มี preflight, ต้องใช้ text/plain หรือ application/x-www-form-urlencoded)
+//
+//  วิธีที่ใช้งานได้จริงที่สุดคือ GET + encode payload เป็น URL param
+//  สำหรับ upload ใช้ POST + no-cors แล้วตรวจสอบผ่าน listFiles
+// ============================================================
+async function gasGet(action, params){
+  const gasUrl = getGasUrl();
+  if(!gasUrl) throw new Error('ยังไม่ได้ตั้งค่า Apps Script URL');
+  const qs = new URLSearchParams({ action, ...params });
+  const resp = await fetch(`${gasUrl}?${qs.toString()}`, { method:'GET' });
+  if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
+async function gasPost(action, body){
+  const gasUrl = getGasUrl();
+  if(!gasUrl) throw new Error('ยังไม่ได้ตั้งค่า Apps Script URL');
+  // ใช้ form-urlencoded เพื่อหลีกเลี่ยง CORS preflight
+  const payload = JSON.stringify({ action, ...body });
+  const form = new URLSearchParams({ action, payload });
+  const resp = await fetch(gasUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: form.toString()
+  });
+  if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const text = await resp.text();
+  try{ return JSON.parse(text); } catch(e){ throw new Error('Invalid response: '+text.slice(0,100)); }
+}
+
 function showUploadProgress(show, text, pct, detail){
   const prog = document.getElementById('uploadProgress');
   if(!prog) return;
@@ -2328,7 +2365,7 @@ function fileToBase64(file){
 // อัปโหลดไฟล์ไป Google Drive ผ่าน Apps Script
 async function uploadSingleFile(file, idx, total){
   const gasUrl = getGasUrl();
-  if(!gasUrl) throw new Error('ยังไม่ได้ตั้งค่า Apps Script URL — กด ⚙️ ที่แถบบน');
+  if(!gasUrl) throw new Error('ยังไม่ได้ตั้งค่า Apps Script URL — กด ⚙️ ตั้งค่า Drive');
 
   showUploadProgress(true,
     `⏳ กำลังอัปโหลด ${idx+1}/${total}: ${file.name}`,
@@ -2340,34 +2377,27 @@ async function uploadSingleFile(file, idx, total){
   const ext = file.name.split('.').pop().toLowerCase();
   const type = ['pdf'].includes(ext)?'pdf':['jpg','jpeg','png','gif','webp'].includes(ext)?'img':'xls';
 
-  const payload = {
-    action:   'uploadFile',
-    fileName: file.name,
-    mimeType: file.type || 'application/octet-stream',
-    data:     base64,
+  const result = await gasPost('uploadFile', {
+    fileName:  file.name,
+    mimeType:  file.type || 'application/octet-stream',
+    data:      base64,
     subFolder: 'APS_Documents'
-  };
-
-  const resp = await fetch(gasUrl+'?action=uploadFile', {
-    method: 'POST',
-    headers: {'Content-Type':'text/plain'},
-    body: JSON.stringify(payload)
   });
-  const result = JSON.parse(await resp.text());
+
   if(result.error) throw new Error(result.error);
 
   return {
-    id: result.fileId || (Date.now()+Math.random()),
-    pid: 0,
-    name: result.fileName || file.name,
-    person: '—',
-    date: new Date().toLocaleDateString('th-TH'),
-    type, cat: type==='img'?'photo':'order',
-    size: result.size ? (result.size/1024).toFixed(1)+' KB' : (file.size/1024).toFixed(1)+' KB',
-    driveUrl: result.viewUrl || '',
+    id:          result.fileId || (Date.now()+Math.random()),
+    pid:         0,
+    name:        result.fileName || file.name,
+    person:      '—',
+    date:        new Date().toLocaleDateString('th-TH'),
+    type, cat:   type==='img'?'photo':'order',
+    size:        result.size ? (result.size/1024).toFixed(1)+' KB' : (file.size/1024).toFixed(1)+' KB',
+    driveUrl:    result.viewUrl  || '',
     downloadUrl: result.driveUrl || '',
-    fileId: result.fileId || '',
-    localData: type==='img' ? ('data:'+file.type+';base64,'+base64) : null
+    fileId:      result.fileId   || '',
+    localData:   type==='img' ? ('data:'+file.type+';base64,'+base64) : null
   };
 }
 
@@ -2416,24 +2446,19 @@ async function handleFileUpload(event){
 // โหลดรายการไฟล์จาก Drive ผ่าน Apps Script
 async function loadDocsFromDrive(){
   const gasUrl = getGasUrl();
-  if(!gasUrl){ alert('ยังไม่ได้ตั้งค่า Apps Script URL — กด ⚙️'); return; }
+  if(!gasUrl) return; // silent skip ถ้าไม่ได้ตั้งค่า
   showFbStatus('🔄 กำลังโหลดรายการไฟล์จาก Drive...','blue');
   try{
-    const resp = await fetch(gasUrl+'?action=listFiles', {
-      method:'POST', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({action:'listFiles', subFolder:'APS_Documents'})
-    });
-    const result = JSON.parse(await resp.text());
+    const result = await gasGet('listFiles', { subFolder:'APS_Documents' });
     if(result.error) throw new Error(result.error);
     const files = result.files||[];
-    // merge เข้า docsData — เพิ่มเฉพาะที่ยังไม่มี
     let added=0;
     files.forEach(f=>{
       const ext=(f.fileName||'').split('.').pop().toLowerCase();
       const type=['pdf'].includes(ext)?'pdf':['jpg','jpeg','png','gif','webp'].includes(ext)?'img':'xls';
-      if(!docsData.find(d=>d.fileId===f.fileId)){
+      if(!docsData.find(d=>String(d.fileId)===String(f.fileId))){
         docsData.push({
-          id: f.fileId, pid:0, name:f.fileName, person:'—',
+          id:f.fileId, pid:0, name:f.fileName, person:'—',
           date:f.created||'—', type, cat:type==='img'?'photo':'order',
           size:f.size?(f.size/1024).toFixed(1)+' KB':'—',
           driveUrl:f.viewUrl||'', downloadUrl:f.driveUrl||'',
@@ -2443,9 +2468,10 @@ async function loadDocsFromDrive(){
       }
     });
     renderDocs(currentDocFilter);
-    showFbStatus(`✅ โหลดจาก Drive สำเร็จ — ${files.length} ไฟล์ (เพิ่มใหม่ ${added})`, 'green');
+    if(files.length>0) showFbStatus(`✅ Drive: ${files.length} ไฟล์ (เพิ่มใหม่ ${added})`,'green');
   }catch(e){
-    showFbStatus('❌ โหลดจาก Drive ล้มเหลว: '+e.message,'red');
+    showFbStatus('⚠️ Drive: '+e.message,'orange');
+    console.warn('loadDocsFromDrive:',e);
   }
 }
 
@@ -2478,11 +2504,7 @@ async function deleteDoc(docId, fileId){
     const gasUrl = getGasUrl();
     if(gasUrl){
       try{
-        const resp = await fetch(gasUrl+'?action=deleteFile',{
-          method:'POST', headers:{'Content-Type':'text/plain'},
-          body: JSON.stringify({action:'deleteFile', fileId})
-        });
-        const r = JSON.parse(await resp.text());
+        const r = await gasPost('deleteFile', { fileId });
         if(r.error) console.warn('Drive delete warn:',r.error);
       }catch(e){ console.warn('Drive delete failed:',e); }
     }
