@@ -779,8 +779,24 @@ tbody tr:last-child td{border-bottom:none;}
           <input class="finput" id="fd_end" placeholder="31/12/2567" maxlength="12">
         </div>
         <div>
-          <label class="flabel">วันทวีคูณ (วัน)</label>
-          <input class="finput" id="fd_double" type="number" min="0" placeholder="365">
+          <label class="flabel">วันทวีคูณ</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select class="fsel-form" id="fd_double_y" style="flex:1;">
+              <option value="0">0 ปี</option>
+              <option value="1">1 ปี</option><option value="2">2 ปี</option>
+              <option value="3">3 ปี</option><option value="4">4 ปี</option>
+              <option value="5">5 ปี</option>
+            </select>
+            <select class="fsel-form" id="fd_double_m" style="flex:1;">
+              <option value="0">0 เดือน</option>
+              <option value="1">1 เดือน</option><option value="2">2 เดือน</option>
+              <option value="3">3 เดือน</option><option value="4">4 เดือน</option>
+              <option value="5">5 เดือน</option><option value="6">6 เดือน</option>
+              <option value="7">7 เดือน</option><option value="8">8 เดือน</option>
+              <option value="9">9 เดือน</option><option value="10">10 เดือน</option>
+              <option value="11">11 เดือน</option>
+            </select>
+          </div>
         </div>
         <div>
           <label class="flabel">สถานะ</label>
@@ -1119,12 +1135,14 @@ async function autoSave(collection) {
 function arrToObj(arr) {
   if (!arr || !arr.length) return {};
   const o = {};
-  arr.forEach(item => { o['id_' + item.id] = item; });
+  arr.forEach(item => { if(item && item.id !== undefined) o['id_' + item.id] = item; });
   return o;
 }
 function objToArr(obj) {
   if (!obj) return [];
-  return Object.values(obj).filter(Boolean);
+  // Firebase may return plain array or keyed object
+  if (Array.isArray(obj)) return obj.filter(Boolean);
+  return Object.values(obj).filter(function(x){ return x && typeof x === 'object'; });
 }
 
 // ทดสอบการเชื่อมต่อ
@@ -1268,9 +1286,6 @@ function doLogout(){
   var lu=document.getElementById('loginUser');
   if(lp) lp.addEventListener('keydown',function(e){if(e.key==='Enter') doLogin();});
   if(lu) lu.addEventListener('keydown',function(e){if(e.key==='Enter'&&lp) lp.focus();});
-  document.querySelectorAll('.overlay').forEach(function(o){
-    o.addEventListener('click',function(e){if(e.target===o) o.classList.remove('open');});
-  });
 })();
 
 
@@ -1906,7 +1921,9 @@ let nextFieldId = 1;
 function openAddFieldModal(){
   document.getElementById('fieldModalTitle').textContent='＋ เพิ่มราชการสนาม';
   document.getElementById('fd_editId').value='';
-  ['fd_pid','fd_mission','fd_area','fd_pos','fd_start','fd_end','fd_double'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['fd_pid','fd_mission','fd_area','fd_pos','fd_start','fd_end'].forEach(id=>{ var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('fd_double_y').value='0';
+  document.getElementById('fd_double_m').value='0';
   document.getElementById('fd_status').value='done';
   document.getElementById('fieldModal').classList.add('open');
 }
@@ -1920,7 +1937,11 @@ function openEditFieldModal(id){
   document.getElementById('fd_pos').value=item.pos||'';
   document.getElementById('fd_start').value=item.start||'';
   document.getElementById('fd_end').value=item.end||'';
-  document.getElementById('fd_double').value=item.double||'';
+  var days=parseInt(item.double)||0;
+  var yrs=Math.floor(days/365);
+  var mths=Math.round((days%365)/30);
+  document.getElementById('fd_double_y').value=Math.min(yrs,5);
+  document.getElementById('fd_double_m').value=Math.min(mths,11);
   document.getElementById('fd_status').value=item.status||'done';
   document.getElementById('fieldModal').classList.add('open');
 }
@@ -1928,13 +1949,15 @@ function saveField(){
   const pid=parseInt(document.getElementById('fd_pid').value);
   const mission=document.getElementById('fd_mission').value.trim();
   if(!pid||!mission){ alert('กรุณาเลือกกำลังพลและกรอกชื่อภารกิจ'); return; }
-  const dbl=document.getElementById('fd_double').value;
+  var yrs=parseInt(document.getElementById('fd_double_y').value)||0;
+  var mths=parseInt(document.getElementById('fd_double_m').value)||0;
+  var totalDays=(yrs*365)+(mths*30);
   const obj={ id:0, pid, mission,
     area: document.getElementById('fd_area').value.trim(),
     pos: document.getElementById('fd_pos').value.trim(),
     start: document.getElementById('fd_start').value.trim(),
     end: document.getElementById('fd_end').value.trim(),
-    double: dbl?parseInt(dbl):null,
+    double: totalDays>0?totalDays:null,
     status: document.getElementById('fd_status').value
   };
   const editId=document.getElementById('fd_editId').value;
@@ -2071,6 +2094,19 @@ async function uploadFileToDrive(file){
     }
   });
 }
+// ===================== MODAL HELPERS =====================
+function closeModal(id){
+  var el=document.getElementById(id);
+  if(el) el.classList.remove('open');
+}
+
+// Use event delegation on document for overlay backdrop clicks
+// so newly-added modals are also covered
+document.addEventListener('click',function(e){
+  if(e.target && e.target.classList && e.target.classList.contains('overlay')){
+    e.target.classList.remove('open');
+  }
+});
 
 </script>
 </body>
