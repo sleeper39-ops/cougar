@@ -304,7 +304,7 @@ tbody tr:last-child td{border-bottom:none;}
         <table>
           <thead><tr>
             <th>#</th><th>ยศ-ชื่อ-สกุล</th><th>เลขประจำตัว</th>
-            <th>ตำแหน่ง</th><th>วันเข้ารับราชการ</th><th>อายุราชการ</th>
+            <th>ตำแหน่ง</th><th>วันเข้ารับราชการ</th><th>อายุราชการ</th><th>วันทวีคูณ</th>
             <th>ระดับ/ขั้น</th><th>เงินเดือนสุทธิ (฿)</th><th>สถานะ</th><th>จัดการ</th>
           </tr></thead>
           <tbody id="personnelBody"></tbody>
@@ -431,7 +431,8 @@ tbody tr:last-child td{border-bottom:none;}
         </select>
         <button class="btn btn-blue" onclick="document.getElementById('fileUploadInput').click()">📎 เลือกไฟล์อัปโหลด</button>
         <input type="file" id="fileUploadInput" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" style="display:none" onchange="handleFileUpload(event)">
-        <button class="btn btn-outline btn-sm" onclick="autoSave('documents')" title="ซิงค์ไปยัง Firebase">☁️ ซิงค์</button>
+        <button class="btn btn-outline btn-sm" onclick="autoSave('documents')" title="ซิงค์รายการไปยัง Firebase">☁️ ซิงค์ Firebase</button>
+        <button class="btn btn-outline btn-sm" onclick="downloadAllDocs()" title="ดาวน์โหลดทั้งหมด">⬇️ โหลดทั้งหมด</button>
       </div>
       <!-- Upload progress -->
       <div id="uploadProgress" style="display:none;background:var(--blue-pale);border:1.5px solid rgba(26,111,212,.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;">
@@ -519,10 +520,23 @@ tbody tr:last-child td{border-bottom:none;}
           <label class="flabel">เหล่า</label>
           <select class="fsel-form" id="f_branch">
             <option value="">-- เลือกเหล่า --</option>
-            <option>ราบ (ร.)</option><option>ม้า (ม.)</option><option>ปืนใหญ่ (ป.)</option>
-            <option>ช่าง (ช.)</option><option>สื่อสาร (ส.)</option><option>พยาบาล (พ.)</option>
-            <option>สรรพาวุธ (สพ.)</option><option>การเงิน (กง.)</option>
-            <option>พลาธิการ (พธ.)</option><option>ขนส่ง (ขส.)</option>
+            <option>ราบ (ร.)</option>
+            <option>ม้า (ม.)</option>
+            <option>ปืนใหญ่ (ป.)</option>
+            <option>ช่าง (ช.)</option>
+            <option>สื่อสาร (ส.)</option>
+            <option>ขนส่ง (ขส.)</option>
+            <option>สรรพาวุธ (สพ.)</option>
+            <option>พลาธิการ (พธ.)</option>
+            <option>สารวัตร (สห.)</option>
+            <option>สารบรรณ (สบ.)</option>
+            <option>การเงิน (กง.)</option>
+            <option>พระธรรมนูญ (ธน.)</option>
+            <option>แพทย์ (พ.)</option>
+            <option>แผนที่ (ผท.)</option>
+            <option>การสัตว์ (กส.)</option>
+            <option>ดุริยางค์ (ดย.)</option>
+            <option>การข่าว (ขว.)</option>
           </select>
         </div>
         <div><label class="flabel">วันเข้ารับราชการ (ว/ด/ปปปป พ.ศ.) <span>*</span></label><input class="finput" id="f_start" placeholder="เช่น 01/10/2545" maxlength="12"></div>
@@ -1135,7 +1149,14 @@ async function autoSave(collection) {
 function arrToObj(arr) {
   if (!arr || !arr.length) return {};
   const o = {};
-  arr.forEach(item => { if(item && item.id !== undefined) o['id_' + item.id] = item; });
+  arr.forEach(item => {
+    if(item && item.id !== undefined) {
+      // Strip localData (base64) before saving — too large for Firebase REST (causes HTTP 400)
+      const clean = Object.assign({}, item);
+      delete clean.localData;
+      o['id_' + item.id] = clean;
+    }
+  });
   return o;
 }
 function objToArr(obj) {
@@ -1375,6 +1396,7 @@ function renderPersonnel(){
         <td style="color:var(--text-2);font-size:12.5px">${p.pos}</td>
         <td style="color:var(--text-3);font-size:12px">${p.start}</td>
         <td style="color:var(--accent-green);font-weight:600">${serviceYears(p.start)}</td>
+      <td style="color:var(--accent-teal);font-weight:600">${formatDouble(getTotalDouble(p.id))}</td>
         <td style="font-weight:700;font-size:12.5px">${p.grade?GRADE_LABELS[p.grade]:'-'}/${p.step}</td>
         <td style="font-weight:800;color:var(--text-1)">${(p.salary||0).toLocaleString()}</td>
         <td><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></td>
@@ -1780,14 +1802,38 @@ function renderPension(){
   const id=parseInt(document.getElementById('pensionSelect').value);
   const p=personnel.find(x=>x.id===id);
   if(!p){document.getElementById('pensionContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูข้อมูล</div>';return;}
-  const totalDouble=getTotalDouble(p.id);
+  const totalDoubleDays=getTotalDouble(p.id);
+  const totalDoubleYears=totalDoubleDays/365;
+
+  // คำนวณอายุราชการปกติเป็นปี (ทศนิยม)
+  let serviceYrsNum=0;
+  try{
+    const sp=p.start.split('/');
+    const startDate=new Date(parseInt(sp[2])-543,parseInt(sp[1])-1,parseInt(sp[0]));
+    const now=new Date();
+    serviceYrsNum=(now-startDate)/(1000*60*60*24*365.25);
+  }catch(e){}
+
+  const totalServiceYrs = serviceYrsNum + totalDoubleYears;
+
   let startBE=0,birthBE=0;
   try{const sp=p.start.split('/');startBE=parseInt(sp[2]);const bp=p.dob.split('/');birthBE=parseInt(bp[2]);}catch(e){}
-  const retire25=startBE+25;
-  const retire60=birthBE+60;
-  const pension=Math.round(p.salary*0.5);
-  const gratuity=Math.round(p.salary*25);
-  const curBE=new Date().getFullYear()+543;
+
+  // วันเกษียณ 25 ปี = วันที่ครบ 25 ปีราชการ + วันทวีคูณ (คิดย้อนกลับ)
+  const doubleYrsFloor = Math.floor(totalDoubleYears*10)/10;
+  const retire25Adjusted = startBE + 25 - Math.floor(totalDoubleYears);
+  const retire60 = birthBE + 60;
+  const curBE = new Date().getFullYear()+543;
+
+  // บำเหน็จ = เงินเดือน × อายุราชการรวม(ปี)
+  const gratuity = Math.round(p.salary * totalServiceYrs);
+  // บำนาญ = เงินเดือน × 70% (หากอายุราชการรวม ≥ 25 ปี) หรือตามสูตร 2% × ปี × เงินเดือน
+  const pensionRate = Math.min(totalServiceYrs * 2, 70) / 100;
+  const pension = Math.round(p.salary * pensionRate);
+
+  const svcDisplay = serviceYears(p.start);
+  const svcTotal = `${Math.floor(totalServiceYrs)} ปี ${Math.round((totalServiceYrs%1)*12)} เดือน`;
+
   document.getElementById('pensionContent').innerHTML=`
     <div class="tcard">
       <div class="phdr" style="padding:16px 22px">
@@ -1796,27 +1842,66 @@ function renderPension(){
           <div class="pname" style="font-size:17px">${p.rank} ${p.fname} ${p.lname}</div>
           <div class="ptags" style="margin-top:6px">
             <span class="ptag">เข้ารับราชการ: ${p.start}</span>
-            <span class="ptag">อายุราชการ: ${serviceYears(p.start)}</span>
-            <span class="ptag">วันทวีคูณ: ${formatDouble(totalDouble)}</span>
+            <span class="ptag">อายุราชการ: ${svcDisplay}</span>
+            <span class="ptag" style="color:var(--accent-teal);">วันทวีคูณ: ${formatDouble(totalDoubleDays)}</span>
           </div>
         </div>
       </div>
       <div class="dsec">
-        <div class="dsec-title">อายุราชการ</div>
+        <div class="dsec-title">อายุราชการ (รวมวันทวีคูณ)</div>
         <div class="dg">
-          <div><div class="di-label">อายุราชการปกติ</div><div class="di-val g">${serviceYears(p.start)}</div></div>
-          <div><div class="di-label">วันทวีคูณ</div><div class="di-val" style="color:var(--accent-teal)">${formatDouble(totalDouble)}</div></div>
+          <div><div class="di-label">อายุราชการปกติ</div><div class="di-val g">${svcDisplay}</div></div>
+          <div><div class="di-label">วันทวีคูณทั้งหมด</div><div class="di-val" style="color:var(--accent-teal)">${formatDouble(totalDoubleDays)}</div></div>
+          <div><div class="di-label">อายุราชการรวม</div><div class="di-val hi">${svcTotal}</div></div>
           <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val gold">${(p.salary||0).toLocaleString()} ฿</div></div>
         </div>
       </div>
       <div class="dsec">
         <div class="dsec-title">วันเกษียณอายุ</div>
         <div class="pen-grid">
-          <div class="pen-card" style="border-color:rgba(26,111,212,.3)"><div class="pen-lbl">🏅 เกษียณ 25 ปี (บำนาญ)</div><div class="pen-val" style="color:var(--blue)">พ.ศ. ${retire25}</div><div class="pen-sub">อีก ~${Math.max(0,retire25-curBE)} ปี</div></div>
-          <div class="pen-card" style="border-color:rgba(8,145,178,.3)"><div class="pen-lbl">👴 เกษียณอายุ 60 ปี</div><div class="pen-val" style="color:var(--accent-teal)">พ.ศ. ${retire60}</div><div class="pen-sub">อีก ~${Math.max(0,retire60-curBE)} ปี</div></div>
-          <div class="pen-card" style="border-color:rgba(200,134,26,.3)"><div class="pen-lbl">💰 บำเหน็จคาด (เงินก้อน)</div><div class="pen-val gold">${gratuity.toLocaleString()} ฿</div><div class="pen-sub">= เงินเดือน × 25</div></div>
-          <div class="pen-card" style="border-color:rgba(22,163,74,.3)"><div class="pen-lbl">📅 บำนาญคาด / เดือน</div><div class="pen-val" style="color:var(--accent-green)">${pension.toLocaleString()} ฿</div><div class="pen-sub">= เงินเดือน × 50%</div></div>
+          <div class="pen-card" style="border-color:rgba(26,111,212,.3)">
+            <div class="pen-lbl">🏅 เกษียณ 25 ปี (รวมทวีคูณ)</div>
+            <div class="pen-val" style="color:var(--blue)">พ.ศ. ${retire25Adjusted}</div>
+            <div class="pen-sub">อีก ~${Math.max(0,retire25Adjusted-curBE)} ปี</div>
+          </div>
+          <div class="pen-card" style="border-color:rgba(8,145,178,.3)">
+            <div class="pen-lbl">👴 เกษียณอายุ 60 ปี</div>
+            <div class="pen-val" style="color:var(--accent-teal)">พ.ศ. ${retire60}</div>
+            <div class="pen-sub">อีก ~${Math.max(0,retire60-curBE)} ปี</div>
+          </div>
+          <div class="pen-card" style="border-color:rgba(200,134,26,.3)">
+            <div class="pen-lbl">💰 บำเหน็จ (อายุราชการ × เงินเดือน)</div>
+            <div class="pen-val gold">${gratuity.toLocaleString()} ฿</div>
+            <div class="pen-sub">= ${svcTotal} × ${(p.salary||0).toLocaleString()}</div>
+          </div>
+          <div class="pen-card" style="border-color:rgba(22,163,74,.3)">
+            <div class="pen-lbl">📅 บำนาญ / เดือน (${Math.round(pensionRate*100)}%)</div>
+            <div class="pen-val" style="color:var(--accent-green)">${pension.toLocaleString()} ฿</div>
+            <div class="pen-sub">= เงินเดือน × 2% × ${Math.floor(totalServiceYrs)} ปี (สูงสุด 70%)</div>
+          </div>
         </div>
+      </div>
+      <div class="dsec">
+        <div class="dsec-title">ราชการสนาม / วันทวีคูณแต่ละครั้ง</div>
+        ${fieldData.filter(f=>f.pid===p.id).length===0
+          ? `<div style="color:var(--text-3);font-size:13px;">ยังไม่มีข้อมูลราชการสนาม</div>`
+          : `<table style="font-size:13px;">
+              <thead><tr>
+                <th>ภารกิจ</th><th>พื้นที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>วันทวีคูณ</th>
+              </tr></thead>
+              <tbody>
+                ${fieldData.filter(f=>f.pid===p.id).map(f=>`
+                  <tr>
+                    <td>${f.mission}</td><td>${f.area}</td>
+                    <td>${f.start}</td><td>${f.end||'ปัจจุบัน'}</td>
+                    <td style="color:var(--accent-teal);font-weight:700">${formatDouble(f.double)}</td>
+                  </tr>`).join('')}
+                <tr style="background:var(--bg-1);font-weight:700">
+                  <td colspan="4" style="text-align:right;color:var(--text-2)">รวมทั้งหมด</td>
+                  <td style="color:var(--accent-teal)">${formatDouble(totalDoubleDays)}</td>
+                </tr>
+              </tbody>
+            </table>`}
       </div>
       <div class="dsec" style="border:none">
         <div class="dsec-title">สิทธิ์ที่ได้รับ</div>
@@ -1851,11 +1936,8 @@ function renderDocs(cat, pidFilter){
       const thumb = d.localData && d.type==='img'
         ? `<img src="${d.localData}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;">`
         : `<div class="doc-ico ${parts[0]}" style="flex-shrink:0;">${parts[1]}</div>`;
-      const viewBtn = d.driveUrl
-        ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">👁️ ดู</a>`
-        : d.localData
-          ? `<a href="${d.localData}" download="${d.name}" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ โหลด</a>`
-          : `<button class="btn btn-outline btn-sm" style="opacity:.4" disabled>👁️ ดู</button>`;
+      const viewBtn = (d.driveUrl ? `<a href="${d.driveUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">👁️ ดู</a>` : '')
+        + (d.localData ? `<a href="${d.localData}" download="${d.name}" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">⬇️ ดาวน์โหลด</a>` : (!d.driveUrl ? `<button class="btn btn-outline btn-sm" style="opacity:.4" disabled>👁️ ดู</button>` : ''));
       return `<div class="doc-card">
         ${thumb}
         <div style="flex:1;min-width:0;">
@@ -2094,6 +2176,16 @@ async function uploadFileToDrive(file){
     }
   });
 }
+// Download all docs that have localData
+function downloadAllDocs(){
+  const withData = docsData.filter(d=>d.localData);
+  if(!withData.length){ alert('ไม่มีไฟล์ที่โหลดได้ในขณะนี้ (ไฟล์ต้องอัปโหลดจากเครื่องก่อน)'); return; }
+  withData.forEach(d=>{
+    const a=document.createElement('a');
+    a.href=d.localData; a.download=d.name; a.click();
+  });
+}
+
 // ===================== MODAL HELPERS =====================
 function closeModal(id){
   var el=document.getElementById(id);
