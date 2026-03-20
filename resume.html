@@ -7,167 +7,64 @@
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg-base:    #f0f4f8;
-  --bg-white:   #ffffff;
-  --bg-1:       #f8fafc;
-  --bg-2:       #eef2f7;
-  --bg-hover:   #e8f0fb;
-  --border:     #dde3ec;
-  --border-mid: #b8c6dc;
-  --blue:       #1a6fd4;
-  --blue-mid:   #2580e8;
-  --blue-light: #4a9eff;
-  --blue-pale:  #e8f2ff;
-  --blue-glow:  rgba(26,111,212,.15);
-  --text-1:     #1a2332;
-  --text-2:     #4a5568;
-  --text-3:     #94a3b8;
-  --text-inv:   #ffffff;
-  --accent-red: #e53e3e;
-  --accent-gold:#c8861a;
-  --accent-teal:#0891b2;
-  --accent-green:#16a34a;
-  --accent-orange:#d97706;
-  --shadow-sm:  0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
-  --shadow-md:  0 4px 16px rgba(0,0,0,.1),0 2px 4px rgba(0,0,0,.06);
-  --shadow-lg:  0 20px 60px rgba(0,0,0,.15);
-  --radius:     8px;
-  --radius-lg:  12px;
-  --sidebar-w:  256px;
-  --topbar-h:   60px;
+  --bg-base:#f0f4f8;--bg-white:#ffffff;--bg-1:#f8fafc;--bg-2:#eef2f7;--bg-hover:#e8f0fb;
+  --border:#dde3ec;--border-mid:#b8c6dc;--blue:#1a6fd4;--blue-mid:#2580e8;--blue-light:#4a9eff;
+  --blue-pale:#e8f2ff;--blue-glow:rgba(26,111,212,.15);--text-1:#1a2332;--text-2:#4a5568;
+  --text-3:#94a3b8;--text-inv:#ffffff;--accent-red:#e53e3e;--accent-gold:#c8861a;
+  --accent-teal:#0891b2;--accent-green:#16a34a;--accent-orange:#d97706;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.1),0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg:0 20px 60px rgba(0,0,0,.15);--radius:8px;--radius-lg:12px;
+  --sidebar-w:256px;--topbar-h:60px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Sarabun',sans-serif;font-size:15px;background:var(--bg-base);color:var(--text-1);min-height:100vh;display:flex;flex-direction:column;}
-
-/* ============ LOGIN ============ */
 #loginScreen{position:fixed;inset:0;background:linear-gradient(135deg,#1a3a6b 0%,#1a6fd4 50%,#0ea5e9 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
 #loginScreen.hidden{display:none;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 .login-box{width:380px;background:var(--bg-white);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-lg);animation:fadeUp .4s ease;}
-.login-top{
-  padding:32px 32px 24px;text-align:center;
-  background:linear-gradient(135deg,#1a3a6b 0%,#1a6fd4 100%);
-}
-.login-emblem{
-  width:64px;height:64px;margin:0 auto 14px;
-  background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);
-  border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;
-  backdrop-filter:blur(4px);
-}
-.login-title{font-family:'Sarabun',sans-serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:.3px;}
+.login-top{padding:32px 32px 24px;text-align:center;background:linear-gradient(135deg,#1a3a6b 0%,#1a6fd4 100%);}
+.login-emblem{width:64px;height:64px;margin:0 auto 14px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;}
+.login-title{font-size:20px;font-weight:700;color:#fff;}
 .login-sub{font-size:14px;color:rgba(255,255,255,.75);margin-top:5px;}
 .login-body{padding:26px 32px 32px;}
 .login-field{margin-bottom:18px;}
 .login-label{font-size:14px;font-weight:600;color:var(--text-2);margin-bottom:7px;display:block;}
-.login-input{
-  width:100%;background:var(--bg-1);border:1.5px solid var(--border);
-  border-radius:var(--radius);padding:11px 14px;
-  color:var(--text-1);font-size:15px;font-family:inherit;outline:none;
-  transition:border-color .2s,box-shadow .2s;
-}
+.login-input{width:100%;background:var(--bg-1);border:1.5px solid var(--border);border-radius:var(--radius);padding:11px 14px;color:var(--text-1);font-size:15px;font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s;}
 .login-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow);}
 .login-input::placeholder{color:var(--text-3);}
 .login-err{background:#fff5f5;border:1.5px solid #feb2b2;border-radius:var(--radius);padding:10px 14px;font-size:14px;color:var(--accent-red);margin-bottom:16px;display:none;}
 .login-err.show{display:block;}
-.btn-login{
-  width:100%;padding:12px;border-radius:var(--radius);border:none;
-  background:linear-gradient(135deg,#1a3a6b,var(--blue-mid));
-  color:#fff;font-family:inherit;font-size:16px;font-weight:700;
-  cursor:pointer;transition:opacity .2s,transform .1s;
-  box-shadow:0 4px 14px rgba(26,111,212,.4);
-}
+.btn-login{width:100%;padding:12px;border-radius:var(--radius);border:none;background:linear-gradient(135deg,#1a3a6b,var(--blue-mid));color:#fff;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;box-shadow:0 4px 14px rgba(26,111,212,.4);}
 .btn-login:hover{opacity:.92;transform:translateY(-1px);}
 .login-hint{text-align:center;font-size:13px;color:var(--text-3);margin-top:14px;}
-
-/* ============ TOPBAR ============ */
-.topbar{
-  height:var(--topbar-h);background:var(--bg-white);
-  border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);
-  display:flex;align-items:center;padding:0 20px 0 0;gap:0;
-  position:sticky;top:0;z-index:100;
-}
-.topbar-brand{
-  width:var(--sidebar-w);display:flex;align-items:center;gap:10px;
-  padding:0 18px;flex-shrink:0;border-right:1px solid var(--border);height:100%;
-}
-.brand-icon{
-  width:36px;height:36px;
-  background:linear-gradient(135deg,#1a3a6b,var(--blue-mid));
-  border-radius:9px;display:flex;align-items:center;justify-content:center;
-  font-size:18px;flex-shrink:0;box-shadow:0 2px 8px rgba(26,111,212,.35);
-}
-.brand-name{font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;color:var(--text-1);line-height:1.1;}
+.topbar{height:var(--topbar-h);background:var(--bg-white);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;padding:0 20px 0 0;position:sticky;top:0;z-index:100;}
+.topbar-brand{width:var(--sidebar-w);display:flex;align-items:center;gap:10px;padding:0 18px;flex-shrink:0;border-right:1px solid var(--border);height:100%;}
+.brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#1a3a6b,var(--blue-mid));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 2px 8px rgba(26,111,212,.35);}
+.brand-name{font-size:16px;font-weight:700;color:var(--text-1);line-height:1.1;}
 .brand-ver{font-size:11px;color:var(--blue);font-weight:600;letter-spacing:.3px;margin-top:1px;}
-
-.topbar-nav{display:flex;align-items:center;gap:2px;flex:1;padding:0 12px;overflow-x:auto;}
-.topbar-nav::-webkit-scrollbar{display:none;}
-.tnav{
-  display:flex;align-items:center;gap:6px;padding:6px 13px;border-radius:7px;
-  font-size:15px;font-weight:500;color:var(--text-2);cursor:pointer;
-  white-space:nowrap;border:none;background:transparent;font-family:inherit;
-  transition:all .15s;
-}
-.tnav:hover{background:var(--bg-hover);color:var(--blue);}
-.tnav.active{background:var(--blue-pale);color:var(--blue);font-weight:700;}
-.tnav .ni{font-size:15px;}
-
 .topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;padding-right:4px;}
-.admin-badge{
-  display:flex;align-items:center;gap:7px;
-  background:var(--blue-pale);border:1.5px solid rgba(26,111,212,.25);
-  border-radius:20px;padding:5px 13px 5px 7px;
-  font-size:14px;font-weight:600;color:var(--blue);
-}
-.admin-av{
-  width:24px;height:24px;border-radius:50%;
-  background:linear-gradient(135deg,#1a3a6b,var(--blue-mid));
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;color:#fff;
-}
-.btn-logout{
-  display:flex;align-items:center;gap:6px;padding:7px 14px;
-  border-radius:var(--radius);border:1.5px solid var(--border);
-  background:transparent;color:var(--text-2);font-size:14px;
-  font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;
-}
+.admin-badge{display:flex;align-items:center;gap:7px;background:var(--blue-pale);border:1.5px solid rgba(26,111,212,.25);border-radius:20px;padding:5px 13px 5px 7px;font-size:14px;font-weight:600;color:var(--blue);}
+.admin-av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#1a3a6b,var(--blue-mid));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.btn-logout{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);border:1.5px solid var(--border);background:transparent;color:var(--text-2);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
 .btn-logout:hover{border-color:#fc8181;color:var(--accent-red);background:#fff5f5;}
-
-/* ============ LAYOUT ============ */
 .app-body{display:flex;flex:1;min-height:calc(100vh - var(--topbar-h));}
-.sidebar{
-  width:var(--sidebar-w);flex-shrink:0;background:var(--bg-white);
-  border-right:1px solid var(--border);display:flex;flex-direction:column;
-  position:sticky;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));
-  overflow-y:auto;
-}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--bg-white);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;}
 .sidebar::-webkit-scrollbar{width:4px;}
 .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 .sb-sec{padding:14px 10px 4px;}
 .sb-lbl{font-size:11px;font-weight:700;letter-spacing:.8px;color:var(--text-3);text-transform:uppercase;padding:0 8px 8px;}
-.si{
-  display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--radius);
-  font-size:15px;color:var(--text-2);cursor:pointer;transition:all .15s;
-  border:none;background:transparent;font-family:inherit;width:100%;text-align:left;
-  position:relative;
-}
+.si{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--radius);font-size:15px;color:var(--text-2);cursor:pointer;transition:all .15s;border:none;background:transparent;font-family:inherit;width:100%;text-align:left;position:relative;}
 .si:hover{background:var(--bg-hover);color:var(--blue);}
 .si.active{background:var(--blue-pale);color:var(--blue);font-weight:700;}
 .si.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--blue);border-radius:0 2px 2px 0;}
 .si .ic{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
 .si .badge{margin-left:auto;background:var(--accent-red);color:#fff;font-size:11px;padding:1px 7px;border-radius:10px;font-weight:700;}
-
-/* ============ CONTENT ============ */
 .content{flex:1;padding:24px;background:var(--bg-base);}
 .section-page{display:none;}
 .section-page.active{display:block;animation:fadeUp .2s ease;}
-
-/* ============ STATS ============ */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
-.stat-card{
-  background:var(--bg-white);border:1px solid var(--border);border-radius:var(--radius-lg);
-  padding:18px 20px;position:relative;overflow:hidden;
-  box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s;
-}
+.stat-card{background:var(--bg-white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s;}
 .stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
 .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
 .sc-blue::after{background:linear-gradient(90deg,#1a6fd4,#4a9eff);}
@@ -176,33 +73,16 @@ body{font-family:'Sarabun',sans-serif;font-size:15px;background:var(--bg-base);c
 .sc-red::after{background:linear-gradient(90deg,#e53e3e,#fc8181);}
 .stat-icon{font-size:22px;margin-bottom:10px;display:block;}
 .stat-lbl{font-size:13px;color:var(--text-2);font-weight:500;margin-bottom:5px;}
-.stat-val{font-family:'Sarabun',sans-serif;font-size:32px;font-weight:700;color:var(--text-1);line-height:1;}
+.stat-val{font-size:32px;font-weight:700;color:var(--text-1);line-height:1;}
 .stat-sub{font-size:12px;color:var(--text-3);margin-top:5px;}
-
-/* ============ TOOLBAR ============ */
 .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
-.search-wrap{
-  display:flex;align-items:center;gap:8px;background:var(--bg-white);
-  border:1.5px solid var(--border);border-radius:var(--radius);
-  padding:8px 14px;flex:1;min-width:220px;transition:border-color .2s;
-  box-shadow:var(--shadow-sm);
-}
+.search-wrap{display:flex;align-items:center;gap:8px;background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);padding:8px 14px;flex:1;min-width:220px;transition:border-color .2s;box-shadow:var(--shadow-sm);}
 .search-wrap:focus-within{border-color:var(--blue);}
 .search-wrap input{background:none;border:none;outline:none;color:var(--text-1);font-size:15px;font-family:inherit;width:100%;}
 .search-wrap input::placeholder{color:var(--text-3);}
-.fsel{
-  background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);
-  padding:8px 12px;color:var(--text-1);font-size:14px;font-family:inherit;
-  outline:none;cursor:pointer;transition:border-color .2s;box-shadow:var(--shadow-sm);
-}
+.fsel{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text-1);font-size:14px;font-family:inherit;outline:none;cursor:pointer;transition:border-color .2s;box-shadow:var(--shadow-sm);}
 .fsel:focus{border-color:var(--blue);}
-
-/* ============ BUTTONS ============ */
-.btn{
-  display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
-  border-radius:var(--radius);font-size:15px;font-weight:600;font-family:inherit;
-  cursor:pointer;border:none;transition:all .18s;white-space:nowrap;
-}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:all .18s;white-space:nowrap;}
 .btn-blue{background:linear-gradient(135deg,#1a3a6b,var(--blue-mid));color:#fff;box-shadow:0 2px 8px rgba(26,111,212,.3);}
 .btn-blue:hover{box-shadow:0 4px 14px rgba(26,111,212,.45);transform:translateY(-1px);}
 .btn-outline{background:var(--bg-white);border:1.5px solid var(--border);color:var(--text-2);box-shadow:var(--shadow-sm);}
@@ -211,30 +91,17 @@ body{font-family:'Sarabun',sans-serif;font-size:15px;background:var(--bg-base);c
 .btn-red:hover{background:#fed7d7;}
 .btn-sm{padding:5px 12px;font-size:13px;}
 .btn-icon{padding:7px;width:34px;justify-content:center;}
-
-/* ============ TABLE CARD ============ */
 .tcard{background:var(--bg-white);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);}
 .tcard-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
-.tcard-title{font-size:16px;font-weight:700;font-family:'Sarabun',sans-serif;color:var(--text-1);}
+.tcard-title{font-size:16px;font-weight:700;color:var(--text-1);}
 .tcard-tools{display:flex;gap:7px;align-items:center;}
-
 table{width:100%;border-collapse:collapse;}
-thead th{
-  background:var(--bg-1);padding:11px 14px;text-align:left;
-  font-size:13px;font-weight:700;
-  color:var(--text-2);border-bottom:1.5px solid var(--border);white-space:nowrap;
-}
+thead th{background:var(--bg-1);padding:11px 14px;text-align:left;font-size:13px;font-weight:700;color:var(--text-2);border-bottom:1.5px solid var(--border);white-space:nowrap;}
 tbody td{padding:12px 14px;font-size:15px;border-bottom:1px solid var(--bg-2);vertical-align:middle;}
 tbody tr{cursor:pointer;transition:background .12s;}
 tbody tr:hover{background:var(--bg-hover);}
 tbody tr:last-child td{border-bottom:none;}
-
-/* ============ BADGES ============ */
-.rank-tag{
-  display:inline-block;background:rgba(200,134,26,.12);color:var(--accent-gold);
-  border:1.5px solid rgba(200,134,26,.3);border-radius:5px;
-  padding:2px 9px;font-size:13px;font-weight:700;
-}
+.rank-tag{display:inline-block;background:rgba(200,134,26,.12);color:var(--accent-gold);border:1.5px solid rgba(200,134,26,.3);border-radius:5px;padding:2px 9px;font-size:13px;font-weight:700;}
 .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:20px;font-size:13px;font-weight:600;}
 .pill-blue{background:var(--blue-pale);color:var(--blue);}
 .pill-green{background:#f0fdf4;color:var(--accent-green);}
@@ -244,97 +111,42 @@ tbody tr:last-child td{border-bottom:none;}
 .pill-gray{background:#f1f5f9;color:#64748b;}
 .pill-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
 .name-cell{display:flex;align-items:center;gap:10px;}
-.ava{
-  width:34px;height:34px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,#1a3a6b,var(--blue-mid));
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:700;color:#fff;
-}
-
-/* ============ PAGINATION ============ */
+.ava{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1a3a6b,var(--blue-mid));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;}
 .pg{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--border);font-size:14px;color:var(--text-2);}
 .pg-btns{display:flex;gap:3px;}
-.pg-btn{
-  width:32px;height:32px;border-radius:6px;display:flex;align-items:center;
-  justify-content:center;cursor:pointer;font-size:14px;font-weight:600;
-  background:var(--bg-white);border:1.5px solid var(--border);color:var(--text-2);
-  transition:all .15s;font-family:inherit;
-}
+.pg-btn{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;font-weight:600;background:var(--bg-white);border:1.5px solid var(--border);color:var(--text-2);transition:all .15s;font-family:inherit;}
 .pg-btn:hover{border-color:var(--blue);color:var(--blue);}
 .pg-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;}
-
-/* ============ PROGRESS ============ */
 .prog{height:5px;background:var(--bg-2);border-radius:3px;overflow:hidden;margin-top:5px;}
 .prog-fill{height:100%;border-radius:3px;}
 .prog-blue{background:linear-gradient(90deg,var(--blue),var(--blue-light));}
 .prog-gold{background:linear-gradient(90deg,var(--accent-gold),#f59e0b);}
-
-/* ============ MODAL ============ */
-.overlay{
-  position:fixed;inset:0;background:rgba(15,30,60,.55);z-index:500;
-  display:none;align-items:flex-start;justify-content:center;
-  padding:40px 20px;backdrop-filter:blur(3px);overflow-y:auto;
-}
+.overlay{position:fixed;inset:0;background:rgba(15,30,60,.55);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;backdrop-filter:blur(3px);overflow-y:auto;}
 .overlay.open{display:flex;}
-.modal{
-  background:var(--bg-white);border:1px solid var(--border-mid);
-  border-radius:var(--radius-lg);width:100%;max-width:780px;
-  box-shadow:var(--shadow-lg);animation:fadeUp .22s ease;margin:auto;
-}
+.modal{background:var(--bg-white);border:1px solid var(--border-mid);border-radius:var(--radius-lg);width:100%;max-width:780px;box-shadow:var(--shadow-lg);animation:fadeUp .22s ease;margin:auto;}
 .modal-sm{max-width:460px;}
 .modal-xs{max-width:380px;}
-.mhead{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:16px 22px;border-bottom:1px solid var(--border);
-  background:var(--bg-1);border-radius:var(--radius-lg) var(--radius-lg) 0 0;
-}
-.mhead-title{font-size:17px;font-weight:700;font-family:'Sarabun',sans-serif;color:var(--text-1);}
-.mclose{
-  width:30px;height:30px;border-radius:6px;border:1.5px solid var(--border);
-  background:var(--bg-white);color:var(--text-2);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:17px;
-  transition:all .15s;font-family:inherit;
-}
+.mhead{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--border);background:var(--bg-1);border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
+.mhead-title{font-size:17px;font-weight:700;color:var(--text-1);}
+.mclose{width:30px;height:30px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg-white);color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .15s;font-family:inherit;}
 .mclose:hover{border-color:#fc8181;background:#fff5f5;color:var(--accent-red);}
-
-/* ============ FORM ============ */
-.form-body{padding:20px 22px;}
-.form-section-title{
-  font-size:14px;font-weight:700;
-  color:var(--blue);margin:0 0 14px;padding-bottom:8px;
-  border-bottom:2px solid var(--blue-pale);
-  display:flex;align-items:center;gap:7px;
-}
+.form-body{padding:20px 22px;max-height:70vh;overflow-y:auto;}
+.form-section-title{font-size:14px;font-weight:700;color:var(--blue);margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid var(--blue-pale);display:flex;align-items:center;gap:7px;}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
 .fgrid3{grid-template-columns:1fr 1fr 1fr;}
 .fgrid-full{grid-column:1/-1;}
 .flabel{font-size:14px;font-weight:600;color:var(--text-2);margin-bottom:6px;display:block;}
 .flabel span{color:var(--accent-red);margin-left:2px;}
-.finput,.fsel-form{
-  width:100%;background:var(--bg-1);border:1.5px solid var(--border);
-  border-radius:var(--radius);padding:9px 12px;color:var(--text-1);
-  font-size:15px;font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s;
-}
+.finput,.fsel-form{width:100%;background:var(--bg-1);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text-1);font-size:15px;font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s;}
 .finput:focus,.fsel-form:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow);}
 .finput::placeholder{color:var(--text-3);}
 .finput-calc{background:var(--bg-2);color:var(--blue);font-weight:700;cursor:default;}
 .form-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid var(--border);background:var(--bg-1);border-radius:0 0 var(--radius-lg) var(--radius-lg);}
-
-/* ============ PROFILE / DETAIL ============ */
-.phdr{
-  display:flex;gap:20px;align-items:flex-start;padding:20px 22px;
-  background:linear-gradient(135deg,var(--blue-pale) 0%,var(--bg-white) 60%);
-  border-bottom:1px solid var(--border);
-}
-.pphoto{
-  width:90px;height:110px;border-radius:var(--radius);
-  background:var(--bg-2);border:2px solid var(--border-mid);
-  display:flex;align-items:center;justify-content:center;
-  font-size:36px;flex-shrink:0;position:relative;overflow:hidden;
-}
+.phdr{display:flex;gap:20px;align-items:flex-start;padding:20px 22px;background:linear-gradient(135deg,var(--blue-pale) 0%,var(--bg-white) 60%);border-bottom:1px solid var(--border);}
+.pphoto{width:90px;height:110px;border-radius:var(--radius);background:var(--bg-2);border:2px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;position:relative;overflow:hidden;}
 .pphoto-lbl{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.35);font-size:10px;padding:3px;text-align:center;color:#fff;}
-.pname{font-family:'Sarabun',sans-serif;font-size:22px;font-weight:700;color:var(--text-1);margin-bottom:4px;}
-.pid{color:var(--blue);font-size:14px;font-weight:600;font-family:'Sarabun',sans-serif;margin-bottom:10px;}
+.pname{font-size:22px;font-weight:700;color:var(--text-1);margin-bottom:4px;}
+.pid{color:var(--blue);font-size:14px;font-weight:600;margin-bottom:10px;}
 .ptags{display:flex;flex-wrap:wrap;gap:6px;}
 .ptag{background:var(--bg-2);border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;gap:5px;}
 .dsec{padding:18px 22px;border-bottom:1px solid var(--bg-2);}
@@ -346,18 +158,14 @@ tbody tr:last-child td{border-bottom:none;}
 .dg2{grid-template-columns:repeat(2,1fr);}
 .di-label{font-size:13px;color:var(--text-3);margin-bottom:4px;font-weight:600;}
 .di-val{font-size:15px;color:var(--text-1);font-weight:500;}
-.di-val.hi{color:var(--blue);font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;}
-.di-val.gold{color:var(--accent-gold);font-family:'Sarabun',sans-serif;font-weight:700;}
+.di-val.hi{color:var(--blue);font-size:16px;font-weight:700;}
+.di-val.gold{color:var(--accent-gold);font-weight:700;}
 .di-val.g{color:var(--accent-green);}
-
-/* ============ PENSION ============ */
 .pen-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
 .pen-card{background:var(--bg-1);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:16px;}
 .pen-lbl{font-size:13px;color:var(--text-2);margin-bottom:5px;font-weight:600;}
-.pen-val{font-family:'Sarabun',sans-serif;font-size:20px;font-weight:700;}
+.pen-val{font-size:20px;font-weight:700;}
 .pen-sub{font-size:12px;color:var(--text-3);margin-top:4px;}
-
-/* ============ DOCS ============ */
 .docs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 .doc-card{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;cursor:pointer;transition:all .18s;display:flex;gap:10px;align-items:flex-start;box-shadow:var(--shadow-sm);}
 .doc-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);transform:translateY(-1px);}
@@ -367,29 +175,21 @@ tbody tr:last-child td{border-bottom:none;}
 .doc-ico.xls{background:#f0fdf4;color:var(--accent-green);}
 .doc-name{font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:3px;}
 .doc-meta{font-size:12px;color:var(--text-3);}
-
-/* ============ TIMELINE ============ */
 .tl-item{display:flex;gap:12px;padding-bottom:18px;position:relative;}
 .tl-item::before{content:'';position:absolute;left:5px;top:14px;bottom:0;width:2px;background:var(--border);}
 .tl-item:last-child::before{display:none;}
 .tl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:3px;background:var(--bg-white);border:2.5px solid var(--blue);position:relative;z-index:1;}
 .tl-t{font-size:15px;font-weight:700;margin-bottom:2px;color:var(--text-1);}
 .tl-m{font-size:13px;color:var(--text-2);}
-
-/* ============ STABS ============ */
 .stabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
 .stab{padding:6px 16px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);color:var(--text-2);background:var(--bg-white);font-family:inherit;transition:all .15s;box-shadow:var(--shadow-sm);}
 .stab:hover{color:var(--blue);border-color:var(--blue);}
 .stab.active{background:var(--blue-pale);border-color:var(--blue);color:var(--blue);}
-
-/* ============ CONFIRM ============ */
 .confirm-msg{padding:22px;font-size:15px;color:var(--text-1);line-height:1.7;}
 .confirm-msg strong{color:var(--accent-red);}
-
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:3px;}
-
 @media(max-width:900px){
   .sidebar{display:none;}
   .topbar-brand{width:auto;}
@@ -402,7 +202,6 @@ tbody tr:last-child td{border-bottom:none;}
 </head>
 <body>
 
-<!-- ============ LOGIN ============ -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-top">
@@ -426,7 +225,6 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
-<!-- ============ TOPBAR ============ -->
 <header class="topbar" id="topbar" style="display:none">
   <div class="topbar-brand">
     <div class="brand-icon">⚔️</div>
@@ -442,25 +240,25 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
 </header>
 
-<!-- ============ BODY ============ -->
 <div class="app-body" id="appBody" style="display:none">
   <aside class="sidebar">
     <div class="sb-sec">
       <div class="sb-lbl">หน้าหลัก</div>
-      <button class="si active" onclick="navTo('personnel',this,true)"><span class="ic">👥</span>รายชื่อกำลังพล</button>
+      <button class="si active" onclick="navTo('personnel',this)"><span class="ic">👥</span>รายชื่อกำลังพล</button>
     </div>
     <div class="sb-sec">
       <div class="sb-lbl">ข้อมูลรายบุคคล</div>
-      <button class="si" onclick="navTo('profile',this,true)"><span class="ic">🪪</span>ประวัติส่วนตัว</button>
-      <button class="si" onclick="navTo('education',this,true)"><span class="ic">🎓</span>หลักสูตรการศึกษา</button>
-      <button class="si" onclick="navTo('field',this,true)"><span class="ic">🛡️</span>ราชการสนาม <span class="badge">3</span></button>
+      <button class="si" onclick="navTo('profile',this)"><span class="ic">🪪</span>ประวัติส่วนตัว</button>
+      <button class="si" onclick="navTo('education',this)"><span class="ic">🎓</span>หลักสูตรการศึกษา</button>
+      <button class="si" onclick="navTo('training',this)"><span class="ic">📋</span>การฝึกอบรม</button>
+      <button class="si" onclick="navTo('field',this)"><span class="ic">🛡️</span>ราชการสนาม <span class="badge">3</span></button>
     </div>
     <div class="sb-sec">
       <div class="sb-lbl">บริหารงาน</div>
-      <button class="si" onclick="navTo('promotion',this,true)"><span class="ic">📈</span>แผนเลื่อนยศ/สอบ</button>
-      <button class="si" onclick="navTo('salary',this,true)"><span class="ic">💰</span>เงินเดือน/ขั้นเงิน</button>
-      <button class="si" onclick="navTo('pension',this,true)"><span class="ic">🏅</span>บำเหน็จ บำนาญ</button>
-      <button class="si" onclick="navTo('documents',this,true)"><span class="ic">📁</span>เอกสารสำคัญ</button>
+      <button class="si" onclick="navTo('promotion',this)"><span class="ic">📈</span>แผนเลื่อนยศ/สอบ</button>
+      <button class="si" onclick="navTo('salary',this)"><span class="ic">💰</span>เงินเดือน/ขั้นเงิน</button>
+      <button class="si" onclick="navTo('pension',this)"><span class="ic">🏅</span>บำเหน็จ บำนาญ</button>
+      <button class="si" onclick="navTo('documents',this)"><span class="ic">📁</span>เอกสารสำคัญ</button>
     </div>
   </aside>
 
@@ -469,10 +267,10 @@ tbody tr:last-child td{border-bottom:none;}
     <!-- ===== PERSONNEL ===== -->
     <div class="section-page active" id="sec-personnel">
       <div class="stats-grid">
-        <div class="stat-card sc-blue"><span class="stat-icon">👤</span><div class="stat-lbl">กำลังพลทั้งหมด</div><div class="stat-val" id="totalCount">10</div><div class="stat-sub">ปฏิบัติงาน 8 นาย</div></div>
-        <div class="stat-card sc-teal"><span class="stat-icon">⭐</span><div class="stat-lbl">นายทหารสัญญาบัตร</div><div class="stat-val">5</div><div class="stat-sub">จาก 15 อัตรา</div></div>
-        <div class="stat-card sc-gold"><span class="stat-icon">🎖️</span><div class="stat-lbl">นายทหารประทวน</div><div class="stat-val">5</div><div class="stat-sub">จาก 20 อัตรา</div></div>
-        <div class="stat-card sc-red"><span class="stat-icon">🏅</span><div class="stat-lbl">ใกล้เกษียณ</div><div class="stat-val">2</div><div class="stat-sub">ภายใน 2 ปี</div></div>
+        <div class="stat-card sc-blue"><span class="stat-icon">👤</span><div class="stat-lbl">กำลังพลทั้งหมด</div><div class="stat-val" id="statTotal">0</div><div class="stat-sub" id="statActive">ปฏิบัติงาน 0 นาย</div></div>
+        <div class="stat-card sc-teal"><span class="stat-icon">⭐</span><div class="stat-lbl">นายทหารสัญญาบัตร</div><div class="stat-val" id="statOfficer">0</div><div class="stat-sub">จาก 15 อัตรา</div></div>
+        <div class="stat-card sc-gold"><span class="stat-icon">🎖️</span><div class="stat-lbl">นายทหารประทวน</div><div class="stat-val" id="statEnlisted">0</div><div class="stat-sub">จาก 20 อัตรา</div></div>
+        <div class="stat-card sc-red"><span class="stat-icon">🏅</span><div class="stat-lbl">ใกล้เกษียณ</div><div class="stat-val" id="statRetire">0</div><div class="stat-sub">ภายใน 2 ปี</div></div>
       </div>
       <div class="toolbar">
         <div class="search-wrap"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหาชื่อ ยศ เลขประจำตัว..." id="searchInput" oninput="renderPersonnel()"></div>
@@ -498,7 +296,7 @@ tbody tr:last-child td{border-bottom:none;}
       <div class="tcard">
         <div class="tcard-head">
           <div class="tcard-title">รายชื่อกำลังพล</div>
-          <div class="tcard-tools"><span style="font-size:12px;color:var(--text-3)" id="rowCount">10 รายการ</span></div>
+          <div class="tcard-tools"><span style="font-size:12px;color:var(--text-3)" id="rowCount">0 รายการ</span></div>
         </div>
         <table>
           <thead><tr>
@@ -509,7 +307,7 @@ tbody tr:last-child td{border-bottom:none;}
           <tbody id="personnelBody"></tbody>
         </table>
         <div class="pg">
-          <span id="pgInfo">แสดง 1–10</span>
+          <span id="pgInfo">แสดง 0 รายการ</span>
           <div class="pg-btns">
             <div class="pg-btn">‹</div><div class="pg-btn active">1</div>
             <div class="pg-btn">2</div><div class="pg-btn">›</div>
@@ -532,13 +330,28 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="section-page" id="sec-education">
       <div class="toolbar">
         <div class="search-wrap" style="max-width:300px"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหา..."></div>
-        <button class="btn btn-blue" onclick="alert('เปิดฟอร์มเพิ่มหลักสูตร')">＋ เพิ่มหลักสูตร</button>
+        <button class="btn btn-blue">＋ เพิ่มหลักสูตร</button>
       </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">หลักสูตรการศึกษา</div></div>
         <table>
           <thead><tr><th>ชื่อกำลังพล</th><th>หลักสูตร</th><th>สถานศึกษา</th><th>ปีที่เข้า</th><th>ระยะเวลา</th><th>ผลการเรียน</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
           <tbody id="eduBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== TRAINING ===== -->
+    <div class="section-page" id="sec-training">
+      <div class="toolbar">
+        <div class="search-wrap" style="max-width:300px"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหา..." id="trainSearch" oninput="renderTraining()"></div>
+        <button class="btn btn-blue" onclick="openAddTrainingModal()">＋ เพิ่มการฝึกอบรม</button>
+      </div>
+      <div class="tcard">
+        <div class="tcard-head"><div class="tcard-title">ประวัติการฝึกอบรม</div></div>
+        <table>
+          <thead><tr><th>ชื่อกำลังพล</th><th>หลักสูตรฝึกอบรม</th><th>หน่วยงาน/สถานที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>ชั่วโมง</th><th>ผล</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+          <tbody id="trainingBody"></tbody>
         </table>
       </div>
     </div>
@@ -573,8 +386,8 @@ tbody tr:last-child td{border-bottom:none;}
     <!-- ===== SALARY ===== -->
     <div class="section-page" id="sec-salary">
       <div class="stats-grid" style="grid-template-columns:repeat(2,1fr)">
-        <div class="stat-card sc-blue"><span class="stat-icon">💵</span><div class="stat-lbl">เงินเดือนรวมทุกคน</div><div class="stat-val">321,120</div><div class="stat-sub">บาท / เดือน</div></div>
-        <div class="stat-card sc-gold"><span class="stat-icon">📊</span><div class="stat-lbl">ค่าเฉลี่ยต่อคน</div><div class="stat-val">32,112</div><div class="stat-sub">บาท / เดือน</div></div>
+        <div class="stat-card sc-blue"><span class="stat-icon">💵</span><div class="stat-lbl">เงินเดือนรวมทุกคน</div><div class="stat-val" id="salaryTotal">0</div><div class="stat-sub">บาท / เดือน</div></div>
+        <div class="stat-card sc-gold"><span class="stat-icon">📊</span><div class="stat-lbl">ค่าเฉลี่ยต่อคน</div><div class="stat-val" id="salaryAvg">0</div><div class="stat-sub">บาท / เดือน</div></div>
       </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">รายละเอียดเงินเดือน / ขั้นเงิน</div><div class="tcard-tools"><button class="btn btn-outline btn-sm">📤 ส่งออก</button></div></div>
@@ -619,12 +432,12 @@ tbody tr:last-child td{border-bottom:none;}
   </main>
 </div>
 
-<!-- ===== MODAL: VIEW DETAIL ===== -->
+<!-- MODAL: VIEW DETAIL -->
 <div class="overlay" id="detailModal">
   <div class="modal" id="detailContent"></div>
 </div>
 
-<!-- ===== MODAL: ADD/EDIT PERSONNEL ===== -->
+<!-- MODAL: ADD/EDIT PERSONNEL -->
 <div class="overlay" id="addModal">
   <div class="modal">
     <div class="mhead">
@@ -632,8 +445,6 @@ tbody tr:last-child td{border-bottom:none;}
       <button class="mclose" onclick="closeModal('addModal')">✕</button>
     </div>
     <div class="form-body">
-
-      <!-- ข้อมูลส่วนตัว -->
       <div class="form-section-title">👤 ข้อมูลส่วนตัว</div>
       <div class="fgrid fgrid3">
         <div>
@@ -646,22 +457,10 @@ tbody tr:last-child td{border-bottom:none;}
             <option>ส.อ.</option><option>ส.ท.</option><option>ส.ต.</option>
           </select>
         </div>
-        <div>
-          <label class="flabel">ชื่อ <span>*</span></label>
-          <input class="finput" id="f_fname" placeholder="ชื่อจริง">
-        </div>
-        <div>
-          <label class="flabel">สกุล <span>*</span></label>
-          <input class="finput" id="f_lname" placeholder="นามสกุล">
-        </div>
-        <div>
-          <label class="flabel">วันเกิด (ว/ด/ปปปป พ.ศ.) <span>*</span></label>
-          <input class="finput" id="f_dob" placeholder="เช่น 15/03/2522" maxlength="12">
-        </div>
-        <div>
-          <label class="flabel">เลขบัตรประชาชน 13 หลัก <span>*</span></label>
-          <input class="finput" id="f_cid" placeholder="X-XXXX-XXXXX-XX-X" maxlength="17">
-        </div>
+        <div><label class="flabel">ชื่อ <span>*</span></label><input class="finput" id="f_fname" placeholder="ชื่อจริง"></div>
+        <div><label class="flabel">สกุล <span>*</span></label><input class="finput" id="f_lname" placeholder="นามสกุล"></div>
+        <div><label class="flabel">วันเกิด (ว/ด/ปปปป พ.ศ.)</label><input class="finput" id="f_dob" placeholder="เช่น 15/03/2522" maxlength="12"></div>
+        <div><label class="flabel">เลขบัตรประชาชน 13 หลัก</label><input class="finput" id="f_cid" placeholder="X-XXXX-XXXXX-XX-X" maxlength="17"></div>
         <div>
           <label class="flabel">กรุ๊ปเลือด</label>
           <select class="fsel-form" id="f_blood">
@@ -670,29 +469,18 @@ tbody tr:last-child td{border-bottom:none;}
             <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
           </select>
         </div>
-        <div>
-          <label class="flabel">เบอร์โทรศัพท์</label>
-          <input class="finput" id="f_tel" placeholder="0XX-XXX-XXXX" maxlength="12">
-        </div>
+        <div><label class="flabel">เบอร์โทรศัพท์</label><input class="finput" id="f_tel" placeholder="0XX-XXX-XXXX" maxlength="12"></div>
       </div>
-
-      <!-- ข้อมูลราชการ -->
       <div class="form-section-title">🎖️ ข้อมูลราชการ</div>
       <div class="fgrid">
-        <div>
-          <label class="flabel">เลขประจำตัว 10 หลัก <span>*</span></label>
-          <input class="finput" id="f_idno" placeholder="0000000000" maxlength="10">
-        </div>
+        <div><label class="flabel">เลขประจำตัว 10 หลัก <span>*</span></label><input class="finput" id="f_idno" placeholder="0000000000" maxlength="10"></div>
         <div>
           <label class="flabel">ตำแหน่ง <span>*</span></label>
           <select class="fsel-form" id="f_pos">
             <option value="">-- เลือกตำแหน่ง --</option>
-            <option>นายสิบยุทธการและการข่าว</option>
-            <option>นายสิบอาวุธหนัก</option>
-            <option>นายสิบอาวุธเบา</option>
-            <option>พนักงานวิทยุ</option>
-            <option>นายสิบพยาบาล</option>
-            <option>นายสิบการช่างและทำลาย</option>
+            <option>นายสิบยุทธการและการข่าว</option><option>นายสิบอาวุธหนัก</option>
+            <option>นายสิบอาวุธเบา</option><option>พนักงานวิทยุ</option>
+            <option>นายสิบพยาบาล</option><option>นายสิบการช่างและทำลาย</option>
           </select>
         </div>
         <div>
@@ -706,10 +494,7 @@ tbody tr:last-child td{border-bottom:none;}
           <label class="flabel">กองร้อย</label>
           <select class="fsel-form" id="f_company">
             <option value="">-- เลือกกองร้อย --</option>
-            <option>ร้อย.1</option>
-            <option>ร้อย.2</option>
-            <option>ร้อย.3</option>
-            <option>ร้อย.บก.</option>
+            <option>ร้อย.1</option><option>ร้อย.2</option><option>ร้อย.3</option><option>ร้อย.บก.</option>
           </select>
         </div>
         <div>
@@ -722,38 +507,35 @@ tbody tr:last-child td{border-bottom:none;}
             <option>พลาธิการ (พธ.)</option><option>ขนส่ง (ขส.)</option>
           </select>
         </div>
-        <div>
-          <label class="flabel">วันเข้ารับราชการ (ว/ด/ปปปป พ.ศ.) <span>*</span></label>
-          <input class="finput" id="f_start" placeholder="เช่น 01/10/2545" maxlength="12">
-        </div>
+        <div><label class="flabel">วันเข้ารับราชการ (ว/ด/ปปปป พ.ศ.) <span>*</span></label><input class="finput" id="f_start" placeholder="เช่น 01/10/2545" maxlength="12"></div>
         <div>
           <label class="flabel">สถานะ <span>*</span></label>
           <select class="fsel-form" id="f_status">
             <option value="s1">ปฏิบัติหน้าที่ ณ ที่ตั้ง</option>
             <option value="s2">ราชการสนาม ชค.953</option>
             <option value="s3">ราชการสนาม บก.ควบคุม 2</option>
-            <option value="s4">ฝึกศึกษา</option>
-            <option value="s5">ฝึกอบรม</option>
-            <option value="s6">ราชการ</option>
-            <option value="s7">ราชการต่างหน่วย</option>
+            <option value="s4">ฝึกศึกษา</option><option value="s5">ฝึกอบรม</option>
+            <option value="s6">ราชการ</option><option value="s7">ราชการต่างหน่วย</option>
           </select>
         </div>
       </div>
-
-      <!-- ข้อมูลเงินเดือน -->
       <div class="form-section-title">💰 ข้อมูลเงินเดือน</div>
       <div class="fgrid">
         <div>
           <label class="flabel">เงินเดือนระดับ</label>
-          <select class="fsel-form" id="f_grade" onchange="calcSalary()">
+          <select class="fsel-form" id="f_grade" onchange="updateStepOptions()">
             <option value="">-- เลือกระดับ --</option>
             <optgroup label="ประทวน">
-              <option value="p1">ป.1</option><option value="p2">ป.2</option>
-              <option value="p3">ป.3</option><option value="p4">ป.4</option>
+              <option value="p1">พ.1</option><option value="p2">พ.2</option>
+              <option value="p3">ป.1</option><option value="p4">ป.2</option>
+              <option value="p5">ป.3</option>
             </optgroup>
             <optgroup label="สัญญาบัตร">
               <option value="n1">น.1</option><option value="n2">น.2</option>
-              <option value="n3">น.3</option>
+              <option value="n3">น.3</option><option value="n4">น.4</option>
+              <option value="n5">น.5</option><option value="n6">น.6</option>
+              <option value="n7">น.7</option><option value="n8">น.8</option>
+              <option value="n9">น.9</option>
             </optgroup>
           </select>
         </div>
@@ -763,10 +545,7 @@ tbody tr:last-child td{border-bottom:none;}
             <option value="">-- เลือกขั้น --</option>
           </select>
         </div>
-        <div>
-          <label class="flabel">เงินเดือนขั้นฐาน (บาท)</label>
-          <input class="finput finput-calc" id="f_base" placeholder="คำนวณอัตโนมัติ" readonly>
-        </div>
+        <div><label class="flabel">เงินเดือนขั้นฐาน (บาท)</label><input class="finput finput-calc" id="f_base" placeholder="คำนวณอัตโนมัติ" readonly></div>
         <div>
           <label class="flabel">เงินเพิ่มพิเศษ พ.ร.ด. (บาท)</label>
           <select class="fsel-form" id="f_prd" onchange="calcSalary()">
@@ -775,29 +554,16 @@ tbody tr:last-child td{border-bottom:none;}
             <option value="7000">7,000</option>
           </select>
         </div>
-        <div>
-          <label class="flabel">พ.ส.ร. ครั้งที่ 1 (บาท)</label>
-          <input class="finput" id="f_psr1" placeholder="0" type="number" min="0" oninput="calcSalary()">
-        </div>
-        <div>
-          <label class="flabel">พ.ส.ร. ครั้งที่ 2 (บาท)</label>
-          <input class="finput" id="f_psr2" placeholder="0" type="number" min="0" oninput="calcSalary()">
-        </div>
-        <div>
-          <label class="flabel">พ.ส.ร. ครั้งที่ 3 (บาท)</label>
-          <input class="finput" id="f_psr3" placeholder="0" type="number" min="0" oninput="calcSalary()">
-        </div>
-        <div>
-          <label class="flabel">พ.ส.ร. ครั้งที่ 4 (บาท)</label>
-          <input class="finput" id="f_psr4" placeholder="0" type="number" min="0" oninput="calcSalary()">
-        </div>
+        <div><label class="flabel">พ.ส.ร. ครั้งที่ 1 (บาท)</label><input class="finput" id="f_psr1" placeholder="0" type="number" min="0" oninput="calcSalary()"></div>
+        <div><label class="flabel">พ.ส.ร. ครั้งที่ 2 (บาท)</label><input class="finput" id="f_psr2" placeholder="0" type="number" min="0" oninput="calcSalary()"></div>
+        <div><label class="flabel">พ.ส.ร. ครั้งที่ 3 (บาท)</label><input class="finput" id="f_psr3" placeholder="0" type="number" min="0" oninput="calcSalary()"></div>
+        <div><label class="flabel">พ.ส.ร. ครั้งที่ 4 (บาท)</label><input class="finput" id="f_psr4" placeholder="0" type="number" min="0" oninput="calcSalary()"></div>
         <div style="grid-column:1/-1">
           <label class="flabel" style="color:var(--blue);font-size:13px;">💵 เงินเดือนสุทธิ (บาท)</label>
           <input class="finput finput-calc" id="f_salary" placeholder="คำนวณอัตโนมัติ" readonly style="font-size:16px;font-weight:800;color:var(--blue);">
         </div>
       </div>
-
-    </div><!-- end form-body -->
+    </div>
     <div class="form-actions">
       <input type="hidden" id="f_editId" value="">
       <button class="btn btn-outline" onclick="closeModal('addModal')">ยกเลิก</button>
@@ -806,10 +572,57 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
-<!-- ===== MODAL: DETAIL VIEW ===== -->
-<!-- (rendered dynamically) -->
+<!-- MODAL: ADD TRAINING -->
+<div class="overlay" id="trainingModal">
+  <div class="modal modal-sm">
+    <div class="mhead">
+      <div class="mhead-title" id="trainingModalTitle">＋ เพิ่มการฝึกอบรม</div>
+      <button class="mclose" onclick="closeModal('trainingModal')">✕</button>
+    </div>
+    <div class="form-body">
+      <div class="fgrid">
+        <div style="grid-column:1/-1">
+          <label class="flabel">กำลังพล <span>*</span></label>
+          <select class="fsel-form" id="t_pid"><option value="">-- เลือกกำลังพล --</option></select>
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="flabel">หลักสูตรฝึกอบรม <span>*</span></label>
+          <input class="finput" id="t_course" placeholder="ชื่อหลักสูตร">
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="flabel">หน่วยงาน/สถานที่</label>
+          <input class="finput" id="t_org" placeholder="หน่วยงานหรือสถานที่ฝึกอบรม">
+        </div>
+        <div><label class="flabel">วันเริ่มต้น</label><input class="finput" id="t_start" placeholder="01/01/2567" maxlength="12"></div>
+        <div><label class="flabel">วันสิ้นสุด</label><input class="finput" id="t_end" placeholder="31/01/2567" maxlength="12"></div>
+        <div><label class="flabel">จำนวนชั่วโมง</label><input class="finput" id="t_hours" type="number" min="0" placeholder="0"></div>
+        <div>
+          <label class="flabel">ผลการฝึกอบรม</label>
+          <select class="fsel-form" id="t_result">
+            <option value="">-- เลือก --</option>
+            <option>ผ่าน</option><option>ไม่ผ่าน</option><option>ดีมาก</option>
+            <option>ดี</option><option>พอใช้</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">สถานะ</label>
+          <select class="fsel-form" id="t_status">
+            <option value="done">เสร็จสิ้น</option>
+            <option value="ongoing">กำลังอบรม</option>
+            <option value="pending">รอเริ่ม</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <input type="hidden" id="t_editId" value="">
+      <button class="btn btn-outline" onclick="closeModal('trainingModal')">ยกเลิก</button>
+      <button class="btn btn-blue" onclick="saveTraining()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
 
-<!-- ===== MODAL: CONFIRM DELETE ===== -->
+<!-- MODAL: CONFIRM DELETE -->
 <div class="overlay" id="confirmModal">
   <div class="modal modal-xs">
     <div class="mhead" style="background:#fff5f5">
@@ -825,77 +638,91 @@ tbody tr:last-child td{border-bottom:none;}
 </div>
 
 <script>
-// ============ SALARY TABLE ============
-// Base salary by grade and step (simplified)
-const salaryTable = {
-  p1: [4190,4380,4570,4760,4950,5140,5330,5520,5710,5900],
-  p2: [5800,6050,6300,6550,6800,7050,7300,7550,7800,8050],
-  p3: [7200,7500,7800,8100,8400,8700,9000,9300,9600,9900],
-  p4: [9500,9850,10200,10550,10900,11250,11600,11950,12300,12650],
-  n1: [12000,12500,13000,13500,14000,14500,15000,15500,16000,16500],
-  n2: [16000,16700,17400,18100,18800,19500,20200,20900,21600,22300],
-  n3: [21000,21900,22800,23700,24600,25500,26400,27300,28200,29100],
+// ===================== SALARY TABLE =====================
+// Steps stored as [step_value, salary] pairs per grade
+// Steps: 1, 1.5, 2, 2.5, ... 
+const RAW_SALARY = {
+  p1: [[1,1360],[1.5,1430],[2,1500],[2.5,1550],[3,1630],[3.5,1700],[4,1760],[4.5,1820],[5,1890],[5.5,1970],[6,2040],[6.5,2120],[7,2180],[7.5,2250],[8,2330],[8.5,2400],[9,2460],[9.5,2540],[10,2610],[10.5,2670],[11,2730],[11.5,2830],[12,2890],[12.5,2970],[13,3070],[13.5,3150],[14,3270],[14.5,3360],[15,3470],[15.5,3550],[16,3670],[16.5,3900],[17,4160],[17.5,4270],[18,4400],[18.5,4510],[19,4620],[19.5,4740],[20,4870],[20.5,4980],[21,5100],[21.5,5220],[22,5340],[22.5,5440],[23,5580],[23.5,5690],[24,5810],[24.5,5920],[25,6050],[25.5,6160],[26,6270],[26.5,6400],[27,6530],[27.5,6650],[28,6790]],
+  p2: [[1,4870],[1.5,4980],[2,5100],[2.5,5220],[3,5340],[3.5,5440],[4,5580],[4.5,5690],[5,5810],[5.5,5920],[6,6050],[6.5,6160],[7,6270],[7.5,6400],[8,6430],[8.5,6650],[9,6790],[9.5,6920],[10,7050],[10.5,7210],[11,7330],[11.5,7480],[12,7640],[12.5,7790],[13,7950],[13.5,8100],[14,8260],[14.5,8430],[15,8590],[15.5,8800],[16,8970],[16.5,9150],[17,9330],[17.5,9520],[18,9710],[18.5,9910],[19,10070],[19.5,10280],[20,10450],[20.5,10760],[21,10970],[21.5,11180],[22,11400],[22.5,11630],[23,11860],[23.5,12090],[24,12330],[24.5,12560],[25,12810],[25.5,13070],[26,13310],[26.5,13570],[27,13820],[27.5,14060],[28,14320],[28.5,14560],[29,14810],[29.5,15060],[30,15290],[30.5,15540],[31,15800],[31.5,16040],[32,16290],[32.5,16540],[33,16790]],
+  p3: [[1,4870],[1.5,4980],[2,5100],[2.5,5220],[3,5340],[3.5,5440],[4,5580],[4.5,5690],[5,5810],[5.5,5970],[6,6140],[6.5,6300],[7,6470],[7.5,6630],[8,6800],[8.5,6970],[9,7140],[9.5,7290],[10,7460],[10.5,7630],[11,7800],[11.5,7960],[12,8120],[12.5,8290],[13,8450],[13.5,8610],[14,8800],[14.5,8970],[15,9150],[15.5,9330],[16,9520],[16.5,9710],[17,9910],[17.5,10070],[18,10280],[18.5,10540],[19,10760],[19.5,10970],[20,11180],[20.5,11400],[21,11630],[21.5,11860],[22,12090],[22.5,12330],[23,12560],[23.5,12810],[24,13070],[24.5,13310],[25,13570],[25.5,13820],[26,14060],[26.5,14320],[27,14560],[27.5,14810],[28,15060],[28.5,15290],[29,15540],[29.5,15800],[30,16040],[30.5,16290],[31,16540],[31.5,16790],[32,17050],[32.5,17290],[33,17540],[33.5,17790],[34,18020],[34.5,18270],[35,18530],[35.5,18770],[36,19020],[36.5,19260],[37,19520],[37.5,19850],[38,20180],[38.5,20510],[39,20840],[39.5,21160],[40,21480]],
+  p4: [[1,7140],[1.5,7320],[2,7530],[2.5,7730],[3,7940],[3.5,8130],[4,8340],[4.5,8540],[5,8740],[5.5,8930],[6,9140],[6.5,9340],[7,9540],[7.5,9740],[8,9950],[8.5,10150],[9,10350],[9.5,10540],[10,10760],[10.5,10970],[11,11180],[11.5,11400],[12,11630],[12.5,11860],[13,12090],[13.5,12330],[14,12560],[14.5,12810],[15,13070],[15.5,13310],[16,13570],[16.5,13820],[17,14060],[17.5,14320],[18,14560],[18.5,14810],[19,15060],[19.5,15290],[20,15540],[20.5,16340],[21,16650],[21.5,16960],[22,17270],[22.5,17570],[23,17880],[23.5,18190],[24,18480],[24.5,18790],[25,19100],[25.5,19420],[26,19720],[26.5,20030],[27,20330],[27.5,20640],[28,20950],[28.5,21250],[29,21550],[29.5,21880],[30,22180],[30.5,22490],[31,22790],[31.5,23090],[32,23400],[32.5,23700],[33,24070],[33.5,24440],[34,24800],[34.5,25160],[35,25530],[35.5,25890],[36,26270],[36.5,26630],[37,26990],[37.5,27440],[38,27890],[38.5,28340],[39,28790],[39.5,29240],[40,29690]],
+  p5: [[1,10350],[1.5,10950],[2,11200],[2.5,11450],[3,11700],[3.5,11960],[4,12220],[4.5,12470],[5,12730],[5.5,12970],[6,13230],[6.5,13500],[7,13760],[7.5,14030],[8,14310],[8.5,14570],[9,14850],[9.5,15140],[10,15440],[10.5,15720],[11,16030],[11.5,16340],[12,16650],[12.5,16960],[13,17270],[13.5,17570],[14,17880],[14.5,18190],[15,18480],[15.5,18790],[16,19100],[16.5,20040],[17,20400],[17.5,20770],[18,21140],[18.5,21500],[19,21880],[19.5,22230],[20,22600],[20.5,22980],[21,23340],[21.5,23700],[22,24070],[22.5,24440],[23,24800],[23.5,25160],[24,25530],[24.5,25890],[25,26270],[25.5,26630],[26,26990],[26.5,27490],[27,27960],[27.5,28430],[28,28880],[28.5,29110],[29,29680],[29.5,30220],[30,30790],[30.5,31340],[31,31880],[31.5,32450],[32,33000],[32.5,33560],[33,34110],[33.5,34680],[34,35220],[34.5,35810],[35,36400],[35.5,36990],[36,37580],[36.5,38170],[37,38750]],
+  n1: [[1,6470],[1.5,6630],[2,6800],[2.5,6970],[3,7140],[3.5,7320],[4,7530],[4.5,7730],[5,7940],[5.5,8130],[6,8340],[6.5,8540],[7,8740],[7.5,8970],[8,9210],[8.5,9440],[9,9700],[9.5,9960],[10,10190],[10.5,10440],[11,10700],[11.5,11000],[12,11310],[12.5,11620],[13,11920],[13.5,12240],[14,12530],[14.5,12840],[15,13160],[15.5,13470],[16,13770],[16.5,14070],[17,14380],[17.5,14680],[18,15000],[18.5,15290],[19,15610],[19.5,15920],[20,16240],[20.5,16550],[21,16880],[21.5,17200],[22,17550],[22.5,17890],[23,18230],[23.5,18590],[24,18950],[24.5,19300],[25,19660],[25.5,20040],[26,20400],[26.5,20770],[27,21140],[27.5,21500],[28,21880],[28.5,22230],[29,22600],[29.5,22980],[30,23340],[30.5,23700],[31,24070],[31.5,24440],[32,24800],[32.5,25160],[33,25530],[33.5,25890],[34,26270],[34.5,26630],[35,26990],[35.5,27490],[36,27960],[36.5,28430],[37,28880],[37.5,29110],[38,29680],[38.5,30220],[39,30790],[39.5,31340],[40,31880],[40.5,32450],[41,33000],[41.5,33560],[42,34110],[42.5,34680],[43,35220],[43.5,35810],[44,36400],[44.5,36990],[45,37580],[45.5,38170],[46,38750]],
+  n2: [[1,13160],[1.5,13530],[2,13910],[2.5,14300],[3,14660],[3.5,15050],[4,15430],[4.5,15800],[5,16190],[5.5,16570],[6,16920],[6.5,17310],[7,17690],[7.5,18060],[8,18440],[8.5,18810],[9,19200],[9.5,19580],[10,19970],[10.5,20360],[11,20780],[11.5,21190],[12,21620],[12.5,22040],[13,22490],[13.5,22920],[14,23370],[14.5,23820],[15,24270],[15.5,24730],[16,25190],[16.5,25660],[17,26120],[17.5,26580],[18,27030],[18.5,27490],[19,27960],[19.5,28430],[20,28880],[20.5,29110],[21,29680],[21.5,30220],[22,30790],[22.5,31340],[23,31880],[23.5,32450],[24,33000],[24.5,33560],[25,34110],[25.5,34680],[26,35220],[26.5,36400],[27,36990],[27.5,37580],[28,38170],[28.5,38750]],
+  n3: [[1,16190],[1.5,16640],[2,17100],[2.5,17560],[3,18010],[3.5,18470],[4,18950],[4.5,19410],[5,19680],[5.5,20320],[6,20790],[6.5,21240],[7,21710],[7.5,22170],[8,22620],[8.5,23080],[9,23550],[9.5,24010],[10,24490],[10.5,24970],[11,25470],[11.5,25970],[12,26460],[12.5,26980],[13,27480],[13.5,2800],[14,28560],[14.5,29110],[15,29680],[15.5,30220],[16,30790],[16.5,31340],[17,31880],[17.5,32450],[18,33000],[18.5,33560],[19,34110],[19.5,34680],[20,35220],[20.5,35760],[21,36450],[21.5,37130],[22,37830],[22.5,38500],[23,30190],[23.5,39880],[24,40560],[24.5,41250],[25,41930],[25.5,42620],[26,43300],[26.5,44130],[27,44930],[27.5,34750],[28,46560],[28.5,47380],[29,48200],[29.5,49010],[30,49830],[30.5,50640],[31,51450],[31.5,52260],[32,53080]],
+  n4: [[1,19860],[1.5,20420],[2,20990],[2.5,21550],[3,22140],[3.5,22700],[4,23270],[4.5,23830],[5,24400],[5.5,24960],[6,25530],[6.5,26100],[7,26660],[7.5,27230],[8,27800],[8.5,28350],[9,28930],[9.5,29510],[10,30100],[10.5,30690],[11,31290],[11.5,31900],[12,32510],[12.5,33140],[13,33770],[13.5,34430],[14,35090],[14.5,35760],[15,36450],[15.5,37130],[16,37830],[16.5,38500],[17,39190],[17.5,39880],[18,40560],[18.5,41250],[19,41930],[19.5,42620],[20,43300],[20.5,44130],[21,44930],[21.5,45750],[22,46560],[22.5,47380],[23,48200],[23.5,49010],[24,49830],[24.5,50640],[25,51450],[25.5,52260],[26,53080],[26.5,53950],[27,54820],[27.5,55720],[28,56610],[28.5,57500],[29,58390]],
+  n5: [[1,24400],[1.5,25080],[2,25770],[2.5,26460],[3,27160],[3.5,27850],[4,28560],[4.5,29280],[5,29980],[5.5,30700],[6,31400],[6.5,32110],[7,32850],[7.5,33550],[8,34270],[8.5,34980],[9,35960],[9.5,36410],[10,37120],[10.5,37880],[11,38620],[11.5,39360],[12,40100],[12.5,40890],[13,41670],[13.5,42490],[14,43310],[14.5,44130],[15,44930],[15.5,45750],[16,46560],[16.5,47380],[17,48200],[17.5,49010],[18,49830],[18.5,50640],[19,51450],[19.5,52260],[20,53080],[20.5,54050],[21,55010],[21.5,56000],[22,56690],[22.5,57930],[23,58890],[23.5,59870],[24,60830],[24.5,61800],[25,62760],[25.5,63810],[26,4860],[26.5,65910],[27,66960],[27.5,68000],[28,69040]],
+  n6: [[1,29980],[1.5,39820],[2,31650],[2.5,32510],[3,33360],[3.5,34220],[4,35090],[4.5,35950],[5,36820],[5.5,37700],[6,38570],[6.5,39440],[7,40310],[7.5,41190],[8,42070],[8.5,42960],[9,43810],[9.5,44680],[10,45550],[10.5,46370],[11,47390],[11.5,48290],[12,49220],[12.5,50170],[13,51140],[13.5,52120],[14,53090],[14.5,54050],[15,55010],[15.5,56000],[16,56690],[16.5,57930],[17,58890],[17.5,59870],[18,60830],[18.5,61800],[19,62760],[19.5,63810],[20,64860],[20.5,65910],[21,66960],[21.5,68000],[22,69040]],
+  n7: [[1,35090],[1.5,36070],[2,37060],[2.5,38060],[3,39090],[3.5,40090],[4,41140],[4.5,42190],[5,43250],[5.5,44350],[6,45410],[6.5,46500],[7,47580],[7.5,48670],[8,49760],[8.5,50870],[9,51960],[9.5,5070],[10,54170],[10.5,55270],[11,56380],[11.5,57480],[12,58590],[12.5,59710],[13,60840],[13.5,61950],[14,63070],[14.5,64200],[15,65310],[15.5,66440],[16,67560],[16.5,68690],[17,69810],[17.5,70930],[18,72060],[18.5,73190],[19,74320],[19.5,75560],[20,76800],[20.5,78030]],
+  n8: [[1,39090],[1.5,40090],[2,41140],[2.5,42190],[3,43250],[3.5,44340],[4,45410],[4.5,46500],[5,47580],[5.5,48670],[6,49760],[6.5,50870],[7,51960],[7.5,53070],[8,54170],[8.5,55270],[9,56380],[9.5,57480],[10,58590],[10.5,59710],[11,60840],[11.5,61950],[12,63070],[12.5,64200],[13,65310],[13.5,66440],[14,67560],[14.5,68810],[15,70930],[15.5,72060],[16,73190],[16.5,74320],[17,75560],[17.5,76800]],
+  n9: [[1,51960],[1.5,53060],[2,54170],[2.5,55270],[3,56380],[3.5,57480],[4,58590],[4.5,59710],[5,60840],[5.5,61950],[6,63070],[6.5,64200],[7,65310],[7.5,66440],[8,67560],[8.5,68690],[9,69810],[9.5,70930],[10,72060],[10.5,73190],[11,74320],[11.5,75560],[12,76800],[12.5,78030]]
+};
+
+// ===================== GRADE LABELS =====================
+const GRADE_LABELS = {
+  p1:'พ.1',p2:'พ.2',p3:'ป.1',p4:'ป.2',p5:'ป.3',
+  n1:'น.1',n2:'น.2',n3:'น.3',n4:'น.4',n5:'น.5',n6:'น.6',n7:'น.7',n8:'น.8',n9:'น.9'
 };
 
 function updateStepOptions(){
-  const grade = document.getElementById('f_grade').value;
-  const stepSel = document.getElementById('f_step');
-  stepSel.innerHTML = '<option value="">-- เลือกขั้น --</option>';
-  if(grade && salaryTable[grade]){
-    salaryTable[grade].forEach((val,i)=>{
-      stepSel.innerHTML += `<option value="${i}">${i+1} (${val.toLocaleString()} บ.)</option>`;
+  const grade=document.getElementById('f_grade').value;
+  const stepSel=document.getElementById('f_step');
+  stepSel.innerHTML='<option value="">-- เลือกขั้น --</option>';
+  if(grade && RAW_SALARY[grade]){
+    RAW_SALARY[grade].forEach(([step,sal])=>{
+      stepSel.innerHTML+=`<option value="${step}">${step} (${sal.toLocaleString()} บ.)</option>`;
     });
   }
   calcSalary();
 }
-document.getElementById('f_grade').addEventListener('change', updateStepOptions);
 
 function calcSalary(){
-  const grade = document.getElementById('f_grade').value;
-  const stepIdx = document.getElementById('f_step').value;
-  let base = 0;
-  if(grade && stepIdx !== '' && salaryTable[grade]){
-    base = salaryTable[grade][parseInt(stepIdx)] || 0;
+  const grade=document.getElementById('f_grade').value;
+  const stepVal=document.getElementById('f_step').value;
+  let base=0;
+  if(grade && stepVal!=='' && RAW_SALARY[grade]){
+    const pair=RAW_SALARY[grade].find(([s])=>String(s)===String(stepVal));
+    if(pair) base=pair[1];
   }
-  document.getElementById('f_base').value = base > 0 ? base.toLocaleString() : '';
-  const prd = parseInt(document.getElementById('f_prd').value) || 0;
-  const psr1 = parseInt(document.getElementById('f_psr1').value) || 0;
-  const psr2 = parseInt(document.getElementById('f_psr2').value) || 0;
-  const psr3 = parseInt(document.getElementById('f_psr3').value) || 0;
-  const psr4 = parseInt(document.getElementById('f_psr4').value) || 0;
-  const total = base + prd + psr1 + psr2 + psr3 + psr4;
-  document.getElementById('f_salary').value = total > 0 ? total.toLocaleString() : '';
+  document.getElementById('f_base').value=base>0?base.toLocaleString():'';
+  const prd=parseInt(document.getElementById('f_prd').value)||0;
+  const psr1=parseInt(document.getElementById('f_psr1').value)||0;
+  const psr2=parseInt(document.getElementById('f_psr2').value)||0;
+  const psr3=parseInt(document.getElementById('f_psr3').value)||0;
+  const psr4=parseInt(document.getElementById('f_psr4').value)||0;
+  const total=base+prd+psr1+psr2+psr3+psr4;
+  document.getElementById('f_salary').value=total>0?total.toLocaleString():'';
 }
 
-// ============ DATA ============
-const STATUS_LABELS = {
-  s1:'ปฏิบัติหน้าที่ ณ ที่ตั้ง', s2:'ราชการสนาม ชค.953',
-  s3:'ราชการสนาม บก.ควบคุม 2', s4:'ฝึกศึกษา',
-  s5:'ฝึกอบรม', s6:'ราชการ', s7:'ราชการต่างหน่วย'
-};
-const STATUS_PILL = {
-  s1:'pill-blue', s2:'pill-red', s3:'pill-red',
-  s4:'pill-teal', s5:'pill-teal', s6:'pill-yellow', s7:'pill-gray'
-};
+// ===================== CONSTANTS =====================
+const STATUS_LABELS={s1:'ปฏิบัติหน้าที่ ณ ที่ตั้ง',s2:'ราชการสนาม ชค.953',s3:'ราชการสนาม บก.ควบคุม 2',s4:'ฝึกศึกษา',s5:'ฝึกอบรม',s6:'ราชการ',s7:'ราชการต่างหน่วย'};
+const STATUS_PILL={s1:'pill-blue',s2:'pill-red',s3:'pill-red',s4:'pill-teal',s5:'pill-teal',s6:'pill-yellow',s7:'pill-gray'};
+const OFFICER_RANKS=['พล.ต.','พ.อ.','พ.ท.','พ.ต.','ร.อ.','ร.ท.','ร.ต.'];
 
-let personnel = [
-  {id:1,rank:'พ.ท.',fname:'กิตติ',lname:'ศักดิ์สูง',idno:'6501000001',cid:'3-1234-56789-01-2',blood:'O+',tel:'081-234-5678',pos:'นายสิบยุทธการและการข่าว',unit:'รพศ.2 พัน.1',company:'ร้อย.บก.',branch:'ราบ (ร.)',start:'01/10/2537',status:'s1',grade:'n3',step:9,base:29100,prd:7000,psr1:2000,psr2:0,psr3:0,psr4:0,salary:38100,dob:'10/05/2505'},
-  {id:2,rank:'ร.อ.',fname:'สมชาย',lname:'ใจดี',idno:'6701000012',cid:'3-2345-67890-12-3',blood:'A+',tel:'082-345-6789',pos:'นายสิบอาวุธเบา',unit:'รพศ.2 พัน.1',company:'ร้อย.1',branch:'ราบ (ร.)',start:'01/10/2545',status:'s1',grade:'n2',step:7,base:20200,prd:5300,psr1:1500,psr2:0,psr3:0,psr4:0,salary:27000,dob:'15/03/2522'},
-  {id:3,rank:'ร.ท.',fname:'ประสิทธิ์',lname:'มั่นคง',idno:'6801000025',cid:'3-3456-78901-23-4',blood:'B+',tel:'083-456-7890',pos:'พนักงานวิทยุ',unit:'รพศ.2 พัน.1',company:'ร้อย.2',branch:'สื่อสาร (ส.)',start:'01/10/2548',status:'s2',grade:'n1',step:6,base:14500,prd:5300,psr1:800,psr2:0,psr3:0,psr4:0,salary:20600,dob:'22/07/2525'},
-  {id:4,rank:'ร.ต.',fname:'นิรัน',lname:'ดรภักดี',idno:'6901000037',cid:'3-4567-89012-34-5',blood:'AB+',tel:'084-567-8901',pos:'นายสิบอาวุธหนัก',unit:'รพศ.2 พัน.1',company:'ร้อย.1',branch:'ราบ (ร.)',start:'01/10/2551',status:'s3',grade:'n1',step:4,base:14000,prd:5300,psr1:600,psr2:0,psr3:0,psr4:0,salary:19900,dob:'30/11/2528'},
-  {id:5,rank:'จ.ส.อ.',fname:'ประยุทธ',lname:'ใจกล้า',idno:'7001000049',cid:'3-5678-90123-45-6',blood:'O-',tel:'085-678-9012',pos:'นายสิบการช่างและทำลาย',unit:'รพศ.2 พัน.1',company:'ร้อย.3',branch:'ช่าง (ช.)',start:'01/10/2553',status:'s1',grade:'p4',step:7,base:11600,prd:5300,psr1:500,psr2:0,psr3:0,psr4:0,salary:17400,dob:'18/04/2530'},
-  {id:6,rank:'ส.อ.',fname:'วีรชัย',lname:'รักชาติ',idno:'7101000056',cid:'3-6789-01234-56-7',blood:'B-',tel:'086-789-0123',pos:'นายสิบยุทธการและการข่าว',unit:'รพศ.2 พัน.1',company:'ร้อย.2',branch:'ราบ (ร.)',start:'01/10/2558',status:'s4',grade:'p3',step:5,base:8400,prd:0,psr1:0,psr2:0,psr3:0,psr4:0,salary:8400,dob:'05/09/2533'},
-  {id:7,rank:'ส.ท.',fname:'ธนกร',lname:'พุทธิโชติ',idno:'7201000068',cid:'3-7890-12345-67-8',blood:'A-',tel:'087-890-1234',pos:'นายสิบพยาบาล',unit:'รพศ.2 พัน.1',company:'ร้อย.บก.',branch:'พยาบาล (พ.)',start:'01/10/2560',status:'s5',grade:'p2',step:4,base:6550,prd:0,psr1:0,psr2:0,psr3:0,psr4:0,salary:6550,dob:'14/02/2535'},
-  {id:8,rank:'ส.ต.',fname:'อนุวัฒน์',lname:'สุขสันต์',idno:'7301000071',cid:'3-8901-23456-78-9',blood:'O+',tel:'088-901-2345',pos:'นายสิบอาวุธเบา',unit:'รพศ.2 พัน.1',company:'ร้อย.3',branch:'ราบ (ร.)',start:'01/10/2562',status:'s1',grade:'p1',step:3,base:4760,prd:0,psr1:0,psr2:0,psr3:0,psr4:0,salary:4760,dob:'28/06/2538'},
-  {id:9,rank:'พ.ต.',fname:'รณชัย',lname:'กล้าหาญ',idno:'6601000082',cid:'3-9012-34567-89-0',blood:'A+',tel:'089-012-3456',pos:'นายสิบอาวุธหนัก',unit:'รพศ.2 พัน.1',company:'ร้อย.1',branch:'ราบ (ร.)',start:'01/10/2541',status:'s1',grade:'n2',step:9,base:22300,prd:7000,psr1:1800,psr2:500,psr3:0,psr4:0,salary:31600,dob:'12/08/2516'},
-  {id:10,rank:'ร.อ.',fname:'สุรพงษ์',lname:'วงศ์เดช',idno:'6801000091',cid:'3-0123-45678-90-1',blood:'B+',tel:'090-123-4567',pos:'พนักงานวิทยุ',unit:'รพศ.2 พัน.1',company:'ร้อย.2',branch:'สื่อสาร (ส.)',start:'01/10/2547',status:'s6',grade:'n2',step:5,base:18800,prd:5300,psr1:1200,psr2:0,psr3:0,psr4:0,salary:25300,dob:'03/12/2524'},
+// ===================== DATA (runtime only) =====================
+// NOTE: Data lives in JS memory - resets on page refresh (as designed for a static demo)
+let personnel=[
+  {id:1,rank:'พ.ท.',fname:'กิตติ',lname:'ศักดิ์สูง',idno:'6501000001',cid:'3-1234-56789-01-2',blood:'O+',tel:'081-234-5678',pos:'นายสิบยุทธการและการข่าว',unit:'รพศ.2 พัน.1',company:'ร้อย.บก.',branch:'ราบ (ร.)',start:'01/10/2537',status:'s1',grade:'n3',step:9,base:23550,prd:7000,psr1:2000,psr2:0,psr3:0,psr4:0,salary:32550,dob:'10/05/2505'},
+  {id:2,rank:'ร.อ.',fname:'สมชาย',lname:'ใจดี',idno:'6701000012',cid:'3-2345-67890-12-3',blood:'A+',tel:'082-345-6789',pos:'นายสิบอาวุธเบา',unit:'รพศ.2 พัน.1',company:'ร้อย.1',branch:'ราบ (ร.)',start:'01/10/2545',status:'s1',grade:'n2',step:7.5,base:18060,prd:5300,psr1:1500,psr2:0,psr3:0,psr4:0,salary:24860,dob:'15/03/2522'},
+  {id:3,rank:'ร.ท.',fname:'ประสิทธิ์',lname:'มั่นคง',idno:'6801000025',cid:'3-3456-78901-23-4',blood:'B+',tel:'083-456-7890',pos:'พนักงานวิทยุ',unit:'รพศ.2 พัน.1',company:'ร้อย.2',branch:'สื่อสาร (ส.)',start:'01/10/2548',status:'s2',grade:'n1',step:6,base:8340,prd:5300,psr1:800,psr2:0,psr3:0,psr4:0,salary:14440,dob:'22/07/2525'},
+  {id:4,rank:'ร.ต.',fname:'นิรัน',lname:'ดรภักดี',idno:'6901000037',cid:'3-4567-89012-34-5',blood:'AB+',tel:'084-567-8901',pos:'นายสิบอาวุธหนัก',unit:'รพศ.2 พัน.1',company:'ร้อย.1',branch:'ราบ (ร.)',start:'01/10/2551',status:'s3',grade:'n1',step:4,base:7530,prd:5300,psr1:600,psr2:0,psr3:0,psr4:0,salary:13430,dob:'30/11/2528'},
+  {id:5,rank:'จ.ส.อ.',fname:'ประยุทธ',lname:'ใจกล้า',idno:'7001000049',cid:'3-5678-90123-45-6',blood:'O-',tel:'085-678-9012',pos:'นายสิบการช่างและทำลาย',unit:'รพศ.2 พัน.1',company:'ร้อย.3',branch:'ช่าง (ช.)',start:'01/10/2553',status:'s1',grade:'p4',step:7,base:9540,prd:5300,psr1:500,psr2:0,psr3:0,psr4:0,salary:15340,dob:'18/04/2530'},
+  {id:6,rank:'ส.อ.',fname:'วีรชัย',lname:'รักชาติ',idno:'7101000056',cid:'3-6789-01234-56-7',blood:'B-',tel:'086-789-0123',pos:'นายสิบยุทธการและการข่าว',unit:'รพศ.2 พัน.1',company:'ร้อย.2',branch:'ราบ (ร.)',start:'01/10/2558',status:'s4',grade:'p3',step:5,base:5810,prd:0,psr1:0,psr2:0,psr3:0,psr4:0,salary:5810,dob:'05/09/2533'},
+  {id:7,rank:'ส.ท.',fname:'ธนกร',lname:'พุทธิโชติ',idno:'7201000068',cid:'3-7890-12345-67-8',blood:'A-',tel:'087-890-1234',pos:'นายสิบพยาบาล',unit:'รพศ.2 พัน.1',company:'ร้อย.บก.',branch:'พยาบาล (พ.)',start:'01/10/2560',status:'s5',grade:'p2',step:4,base:5580,prd:0,psr1:0,psr2:0,psr3:0,psr4:0,salary:5580,dob:'14/02/2535'},
+  {id:8,rank:'ส.ต.',fname:'อนุวัฒน์',lname:'สุขสันต์',idno:'7301000071',cid:'3-8901-23456-78-9',blood:'O+',tel:'088-901-2345',pos:'นายสิบอาวุธเบา',unit:'รพศ.2 พัน.1',company:'ร้อย.3',branch:'ราบ (ร.)',start:'01/10/2562',status:'s1',grade:'p1',step:3,base:1500,prd:0,psr1:0,psr2:0,psr3:0,psr4:0,salary:1500,dob:'28/06/2538'},
+  {id:9,rank:'พ.ต.',fname:'รณชัย',lname:'กล้าหาญ',idno:'6601000082',cid:'3-9012-34567-89-0',blood:'A+',tel:'089-012-3456',pos:'นายสิบอาวุธหนัก',unit:'รพศ.2 พัน.1',company:'ร้อย.1',branch:'ราบ (ร.)',start:'01/10/2541',status:'s1',grade:'n2',step:9.5,base:19580,prd:7000,psr1:1800,psr2:500,psr3:0,psr4:0,salary:28880,dob:'12/08/2516'},
+  {id:10,rank:'ร.อ.',fname:'สุรพงษ์',lname:'วงศ์เดช',idno:'6801000091',cid:'3-0123-45678-90-1',blood:'B+',tel:'090-123-4567',pos:'พนักงานวิทยุ',unit:'รพศ.2 พัน.1',company:'ร้อย.2',branch:'สื่อสาร (ส.)',start:'01/10/2547',status:'s6',grade:'n2',step:5,base:16190,prd:5300,psr1:1200,psr2:0,psr3:0,psr4:0,salary:22690,dob:'03/12/2524'},
 ];
-
 let eduData=[
   {id:1,pid:2,course:'หลักสูตรวิทยาลัยการทัพบก',school:'วทบ.',year:2565,duration:'1 ปี',grade:'ดีมาก',pct:85,status:'done'},
   {id:2,pid:6,course:'หลักสูตรชั้นนายสิบอาวุโส',school:'รร.สธ.ทบ.',year:2566,duration:'6 เดือน',grade:'ดี',pct:72,status:'studying'},
   {id:3,pid:1,course:'หลักสูตรเสนาธิการทหารบก',school:'รร.สธ.ทบ.',year:2564,duration:'1 ปี',grade:'ดีเยี่ยม',pct:95,status:'done'},
   {id:4,pid:4,course:'หลักสูตรการฝึกพลร่ม',school:'ศพย.',year:2567,duration:'3 เดือน',grade:'—',pct:0,status:'pending'},
+];
+let trainingData=[
+  {id:1,pid:2,course:'การยิงปืนพกสั้น ขั้นสูง',org:'รร.ทหารราบ',start:'01/03/2566',end:'15/03/2566',hours:80,result:'ผ่าน',status:'done'},
+  {id:2,pid:5,course:'ช่างยานยนต์ทางทหาร',org:'ศช.',start:'10/05/2566',end:'10/08/2566',hours:360,result:'ดีมาก',status:'done'},
+  {id:3,pid:7,course:'การพยาบาลฉุกเฉินในสนามรบ',org:'รร.พยาบาลทหารบก',start:'01/06/2567',end:'30/06/2567',hours:120,result:'ดี',status:'ongoing'},
 ];
 let fieldData=[
   {id:1,pid:2,mission:'ปฏิบัติการรักษาสันติภาพ UNAMID',area:'ดาร์ฟูร์ ซูดาน',start:'01/01/2562',end:'31/12/2562',pos:'ผบ.หมู่',double:365,status:'done'},
@@ -915,25 +742,48 @@ let docsData=[
   {id:6,pid:9,name:'คำสั่งแต่งตั้งตำแหน่ง',person:'พ.ต. รณชัย กล้าหาญ',date:'01/10/2564',type:'pdf',cat:'order',size:'0.9 MB'},
 ];
 let nextId=11;
+let nextTrainId=4;
 let deleteTargetId=null;
+let deleteTargetType='personnel';
 
-// helper: compute service length from thai date string "dd/mm/yyyy"
-function serviceYears(start){
+// ===================== HELPERS =====================
+function parseThaiBEDate(s){
   try{
-    const parts=start.split('/');
-    const y=parseInt(parts[2])-543;
-    const m=parseInt(parts[1])-1;
-    const d=parseInt(parts[0]);
-    const startDate=new Date(y,m,d);
-    const now=new Date();
-    let yrs=now.getFullYear()-startDate.getFullYear();
-    const mDiff=now.getMonth()-startDate.getMonth();
-    if(mDiff<0||(mDiff===0&&now.getDate()<startDate.getDate())) yrs--;
-    return yrs+' ปี';
-  }catch(e){ return '—'; }
+    const p=s.split('/');
+    return new Date(parseInt(p[2])-543, parseInt(p[1])-1, parseInt(p[0]));
+  }catch(e){return null;}
 }
 
-// ============ AUTH ============
+function serviceYears(start){
+  try{
+    const d=parseThaiBEDate(start);
+    if(!d) return '—';
+    const now=new Date();
+    let yrs=now.getFullYear()-d.getFullYear();
+    const mDiff=now.getMonth()-d.getMonth();
+    if(mDiff<0||(mDiff===0&&now.getDate()<d.getDate())) yrs--;
+    return yrs+' ปี';
+  }catch(e){return '—';}
+}
+
+// Returns double days formatted as "X ปี Y เดือน"
+function formatDouble(days){
+  if(!days && days!==0) return 'กำลังนับ...';
+  if(days===0) return '0 วัน';
+  const yrs=Math.floor(days/365);
+  const rem=days%365;
+  const months=Math.floor(rem/30);
+  if(yrs>0&&months>0) return `${yrs} ปี ${months} เดือน`;
+  if(yrs>0&&months===0) return `${yrs} ปี`;
+  if(yrs===0&&months>0) return `${months} เดือน`;
+  return `${days} วัน`;
+}
+
+function getTotalDouble(pid){
+  return fieldData.filter(f=>f.pid===pid).reduce((a,f)=>a+(f.double||0),0);
+}
+
+// ===================== AUTH =====================
 function doLogin(){
   const u=document.getElementById('loginUser').value.trim();
   const p=document.getElementById('loginPass').value.trim();
@@ -949,8 +799,8 @@ function doLogin(){
     document.getElementById('loginPass').value='';
   }
 }
-document.getElementById('loginPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
-document.getElementById('loginUser').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('loginPass').focus(); });
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter') doLogin();});
+document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter') document.getElementById('loginPass').focus();});
 
 function doLogout(){
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -960,30 +810,18 @@ function doLogout(){
   document.getElementById('loginPass').value='';
 }
 
-// ============ NAV ============
-function navTo(sec, el, fromSidebar){
+// ===================== NAV =====================
+function navTo(sec, el){
   document.querySelectorAll('.section-page').forEach(s=>s.classList.remove('active'));
   const s=document.getElementById('sec-'+sec);
   if(s) s.classList.add('active');
-  if(fromSidebar){
-    document.querySelectorAll('.si').forEach(i=>i.classList.remove('active'));
-    if(el) el.classList.add('active');
-    document.querySelectorAll('.tnav').forEach(i=>i.classList.remove('active'));
-    const tnavMap={personnel:0,profile:1,education:2,field:3,promotion:4,salary:5,pension:6,documents:7};
-    const idx=tnavMap[sec];
-    if(idx!==undefined) document.querySelectorAll('.tnav')[idx]?.classList.add('active');
-  } else {
-    document.querySelectorAll('.tnav').forEach(i=>i.classList.remove('active'));
-    if(el) el.classList.add('active');
-    document.querySelectorAll('.si').forEach(si=>{
-      if(si.getAttribute('onclick')?.includes("'"+sec+"'")) si.classList.add('active');
-    });
-  }
+  document.querySelectorAll('.si').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
 }
 
-// ============ INIT ============
+// ===================== INIT =====================
 function initApp(){
-  renderPersonnel(); renderEdu(); renderField();
+  renderPersonnel(); renderEdu(); renderTraining(); renderField();
   renderPromotion(); renderSalary(); renderDocs('all');
   populateSelects();
 }
@@ -991,22 +829,49 @@ function populateSelects(){
   const opts=personnel.map(p=>`<option value="${p.id}">${p.rank} ${p.fname} ${p.lname}</option>`).join('');
   document.getElementById('profileSelect').innerHTML='<option value="">-- เลือกกำลังพล --</option>'+opts;
   document.getElementById('pensionSelect').innerHTML='<option value="">-- เลือกกำลังพล --</option>'+opts;
+  document.getElementById('t_pid').innerHTML='<option value="">-- เลือกกำลังพล --</option>'+opts;
 }
 
-// ============ PERSONNEL TABLE ============
+// ===================== DASHBOARD STATS (REALTIME) =====================
+function updateStats(){
+  const total=personnel.length;
+  const active=personnel.filter(p=>p.status==='s1').length;
+  const officers=personnel.filter(p=>OFFICER_RANKS.includes(p.rank)).length;
+  const enlisted=personnel.filter(p=>!OFFICER_RANKS.includes(p.rank)).length;
+  // Near retirement: service >= 23 years
+  const nearRetire=personnel.filter(p=>{
+    const d=parseThaiBEDate(p.start);
+    if(!d) return false;
+    const now=new Date();
+    let yrs=now.getFullYear()-d.getFullYear();
+    const mDiff=now.getMonth()-d.getMonth();
+    if(mDiff<0||(mDiff===0&&now.getDate()<d.getDate())) yrs--;
+    return yrs>=23;
+  }).length;
+  document.getElementById('statTotal').textContent=total;
+  document.getElementById('statActive').textContent=`ปฏิบัติงาน ${active} นาย`;
+  document.getElementById('statOfficer').textContent=officers;
+  document.getElementById('statEnlisted').textContent=enlisted;
+  document.getElementById('statRetire').textContent=nearRetire;
+  // Salary stats
+  const totalSalary=personnel.reduce((a,p)=>a+(p.salary||0),0);
+  const avgSalary=total>0?Math.round(totalSalary/total):0;
+  const st=document.getElementById('salaryTotal');
+  const sa=document.getElementById('salaryAvg');
+  if(st) st.textContent=totalSalary.toLocaleString();
+  if(sa) sa.textContent=avgSalary.toLocaleString();
+}
+
+// ===================== PERSONNEL TABLE =====================
 function renderPersonnel(){
   const q=(document.getElementById('searchInput').value||'').toLowerCase();
   const rf=document.getElementById('rankFilter').value;
   const sf=document.getElementById('statusFilter').value;
   const filtered=personnel.filter(p=>{
     const full=p.rank+(p.fname+p.lname)+p.idno+p.pos;
-    const mq=!q||full.toLowerCase().includes(q);
-    const mr=!rf||p.rank===rf;
-    const ms=!sf||p.status===sf;
-    return mq&&mr&&ms;
+    return (!q||full.toLowerCase().includes(q))&&(!rf||p.rank===rf)&&(!sf||p.status===sf);
   });
   document.getElementById('rowCount').textContent=filtered.length+' รายการ';
-  document.getElementById('totalCount').textContent=personnel.length;
   document.getElementById('pgInfo').textContent=`แสดง 1–${Math.min(10,filtered.length)} จาก ${filtered.length}`;
   document.getElementById('personnelBody').innerHTML=filtered.map((p,i)=>`
     <tr onclick="openDetail(${p.id})">
@@ -1014,27 +879,29 @@ function renderPersonnel(){
       <td><div class="name-cell"><div class="ava">${p.fname.charAt(0)}</div>
         <div><div style="font-weight:700">${p.rank} ${p.fname} ${p.lname}</div>
         <div style="font-size:11px;color:var(--text-3)">${p.unit}</div></div></div></td>
-      <td style="font-family:'Sarabun',monospace;color:var(--blue);font-size:12px;font-weight:700">${p.idno}</td>
+      <td style="color:var(--blue);font-size:12px;font-weight:700">${p.idno}</td>
       <td style="color:var(--text-2);font-size:12.5px">${p.pos}</td>
       <td style="color:var(--text-3);font-size:12px">${p.start}</td>
       <td style="color:var(--accent-green);font-weight:600">${serviceYears(p.start)}</td>
-      <td style="font-family:'Sarabun',sans-serif;font-weight:700;font-size:12.5px">${p.grade?p.grade.toUpperCase():'-'}/${p.step+1}</td>
-      <td style="font-family:'Sarabun',sans-serif;font-weight:800;color:var(--text-1)">${(p.salary||0).toLocaleString()}</td>
+      <td style="font-weight:700;font-size:12.5px">${p.grade?GRADE_LABELS[p.grade]:'-'}/${p.step}</td>
+      <td style="font-weight:800;color:var(--text-1)">${(p.salary||0).toLocaleString()}</td>
       <td><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></td>
       <td onclick="event.stopPropagation()">
         <div style="display:flex;gap:5px">
           <button class="btn btn-outline btn-sm btn-icon" onclick="openEditModal(${p.id})" title="แก้ไข">✏️</button>
-          <button class="btn btn-red btn-sm btn-icon" onclick="askDelete(${p.id},'${p.rank} ${p.fname} ${p.lname}')" title="ลบ">🗑️</button>
+          <button class="btn btn-red btn-sm btn-icon" onclick="askDelete(${p.id},'${p.rank} ${p.fname} ${p.lname}','personnel')" title="ลบ">🗑️</button>
         </div>
       </td>
     </tr>`).join('');
+  updateStats();
 }
 
-// ============ DETAIL MODAL ============
+// ===================== DETAIL MODAL =====================
 function openDetail(id){
   const p=personnel.find(x=>x.id===id);
   if(!p) return;
   const fds=fieldData.filter(f=>f.pid===id);
+  const totalDouble=getTotalDouble(id);
   const html=`
     <div class="mhead">
       <div class="mhead-title">รายละเอียดกำลังพล</div>
@@ -1046,15 +913,14 @@ function openDetail(id){
         <div class="pname">${p.rank} ${p.fname} ${p.lname}</div>
         <div class="pid">${p.idno}</div>
         <div class="ptags">
-          <span class="ptag">🏢 ${p.unit}</span>
-          <span class="ptag">📌 ${p.pos}</span>
-          <span class="ptag">📅 ${p.start}</span>
-          <span class="ptag">🩸 ${p.blood||'—'}</span>
+          <span class="ptag">🏢 ${p.unit}</span><span class="ptag">📌 ${p.pos}</span>
+          <span class="ptag">📅 ${p.start}</span><span class="ptag">🩸 ${p.blood||'—'}</span>
           <span class="pill ${STATUS_PILL[p.status]||'pill-blue'}" style="padding:4px 12px"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span>
         </div>
       </div>
       <button class="btn btn-outline btn-sm" style="flex-shrink:0" onclick="closeModal('detailModal');openEditModal(${p.id})">✏️ แก้ไข</button>
     </div>
+    <div style="overflow-y:auto;max-height:60vh">
     <div class="dsec">
       <div class="dsec-title">ข้อมูลส่วนตัว</div>
       <div class="dg">
@@ -1074,17 +940,17 @@ function openDetail(id){
         <div><div class="di-label">เหล่า</div><div class="di-val">${p.branch||'—'}</div></div>
         <div><div class="di-label">วันเข้ารับราชการ</div><div class="di-val">${p.start}</div></div>
         <div><div class="di-label">อายุราชการ</div><div class="di-val g">${serviceYears(p.start)}</div></div>
-        <div><div class="di-label">วันทวีคูณรวม</div><div class="di-val" style="color:var(--accent-teal)">${fds.reduce((a,f)=>a+(f.double||0),0)} วัน</div></div>
+        <div><div class="di-label">วันทวีคูณรวม</div><div class="di-val" style="color:var(--accent-teal)">${formatDouble(totalDouble)}</div></div>
         <div><div class="di-label">สถานะ</div><div class="di-val"><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></div></div>
       </div>
     </div>
     <div class="dsec">
       <div class="dsec-title">ข้อมูลเงินเดือน</div>
       <div class="dg">
-        <div><div class="di-label">ระดับ/ขั้น</div><div class="di-val hi">${p.grade?p.grade.toUpperCase():'-'} / ขั้น ${p.step+1}</div></div>
+        <div><div class="di-label">ระดับ/ขั้น</div><div class="di-val hi">${p.grade?GRADE_LABELS[p.grade]:'-'} / ${p.step}</div></div>
         <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${(p.base||0).toLocaleString()} ฿</div></div>
         <div><div class="di-label">เงินเพิ่ม พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} ฿</div></div>
-        <div><div class="di-label">พ.ส.ร. ครั้ง 1–4</div><div class="di-val">${((p.psr1||0)+(p.psr2||0)+(p.psr3||0)+(p.psr4||0)).toLocaleString()} ฿</div></div>
+        <div><div class="di-label">พ.ส.ร. รวม</div><div class="di-val">${((p.psr1||0)+(p.psr2||0)+(p.psr3||0)+(p.psr4||0)).toLocaleString()} ฿</div></div>
         <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val gold" style="font-size:18px">${(p.salary||0).toLocaleString()} ฿</div></div>
       </div>
     </div>
@@ -1092,24 +958,26 @@ function openDetail(id){
       <div class="dsec-title">ประวัติราชการสนาม</div>
       ${fds.map(f=>`<div class="tl-item"><div class="tl-dot"></div>
         <div><div class="tl-t">${f.mission} — ${f.area}</div>
-        <div class="tl-m">${f.start} ถึง ${f.end} • ${f.double||'กำลังนับ'} วัน • ตำแหน่ง ${f.pos}</div></div></div>`).join('')}
-    </div>`:''}`;
+        <div class="tl-m">${f.start} ถึง ${f.end} • ${formatDouble(f.double)} • ตำแหน่ง ${f.pos}</div></div></div>`).join('')}
+    </div>`:''}
+    </div>`;
   document.getElementById('detailContent').innerHTML=html;
   document.getElementById('detailModal').classList.add('open');
 }
 
-// ============ ADD / EDIT ============
+// ===================== ADD/EDIT PERSONNEL =====================
 function openAddModal(){
   document.getElementById('addModalTitle').textContent='＋ เพิ่มกำลังพล';
   document.getElementById('f_editId').value='';
   ['fname','lname','idno','cid','tel','dob','start','psr1','psr2','psr3','psr4'].forEach(k=>{
-    const el=document.getElementById('f_'+k);
-    if(el) el.value='';
+    const el=document.getElementById('f_'+k);if(el) el.value='';
   });
-  ['rank','pos','unit','company','branch','status','grade','step','prd','blood'].forEach(k=>{
-    const el=document.getElementById('f_'+k);
-    if(el) el.value=k==='unit'?'รพศ.2 พัน.1':k==='status'?'s1':k==='prd'?'0':'';
+  ['rank','pos','company','branch','blood','grade'].forEach(k=>{
+    const el=document.getElementById('f_'+k);if(el) el.value='';
   });
+  document.getElementById('f_unit').value='รพศ.2 พัน.1';
+  document.getElementById('f_status').value='s1';
+  document.getElementById('f_prd').value='0';
   document.getElementById('f_base').value='';
   document.getElementById('f_salary').value='';
   document.getElementById('f_step').innerHTML='<option value="">-- เลือกขั้น --</option>';
@@ -1117,46 +985,37 @@ function openAddModal(){
 }
 
 function openEditModal(id){
-  const p=personnel.find(x=>x.id===id);
-  if(!p) return;
+  const p=personnel.find(x=>x.id===id);if(!p) return;
   document.getElementById('addModalTitle').textContent='✏️ แก้ไขข้อมูลกำลังพล';
   document.getElementById('f_editId').value=id;
-  document.getElementById('f_rank').value=p.rank||'';
-  document.getElementById('f_fname').value=p.fname||'';
-  document.getElementById('f_lname').value=p.lname||'';
-  document.getElementById('f_dob').value=p.dob||'';
-  document.getElementById('f_cid').value=p.cid||'';
-  document.getElementById('f_blood').value=p.blood||'';
-  document.getElementById('f_tel').value=p.tel||'';
-  document.getElementById('f_idno').value=p.idno||'';
-  document.getElementById('f_pos').value=p.pos||'';
-  document.getElementById('f_unit').value=p.unit||'รพศ.2 พัน.1';
-  document.getElementById('f_company').value=p.company||'';
-  document.getElementById('f_branch').value=p.branch||'';
-  document.getElementById('f_start').value=p.start||'';
+  ['rank','fname','lname','dob','cid','blood','tel','idno','pos','unit','company','branch','start','status','grade','prd'].forEach(k=>{
+    const el=document.getElementById('f_'+k);if(el) el.value=p[k]||'';
+  });
   document.getElementById('f_status').value=p.status||'s1';
-  document.getElementById('f_grade').value=p.grade||'';
-  updateStepOptions();
-  document.getElementById('f_step').value=p.step!==undefined?p.step:'';
   document.getElementById('f_prd').value=p.prd||'0';
   document.getElementById('f_psr1').value=p.psr1||'';
   document.getElementById('f_psr2').value=p.psr2||'';
   document.getElementById('f_psr3').value=p.psr3||'';
   document.getElementById('f_psr4').value=p.psr4||'';
+  updateStepOptions();
+  document.getElementById('f_step').value=p.step!==undefined?p.step:'';
   calcSalary();
   document.getElementById('addModal').classList.add('open');
 }
 
 function savePersonnel(){
   const editId=document.getElementById('f_editId').value;
-  const rank=document.getElementById('f_rank').value;
   const fname=document.getElementById('f_fname').value.trim();
   const lname=document.getElementById('f_lname').value.trim();
   const idno=document.getElementById('f_idno').value.trim();
-  if(!fname||!lname||!idno){ alert('กรุณากรอก ชื่อ, สกุล และเลขประจำตัว'); return; }
+  if(!fname||!lname||!idno){alert('กรุณากรอก ชื่อ, สกุล และเลขประจำตัว');return;}
   const grade=document.getElementById('f_grade').value;
-  const stepIdx=document.getElementById('f_step').value;
-  const base=(grade&&stepIdx!==''&&salaryTable[grade])?salaryTable[grade][parseInt(stepIdx)]:0;
+  const stepVal=document.getElementById('f_step').value;
+  let base=0;
+  if(grade&&stepVal!==''&&RAW_SALARY[grade]){
+    const pair=RAW_SALARY[grade].find(([s])=>String(s)===String(stepVal));
+    if(pair) base=pair[1];
+  }
   const prd=parseInt(document.getElementById('f_prd').value)||0;
   const psr1=parseInt(document.getElementById('f_psr1').value)||0;
   const psr2=parseInt(document.getElementById('f_psr2').value)||0;
@@ -1164,19 +1023,14 @@ function savePersonnel(){
   const psr4=parseInt(document.getElementById('f_psr4').value)||0;
   const salary=base+prd+psr1+psr2+psr3+psr4;
   const obj={
-    rank, fname, lname, idno,
-    cid:document.getElementById('f_cid').value.trim(),
-    blood:document.getElementById('f_blood').value,
-    tel:document.getElementById('f_tel').value.trim(),
-    pos:document.getElementById('f_pos').value,
+    rank:document.getElementById('f_rank').value,fname,lname,idno,
+    cid:document.getElementById('f_cid').value.trim(),blood:document.getElementById('f_blood').value,
+    tel:document.getElementById('f_tel').value.trim(),pos:document.getElementById('f_pos').value,
     unit:document.getElementById('f_unit').value||'รพศ.2 พัน.1',
-    company:document.getElementById('f_company').value,
-    branch:document.getElementById('f_branch').value,
-    start:document.getElementById('f_start').value.trim(),
-    status:document.getElementById('f_status').value,
-    dob:document.getElementById('f_dob').value.trim(),
-    grade, step:stepIdx!==''?parseInt(stepIdx):0,
-    base, prd, psr1, psr2, psr3, psr4, salary
+    company:document.getElementById('f_company').value,branch:document.getElementById('f_branch').value,
+    start:document.getElementById('f_start').value.trim(),status:document.getElementById('f_status').value,
+    dob:document.getElementById('f_dob').value.trim(),grade,
+    step:stepVal!==''?parseFloat(stepVal):0,base,prd,psr1,psr2,psr3,psr4,salary
   };
   if(editId){
     const idx=personnel.findIndex(p=>p.id==editId);
@@ -1186,25 +1040,30 @@ function savePersonnel(){
     personnel.push(obj);
   }
   closeModal('addModal');
-  renderPersonnel();
-  renderSalary();
-  populateSelects();
+  renderPersonnel();renderSalary();populateSelects();
 }
 
-// ============ DELETE ============
-function askDelete(id,label){
+// ===================== DELETE =====================
+function askDelete(id,label,type='personnel'){
   deleteTargetId=id;
+  deleteTargetType=type;
   document.getElementById('deleteTarget').textContent=label;
   document.getElementById('confirmModal').classList.add('open');
 }
 function confirmDelete(){
-  personnel=personnel.filter(p=>p.id!==deleteTargetId);
+  if(deleteTargetType==='personnel'){
+    personnel=personnel.filter(p=>p.id!==deleteTargetId);
+    closeModal('confirmModal');
+    renderPersonnel();renderSalary();populateSelects();
+  } else if(deleteTargetType==='training'){
+    trainingData=trainingData.filter(t=>t.id!==deleteTargetId);
+    closeModal('confirmModal');
+    renderTraining();
+  }
   deleteTargetId=null;
-  closeModal('confirmModal');
-  renderPersonnel(); renderSalary(); populateSelects();
 }
 
-// ============ EDUCATION ============
+// ===================== EDUCATION =====================
 function renderEdu(){
   const sc={done:'pill-teal',studying:'pill-blue',pending:'pill-yellow'};
   const sl={done:'สำเร็จ',studying:'กำลังศึกษา',pending:'รอสมัคร'};
@@ -1214,7 +1073,7 @@ function renderEdu(){
     return `<tr>
       <td><div class="name-cell"><div class="ava">${nm.charAt(0)}</div>${nm}</div></td>
       <td style="font-weight:600">${e.course}</td><td>${e.school}</td>
-      <td style="font-family:'Sarabun',sans-serif">${e.year}</td><td>${e.duration}</td>
+      <td>${e.year}</td><td>${e.duration}</td>
       <td><div>${e.grade}</div>${e.pct>0?`<div class="prog" style="width:90px"><div class="prog-fill ${e.pct>80?'prog-gold':'prog-blue'}" style="width:${e.pct}%"></div></div>`:''}</td>
       <td><span class="pill ${sc[e.status]||'pill-blue'}"><span class="pill-dot"></span>${sl[e.status]||e.status}</span></td>
       <td><div style="display:flex;gap:5px">
@@ -1225,7 +1084,88 @@ function renderEdu(){
   }).join('');
 }
 
-// ============ FIELD ============
+// ===================== TRAINING =====================
+function openAddTrainingModal(){
+  document.getElementById('trainingModalTitle').textContent='＋ เพิ่มการฝึกอบรม';
+  document.getElementById('t_editId').value='';
+  ['t_pid','t_course','t_org','t_start','t_end','t_result'].forEach(id=>{
+    const el=document.getElementById(id);if(el) el.value='';
+  });
+  document.getElementById('t_hours').value='';
+  document.getElementById('t_status').value='done';
+  document.getElementById('trainingModal').classList.add('open');
+}
+
+function saveTraining(){
+  const pid=parseInt(document.getElementById('t_pid').value);
+  const course=document.getElementById('t_course').value.trim();
+  if(!pid||!course){alert('กรุณาเลือกกำลังพลและกรอกชื่อหลักสูตร');return;}
+  const obj={
+    id:nextTrainId++,pid,course,
+    org:document.getElementById('t_org').value.trim(),
+    start:document.getElementById('t_start').value.trim(),
+    end:document.getElementById('t_end').value.trim(),
+    hours:parseInt(document.getElementById('t_hours').value)||0,
+    result:document.getElementById('t_result').value,
+    status:document.getElementById('t_status').value
+  };
+  const editId=document.getElementById('t_editId').value;
+  if(editId){
+    const idx=trainingData.findIndex(t=>t.id==editId);
+    if(idx>-1) trainingData[idx]={...trainingData[idx],...obj,id:parseInt(editId)};
+  } else {
+    trainingData.push(obj);
+  }
+  closeModal('trainingModal');
+  renderTraining();
+}
+
+function renderTraining(){
+  const q=(document.getElementById('trainSearch')?.value||'').toLowerCase();
+  const sc={done:'pill-teal',ongoing:'pill-blue',pending:'pill-yellow'};
+  const sl={done:'เสร็จสิ้น',ongoing:'กำลังอบรม',pending:'รอเริ่ม'};
+  const filtered=trainingData.filter(t=>{
+    const p=personnel.find(x=>x.id===t.pid);
+    const nm=p?`${p.rank}${p.fname}${p.lname}`:'';
+    return !q||(nm+t.course+t.org).toLowerCase().includes(q);
+  });
+  document.getElementById('trainingBody').innerHTML=filtered.map(t=>{
+    const p=personnel.find(x=>x.id===t.pid);
+    const nm=p?`${p.rank} ${p.fname} ${p.lname}`:'—';
+    const resultPill=t.result==='ผ่าน'||t.result==='ดีมาก'||t.result==='ดี'?'pill-green':t.result==='ไม่ผ่าน'?'pill-red':'pill-gray';
+    return `<tr>
+      <td><div class="name-cell"><div class="ava">${nm.charAt(0)}</div>${nm}</div></td>
+      <td style="font-weight:600">${t.course}</td>
+      <td style="color:var(--text-2)">${t.org||'—'}</td>
+      <td style="font-size:12px;color:var(--text-3)">${t.start||'—'}</td>
+      <td style="font-size:12px;color:var(--text-3)">${t.end||'—'}</td>
+      <td style="font-weight:700;color:var(--accent-teal)">${t.hours?t.hours+' ชม.':'—'}</td>
+      <td>${t.result?`<span class="pill ${resultPill}"><span class="pill-dot"></span>${t.result}</span>`:'—'}</td>
+      <td><span class="pill ${sc[t.status]||'pill-gray'}"><span class="pill-dot"></span>${sl[t.status]||t.status}</span></td>
+      <td onclick="event.stopPropagation()"><div style="display:flex;gap:5px">
+        <button class="btn btn-outline btn-sm btn-icon" onclick="editTraining(${t.id})">✏️</button>
+        <button class="btn btn-red btn-sm btn-icon" onclick="askDelete(${t.id},'${t.course}','training')">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function editTraining(id){
+  const t=trainingData.find(x=>x.id===id);if(!t) return;
+  document.getElementById('trainingModalTitle').textContent='✏️ แก้ไขการฝึกอบรม';
+  document.getElementById('t_editId').value=id;
+  document.getElementById('t_pid').value=t.pid||'';
+  document.getElementById('t_course').value=t.course||'';
+  document.getElementById('t_org').value=t.org||'';
+  document.getElementById('t_start').value=t.start||'';
+  document.getElementById('t_end').value=t.end||'';
+  document.getElementById('t_hours').value=t.hours||'';
+  document.getElementById('t_result').value=t.result||'';
+  document.getElementById('t_status').value=t.status||'done';
+  document.getElementById('trainingModal').classList.add('open');
+}
+
+// ===================== FIELD =====================
 function renderField(){
   document.getElementById('fieldBody').innerHTML=fieldData.map(f=>{
     const p=personnel.find(x=>x.id===f.pid);
@@ -1234,7 +1174,7 @@ function renderField(){
       <td><div class="name-cell"><div class="ava">${nm.charAt(0)}</div>${nm}</div></td>
       <td style="font-weight:600">${f.mission}</td><td>${f.area}</td>
       <td>${f.start}</td><td>${f.end}</td><td>${f.pos}</td>
-      <td style="font-family:'Sarabun',sans-serif;font-weight:800;color:var(--accent-gold)">${f.double?f.double+' วัน':'กำลังนับ...'}</td>
+      <td style="font-weight:800;color:var(--accent-gold)">${formatDouble(f.double)}</td>
       <td><span class="pill ${f.status==='active'?'pill-red':'pill-teal'}"><span class="pill-dot"></span>${f.status==='active'?'ปฏิบัติการ':'สิ้นสุดแล้ว'}</span></td>
       <td><div style="display:flex;gap:5px">
         <button class="btn btn-outline btn-sm btn-icon">✏️</button>
@@ -1244,7 +1184,7 @@ function renderField(){
   }).join('');
 }
 
-// ============ PROMOTION ============
+// ===================== PROMOTION =====================
 function renderPromotion(){
   const sc={review:'pill-blue',prep:'pill-yellow',done:'pill-teal'};
   const sl={review:'อยู่ระหว่างพิจารณา',prep:'เตรียมสอบ',done:'ผ่านแล้ว'};
@@ -1256,7 +1196,7 @@ function renderPromotion(){
       <td><span class="rank-tag">${pr.rank}</span></td>
       <td><span class="rank-tag" style="background:var(--blue-pale);color:var(--blue);border-color:rgba(26,111,212,.3)">${pr.target}</span></td>
       <td style="color:var(--text-2);font-size:12px">${pr.condition}</td>
-      <td style="font-family:'Sarabun',sans-serif">${pr.exam}</td>
+      <td>${pr.exam}</td>
       <td><div style="font-size:12px;color:var(--text-2)">${pr.pct}%</div>
         <div class="prog" style="width:80px"><div class="prog-fill ${pr.pct>80?'prog-gold':'prog-blue'}" style="width:${pr.pct}%"></div></div></td>
       <td><span class="pill ${sc[pr.status]||'pill-blue'}"><span class="pill-dot"></span>${sl[pr.status]||pr.status}</span></td>
@@ -1268,27 +1208,25 @@ function renderPromotion(){
   }).join('');
 }
 
-// ============ SALARY ============
+// ===================== SALARY =====================
 function renderSalary(){
   document.getElementById('salaryBody').innerHTML=personnel.map(p=>`
     <tr>
       <td><div class="name-cell"><div class="ava">${p.fname.charAt(0)}</div>${p.rank} ${p.fname} ${p.lname}</div></td>
-      <td>${p.grade?p.grade.toUpperCase():'-'} / ขั้น ${p.step+1}</td>
-      <td>${(p.base||0).toLocaleString()}</td>
-      <td>${(p.prd||0).toLocaleString()}</td>
-      <td>${(p.psr1||0).toLocaleString()}</td>
-      <td>${(p.psr2||0).toLocaleString()}</td>
-      <td>${(p.psr3||0).toLocaleString()}</td>
-      <td>${(p.psr4||0).toLocaleString()}</td>
-      <td style="font-family:'Sarabun',sans-serif;font-weight:800;color:var(--blue)">${(p.salary||0).toLocaleString()}</td>
+      <td>${p.grade?GRADE_LABELS[p.grade]:'-'} / ${p.step}</td>
+      <td>${(p.base||0).toLocaleString()}</td><td>${(p.prd||0).toLocaleString()}</td>
+      <td>${(p.psr1||0).toLocaleString()}</td><td>${(p.psr2||0).toLocaleString()}</td>
+      <td>${(p.psr3||0).toLocaleString()}</td><td>${(p.psr4||0).toLocaleString()}</td>
+      <td style="font-weight:800;color:var(--blue)">${(p.salary||0).toLocaleString()}</td>
     </tr>`).join('');
+  updateStats();
 }
 
-// ============ PROFILE ============
+// ===================== PROFILE =====================
 function renderProfile(){
   const id=parseInt(document.getElementById('profileSelect').value);
   const p=personnel.find(x=>x.id===id);
-  if(!p){ document.getElementById('profileContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูประวัติ</div>'; return; }
+  if(!p){document.getElementById('profileContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูประวัติ</div>';return;}
   document.getElementById('profileContent').innerHTML=`
     <div class="phdr">
       <div class="pphoto">🪖<div class="pphoto-lbl">รูปถ่าย</div></div>
@@ -1317,21 +1255,22 @@ function renderProfile(){
     <div class="dsec">
       <div class="dsec-title">ข้อมูลราชการ</div>
       <div class="dg">
-        <div><div class="di-label">เลขประจำตัว 10 หลัก</div><div class="di-val" style="color:var(--text-1);font-weight:500">${p.idno}</div></div>
+        <div><div class="di-label">เลขประจำตัว 10 หลัก</div><div class="di-val">${p.idno}</div></div>
         <div><div class="di-label">ยศ</div><div class="di-val"><span class="rank-tag">${p.rank}</span></div></div>
         <div><div class="di-label">ตำแหน่ง</div><div class="di-val">${p.pos}</div></div>
         <div><div class="di-label">สังกัด</div><div class="di-val">${p.unit}</div></div>
         <div><div class="di-label">กองร้อย</div><div class="di-val">${p.company||'—'}</div></div>
         <div><div class="di-label">เหล่า</div><div class="di-val">${p.branch||'—'}</div></div>
         <div><div class="di-label">วันเข้ารับราชการ</div><div class="di-val">${p.start}</div></div>
-        <div><div class="di-label">อายุราชการ</div><div class="di-val" style="color:var(--text-1);font-weight:500">${serviceYears(p.start)}</div></div>
+        <div><div class="di-label">อายุราชการ</div><div class="di-val">${serviceYears(p.start)}</div></div>
+        <div><div class="di-label">วันทวีคูณรวม</div><div class="di-val" style="color:var(--accent-teal)">${formatDouble(getTotalDouble(p.id))}</div></div>
         <div><div class="di-label">สถานะ</div><div class="di-val"><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></div></div>
       </div>
     </div>
     <div class="dsec" style="border:none">
       <div class="dsec-title">ข้อมูลเงินเดือน</div>
       <div class="dg">
-        <div><div class="di-label">ระดับ/ขั้น</div><div class="di-val" style="color:var(--text-1);font-weight:500">${p.grade?p.grade.toUpperCase():'-'} / ขั้น ${p.step+1}</div></div>
+        <div><div class="di-label">ระดับ/ขั้น</div><div class="di-val">${p.grade?GRADE_LABELS[p.grade]:'-'} / ${p.step}</div></div>
         <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${(p.base||0).toLocaleString()} ฿</div></div>
         <div><div class="di-label">พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} ฿</div></div>
         <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val" style="color:var(--accent-green);font-size:18px;font-weight:800">${(p.salary||0).toLocaleString()} บาท</div></div>
@@ -1339,33 +1278,29 @@ function renderProfile(){
     </div>`;
 }
 
-// ============ PENSION ============
+// ===================== PENSION =====================
 function renderPension(){
   const id=parseInt(document.getElementById('pensionSelect').value);
   const p=personnel.find(x=>x.id===id);
-  if(!p){ document.getElementById('pensionContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูข้อมูล</div>'; return; }
-  const fds=fieldData.filter(f=>f.pid===id);
-  const totalDouble=fds.reduce((a,f)=>a+(f.double||0),0);
+  if(!p){document.getElementById('pensionContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูข้อมูล</div>';return;}
+  const totalDouble=getTotalDouble(p.id);
   let startBE=0,birthBE=0;
-  try{
-    const sp=p.start.split('/');
-    startBE=parseInt(sp[2]);
-    const bp=p.dob.split('/');
-    birthBE=parseInt(bp[2]);
-  }catch(e){}
+  try{const sp=p.start.split('/');startBE=parseInt(sp[2]);const bp=p.dob.split('/');birthBE=parseInt(bp[2]);}catch(e){}
   const retire25=startBE+25;
   const retire60=birthBE+60;
   const pension=Math.round(p.salary*0.5);
   const gratuity=Math.round(p.salary*25);
+  const curBE=new Date().getFullYear()+543;
   document.getElementById('pensionContent').innerHTML=`
     <div class="tcard">
       <div class="phdr" style="padding:16px 22px">
-        <div class="pphoto" style="width:60px;height:60px;font-size:24px">🪖<div class="pphoto-lbl">ชิ้น</div></div>
+        <div class="pphoto" style="width:60px;height:60px;font-size:24px">🪖</div>
         <div>
           <div class="pname" style="font-size:17px">${p.rank} ${p.fname} ${p.lname}</div>
           <div class="ptags" style="margin-top:6px">
             <span class="ptag">เข้ารับราชการ: ${p.start}</span>
             <span class="ptag">อายุราชการ: ${serviceYears(p.start)}</span>
+            <span class="ptag">วันทวีคูณ: ${formatDouble(totalDouble)}</span>
           </div>
         </div>
       </div>
@@ -1373,16 +1308,15 @@ function renderPension(){
         <div class="dsec-title">อายุราชการ</div>
         <div class="dg">
           <div><div class="di-label">อายุราชการปกติ</div><div class="di-val g">${serviceYears(p.start)}</div></div>
-          <div><div class="di-label">วันทวีคูณ</div><div class="di-val" style="color:var(--accent-teal)">${totalDouble} วัน</div></div>
-          <div><div class="di-label">รวมอายุราชการ (คาด)</div><div class="di-val hi">${serviceYears(p.start)} + ${(totalDouble/365).toFixed(1)} ปี</div></div>
+          <div><div class="di-label">วันทวีคูณ</div><div class="di-val" style="color:var(--accent-teal)">${formatDouble(totalDouble)}</div></div>
           <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val gold">${(p.salary||0).toLocaleString()} ฿</div></div>
         </div>
       </div>
       <div class="dsec">
         <div class="dsec-title">วันเกษียณอายุ</div>
         <div class="pen-grid">
-          <div class="pen-card" style="border-color:rgba(26,111,212,.3)"><div class="pen-lbl">🏅 เกษียณ 25 ปี (บำนาญ)</div><div class="pen-val" style="color:var(--blue)">พ.ศ. ${retire25}</div><div class="pen-sub">อีก ~${Math.max(0,retire25-(new Date().getFullYear()+543))} ปี</div></div>
-          <div class="pen-card" style="border-color:rgba(8,145,178,.3)"><div class="pen-lbl">👴 เกษียณอายุ 60 ปี</div><div class="pen-val" style="color:var(--accent-teal)">พ.ศ. ${retire60}</div><div class="pen-sub">อีก ~${Math.max(0,retire60-(new Date().getFullYear()+543))} ปี</div></div>
+          <div class="pen-card" style="border-color:rgba(26,111,212,.3)"><div class="pen-lbl">🏅 เกษียณ 25 ปี (บำนาญ)</div><div class="pen-val" style="color:var(--blue)">พ.ศ. ${retire25}</div><div class="pen-sub">อีก ~${Math.max(0,retire25-curBE)} ปี</div></div>
+          <div class="pen-card" style="border-color:rgba(8,145,178,.3)"><div class="pen-lbl">👴 เกษียณอายุ 60 ปี</div><div class="pen-val" style="color:var(--accent-teal)">พ.ศ. ${retire60}</div><div class="pen-sub">อีก ~${Math.max(0,retire60-curBE)} ปี</div></div>
           <div class="pen-card" style="border-color:rgba(200,134,26,.3)"><div class="pen-lbl">💰 บำเหน็จคาด (เงินก้อน)</div><div class="pen-val gold">${gratuity.toLocaleString()} ฿</div><div class="pen-sub">= เงินเดือน × 25</div></div>
           <div class="pen-card" style="border-color:rgba(22,163,74,.3)"><div class="pen-lbl">📅 บำนาญคาด / เดือน</div><div class="pen-val" style="color:var(--accent-green)">${pension.toLocaleString()} ฿</div><div class="pen-sub">= เงินเดือน × 50%</div></div>
         </div>
@@ -1396,7 +1330,7 @@ function renderPension(){
     </div>`;
 }
 
-// ============ DOCS ============
+// ===================== DOCS =====================
 let currentDocFilter='all';
 function filterDocs(cat,el){
   currentDocFilter=cat;
@@ -1406,11 +1340,11 @@ function filterDocs(cat,el){
 }
 function renderDocs(cat){
   const filtered=cat==='all'?docsData:docsData.filter(d=>d.cat===cat);
-  const icoMap={pdf:'doc-ico pdf 📄',img:'doc-ico img 🖼️',xls:'doc-ico xls 📊'};
+  const icoMap={pdf:'pdf 📄',img:'img 🖼️',xls:'xls 📊'};
   document.getElementById('docsGrid').innerHTML=filtered.map(d=>{
-    const parts=(icoMap[d.type]||'doc-ico pdf 📄').split(' ');
+    const parts=(icoMap[d.type]||'pdf 📄').split(' ');
     return `<div class="doc-card">
-      <div class="${parts[0]} ${parts[1]}">${parts[2]}</div>
+      <div class="doc-ico ${parts[0]}">${parts[1]}</div>
       <div style="flex:1">
         <div class="doc-name">${d.name}</div>
         <div class="doc-meta">${d.person} • ${d.date} • ${d.size}</div>
@@ -1425,10 +1359,10 @@ function renderDocs(cat){
   </div>`;
 }
 
-// ============ HELPERS ============
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+// ===================== MODAL HELPERS =====================
+function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.overlay').forEach(o=>{
-  o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); });
+  o.addEventListener('click',e=>{if(e.target===o) o.classList.remove('open');});
 });
 </script>
 </body>
