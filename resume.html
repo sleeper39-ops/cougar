@@ -2130,6 +2130,7 @@ function renderProfile(){
   const p=personnel.find(x=>String(x.id)===String(id));
   if(!p){document.getElementById('profileContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูประวัติ</div>';return;}
   document.getElementById('profileContent').innerHTML=`
+    <div class="tcard" style="padding:0;overflow:hidden;">
     <div class="phdr">
       <div class="pphoto-wrap">
         <div class="pphoto" data-photo-pid="${p.id}">
@@ -2140,7 +2141,7 @@ function renderProfile(){
           <button onclick="document.getElementById('photoInput_${p.id}').click()" title="อัปโหลด/เปลี่ยนรูป">📷 ${p.photo?'เปลี่ยนรูป':'อัปโหลด'}</button>
           ${p.photo ? `<button class="del" onclick="deletePersonnelPhoto(${p.id})">🗑️ ลบ</button>` : ''}
         </div>`:''}
-      </div>div>
+      </div>
       <div style="flex:1">
         <div class="pname">${p.rank} ${p.fname} ${p.lname}</div>
         <div class="ptags">
@@ -2186,6 +2187,7 @@ function renderProfile(){
         <div><div class="di-label">พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} ฿</div></div>
         <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val" style="color:var(--accent-green);font-size:18px;font-weight:800">${(p.salary||0).toLocaleString()} บาท</div></div>
       </div>
+    </div>
     </div>`;
 }
 
