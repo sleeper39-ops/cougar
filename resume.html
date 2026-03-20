@@ -244,21 +244,21 @@ tbody tr:last-child td{border-bottom:none;}
   <aside class="sidebar">
     <div class="sb-sec">
       <div class="sb-lbl">หน้าหลัก</div>
-      <button class="si active" onclick="navTo('personnel',this)"><span class="ic">👥</span>รายชื่อกำลังพล</button>
+      <button class="si active" data-sec="personnel" onclick="navTo('personnel',this)"><span class="ic">👥</span>รายชื่อกำลังพล</button>
     </div>
     <div class="sb-sec">
       <div class="sb-lbl">ข้อมูลรายบุคคล</div>
-      <button class="si" onclick="navTo('profile',this)"><span class="ic">🪪</span>ประวัติส่วนตัว</button>
-      <button class="si" onclick="navTo('education',this)"><span class="ic">🎓</span>หลักสูตรการศึกษา</button>
-      <button class="si" onclick="navTo('training',this)"><span class="ic">📋</span>การฝึกอบรม</button>
-      <button class="si" onclick="navTo('field',this)"><span class="ic">🛡️</span>ราชการสนาม</button>
+      <button class="si" data-sec="profile" onclick="navTo('profile',this)"><span class="ic">🪪</span>ประวัติส่วนตัว</button>
+      <button class="si" data-sec="education" onclick="navTo('education',this)"><span class="ic">🎓</span>หลักสูตรการศึกษา</button>
+      <button class="si" data-sec="training" onclick="navTo('training',this)"><span class="ic">📋</span>การฝึกอบรม</button>
+      <button class="si" data-sec="field" onclick="navTo('field',this)"><span class="ic">🛡️</span>ราชการสนาม</button>
     </div>
     <div class="sb-sec">
       <div class="sb-lbl">บริหารงาน</div>
-      <button class="si" onclick="navTo('promotion',this)"><span class="ic">📈</span>แผนเลื่อนยศ/สอบ</button>
-      <button class="si" onclick="navTo('salary',this)"><span class="ic">💰</span>เงินเดือน/ขั้นเงิน</button>
-      <button class="si" onclick="navTo('pension',this)"><span class="ic">🏅</span>บำเหน็จ บำนาญ</button>
-      <button class="si" onclick="navTo('documents',this)"><span class="ic">📁</span>เอกสารสำคัญ</button>
+      <button class="si" data-sec="promotion" onclick="navTo('promotion',this)"><span class="ic">📈</span>แผนเลื่อนยศ/สอบ</button>
+      <button class="si" data-sec="salary" onclick="navTo('salary',this)"><span class="ic">💰</span>เงินเดือน/ขั้นเงิน</button>
+      <button class="si" data-sec="pension" onclick="navTo('pension',this)"><span class="ic">🏅</span>บำเหน็จ บำนาญ</button>
+      <button class="si" data-sec="documents" onclick="navTo('documents',this)"><span class="ic">📁</span>เอกสารสำคัญ</button>
     </div>
   </aside>
 
@@ -1353,9 +1353,8 @@ function doLogin(){
   var err=document.getElementById('loginErr');
   if(u==='admin'&&p==='admin2'){
     err.style.display='none';
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('topbar').style.display='flex';
-    document.getElementById('appBody').style.display='flex';
+    sessionStorage.setItem('aps_logged_in','1');
+    showApp();
     initApp();
   } else {
     err.style.display='block';
@@ -1363,7 +1362,15 @@ function doLogin(){
   }
 }
 
+function showApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('topbar').style.display='flex';
+  document.getElementById('appBody').style.display='flex';
+}
+
 function doLogout(){
+  sessionStorage.removeItem('aps_logged_in');
+  sessionStorage.removeItem('aps_active_sec');
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('topbar').style.display='none';
   document.getElementById('appBody').style.display='none';
@@ -1376,6 +1383,17 @@ function doLogout(){
   var lu=document.getElementById('loginUser');
   if(lp) lp.addEventListener('keydown',function(e){if(e.key==='Enter') doLogin();});
   if(lu) lu.addEventListener('keydown',function(e){if(e.key==='Enter'&&lp) lp.focus();});
+
+  // ======= RESTORE SESSION เมื่อ refresh =======
+  if(sessionStorage.getItem('aps_logged_in')==='1'){
+    showApp();
+    // restore active section
+    var lastSec = sessionStorage.getItem('aps_active_sec')||'personnel';
+    var btn = document.querySelector('.si[data-sec="'+lastSec+'"]');
+    // ต้อง initApp ก่อนแล้วค่อย navTo
+    initApp();
+    navTo(lastSec, btn);
+  }
 })();
 
 
@@ -1386,6 +1404,13 @@ function navTo(sec, el){
   if(s) s.classList.add('active');
   document.querySelectorAll('.si').forEach(i=>i.classList.remove('active'));
   if(el) el.classList.add('active');
+  else {
+    // ถ้าไม่มี el ให้หาจาก data-sec
+    const btn = document.querySelector('.si[data-sec="'+sec+'"]');
+    if(btn) btn.classList.add('active');
+  }
+  // บันทึกหน้าปัจจุบันไว้สำหรับ refresh
+  sessionStorage.setItem('aps_active_sec', sec);
 }
 
 // ===================== INIT =====================
