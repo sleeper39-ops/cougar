@@ -2318,25 +2318,34 @@ async function gasGet(action, params){
   const gasUrl = getGasUrl();
   if(!gasUrl) throw new Error('ยังไม่ได้ตั้งค่า Apps Script URL');
   const qs = new URLSearchParams({ action, ...params });
-  const resp = await fetch(`${gasUrl}?${qs.toString()}`, { method:'GET' });
-  if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  return await resp.json();
+  const url = `${gasUrl}?${qs.toString()}`;
+  console.log('[GAS GET]', url);
+  const resp = await fetch(url, {
+    method: 'GET',
+    redirect: 'follow'
+  });
+  const text = await resp.text();
+  console.log('[GAS GET response]', text.slice(0, 200));
+  try { return JSON.parse(text); }
+  catch(e) { throw new Error('Parse error: ' + text.slice(0, 100)); }
 }
 
 async function gasPost(action, body){
   const gasUrl = getGasUrl();
   if(!gasUrl) throw new Error('ยังไม่ได้ตั้งค่า Apps Script URL');
-  // ใช้ form-urlencoded เพื่อหลีกเลี่ยง CORS preflight
   const payload = JSON.stringify({ action, ...body });
   const form = new URLSearchParams({ action, payload });
+  console.log('[GAS POST] action=', action);
   const resp = await fetch(gasUrl, {
     method: 'POST',
+    redirect: 'follow',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: form.toString()
   });
-  if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const text = await resp.text();
-  try{ return JSON.parse(text); } catch(e){ throw new Error('Invalid response: '+text.slice(0,100)); }
+  console.log('[GAS POST response]', text.slice(0, 200));
+  try { return JSON.parse(text); }
+  catch(e) { throw new Error('Parse error: ' + text.slice(0, 100)); }
 }
 
 function showUploadProgress(show, text, pct, detail){
@@ -2432,21 +2441,25 @@ async function handleFileUpload(event){
     }
   }
 
-  if(btn){ btn.disabled=false; btn.textContent='📎 เลือกไฟล์อัปโหลดไป Drive'; }
+  if(btn){ btn.disabled=false; btn.textContent='📎 เลือกไฟล์อัปโหลด'; }
   showUploadProgress(true,
     failCount===0 ? `✅ อัปโหลดสำเร็จ ${successCount}/${files.length} ไฟล์` : `⚠️ สำเร็จ ${successCount} ล้มเหลว ${failCount}`,
-    100, ''
+    100, 'กำลังโหลดรายการจาก Drive...'
   );
-  setTimeout(()=>showUploadProgress(false), 4000);
   event.target.value='';
-  renderDocs(currentDocFilter);
-  autoSave('documents');
+  renderDocs(currentDocFilter);          // แสดงทันทีจาก memory
+  autoSave('documents');                 // บันทึก metadata ไป Firebase
+  // โหลดรายการจาก Drive ใหม่ให้ข้อมูลอัปเดต
+  setTimeout(async ()=>{
+    await loadDocsFromDrive();
+    showUploadProgress(false);
+  }, 1500);
 }
 
 // โหลดรายการไฟล์จาก Drive ผ่าน Apps Script
 async function loadDocsFromDrive(){
   const gasUrl = getGasUrl();
-  if(!gasUrl) return; // silent skip ถ้าไม่ได้ตั้งค่า
+  if(!gasUrl) return;
   showFbStatus('🔄 กำลังโหลดรายการไฟล์จาก Drive...','blue');
   try{
     const result = await gasGet('listFiles', { subFolder:'APS_Documents' });
@@ -2456,22 +2469,35 @@ async function loadDocsFromDrive(){
     files.forEach(f=>{
       const ext=(f.fileName||'').split('.').pop().toLowerCase();
       const type=['pdf'].includes(ext)?'pdf':['jpg','jpeg','png','gif','webp'].includes(ext)?'img':'xls';
-      if(!docsData.find(d=>String(d.fileId)===String(f.fileId))){
+      const existing = docsData.find(d=>String(d.fileId)===String(f.fileId));
+      if(!existing){
         docsData.push({
-          id:f.fileId, pid:0, name:f.fileName, person:'—',
-          date:f.created||'—', type, cat:type==='img'?'photo':'order',
-          size:f.size?(f.size/1024).toFixed(1)+' KB':'—',
-          driveUrl:f.viewUrl||'', downloadUrl:f.driveUrl||'',
-          fileId:f.fileId, localData:null
+          id: f.fileId,
+          pid: 0,
+          name: f.fileName,
+          person: '—',
+          date: f.created||'—',
+          type, cat: type==='img'?'photo':'order',
+          size: f.size ? (f.size/1024).toFixed(1)+' KB' : '—',
+          driveUrl:    f.viewUrl||'',
+          downloadUrl: f.driveUrl||'',
+          fileId: f.fileId,
+          localData: null
         });
         added++;
+      } else {
+        // อัปเดต URL ถ้าเปลี่ยน
+        existing.driveUrl    = f.viewUrl    || existing.driveUrl;
+        existing.downloadUrl = f.driveUrl   || existing.downloadUrl;
       }
     });
     renderDocs(currentDocFilter);
-    if(files.length>0) showFbStatus(`✅ Drive: ${files.length} ไฟล์ (เพิ่มใหม่ ${added})`,'green');
+    showFbStatus(files.length>0
+      ? `✅ Drive: ${files.length} ไฟล์${added>0?' (เพิ่มใหม่ '+added+')':''}`
+      : '📁 Drive: ยังไม่มีไฟล์ใน APS_Documents', 'green');
   }catch(e){
-    showFbStatus('⚠️ Drive: '+e.message,'orange');
-    console.warn('loadDocsFromDrive:',e);
+    showFbStatus('⚠️ Drive โหลดไม่สำเร็จ: '+e.message,'orange');
+    console.warn('loadDocsFromDrive error:', e);
   }
 }
 
