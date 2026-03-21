@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบการจุดระเบิด | Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111520;
+    --surface2: #1a2030;
+    --border: #2a3550;
+    --accent: #f59e0b;
+    --accent2: #ef4444;
+    --accent3: #3b82f6;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --green: #22c55e;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #0f1929 0%, #1a1000 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 20px 16px 16px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .header-inner { max-width: 900px; margin: 0 auto; }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.4);
+    color: var(--accent); font-size: 10px; font-weight: 600; letter-spacing: 2px;
+    padding: 3px 10px; border-radius: 99px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .header h1 { font-size: clamp(20px,5vw,28px); font-weight: 800; color: #fff; line-height: 1.2; }
+  .header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Nav Tabs ── */
+  .nav { overflow-x: auto; padding: 12px 16px 0; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .nav-inner { display: flex; gap: 4px; max-width: 900px; margin: 0 auto; }
+  .nav-btn {
+    flex-shrink: 0; padding: 8px 14px; border-radius: 8px 8px 0 0;
+    background: transparent; color: var(--muted);
+    border: 1px solid transparent; border-bottom: none;
+    font-family: 'Sarabun', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .nav-btn:hover { color: var(--text); background: var(--surface2); }
+  .nav-btn.active {
+    color: var(--accent); background: var(--bg);
+    border-color: var(--border); border-bottom-color: var(--bg);
+    margin-bottom: -1px; position: relative; z-index: 1;
+  }
+
+  /* ── Content ── */
+  .content { padding: 16px; max-width: 900px; margin: 0 auto; }
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+  }
+  .card-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .card-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .card-title { font-size: 15px; font-weight: 700; color: #fff; }
+  .card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Steps ── */
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .step {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--surface2); border-radius: 8px; padding: 10px 12px;
+    border-left: 3px solid transparent;
+  }
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+  }
+  .step-text { font-size: 13px; line-height: 1.5; }
+  .step.orange { border-left-color: var(--accent); }
+  .step.orange .step-num { background: rgba(245,158,11,0.2); color: var(--accent); }
+  .step.blue { border-left-color: var(--accent3); }
+  .step.blue .step-num { background: rgba(59,130,246,0.2); color: var(--accent3); }
+  .step.red { border-left-color: var(--accent2); }
+  .step.red .step-num { background: rgba(239,68,68,0.2); color: var(--accent2); }
+  .step.green { border-left-color: var(--green); }
+  .step.green .step-num { background: rgba(34,197,94,0.2); color: var(--green); }
+
+  /* ── Warning Box ── */
+  .warning {
+    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 8px; padding: 12px; margin-top: 10px;
+  }
+  .warning-title { color: var(--accent2); font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .warning p { font-size: 12px; line-height: 1.6; color: #fca5a5; }
+
+  /* ── Info Grid ── */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .info-item {
+    background: var(--surface2); border-radius: 8px; padding: 10px;
+    border: 1px solid var(--border);
+  }
+  .info-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .info-value { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 2px; }
+
+  /* ── Circuit Types ── */
+  .circuit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .circuit-card {
+    background: var(--surface2); border-radius: 8px; padding: 12px;
+    border: 1px solid var(--border); text-align: center;
+  }
+  .circuit-card .circuit-name { font-size: 13px; font-weight: 700; margin: 8px 0 4px; }
+  .circuit-card .circuit-desc { font-size: 11px; color: var(--muted); }
+  .circuit-svg { margin: 0 auto; display: block; }
+
+  /* ── Calculator ── */
+  .calc-section { margin-bottom: 12px; }
+  .calc-title { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .calc-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .calc-label { font-size: 12px; color: var(--muted); width: 140px; flex-shrink: 0; }
+  .calc-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 10px; color: var(--text);
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .calc-input:focus { border-color: var(--accent); }
+  .calc-unit { font-size: 11px; color: var(--muted); width: 30px; flex-shrink: 0; }
+  .calc-btn {
+    width: 100%; padding: 12px; background: linear-gradient(135deg, var(--accent), #d97706);
+    color: #000; font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 700;
+    border: none; border-radius: 8px; cursor: pointer; transition: opacity 0.2s;
+  }
+  .calc-btn:hover { opacity: 0.85; }
+  .calc-result {
+    background: var(--surface2); border: 1px solid var(--green);
+    border-radius: 8px; padding: 14px; margin-top: 10px; display: none;
+  }
+  .calc-result.show { display: block; }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .result-row:last-child { border-bottom: none; }
+  .result-key { font-size: 12px; color: var(--muted); }
+  .result-val { font-size: 14px; font-weight: 700; color: var(--green); font-family: 'IBM Plex Mono', monospace; }
+
+  /* ── Overview Cards ── */
+  .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .ov-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+    cursor: pointer; transition: all 0.2s; text-decoration: none; color: inherit;
+    display: block;
+  }
+  .ov-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .ov-icon { font-size: 28px; margin-bottom: 8px; }
+  .ov-name { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.3; }
+  .ov-count { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .ov-dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px;
+  }
+
+  /* ── Diagram ── */
+  .diagram-container { background: var(--surface2); border-radius: 8px; padding: 16px; overflow-x: auto; }
+
+  /* ── Tag ── */
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 1px;
+    padding: 2px 8px; border-radius: 99px; text-transform: uppercase;
+  }
+  .tag-orange { background: rgba(245,158,11,0.15); color: var(--accent); border: 1px solid rgba(245,158,11,0.3); }
+  .tag-blue { background: rgba(59,130,246,0.15); color: var(--accent3); border: 1px solid rgba(59,130,246,0.3); }
+  .tag-red { background: rgba(239,68,68,0.15); color: var(--accent2); border: 1px solid rgba(239,68,68,0.3); }
+  .tag-green { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+
+  .divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+  @media(max-width:480px) {
+    .overview-grid { grid-template-columns: 1fr 1fr; }
+    .info-grid { grid-template-columns: 1fr 1fr; }
+    .circuit-grid { grid-template-columns: 1fr 1fr; }
+    .calc-label { width: 110px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-badge">💥 คู่มือเทคนิค</div>
+    <h1>ระบบการจุดระเบิด</h1>
+    <p>Explosive Ignition Systems — ภาพรวม · ขั้นตอน · เครื่องคำนวณ</p>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showTab('overview')">🏠 ภาพรวม</button>
+    <button class="nav-btn" onclick="showTab('fuse')">🔥 ชนวน</button>
+    <button class="nav-btn" onclick="showTab('electric')">⚡ ไฟฟ้า</button>
+    <button class="nav-btn" onclick="showTab('detonating')">💣 ฝักแค</button>
+    <button class="nav-btn" onclick="showTab('dual')">🔁 ระเบิดคู่</button>
+    <button class="nav-btn" onclick="showTab('safety')">🛡️ กฏความปลอดภัย</button>
+    <button class="nav-btn" onclick="showTab('calc')">🧮 คำนวณ</button>
+  </div>
+</nav>
+
+<div class="content">
+
+  <!-- ── OVERVIEW ── -->
+  <div id="overview" class="section active">
+    <div class="overview-grid">
+      <a class="ov-card" onclick="showTab('fuse')">
+        <div class="ov-icon">🔥</div>
+        <div class="ov-name">ระบบเชื้อปะทุชนวน</div>
+        <div class="ov-count"><span class="ov-dot" style="background:var(--accent)"></span>7 ขั้นตอน</div>
+      </a>
+      <a class="ov-card" onclick="showTab('electric')">
+        <div class="ov-icon">⚡</div>
+        <div class="ov-name">ระบบเชื้อปะทุไฟฟ้า</div>
+        <div class="ov-count"><span class="ov-dot" style="background:var(--accent3)"></span>9 ขั้นตอน</div>
+      </a>
+      <a class="ov-card" onclick="showTab('detonating')">
+        <div class="ov-icon">💣</div>
+        <div class="ov-name">ชนวนฝักแคระเบิด</div>
+        <div class="ov-count"><span class="ov-dot" style="background:var(--accent2)"></span>4 รูปแบบ</div>
+      </a>
+      <a class="ov-card" onclick="showTab('dual')">
+        <div class="ov-icon">🔁</div>
+        <div class="ov-name">ระบบระเบิดคู่</div>
+        <div class="ov-count"><span class="ov-dot" style="background:var(--green)"></span>3 ระบบ</div>
+      </a>
+    </div>
+
+    <!-- System flow diagram -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(245,158,11,0.15)">🗂️</div>
+        <div>
+          <div class="card-title">โครงสร้างระบบการจุดระเบิด</div>
+          <div class="card-sub">แผนผังการจำแนกระบบทั้งหมด</div>
+        </div>
+      </div>
+      <div class="diagram-container">
+        <svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:560px">
+          <!-- Root -->
+          <rect x="175" y="10" width="210" height="44" rx="8" fill="#1a2030" stroke="#f59e0b" stroke-width="2"/>
+          <text x="280" y="30" font-family="Sarabun,sans-serif" font-size="13" font-weight="700" fill="#f59e0b" text-anchor="middle">ระบบการจุดระเบิด</text>
+          <text x="280" y="47" font-family="Sarabun,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Explosive Ignition Systems</text>
+
+          <!-- Lines from root -->
+          <line x1="280" y1="54" x2="280" y2="70" stroke="#2a3550" stroke-width="1.5"/>
+          <line x1="70" y1="70" x2="490" y2="70" stroke="#2a3550" stroke-width="1.5"/>
+          <line x1="70" y1="70" x2="70" y2="86" stroke="#2a3550" stroke-width="1.5"/>
+          <line x1="200" y1="70" x2="200" y2="86" stroke="#2a3550" stroke-width="1.5"/>
+          <line x1="360" y1="70" x2="360" y2="86" stroke="#2a3550" stroke-width="1.5"/>
+          <line x1="490" y1="70" x2="490" y2="86" stroke="#2a3550" stroke-width="1.5"/>
+
+          <!-- Node 1 -->
+          <rect x="10" y="86" width="120" height="44" rx="6" fill="#1a2030" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="70" y="104" font-family="Sarabun,sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">เชื้อปะทุชนวน</text>
+          <text x="70" y="120" font-family="Sarabun,sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Safety Fuse + Cap</text>
+
+          <!-- Node 2 -->
+          <rect x="140" y="86" width="120" height="44" rx="6" fill="#1a2030" stroke="#3b82f6" stroke-width="1.5"/>
+          <text x="200" y="104" font-family="Sarabun,sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">เชื้อปะทุไฟฟ้า</text>
+          <text x="200" y="120" font-family="Sarabun,sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Electric Detonator</text>
+
+          <!-- Node 3 -->
+          <rect x="300" y="86" width="120" height="44" rx="6" fill="#1a2030" stroke="#ef4444" stroke-width="1.5"/>
+          <text x="360" y="104" font-family="Sarabun,sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">ชนวนฝักแคระเบิด</text>
+          <text x="360" y="120" font-family="Sarabun,sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Detonating Cord</text>
+
+          <!-- Node 4 -->
+          <rect x="430" y="86" width="120" height="44" rx="6" fill="#1a2030" stroke="#22c55e" stroke-width="1.5"/>
+          <text x="490" y="104" font-family="Sarabun,sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">ระบบระเบิดคู่</text>
+          <text x="490" y="120" font-family="Sarabun,sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Dual Initiation</text>
+
+          <!-- Sub nodes -->
+          <line x1="70" y1="130" x2="70" y2="155" stroke="#2a3550" stroke-width="1.2"/>
+          <rect x="10" y="155" width="120" height="36" rx="6" fill="#111520" stroke="#2a3550"/>
+          <text x="70" y="170" font-family="Sarabun,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">7 ขั้นตอน</text>
+          <text x="70" y="183" font-family="Sarabun,sans-serif" font-size="10" fill="#f59e0b" text-anchor="middle">ใช้เครื่องจุดชนวน</text>
+
+          <line x1="200" y1="130" x2="200" y2="155" stroke="#2a3550" stroke-width="1.2"/>
+          <rect x="140" y="155" width="120" height="36" rx="6" fill="#111520" stroke="#2a3550"/>
+          <text x="200" y="170" font-family="Sarabun,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">วงจร 3 แบบ</text>
+          <text x="200" y="183" font-family="Sarabun,sans-serif" font-size="10" fill="#3b82f6" text-anchor="middle">อนุกรม/ขนาน/ผสม</text>
+
+          <line x1="360" y1="130" x2="360" y2="155" stroke="#2a3550" stroke-width="1.2"/>
+          <rect x="300" y="155" width="120" height="36" rx="6" fill="#111520" stroke="#2a3550"/>
+          <text x="360" y="170" font-family="Sarabun,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">เงื่อน 4 ชนิด</text>
+          <text x="360" y="183" font-family="Sarabun,sans-serif" font-size="10" fill="#ef4444" text-anchor="middle">ตรง/ฉาก/พิรอด</text>
+
+          <line x1="490" y1="130" x2="490" y2="155" stroke="#2a3550" stroke-width="1.2"/>
+          <rect x="430" y="155" width="120" height="36" rx="6" fill="#111520" stroke="#2a3550"/>
+          <text x="490" y="170" font-family="Sarabun,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">ชนวน/ไฟฟ้า/ผสม</text>
+          <text x="490" y="183" font-family="Sarabun,sans-serif" font-size="10" fill="#22c55e" text-anchor="middle">เพิ่มความปลอดภัย</text>
+
+          <!-- Safety band -->
+          <rect x="80" y="235" width="400" height="34" rx="8" fill="rgba(239,68,68,0.12)" stroke="rgba(239,68,68,0.4)" stroke-width="1.5"/>
+          <text x="280" y="250" font-family="Sarabun,sans-serif" font-size="11" font-weight="700" fill="#ef4444" text-anchor="middle">⚠️ ต้องผ่านการฝึกอบรมและได้รับอนุญาตก่อนปฏิบัติงานจริง</text>
+          <text x="280" y="263" font-family="Sarabun,sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Authorized personnel only</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FUSE SYSTEM ── -->
+  <div id="fuse" class="section">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(245,158,11,0.15); font-size:22px">🔥</div>
+        <div>
+          <div class="card-title">ระบบการจุดระเบิดด้วยเชื้อปะทุชนวน</div>
+          <div class="card-sub"><span class="tag tag-orange">Safety Fuse System</span></div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step orange"><span class="step-num">1</span><span class="step-text">ตัดชนวนฝักแคเวลาทิ้ง <strong>6 นิ้ว</strong> แล้วทดสอบอัตราการลุกไหม้</span></div>
+        <div class="step orange"><span class="step-num">2</span><span class="step-text">ตัดชนวนฝักแคเวลาตามระยะที่ต้องการ</span></div>
+        <div class="step orange"><span class="step-num">3</span><span class="step-text">ตรวจสอบเชื้อปะทุชนวนให้อยู่ในสภาพดี</span></div>
+        <div class="step orange"><span class="step-num">4</span><span class="step-text">นำเชื้อปะทุชนวนประกอบเข้ากับฝักแคเวลา</span></div>
+        <div class="step orange"><span class="step-num">5</span><span class="step-text"><strong>บีบ</strong>เชื้อปะทุชนวนให้ยึดติดกับฝักแคเวลา</span></div>
+        <div class="step orange"><span class="step-num">6</span><span class="step-text">นำเชื้อปะทุชนวนประกอบเข้ากับดินระเบิด</span></div>
+        <div class="step orange"><span class="step-num">7</span><span class="step-text">ประกอบ<strong>เครื่องจุดชนวน</strong> หรือใช้ไม้ขีดจุด</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(245,158,11,0.15)">📐</div>
+        <div><div class="card-title">ข้อมูลอ้างอิง — อัตราการลุกไหม้</div></div>
+      </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">ทดสอบล่วงหน้า</div>
+          <div class="info-value" style="color:var(--accent)">6 นิ้ว</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">อัตราลุกไหม้ (ปกติ)</div>
+          <div class="info-value">30–45 วิ/ฟุต</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">การบีบยึด</div>
+          <div class="info-value">ใช้คีมบีบ</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">วิธีจุด</div>
+          <div class="info-value">เครื่อง / ไม้ขีด</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ELECTRIC SYSTEM ── -->
+  <div id="electric" class="section">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(59,130,246,0.15); font-size:22px">⚡</div>
+        <div>
+          <div class="card-title">ระบบการจุดระเบิดด้วยเชื้อปะทุไฟฟ้า</div>
+          <div class="card-sub"><span class="tag tag-blue">Electric Detonator System</span></div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step blue"><span class="step-num">1</span><span class="step-text">เตรียมอุปกรณ์จุดระเบิดครบชุด (เครื่องจุด, สาย, กัลวานอมิเตอร์)</span></div>
+        <div class="step blue"><span class="step-num">2</span><span class="step-text">วางสายไฟจุดระเบิดจากดินระเบิดไปยัง<strong>ตำบลจุดระเบิด</strong></span></div>
+        <div class="step blue"><span class="step-num">3</span><span class="step-text">ทดสอบสายไฟจุดระเบิดด้วย<strong>กัลวานอมิเตอร์</strong></span></div>
+        <div class="step blue"><span class="step-num">4</span><span class="step-text">ทดสอบเชื้อปะทุไฟฟ้า</span></div>
+        <div class="step blue"><span class="step-num">5</span><span class="step-text">ต่อวงจรจุดระเบิด (อนุกรม / ขนาน / ผสม)</span></div>
+        <div class="step blue"><span class="step-num">6</span><span class="step-text">ต่อสายจุดระเบิดเข้ากับสายของเชื้อปะทุไฟฟ้า</span></div>
+        <div class="step blue"><span class="step-num">7</span><span class="step-text">สอดเชื้อปะทุไฟฟ้าเข้าไปในดินระเบิด</span></div>
+        <div class="step blue"><span class="step-num">8</span><span class="step-text">ตรวจสอบวงจรจุดระเบิด<strong>อีกครั้ง</strong></span></div>
+        <div class="step blue"><span class="step-num">9</span><span class="step-text">ทำการจุดระเบิด</span></div>
+      </div>
+      <div class="warning">
+        <div class="warning-title">⚠️ ข้อควรระมัดระวัง</div>
+        <p>หากใช้เชื้อปะทุไฟฟ้า <strong>มากกว่า 2 ดอก</strong> ต้องเป็นชนิดเดียวกันและผลิตจาก<strong>บริษัทเดียวกัน</strong>เท่านั้น</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(59,130,246,0.15)">🔌</div>
+        <div><div class="card-title">รูปแบบการต่อวงจรจุดระเบิด</div></div>
+      </div>
+      <div class="circuit-grid">
+        <div class="circuit-card">
+          <svg class="circuit-svg" viewBox="0 0 100 60" width="90" height="54">
+            <!-- Series simple -->
+            <line x1="10" y1="30" x2="90" y2="30" stroke="#3b82f6" stroke-width="2"/>
+            <circle cx="30" cy="30" r="6" fill="#1a2030" stroke="#3b82f6" stroke-width="1.5"/>
+            <circle cx="55" cy="30" r="6" fill="#1a2030" stroke="#3b82f6" stroke-width="1.5"/>
+            <circle cx="80" cy="30" r="6" fill="#1a2030" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="8" y="22" font-size="7" fill="#94a3b8">+</text>
+            <text x="88" y="22" font-size="7" fill="#94a3b8">-</text>
+          </svg>
+          <div class="circuit-name" style="color:var(--accent3)">อนุกรมธรรมดา</div>
+          <div class="circuit-desc">ต่อเรียงลำดับ กระแสเท่ากัน</div>
+        </div>
+        <div class="circuit-card">
+          <svg class="circuit-svg" viewBox="0 0 100 70" width="90" height="63">
+            <!-- Parallel -->
+            <line x1="10" y1="15" x2="90" y2="15" stroke="#3b82f6" stroke-width="2"/>
+            <line x1="10" y1="55" x2="90" y2="55" stroke="#3b82f6" stroke-width="2"/>
+            <line x1="30" y1="15" x2="30" y2="55" stroke="#3b82f6" stroke-width="1.5"/>
+            <line x1="55" y1="15" x2="55" y2="55" stroke="#3b82f6" stroke-width="1.5"/>
+            <line x1="75" y1="15" x2="75" y2="55" stroke="#3b82f6" stroke-width="1.5"/>
+            <circle cx="30" cy="35" r="5" fill="#1a2030" stroke="#3b82f6" stroke-width="1.5"/>
+            <circle cx="55" cy="35" r="5" fill="#1a2030" stroke="#3b82f6" stroke-width="1.5"/>
+            <circle cx="75" cy="35" r="5" fill="#1a2030" stroke="#3b82f6" stroke-width="1.5"/>
+          </svg>
+          <div class="circuit-name" style="color:var(--accent3)">ขนาน</div>
+          <div class="circuit-desc">ต่อคู่ขนาน แรงดันเท่ากัน</div>
+        </div>
+        <div class="circuit-card" style="grid-column: span 2;">
+          <svg class="circuit-svg" viewBox="0 0 200 80" width="160" height="64">
+            <!-- Series-frog-leg -->
+            <line x1="10" y1="20" x2="190" y2="20" stroke="#f59e0b" stroke-width="1.5"/>
+            <line x1="10" y1="60" x2="190" y2="60" stroke="#f59e0b" stroke-width="1.5"/>
+            <line x1="10" y1="20" x2="10" y2="60" stroke="#f59e0b" stroke-width="1.5"/>
+            <line x1="190" y1="20" x2="190" y2="60" stroke="#f59e0b" stroke-width="1.5"/>
+            <!-- groups -->
+            <line x1="50" y1="20" x2="50" y2="60" stroke="#f59e0b" stroke-width="1.5"/>
+            <line x1="100" y1="20" x2="100" y2="60" stroke="#f59e0b" stroke-width="1.5"/>
+            <line x1="150" y1="20" x2="150" y2="60" stroke="#f59e0b" stroke-width="1.5"/>
+            <circle cx="30" cy="40" r="5" fill="#1a2030" stroke="#f59e0b" stroke-width="1.5"/>
+            <circle cx="75" cy="40" r="5" fill="#1a2030" stroke="#f59e0b" stroke-width="1.5"/>
+            <circle cx="125" cy="40" r="5" fill="#1a2030" stroke="#f59e0b" stroke-width="1.5"/>
+            <circle cx="170" cy="40" r="5" fill="#1a2030" stroke="#f59e0b" stroke-width="1.5"/>
+          </svg>
+          <div class="circuit-name" style="color:var(--accent)">อนุกรมกบกระโดด / ผสม</div>
+          <div class="circuit-desc">รวมข้อดีของอนุกรมและขนาน เพิ่มความน่าเชื่อถือ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DETONATING CORD ── -->
+  <div id="detonating" class="section">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(239,68,68,0.15); font-size:22px">💣</div>
+        <div>
+          <div class="card-title">ระบบชนวนฝักแคระเบิด</div>
+          <div class="card-sub"><span class="tag tag-red">Detonating Cord</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(239,68,68,0.15)">🪢</div>
+        <div><div class="card-title">ชนิดของเงื่อน</div></div>
+      </div>
+      <div class="steps">
+        <div class="step red">
+          <span class="step-num">①</span>
+          <div>
+            <div class="step-text" style="font-weight:700; color:#fca5a5">เงื่อนพิรอด (การต่อในแนวตรง)</div>
+            <div class="step-text" style="margin-top:4px; font-size:12px; color:var(--muted)">ต่อชนวนฝักแคในแนวตรง เว้นระยะ 6 นิ้ว</div>
+          </div>
+        </div>
+        <div class="step red">
+          <span class="step-num">②</span>
+          <div>
+            <div class="step-text" style="font-weight:700; color:#fca5a5">เงื่อนฝักดาบปลายเชือก</div>
+            <div class="step-text" style="margin-top:4px; font-size:12px; color:var(--muted)">ใช้กับดินระเบิดที่ปั้นได้ — ดินที่หุ้มรอบเงื่อนต้องหนา <strong>≥ ½ นิ้ว</strong></div>
+          </div>
+        </div>
+        <div class="step red">
+          <span class="step-num">③</span>
+          <div>
+            <div class="step-text" style="font-weight:700; color:#fca5a5">เงื่อนฝักดาบ (6 นิ้ว)</div>
+            <div class="step-text" style="margin-top:4px; font-size:12px; color:var(--muted)">ใช้ผูกกับแท่งดินระเบิด — ใช้เมื่อเชื้อปะทุ<strong>ไม่เพียงพอ</strong></div>
+          </div>
+        </div>
+        <div class="step red">
+          <span class="step-num">④</span>
+          <div>
+            <div class="step-text" style="font-weight:700; color:#fca5a5">เงื่อนบ่วงเท้าช้าง</div>
+            <div class="step-text" style="margin-top:4px; font-size:12px; color:var(--muted)">ใช้ผูกกับแท่งดินระเบิด<strong>ไดนาไมท์</strong> และ<strong>แอมโมเนียมไนเตรท</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(239,68,68,0.15)">🔀</div>
+        <div><div class="card-title">การต่อชนวนในแนวฉาก (Ring Main)</div></div>
+      </div>
+      <div class="diagram-container">
+        <svg viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:300px">
+          <!-- Ring main line -->
+          <rect x="20" y="60" width="260" height="3" rx="1" fill="#ef4444" opacity="0.8"/>
+          <text x="150" y="52" font-family="Sarabun,sans-serif" font-size="10" fill="#ef4444" text-anchor="middle" font-weight="700">Ring Main (แนวหลัก)</text>
+          <!-- Branch lines -->
+          <line x1="70" y1="63" x2="70" y2="130" stroke="#f59e0b" stroke-width="2"/>
+          <line x1="150" y1="63" x2="150" y2="130" stroke="#f59e0b" stroke-width="2"/>
+          <line x1="230" y1="63" x2="230" y2="130" stroke="#f59e0b" stroke-width="2"/>
+          <!-- Explosive blocks -->
+          <rect x="45" y="130" width="50" height="30" rx="4" fill="#1a2030" stroke="#ef4444" stroke-width="1.5"/>
+          <text x="70" y="148" font-family="Sarabun,sans-serif" font-size="9" fill="#ef4444" text-anchor="middle" font-weight="700">ดินระเบิด</text>
+          <text x="70" y="158" font-family="Sarabun,sans-serif" font-size="8" fill="#64748b" text-anchor="middle">1</text>
+          <rect x="125" y="130" width="50" height="30" rx="4" fill="#1a2030" stroke="#ef4444" stroke-width="1.5"/>
+          <text x="150" y="148" font-family="Sarabun,sans-serif" font-size="9" fill="#ef4444" text-anchor="middle" font-weight="700">ดินระเบิด</text>
+          <text x="150" y="158" font-family="Sarabun,sans-serif" font-size="8" fill="#64748b" text-anchor="middle">2</text>
+          <rect x="205" y="130" width="50" height="30" rx="4" fill="#1a2030" stroke="#ef4444" stroke-width="1.5"/>
+          <text x="230" y="148" font-family="Sarabun,sans-serif" font-size="9" fill="#ef4444" text-anchor="middle" font-weight="700">ดินระเบิด</text>
+          <text x="230" y="158" font-family="Sarabun,sans-serif" font-size="8" fill="#64748b" text-anchor="middle">3</text>
+          <!-- Labels -->
+          <text x="108" y="100" font-family="Sarabun,sans-serif" font-size="9" fill="#f59e0b" text-anchor="middle">Branch lines</text>
+          <text x="108" y="112" font-family="Sarabun,sans-serif" font-size="8" fill="#94a3b8" text-anchor="middle">(สาขา)</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DUAL SYSTEM ── -->
+  <div id="dual" class="section">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(34,197,94,0.15); font-size:22px">🔁</div>
+        <div>
+          <div class="card-title">ระบบการจุดระเบิดแบบระเบิดคู่</div>
+          <div class="card-sub"><span class="tag tag-green">Dual Initiation — เพิ่มความน่าเชื่อถือ</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(34,197,94,0.15)">🔥🔥</div>
+        <div><div class="card-title">ระบบเชื้อปะทุชนวน 2 ระบบ</div></div>
+      </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">ชนิด</div>
+          <div class="info-value">ชนวนฝักแคระเบิด</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">จุดโดย</div>
+          <div class="info-value">เครื่องจุดชนวน</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">เชื้อปะทุ</div>
+          <div class="info-value" style="color:var(--accent)">ชนวน 2 ดอก</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">ชนวนเวลา</div>
+          <div class="info-value">ฝักแคเวลา</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(34,197,94,0.15)">⚡⚡</div>
+        <div><div class="card-title">ระบบเชื้อปะทุไฟฟ้า 2 ระบบ (A+B)</div></div>
+      </div>
+      <div class="steps">
+        <div class="step green"><span class="step-num">A</span><span class="step-text">ระบบ A — สายจุดระเบิดชุดแรก ต่อกับดินระเบิด</span></div>
+        <div class="step green"><span class="step-num">B</span><span class="step-text">ระบบ B — สายจุดระเบิดชุดที่สอง เป็น backup</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(34,197,94,0.15)">🔥⚡</div>
+        <div><div class="card-title">ระบบผสม (ชนวน + ไฟฟ้า)</div></div>
+      </div>
+      <div class="steps">
+        <div class="step green"><span class="step-num">1</span><span class="step-text">ชนวนฝักแคระเบิด + เชื้อปะทุชนวน → ระบบหลัก</span></div>
+        <div class="step green"><span class="step-num">2</span><span class="step-text">เชื้อปะทุไฟฟ้า + สายจุดระเบิด → ระบบสำรอง</span></div>
+        <div class="step green"><span class="step-num">3</span><span class="step-text">ทั้งสองระบบต่อเข้ากับ<strong>ดินระเบิดเดียวกัน</strong></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SAFETY RULES ── -->
+  <div id="safety" class="section">
+
+    <!-- General Rules -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(245,158,11,0.15); font-size:22px">⚠️</div>
+        <div>
+          <div class="card-title">กฏความปลอดภัยทั่วไป</div>
+          <div class="card-sub"><span class="tag tag-orange">General Safety Rules</span></div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step orange"><span class="step-num">1</span><span class="step-text">อย่าจับถือวัตถุระเบิดด้วยความ<strong>สะเพร่า</strong></span></div>
+        <div class="step orange"><span class="step-num">2</span><span class="step-text">ไม่แบ่งความรับผิดชอบในการเตรียมการวางดินระเบิดและการจุดระเบิด — ต้องมอบให้<strong>ผู้ใดผู้หนึ่ง</strong>เป็นผู้กำหนด ตรวจตราทุกขั้นตอน และกำหนดผู้สำรองไว้แทน</span></div>
+      </div>
+    </div>
+
+    <!-- Storage -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(59,130,246,0.15); font-size:20px">🏪</div>
+        <div>
+          <div class="card-title">1. การเก็บรักษา</div>
+          <div class="card-sub"><span class="tag tag-blue">Storage</span></div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าเก็บวัตถุระเบิดในที่<strong>เปียกชื้น</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าเก็บ<strong>วัตถุระเบิดและเชื้อประทุในคลังเดียวกัน</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าปฏิบัติหรือเก็บวัตถุระเบิดไว้<strong>ใกล้โรงเรือน</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าทิ้งวัตถุระเบิด<strong>โดยไม่มีการป้องกัน</strong></span></div>
+      </div>
+    </div>
+
+    <!-- Handling -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(239,68,68,0.15); font-size:20px">🤲</div>
+        <div>
+          <div class="card-title">2. การปฏิบัติเกี่ยวกับวัตถุระเบิด</div>
+          <div class="card-sub"><span class="tag tag-red">Handling</span></div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าเปิดหีบวัตถุระเบิด<strong>ภายในหรือใกล้คลัง</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าสูบบุหรี่หรือทิ้งเปลวไฟ<strong>ใกล้วัตถุระเบิด</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าขนวัตถุระเบิดและเชื้อปะทุ<strong>ในรถคันเดียวกัน</strong></span></div>
+        <div class="step orange"><span class="step-num">!</span><span class="step-text">หากจำเป็นต้องไปในรถคันเดียวกัน ให้เอา<strong>เชื้อปะทุไว้ข้างหน้ารถ</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าปล่อยให้วัตถุระเบิดหรือเชื้อปะทุ<strong>ถูกแดดส่อง</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าเอาเชื้อปะทุใส่ใน<strong>กระเป๋าเสื้อหรือกางเกง</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">ห้ามใช้ลวด, ตะปู<strong>แกะเชื้อปะทุออกจากกล่อง</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">ห้ามมิให้เอาสิ่งใด<strong>วางทับเชื้อปะทุ</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">ห้าม<strong>ดึงสายไฟจากเชื้อปะทุไฟฟ้าเล่น</strong></span></div>
+      </div>
+    </div>
+
+    <!-- Priming -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(245,158,11,0.15); font-size:20px">🔧</div>
+        <div>
+          <div class="card-title">3. การเตรียมดินระเบิดนำ</div>
+          <div class="card-sub"><span class="tag tag-orange">Priming</span></div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าใช้เชื้อปะทุไฟฟ้า<strong>ต่างชนิดในวงจรเดียวกัน</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าลืม<strong>แก้ลัดวงจรออก</strong>ก่อนทำการจุดระเบิด</span></div>
+        <div class="step green"><span class="step-num">✓</span><span class="step-text">พยายาม<strong>ปิดวงจรไว้ตลอด</strong>ในขณะเตรียมและวางดินระเบิด</span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าทำดินระเบิดนำด้วยเชื้อปะทุไฟฟ้า<strong>ขณะฟ้าคะนองหรือใกล้จะมีพายุ</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าบีบเชื้อปะทุด้วย<strong>ฟันหรือมีด</strong> — ใช้<strong>คีมบีบเท่านั้น</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าใช้เชื้อปะทุชนวน<strong>ใต้น้ำ, หลุมเปียก, ใต้พื้นดิน</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าตัดชนวนฝักแคเวลา<strong>สั้นเกินไป</strong> — ต้องทดสอบอัตราการลุกไหม้ก่อนเสมอ</span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">ห้าม<strong>บิดหรือพับ</strong>ชนวนฝักแคเวลา</span></div>
+        <div class="step green"><span class="step-num">✓</span><span class="step-text">ตรวจสอบ<strong>ปลายเปิดปิดของเชื้อปะทุชนวน</strong>ให้อยู่ในสภาพถูกต้องก่อนใช้งาน</span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">ห้าม<strong>ดัน, บิด, หมุน</strong>เชื้อปะทุชนวนขณะสอดชนวนฝักแคเวลา</span></div>
+      </div>
+    </div>
+
+    <!-- Placement -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(59,130,246,0.15); font-size:20px">📍</div>
+        <div>
+          <div class="card-title">4. การวางดินระเบิด</div>
+          <div class="card-sub"><span class="tag tag-blue">Placement</span></div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าใช้กำลัง<strong>ดันดินระเบิดนำ</strong>เข้าไปในรูที่เจาะ</span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">ห้ามใช้<strong>ท่อนโลหะหรือเครื่องมือทำการอัดลม</strong> — ใช้ไม้ที่ไม่มีเหลี่ยมเท่านั้น</span></div>
+        <div class="step green"><span class="step-num">✓</span><span class="step-text">เวลาฝึกต้องวางด้าน<strong>ใกล้กับผู้สังเกตการณ์</strong></span></div>
+      </div>
+    </div>
+
+    <!-- Firing -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(239,68,68,0.15); font-size:20px">💥</div>
+        <div>
+          <div class="card-title">5. การจุดระเบิด</div>
+          <div class="card-sub"><span class="tag tag-red">Firing</span></div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าต่อสายไฟเข้าเครื่องจุด<strong>จนกว่าจะพร้อมจุดระเบิด</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าจุดระเบิดจนกว่า<strong>ผู้มีอำนาจสั่ง</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าปล่อยสายไฟ<strong>ติดกับเครื่องจุด</strong>เมื่อทำการจุดระเบิดแล้ว</span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าจุดระเบิดจนกว่า<strong>ทุกคนออกไปจากเขตอันตราย</strong> — ต้องจัดยามเฝ้าป้องกันบุคคลเข้าพื้นที่</span></div>
+        <div class="step green"><span class="step-num">✓</span><span class="step-text"><strong>ผู้อำนวยการ</strong>ต้องเป็นผู้เก็บเครื่องจุดไว้กับตัวเองตลอดเวลา</span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่ากลัวเครื่องจุดระเบิด — ใช้อย่าง<strong>กระฉับกระเฉง มั่นใจ</strong></span></div>
+        <div class="step red"><span class="step-num">✕</span><span class="step-text">อย่าบรรจุดินระเบิดเข้าไปในรูที่ใช้ดินระเบิดขยายรูโดยเร็ว — <strong>ปล่อยให้รูเย็นก่อน</strong> อาจใช้น้ำระบายความร้อนได้</span></div>
+        <div class="step orange"><span class="step-num">!</span><span class="step-text">อย่าลืม<strong>พันข้อต่อเชื้อปะทุชนวนกับชนวนฝักแคเวลา</strong> เมื่อตัดชนวนฝักแคเวลาสั้นกว่า 1 ฟุต เพื่อป้องกันประกายไฟ</span></div>
+      </div>
+    </div>
+
+    <!-- Failure to fire -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(239,68,68,0.15); font-size:20px">🔴</div>
+        <div>
+          <div class="card-title">การปฏิบัติเมื่อเกิดความล้มเหลวในการจุดระเบิด (ระบบชนวน)</div>
+          <div class="card-sub"><span class="tag tag-red">Misfire Procedures</span></div>
+        </div>
+      </div>
+
+      <div class="steps" style="margin-bottom:14px;">
+        <div class="step orange"><span class="step-num">⏱</span><span class="step-text">ต้องรอคอย <strong>30 นาที</strong> (ในสถานการณ์รบ — ออกตรวจทันที)</span></div>
+        <div class="step orange"><span class="step-num">1</span><span class="step-text">วางดินระเบิด<strong>ไม่มีการอัดลม</strong> → ใช้ดินระเบิด 1 ปอนด์ วางด้านข้าง</span></div>
+        <div class="step orange"><span class="step-num">2</span><span class="step-text">วางดินระเบิดมีการอัดลม<strong>หนา/สูงไม่เกิน 1 ฟุต</strong> → ใช้ดินระเบิด 2 ปอนด์ วางด้านบน</span></div>
+        <div class="step orange"><span class="step-num">3</span><span class="step-text">วางดินระเบิดมีการอัดลม<strong>สูงเกิน 1 ฟุต</strong> → นำวัสดุอัดลมออกเหลือไว้ ≤ 1 ฟุต แล้วใช้ดินระเบิด 2 ปอนด์ วางด้านบน</span></div>
+        <div class="step orange"><span class="step-num">4</span><span class="step-text">วางดินระเบิด<strong>ในหลุม</strong> → เจาะหลุมใหม่ลึกเท่าเดิม ห่างไม่เกิน 1 ฟุต ใส่ดินระเบิด 2 ปอนด์ <strong>วางก้นหลุมที่ขุดใหม่</strong></span></div>
+      </div>
+
+      <div class="divider"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(59,130,246,0.15); font-size:20px">⚡</div>
+        <div>
+          <div class="card-title">การปฏิบัติเมื่อเกิดความล้มเหลวในการจุดระเบิด (ระบบไฟฟ้า)</div>
+          <div class="card-sub"><span class="tag tag-blue">Electric Misfire Procedures</span></div>
+        </div>
+      </div>
+      <div class="steps" style="margin-bottom:14px;">
+        <div class="step blue"><span class="step-num">A</span><span class="step-text">ระบบไฟฟ้า<strong>แบบคู่</strong> (บนดิน/ฝังดิน มีหรือไม่มีอัดลม) → รอคอย <strong>30 นาที</strong></span></div>
+        <div class="step blue"><span class="step-num">B</span><span class="step-text">ระบบไฟฟ้า<strong>แบบเดี่ยว วางบนดิน ไม่อัดลม</strong> → ออกตรวจได้ทันที</span></div>
+        <div class="step blue"><span class="step-num">C</span><span class="step-text">ระบบไฟฟ้า<strong>เดี่ยว มีการอัดลม</strong> → ตรวจสายไฟ → ตรวจวงจร 2–3 ครั้ง → จุดด้วยเครื่องใหม่ → ปลดสาย ลัดวงจร รอ 30 นาที → นำอัดลมออกเหลือ ≤ 1 ฟุต ใช้ดินระเบิด 2 ปอนด์ วางบนสุด จุดใหม่</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── CALCULATOR ── -->
+  <div id="calc" class="section">
+
+    <!-- Safety Distance calc -->
+    <div class="card">
+      <div class="calc-section">
+        <div class="calc-title">🛡️ คำนวณระยะปลอดภัย (เกณฑ์ความปลอดภัย)</div>
+        <div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:8px;">เกณฑ์ระยะปลอดภัย</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="background:rgba(34,197,94,0.2);color:var(--green);font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;">น้อยกว่า 27 ปอนด์</span>
+              <span style="font-size:12px;color:var(--text)">ระยะปลอดภัยขั้นต่ำ <strong>300 เมตร</strong></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="background:rgba(245,158,11,0.2);color:var(--accent);font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;">27 – 425 ปอนด์</span>
+              <span style="font-size:12px;color:var(--text)">ระยะ (ม.) = <strong>100 × ∛น้ำหนัก(ปอนด์)</strong></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="background:rgba(239,68,68,0.2);color:var(--accent2);font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;">425 ปอนด์ขึ้นไป</span>
+              <span style="font-size:12px;color:var(--text)">ระยะปลอดภัยอย่างน้อย <strong>750 เมตร</strong></span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:8px;margin-top:2px;">
+              <span style="background:rgba(59,130,246,0.2);color:var(--accent3);font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;margin-top:1px;">วัตถุแข็งมาก</span>
+              <span style="font-size:12px;color:var(--text)">ต้องมีที่กำบัง — ระยะจากที่กำบังถึงตำบลจุดระเบิดอย่างน้อย <strong>100 เมตร</strong></span>
+            </div>
+          </div>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">น้ำหนักดินระเบิด</span>
+          <input class="calc-input" id="safe-weight" type="number" placeholder="100" min="0.1" step="0.1">
+          <span class="calc-unit">ปอนด์</span>
+        </div>
+        <button class="calc-btn" onclick="calcSafeDist()">คำนวณระยะปลอดภัย</button>
+        <div class="calc-result" id="safe-result"></div>
+      </div>
+    </div>
+
+    <!-- Fuse length calc -->
+    <div class="card">
+      <div class="calc-section">
+        <div class="calc-title">🔥 คำนวณความยาวชนวนฝักแคเวลา</div>
+        <div class="calc-row">
+          <span class="calc-label">ระยะเวลาที่ต้องการ</span>
+          <input class="calc-input" id="fuse-time" type="number" placeholder="90" min="1">
+          <span class="calc-unit">วินาที</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">อัตราลุกไหม้</span>
+          <input class="calc-input" id="fuse-rate" type="number" placeholder="40" min="1">
+          <span class="calc-unit">วิ/ฟุต</span>
+        </div>
+        <button class="calc-btn" onclick="calcFuse()">คำนวณความยาวชนวน</button>
+        <div class="calc-result" id="fuse-result">
+          <div class="result-row">
+            <span class="result-key">ความยาวชนวนที่ต้องการ</span>
+            <span class="result-val" id="fuse-len">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">บวกระยะทดสอบ 6 นิ้ว (0.5 ฟุต)</span>
+            <span class="result-val" id="fuse-total">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">ระยะรวม (เมตร)</span>
+            <span class="result-val" id="fuse-m">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Series circuit calc -->
+    <div class="card">
+      <div class="calc-section">
+        <div class="calc-title">⚡ คำนวณวงจรอนุกรม</div>
+        <div class="calc-row">
+          <span class="calc-label">จำนวนเชื้อปะทุ</span>
+          <input class="calc-input" id="det-count" type="number" placeholder="5" min="1">
+          <span class="calc-unit">ดอก</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">ความต้านทาน/ดอก</span>
+          <input class="calc-input" id="det-r" type="number" placeholder="1.5" step="0.1">
+          <span class="calc-unit">Ω</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">ความต้านทานสาย</span>
+          <input class="calc-input" id="wire-r" type="number" placeholder="2.0" step="0.1">
+          <span class="calc-unit">Ω</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">แรงดันแหล่งจ่าย</span>
+          <input class="calc-input" id="volt" type="number" placeholder="12" min="1">
+          <span class="calc-unit">V</span>
+        </div>
+        <button class="calc-btn" onclick="calcCircuit()">คำนวณวงจร</button>
+        <div class="calc-result" id="circuit-result">
+          <div class="result-row">
+            <span class="result-key">ความต้านทานรวม</span>
+            <span class="result-val" id="r-total">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">กระแสในวงจร</span>
+            <span class="result-val" id="i-total">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">กระแสต่อเชื้อปะทุ</span>
+            <span class="result-val" id="i-per-det">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">สถานะ</span>
+            <span class="result-val" id="status-ok">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blast timing calc -->
+    <div class="card">
+      <div class="calc-section">
+        <div class="calc-title">⏱️ คำนวณเวลาระเบิด (หลายจุด)</div>
+        <div class="calc-row">
+          <span class="calc-label">จำนวนจุดระเบิด</span>
+          <input class="calc-input" id="blast-n" type="number" placeholder="3" min="1" max="20">
+          <span class="calc-unit">จุด</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">ความยาวชนวน/จุด</span>
+          <input class="calc-input" id="blast-len" type="number" placeholder="2.5" step="0.1">
+          <span class="calc-unit">ฟุต</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">อัตราลุกไหม้</span>
+          <input class="calc-input" id="blast-rate" type="number" placeholder="40">
+          <span class="calc-unit">วิ/ฟุต</span>
+        </div>
+        <button class="calc-btn" onclick="calcBlast()">คำนวณเวลาทั้งหมด</button>
+        <div class="calc-result" id="blast-result">
+          <div class="result-row">
+            <span class="result-key">เวลาระเบิดต่อจุด</span>
+            <span class="result-val" id="blast-single">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">เวลาระเบิดรวม (นาที)</span>
+            <span class="result-val" id="blast-total-min">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">ระยะปลอดภัยขั้นต่ำ</span>
+            <span class="result-val" id="blast-safe">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const btns = document.querySelectorAll('.nav-btn');
+  const map = {overview:0, fuse:1, electric:2, detonating:3, dual:4, safety:5, calc:6};
+  btns[map[id]].classList.add('active');
+}
+
+function calcSafeDist() {
+  const w = parseFloat(document.getElementById('safe-weight').value);
+  if (!w || w <= 0) {
+    showError('safe-result', 'กรุณากรอกน้ำหนักดินระเบิด (ปอนด์) ให้ถูกต้อง');
+    return;
+  }
+  resetBorder('safe-result');
+
+  let dist, category, catColor;
+  if (w < 27) {
+    dist = 300;
+    category = 'น้อยกว่า 27 ปอนด์';
+    catColor = 'var(--green)';
+  } else if (w <= 425) {
+    dist = Math.ceil(100 * Math.cbrt(w));
+    category = '27 – 425 ปอนด์ (ใช้สูตร 100×∛น้ำหนัก)';
+    catColor = 'var(--accent)';
+  } else {
+    dist = 750;
+    category = '425 ปอนด์ขึ้นไป';
+    catColor = 'var(--accent2)';
+  }
+
+  const distKm = (dist / 1000).toFixed(3);
+  const distColor = w >= 425 ? 'var(--accent2)' : w >= 27 ? 'var(--accent)' : 'var(--green)';
+
+  document.getElementById('safe-result').innerHTML = `
+    <div class="result-row">
+      <span class="result-key">น้ำหนักดินระเบิด</span>
+      <span class="result-val">${w} ปอนด์</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">หมวดน้ำหนัก</span>
+      <span class="result-val" style="color:${catColor};font-size:12px">${category}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">ระยะปลอดภัยขั้นต่ำ</span>
+      <span class="result-val" style="color:${distColor};font-size:18px">${dist} เมตร</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">ระยะปลอดภัย (กม.)</span>
+      <span class="result-val" style="color:${distColor}">${distKm} กม.</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">วัตถุแข็งมาก — ระยะที่กำบัง</span>
+      <span class="result-val" style="color:var(--accent3)">≥ 100 เมตร</span>
+    </div>
+  `;
+  document.getElementById('safe-result').classList.add('show');
+}
+
+
+function showError(resultId, msg) {
+  const el = document.getElementById(resultId);
+  el.style.borderColor = '#ef4444';
+  el.innerHTML = '<div style="color:#ef4444;font-size:13px;font-weight:700;text-align:center;padding:6px 0;">⚠️ ' + msg + '</div>';
+  el.classList.add('show');
+}
+
+function resetBorder(resultId) {
+  document.getElementById(resultId).style.borderColor = 'var(--green)';
+}
+
+function calcFuse() {
+  const t = parseFloat(document.getElementById('fuse-time').value);
+  const r = parseFloat(document.getElementById('fuse-rate').value);
+
+  if (!t || t <= 0 || !r || r <= 0) {
+    showError('fuse-result', 'กรุณากรอกข้อมูลให้ครบและต้องมากกว่า 0');
+    return;
+  }
+  resetBorder('fuse-result');
+
+  const len = t / r;
+  const total = len + 0.5;
+  const m = total * 0.3048;
+
+  document.getElementById('fuse-result').innerHTML = `
+    <div class="result-row">
+      <span class="result-key">ความยาวชนวนที่ต้องการ</span>
+      <span class="result-val">${len.toFixed(2)} ฟุต</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">บวกระยะทดสอบ 6 นิ้ว (0.5 ฟุต)</span>
+      <span class="result-val">${total.toFixed(2)} ฟุต</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">ระยะรวม (เมตร)</span>
+      <span class="result-val">${m.toFixed(2)} ม.</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">เวลาเผาไหม้จริง</span>
+      <span class="result-val">${t.toFixed(0)} วินาที</span>
+    </div>
+  `;
+  document.getElementById('fuse-result').classList.add('show');
+}
+
+function calcCircuit() {
+  const n = parseFloat(document.getElementById('det-count').value);
+  const dr = parseFloat(document.getElementById('det-r').value);
+  const wr = parseFloat(document.getElementById('wire-r').value) || 0;
+  const v = parseFloat(document.getElementById('volt').value);
+
+  if (!n || n <= 0 || !dr || dr <= 0 || !v || v <= 0) {
+    showError('circuit-result', 'กรุณากรอกข้อมูลให้ครบ (จำนวนดอก / ความต้านทาน / แรงดัน)');
+    return;
+  }
+  resetBorder('circuit-result');
+
+  const rTotal = n * dr + wr;
+  const i = v / rTotal;
+  const minCurrent = 1.0;
+  const ok = i >= minCurrent;
+  const statusColor = ok ? '#22c55e' : '#ef4444';
+  const statusText = ok ? '✅ กระแสเพียงพอ' : '❌ กระแสต่ำเกินไป';
+
+  document.getElementById('circuit-result').innerHTML = `
+    <div class="result-row">
+      <span class="result-key">ความต้านทานรวม</span>
+      <span class="result-val">${rTotal.toFixed(2)} Ω</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">กระแสในวงจร</span>
+      <span class="result-val">${i.toFixed(3)} A</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">กระแสต่อเชื้อปะทุ</span>
+      <span class="result-val">${i.toFixed(3)} A</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">แรงดันตกคร่อมสายไฟ</span>
+      <span class="result-val">${(i * wr).toFixed(3)} V</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">สถานะ</span>
+      <span class="result-val" style="color:${statusColor}">${statusText}</span>
+    </div>
+  `;
+  document.getElementById('circuit-result').classList.add('show');
+}
+
+function calcBlast() {
+  const n = parseFloat(document.getElementById('blast-n').value);
+  const len = parseFloat(document.getElementById('blast-len').value);
+  const rate = parseFloat(document.getElementById('blast-rate').value);
+
+  if (!n || n <= 0 || !len || len <= 0 || !rate || rate <= 0) {
+    showError('blast-result', 'กรุณากรอกข้อมูลให้ครบและต้องมากกว่า 0');
+    return;
+  }
+  resetBorder('blast-result');
+
+  const single = len * rate;
+  const totalSec = single;
+  const totalMin = (totalSec / 60).toFixed(2);
+  const totalSecAll = n * single;
+  const totalMinAll = (totalSecAll / 60).toFixed(2);
+
+  document.getElementById('blast-result').innerHTML = `
+    <div class="result-row">
+      <span class="result-key">เวลาชนวน 1 จุด</span>
+      <span class="result-val">${single.toFixed(0)} วินาที</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">เวลาชนวน 1 จุด (นาที)</span>
+      <span class="result-val">${totalMin} นาที</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">รวม ${n} จุด (วินาที)</span>
+      <span class="result-val">${totalSecAll.toFixed(0)} วินาที</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">รวม ${n} จุด (นาที)</span>
+      <span class="result-val">${totalMinAll} นาที</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">ระยะปลอดภัยขั้นต่ำ</span>
+      <span class="result-val" style="color:#ef4444">≥ 300 เมตร</span>
+    </div>
+  `;
+  document.getElementById('blast-result').classList.add('show');
+}
+</script>
+</body>
+</html>
