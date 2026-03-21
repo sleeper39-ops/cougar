@@ -1083,6 +1083,22 @@ let trainingData=[];
 let fieldData=[];
 let promotionData=[];
 let docsData=[];
+// หมวดหมู่เอกสาร — ต้อง declare ที่นี่ก่อน function ทุกตัว
+let docCategories = JSON.parse(localStorage.getItem('doc_categories') || 'null') || [
+  {key:'order', name:'คำสั่ง/หนังสือ'},
+  {key:'double', name:'วันทวีคูณ'},
+  {key:'pension', name:'บำเหน็จ/บำนาญ'},
+  {key:'photo', name:'รูปภาพ'},
+  {key:'cert', name:'ประกาศนียบัตร'}
+];
+function saveDocCategories(){
+  localStorage.setItem('doc_categories', JSON.stringify(docCategories));
+}
+function getCatsObj(){
+  const o = {};
+  docCategories.forEach(c => o[c.key] = c.name);
+  return o;
+}
 let nextId=1;
 let nextTrainId=1;
 let deleteTargetId=null;
@@ -2353,23 +2369,6 @@ function filterDocs(cat,el){
   const pid = getSelectedPid();
   renderDocs(cat, pid ? parseInt(pid) : null);
 }
-// ===================== CATEGORY MANAGEMENT (ต้องอยู่ก่อน renderDocs) =====================
-let docCategories = JSON.parse(localStorage.getItem('doc_categories') || 'null') || [
-  {key:'order', name:'คำสั่ง/หนังสือ'},
-  {key:'double', name:'วันทวีคูณ'},
-  {key:'pension', name:'บำเหน็จ/บำนาญ'},
-  {key:'photo', name:'รูปภาพ'},
-  {key:'cert', name:'ประกาศนียบัตร'}
-];
-function saveDocCategories(){
-  localStorage.setItem('doc_categories', JSON.stringify(docCategories));
-}
-function getCatsObj(){
-  const o = {};
-  docCategories.forEach(c => o[c.key] = c.name);
-  return o;
-}
-
 function renderDocs(cat, pidFilter){
   const pid = pidFilter !== undefined ? pidFilter : (getSelectedPid() ? parseInt(getSelectedPid()) : null);
   const el = document.getElementById('docsGrid');
