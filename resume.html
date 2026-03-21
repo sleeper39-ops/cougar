@@ -2353,6 +2353,23 @@ function filterDocs(cat,el){
   const pid = getSelectedPid();
   renderDocs(cat, pid ? parseInt(pid) : null);
 }
+// ===================== CATEGORY MANAGEMENT (ต้องอยู่ก่อน renderDocs) =====================
+let docCategories = JSON.parse(localStorage.getItem('doc_categories') || 'null') || [
+  {key:'order', name:'คำสั่ง/หนังสือ'},
+  {key:'double', name:'วันทวีคูณ'},
+  {key:'pension', name:'บำเหน็จ/บำนาญ'},
+  {key:'photo', name:'รูปภาพ'},
+  {key:'cert', name:'ประกาศนียบัตร'}
+];
+function saveDocCategories(){
+  localStorage.setItem('doc_categories', JSON.stringify(docCategories));
+}
+function getCatsObj(){
+  const o = {};
+  docCategories.forEach(c => o[c.key] = c.name);
+  return o;
+}
+
 function renderDocs(cat, pidFilter){
   const pid = pidFilter !== undefined ? pidFilter : (getSelectedPid() ? parseInt(getSelectedPid()) : null);
   const el = document.getElementById('docsGrid');
@@ -2964,27 +2981,6 @@ async function deleteDoc(docId, fileId){
 }
 
 
-// ===================== CATEGORY MANAGEMENT =====================
-// หมวดหมู่เริ่มต้น — เก็บใน localStorage
-let docCategories = JSON.parse(localStorage.getItem('doc_categories') || 'null') || [
-  {key:'order', name:'คำสั่ง/หนังสือ'},
-  {key:'double', name:'วันทวีคูณ'},
-  {key:'pension', name:'บำเหน็จ/บำนาญ'},
-  {key:'photo', name:'รูปภาพ'},
-  {key:'cert', name:'ประกาศนียบัตร'}
-];
-
-function saveDocCategories(){
-  localStorage.setItem('doc_categories', JSON.stringify(docCategories));
-}
-
-// สร้าง cats object จาก docCategories array
-function getCatsObj(){
-  const o = {};
-  docCategories.forEach(c => o[c.key] = c.name);
-  return o;
-}
-
 // rebuild stab buttons
 function rebuildDocTabs(){
   const tabs = document.getElementById('docTabs');
@@ -3019,23 +3015,29 @@ function renderCatList(){
     div.className = 'cat-item';
     div.draggable = true;
     div.id = 'cat-item-' + i;
-    div.innerHTML = `
-      <span class="cat-drag-handle">⠿</span>
-      <span class="cat-name" contenteditable="true"
-        style="outline:none;cursor:text;flex:1;">${c.name}</span>
-      <span class="cat-key">${c.key}</span>
-      <button class="btn btn-red btn-sm btn-icon" style="padding:3px 8px;font-size:12px;">🗑️</button>`;
-    div.querySelector('.cat-name').addEventListener('blur', function(){
-      renameCat(i, this.textContent.trim());
+    div.dataset.index = i;
+    div.innerHTML =
+      '<span class="cat-drag-handle">⠿</span>' +
+      '<span class="cat-name" contenteditable="true" style="outline:none;cursor:text;flex:1;">' + c.name + '</span>' +
+      '<span class="cat-key">' + c.key + '</span>' +
+      '<button class="btn btn-red btn-sm btn-icon" style="padding:3px 8px;font-size:12px;">🗑️</button>';
+    const nameEl = div.querySelector('.cat-name');
+    const delBtn = div.querySelector('.btn-red');
+    nameEl.addEventListener('blur', function(){
+      const idx = parseInt(div.dataset.index);
+      renameCat(idx, this.textContent.trim());
     });
-    div.querySelector('.cat-name').addEventListener('keydown', function(e){
+    nameEl.addEventListener('keydown', function(e){
       if(e.key==='Enter'){ e.preventDefault(); this.blur(); }
     });
-    div.querySelector('.btn-red').addEventListener('click', function(){ deleteCat(i); });
-    div.addEventListener('dragstart', e => catDragStart(e, i));
-    div.addEventListener('dragover',  e => catDragOver(e, i));
-    div.addEventListener('drop',      e => catDrop(e, i));
-    div.addEventListener('dragleave', e => catDragLeave(e));
+    delBtn.addEventListener('click', function(){
+      const idx = parseInt(div.dataset.index);
+      deleteCat(idx);
+    });
+    div.addEventListener('dragstart', function(e){ catDragStart(e, parseInt(div.dataset.index)); });
+    div.addEventListener('dragover',  function(e){ catDragOver(e,  parseInt(div.dataset.index)); });
+    div.addEventListener('drop',      function(e){ catDrop(e,      parseInt(div.dataset.index)); });
+    div.addEventListener('dragleave', function(e){ catDragLeave(e); });
     el.appendChild(div);
   });
 }
@@ -3058,11 +3060,12 @@ function catDragLeave(e){
 }
 function catDrop(e, i){
   e.preventDefault();
-  if(dragSrcIdx === null || dragSrcIdx === i) return;
+  document.querySelectorAll('.cat-item').forEach(el=>el.classList.remove('drag-over'));
+  if(dragSrcIdx === null || dragSrcIdx === i){ dragSrcIdx = null; return; }
   const moved = docCategories.splice(dragSrcIdx, 1)[0];
   docCategories.splice(i, 0, moved);
   dragSrcIdx = null;
-  renderCatList();
+  renderCatList(); // renderCatList จะ set data-index ใหม่ให้ทุก item
 }
 
 function renameCat(i, newName){
