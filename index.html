@@ -105,6 +105,14 @@
         .home-hero .tagline {
             font-size: 14px; color: #888; margin-top: 10px; letter-spacing: 1px;
         }
+
+        /* ── Mobile ── */
+        @media (max-width: 600px) {
+            .home-hero .logo-big { font-size: 2.4rem; gap: 10px; }
+            .home-hero .logo-big i { font-size: 2rem !important; }
+            .nav-item, .nav-link { padding: 0 12px; font-size: 12px; }
+            .topbar-logo { font-size: 1.1rem; padding-right: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -117,7 +125,7 @@
     </div>
     <div class="topbar-nav">
         <div class="nav-item active" id="nav-dash"     onclick="window.showPage('dash-page', this)"><i class="fas fa-home"></i> หน้าหลัก</div>
-        <a   class="nav-link"        href="demoman.html"                                             ><i class="fas fa-bomb"></i> Demoman</a>
+        <div class="nav-item"        id="nav-demoman"  onclick="window.showPage('demoman-page', this)"><i class="fas fa-bomb"></i> Demoman</div>
         <a   class="nav-link"        href="obsdock.html"                                             ><i class="fas fa-boxes-stacked"></i> Obs Docks UI</a>
         <div class="nav-item"        id="nav-edoc"     onclick="window.showPage('edoc-page', this)"><i class="fas fa-file-alt"></i> E-doc</div>
         <div class="nav-item"        id="nav-resume"   onclick="window.showPage('resume-page', this)"><i class="fas fa-id-card"></i> Resume</div>
@@ -140,6 +148,7 @@
         </div>
     </div>
 
+    <div id="demoman-page"  class="page-content"><iframe src="demoman.html"></iframe></div>
     <div id="edoc-page"     class="page-content"><iframe src="e-doc.html"></iframe></div>
     <div id="resume-page"   class="page-content"><iframe src="resume.html"></iframe></div>
     <div id="live-page"     class="page-content"><iframe src="cctv.html"></iframe></div>
