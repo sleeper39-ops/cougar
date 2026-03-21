@@ -221,12 +221,11 @@ tbody tr:last-child td{border-bottom:none;}
   .docs-grid{grid-template-columns:repeat(2,1fr);}
 }
 
-.cat-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-1);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;cursor:grab;}
-.cat-item:active{cursor:grabbing;background:var(--blue-pale);}
-.cat-item.drag-over{border-color:var(--blue);background:var(--blue-pale);}
+.cat-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-1);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;}
 .cat-drag-handle{color:var(--text-3);font-size:16px;cursor:grab;flex-shrink:0;}
-.cat-name{flex:1;font-size:14px;font-weight:600;color:var(--text-1);}
-.cat-key{font-size:11px;color:var(--text-3);background:var(--bg-2);padding:1px 6px;border-radius:4px;font-family:monospace;}
+.cat-drag-handle:active{cursor:grabbing;}
+.cat-item.drag-over{border-color:var(--blue);background:var(--blue-pale);}
+.cat-key{font-size:11px;color:var(--text-3);background:var(--bg-2);padding:1px 6px;border-radius:4px;font-family:monospace;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -458,10 +457,8 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="section-page" id="sec-documents">
       <!-- Header row with title + settings button -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div class="stabs" id="docTabs" style="margin-bottom:0;">
-          <!-- สร้างโดย rebuildDocTabs() ตอน initApp -->
-        </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;"><button class="btn btn-outline btn-sm admin-only" onclick="openCatSettingsModal()" title="จัดการหมวดหมู่เอกสาร" style="gap:6px;">🗂️ หมวดหมู่</button><button class="btn btn-outline btn-sm admin-only" onclick="openDriveSettingsModal()" title="ตั้งค่า Google Drive / Apps Script" style="gap:6px;">⚙️ ตั้งค่า Drive</button></div>
+        <div class="stabs" id="docTabs" style="margin-bottom:0;"></div>
+        <div style="display:flex;gap:6px;flex-shrink:0;"><button class="btn btn-outline btn-sm admin-only" onclick="openCatSettingsModal()" title="จัดการหมวดหมู่" style="gap:6px;">🗂️ หมวดหมู่</button><button class="btn btn-outline btn-sm admin-only" onclick="openDriveSettingsModal()" title="ตั้งค่า Google Drive / Apps Script" style="gap:6px;">⚙️ ตั้งค่า Drive</button></div>
       </div>
       <div class="toolbar">
         <select class="fsel" style="min-width:200px;display:none;" id="docPersonFilter" onchange="filterDocsByPerson()">
@@ -1083,7 +1080,7 @@ let trainingData=[];
 let fieldData=[];
 let promotionData=[];
 let docsData=[];
-// หมวดหมู่เอกสาร — ต้อง declare ที่นี่ก่อน function ทุกตัว
+// หมวดหมู่เอกสาร — ต้อง declare ก่อน function ทุกตัว
 let docCategories = JSON.parse(localStorage.getItem('doc_categories') || 'null') || [
   {key:'order', name:'คำสั่ง/หนังสือ'},
   {key:'double', name:'วันทวีคูณ'},
@@ -1843,9 +1840,9 @@ function renderPersonnel(){
   } else {
     document.getElementById('personnelBody').innerHTML=filtered.map((p,i)=>`
       <tr onclick="openDetail(${p.id})">
-        <td style="color:var(--text-3)">${i+1}</td>
+        <td style="color:var(--text-3);font-size:15px">${i+1}</td>
         <td><div class="name-cell">
-          <div><div style="font-weight:700">${p.rank} ${p.fname} ${p.lname}</div>
+          <div><div style="font-size:15px;font-weight:700">${p.rank} ${p.fname} ${p.lname}</div>
           <div style="font-size:13px;color:var(--text-3)">${p.unit}</div></div></div></td>
         <td style="color:var(--blue);font-size:15px;font-weight:700">${p.idno}</td>
         <td style="color:var(--text-2);font-size:15px">${p.pos}</td>
@@ -1858,7 +1855,7 @@ function renderPersonnel(){
         <td style="font-size:15px;color:var(--text-2)">${(p.psr2||0).toLocaleString()}</td>
         <td style="font-size:15px;color:var(--text-2)">${(p.psr3||0).toLocaleString()}</td>
         <td style="font-size:15px;color:var(--text-2)">${(p.psr4||0).toLocaleString()}</td>
-        <td style="font-weight:800;color:var(--text-1)">${(p.salary||0).toLocaleString()}</td>
+        <td style="font-weight:800;color:var(--text-1);font-size:15px">${(p.salary||0).toLocaleString()}</td>
         <td><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></td>
         <td onclick="event.stopPropagation()">
           <div style="display:flex;gap:5px">
@@ -2206,7 +2203,7 @@ function renderProfile(){
     <div class="dsec">
       <div class="dsec-title">ข้อมูลส่วนตัว</div>
       <div class="dg">
-        <div><div class="di-label">เลขบัตรประชาชน</div><div class="di-val" style="font-size:12.5px">${p.cid||'—'}</div></div>
+        <div><div class="di-label">เลขบัตรประชาชน</div><div class="di-val">${p.cid||'—'}</div></div>
         <div><div class="di-label">วันเกิด (พ.ศ.)</div><div class="di-val">${p.dob||'—'}</div></div>
         <div><div class="di-label">กรุ๊ปเลือด</div><div class="di-val">${p.blood||'—'}</div></div>
         <div><div class="di-label">เบอร์โทรศัพท์</div><div class="di-val">${p.tel||'—'}</div></div>
@@ -2980,18 +2977,17 @@ async function deleteDoc(docId, fileId){
 }
 
 
-// rebuild stab buttons
+// ===================== CATEGORY MANAGEMENT =====================
 function rebuildDocTabs(){
   const tabs = document.getElementById('docTabs');
   if(!tabs) return;
-  // build buttons then attach listeners — avoids 'this' scope issues in onclick strings
+  tabs.innerHTML = '';
   const allBtn = document.createElement('button');
   allBtn.className = 'stab active';
   allBtn.textContent = 'ทั้งหมด';
   allBtn.addEventListener('click', function(){ filterDocs('all', this); });
-  tabs.innerHTML = '';
   tabs.appendChild(allBtn);
-  docCategories.forEach(c => {
+  docCategories.forEach(function(c){
     const btn = document.createElement('button');
     btn.className = 'stab';
     btn.textContent = c.name;
@@ -2999,38 +2995,34 @@ function rebuildDocTabs(){
     tabs.appendChild(btn);
   });
 }
-
 function openCatSettingsModal(){
   renderCatList();
   document.getElementById('catSettingsModal').classList.add('open');
 }
-
 function renderCatList(){
   const el = document.getElementById('catList');
   if(!el) return;
   el.innerHTML = '';
-  docCategories.forEach((c, i) => {
+  docCategories.forEach(function(c, i){
     const div = document.createElement('div');
     div.className = 'cat-item';
     div.draggable = true;
     div.id = 'cat-item-' + i;
-    div.dataset.index = i;
+    div.dataset.index = String(i);
     div.innerHTML =
       '<span class="cat-drag-handle">⠿</span>' +
       '<span class="cat-name" contenteditable="true" style="outline:none;cursor:text;flex:1;">' + c.name + '</span>' +
       '<span class="cat-key">' + c.key + '</span>' +
       '<button class="btn btn-red btn-sm btn-icon" style="padding:3px 8px;font-size:12px;">🗑️</button>';
-    const nameEl = div.querySelector('.cat-name');
-    const delBtn = div.querySelector('.btn-red');
-    nameEl.addEventListener('blur', function(){
-      const idx = parseInt(div.dataset.index);
-      renameCat(idx, this.textContent.trim());
+    div.querySelector('.cat-name').addEventListener('blur', function(){
+      var idx = parseInt(div.dataset.index);
+      if(this.textContent.trim()) docCategories[idx].name = this.textContent.trim();
     });
-    nameEl.addEventListener('keydown', function(e){
-      if(e.key==='Enter'){ e.preventDefault(); this.blur(); }
+    div.querySelector('.cat-name').addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); this.blur(); }
     });
-    delBtn.addEventListener('click', function(){
-      const idx = parseInt(div.dataset.index);
+    div.querySelector('.btn-red').addEventListener('click', function(){
+      var idx = parseInt(div.dataset.index);
       deleteCat(idx);
     });
     div.addEventListener('dragstart', function(e){ catDragStart(e, parseInt(div.dataset.index)); });
@@ -3040,60 +3032,41 @@ function renderCatList(){
     el.appendChild(div);
   });
 }
-
-let dragSrcIdx = null;
-
-function catDragStart(e, i){
-  dragSrcIdx = i;
-  e.dataTransfer.effectAllowed = 'move';
-}
+var catDragSrcIdx = null;
+function catDragStart(e, i){ catDragSrcIdx = i; e.dataTransfer.effectAllowed = 'move'; }
 function catDragOver(e, i){
   e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  document.querySelectorAll('.cat-item').forEach(el=>el.classList.remove('drag-over'));
-  const el = document.getElementById('cat-item-'+i);
+  document.querySelectorAll('.cat-item').forEach(function(el){ el.classList.remove('drag-over'); });
+  var el = document.getElementById('cat-item-' + i);
   if(el) el.classList.add('drag-over');
 }
-function catDragLeave(e){
-  e.currentTarget.classList.remove('drag-over');
-}
+function catDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
 function catDrop(e, i){
   e.preventDefault();
-  document.querySelectorAll('.cat-item').forEach(el=>el.classList.remove('drag-over'));
-  if(dragSrcIdx === null || dragSrcIdx === i){ dragSrcIdx = null; return; }
-  const moved = docCategories.splice(dragSrcIdx, 1)[0];
+  document.querySelectorAll('.cat-item').forEach(function(el){ el.classList.remove('drag-over'); });
+  if(catDragSrcIdx === null || catDragSrcIdx === i){ catDragSrcIdx = null; return; }
+  var moved = docCategories.splice(catDragSrcIdx, 1)[0];
   docCategories.splice(i, 0, moved);
-  dragSrcIdx = null;
-  renderCatList(); // renderCatList จะ set data-index ใหม่ให้ทุก item
-}
-
-function renameCat(i, newName){
-  if(!newName) return;
-  docCategories[i].name = newName;
-}
-
-function deleteCat(i){
-  if(docCategories.length <= 1){ alert('ต้องมีหมวดหมู่อย่างน้อย 1 รายการ'); return; }
-  const cat = docCategories[i];
-  // หาหมวดหมู่สำรอง (ไม่ใช่ตัวที่จะลบ)
-  const fallbackCat = docCategories.find((c,idx)=>idx!==i) || {key:'order'};
-  if(!confirm('ลบหมวดหมู่ "'+cat.name+'"?\nเอกสารที่ใช้หมวดหมู่นี้จะถูกย้ายไป "'+fallbackCat.name+'"')) return;
-  docsData.forEach(d => { if(d.cat === cat.key) d.cat = fallbackCat.key; });
-  docCategories.splice(i, 1);
+  catDragSrcIdx = null;
   renderCatList();
 }
-
 function addDocCategory(){
-  const input = document.getElementById('newCatName');
-  const name = (input.value || '').trim();
+  var input = document.getElementById('newCatName');
+  var name = (input.value || '').trim();
   if(!name){ alert('กรุณากรอกชื่อหมวดหมู่'); return; }
-  // generate key from name
-  const key = 'cat_' + Date.now();
-  docCategories.push({key, name});
+  docCategories.push({ key: 'cat_' + Date.now(), name: name });
   input.value = '';
   renderCatList();
 }
-
+function deleteCat(i){
+  if(docCategories.length <= 1){ alert('ต้องมีหมวดหมู่อย่างน้อย 1 รายการ'); return; }
+  var cat = docCategories[i];
+  var fallback = docCategories.find(function(c, idx){ return idx !== i; }) || {key:'order'};
+  if(!confirm('ลบหมวดหมู่ "' + cat.name + '"?\nเอกสารที่ใช้หมวดหมู่นี้จะถูกย้ายไป "' + fallback.name + '"')) return;
+  docsData.forEach(function(d){ if(d.cat === cat.key) d.cat = fallback.key; });
+  docCategories.splice(i, 1);
+  renderCatList();
+}
 function saveCatSettings(){
   saveDocCategories();
   rebuildDocTabs();
@@ -3101,12 +3074,6 @@ function saveCatSettings(){
   closeModal('catSettingsModal');
   showFbStatus('✅ บันทึกหมวดหมู่แล้ว', 'green');
 }
-
-// Override renderDocs to use dynamic cats
-const _origRenderDocs = renderDocs;
-// patch cats usage in renderDocs — we monkey-patch getCatsObj into it
-// instead we directly override the cats variable by patching renderDocs call
-
 // ===================== END CATEGORY MANAGEMENT =====================
 
 // ===================== FILE ICON HELPERS =====================
