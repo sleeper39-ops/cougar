@@ -99,7 +99,7 @@ tbody td{padding:12px 14px;font-size:15px;border-bottom:1px solid var(--bg-2);ve
 tbody tr{cursor:pointer;transition:background .12s;}
 tbody tr:hover{background:var(--bg-hover);}
 tbody tr:last-child td{border-bottom:none;}
-.rank-tag{display:inline-block;background:rgba(200,134,26,.12);color:var(--accent-gold);border:1.5px solid rgba(200,134,26,.3);border-radius:5px;padding:2px 9px;font-size:13px;font-weight:700;}
+.rank-tag{display:inline-block;background:rgba(200,134,26,.12);color:var(--accent-gold);border:1.5px solid rgba(200,134,26,.3);border-radius:5px;padding:2px 9px;font-size:15px;font-weight:700;}
 .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:20px;font-size:13px;font-weight:600;}
 .pill-blue{background:var(--blue-pale);color:var(--blue);}
 .pill-green{background:#f0fdf4;color:var(--accent-green);}
@@ -163,7 +163,7 @@ tbody tr:last-child td{border-bottom:none;}
 .dg2{grid-template-columns:repeat(2,1fr);}
 .di-label{font-size:13px;color:var(--text-3);margin-bottom:4px;font-weight:600;}
 .di-val{font-size:15px;color:var(--text-1);font-weight:500;}
-.di-val.hi{color:var(--blue);font-size:16px;font-weight:700;}
+.di-val.hi{color:var(--blue);font-weight:700;}
 .di-val.gold{color:var(--accent-gold);font-weight:700;}
 .di-val.g{color:var(--accent-green);}
 .pen-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
@@ -220,6 +220,13 @@ tbody tr:last-child td{border-bottom:none;}
   .pen-grid{grid-template-columns:repeat(2,1fr);}
   .docs-grid{grid-template-columns:repeat(2,1fr);}
 }
+
+.cat-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-1);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;cursor:grab;}
+.cat-item:active{cursor:grabbing;background:var(--blue-pale);}
+.cat-item.drag-over{border-color:var(--blue);background:var(--blue-pale);}
+.cat-drag-handle{color:var(--text-3);font-size:16px;cursor:grab;flex-shrink:0;}
+.cat-name{flex:1;font-size:14px;font-weight:600;color:var(--text-1);}
+.cat-key{font-size:11px;color:var(--text-3);background:var(--bg-2);padding:1px 6px;border-radius:4px;font-family:monospace;}
 </style>
 </head>
 <body>
@@ -327,7 +334,7 @@ tbody tr:last-child td{border-bottom:none;}
           <thead><tr>
             <th>#</th><th>ยศ-ชื่อ-สกุล</th><th>เลขประจำตัว</th>
             <th>ตำแหน่ง</th><th>วันเข้ารับราชการ</th><th>อายุราชการ</th><th>วันทวีคูณ</th>
-            <th>ระดับ/ขั้น</th><th>เงินเดือนสุทธิ (฿)</th><th>สถานะ</th><th>จัดการ</th>
+            <th>ระดับ/ขั้น</th><th>พ.ร.ด.</th><th>พ.ส.ร.1</th><th>พ.ส.ร.2</th><th>พ.ส.ร.3</th><th>พ.ส.ร.4</th><th>เงินเดือนสุทธิ (฿)</th><th>สถานะ</th><th>จัดการ</th>
           </tr></thead>
           <tbody id="personnelBody"></tbody>
         </table>
@@ -452,14 +459,9 @@ tbody tr:last-child td{border-bottom:none;}
       <!-- Header row with title + settings button -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div class="stabs" id="docTabs" style="margin-bottom:0;">
-          <button class="stab active" onclick="filterDocs('all',this)">ทั้งหมด</button>
-          <button class="stab" onclick="filterDocs('order',this)">คำสั่ง/หนังสือ</button>
-          <button class="stab" onclick="filterDocs('double',this)">วันทวีคูณ</button>
-          <button class="stab" onclick="filterDocs('pension',this)">บำเหน็จ/บำนาญ</button>
-          <button class="stab" onclick="filterDocs('photo',this)">รูปภาพ</button>
-          <button class="stab" onclick="filterDocs('cert',this)">ประกาศนียบัตร</button>
+          <!-- สร้างโดย rebuildDocTabs() ตอน initApp -->
         </div>
-        <button class="btn btn-outline btn-sm admin-only" onclick="openDriveSettingsModal()" title="ตั้งค่า Google Drive / Apps Script" style="flex-shrink:0;gap:6px;">⚙️ ตั้งค่า Drive</button>
+        <div style="display:flex;gap:6px;flex-shrink:0;"><button class="btn btn-outline btn-sm admin-only" onclick="openCatSettingsModal()" title="จัดการหมวดหมู่เอกสาร" style="gap:6px;">🗂️ หมวดหมู่</button><button class="btn btn-outline btn-sm admin-only" onclick="openDriveSettingsModal()" title="ตั้งค่า Google Drive / Apps Script" style="gap:6px;">⚙️ ตั้งค่า Drive</button></div>
       </div>
       <div class="toolbar">
         <select class="fsel" style="min-width:200px;display:none;" id="docPersonFilter" onchange="filterDocsByPerson()">
@@ -1178,6 +1180,7 @@ async function fbLoadAll() {
 
     renderPersonnel(); renderEdu(); renderTraining(); renderField();
     renderPromotion(); renderSalary(); renderDocs('all'); populateSelects();
+    rebuildDocTabs();
     restorePhotos(); // restore รูปจาก localStorage หลังโหลด Firebase
     showFbStatus(`✅ ซิงค์สำเร็จ — กำลังพล ${personnel.length} นาย`, 'green');
   } catch(e) {
@@ -1369,7 +1372,30 @@ function exportPDF() {
       <tbody>${rows}</tbody>
     </table>
     <div class="footer">จำนวนกำลังพลทั้งสิ้น ${personnel.length} นาย</div>
-  </body></html>`;
+  
+<!-- MODAL: CATEGORY SETTINGS -->
+<div class="overlay" id="catSettingsModal">
+  <div class="modal modal-sm">
+    <div class="mhead" style="background:linear-gradient(135deg,#1565c0,#1976d2)">
+      <div class="mhead-title" style="color:#fff">🗂️ จัดการหมวดหมู่เอกสาร</div>
+      <button class="mclose" onclick="closeModal('catSettingsModal')" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1)">✕</button>
+    </div>
+    <div class="form-body" style="padding:16px 20px;">
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <input class="finput" id="newCatName" placeholder="ชื่อหมวดหมู่ใหม่" style="flex:1;">
+        <button class="btn btn-blue btn-sm" onclick="addDocCategory()">＋ เพิ่ม</button>
+      </div>
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:10px;">ลากเพื่อเรียงลำดับ • คลิกชื่อเพื่อแก้ไข</div>
+      <div id="catList"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('catSettingsModal')">ปิด</button>
+      <button class="btn btn-blue" onclick="saveCatSettings()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+</body></html>`;
 
   openPrintWindow(html, 'รายชื่อกำลังพล');
 }
@@ -1730,6 +1756,7 @@ function initApp(){
   renderPersonnel(); renderEdu(); renderTraining(); renderField();
   renderPromotion(); renderSalary(); renderDocs('all');
   populateSelects();
+  rebuildDocTabs();
   // Auto-sync Firebase ทันทีที่ login
   if(FB.url && FB.key){
     showFbStatus('🔄 กำลังซิงค์ข้อมูลอัตโนมัติ...','blue');
@@ -1792,7 +1819,7 @@ function renderPersonnel(){
   document.getElementById('rowCount').textContent=filtered.length+' รายการ';
   document.getElementById('pgInfo').textContent=`แสดง 1–${Math.min(10,filtered.length)} จาก ${filtered.length}`;
   if(filtered.length===0){
-    document.getElementById('personnelBody').innerHTML=`<tr><td colspan="10" style="text-align:center;padding:48px;color:var(--text-3);">
+    document.getElementById('personnelBody').innerHTML=`<tr><td colspan="16" style="text-align:center;padding:48px;color:var(--text-3);">
       <div style="font-size:32px;margin-bottom:10px">👥</div>
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">ยังไม่มีข้อมูลกำลังพล</div>
       <div style="font-size:13px;">กดปุ่ม <b>＋ เพิ่มกำลังพล</b> หรือ <b>🔄 โหลด</b> จาก Google Sheets</div>
@@ -1803,13 +1830,18 @@ function renderPersonnel(){
         <td style="color:var(--text-3)">${i+1}</td>
         <td><div class="name-cell">
           <div><div style="font-weight:700">${p.rank} ${p.fname} ${p.lname}</div>
-          <div style="font-size:11px;color:var(--text-3)">${p.unit}</div></div></div></td>
-        <td style="color:var(--blue);font-size:12px;font-weight:700">${p.idno}</td>
-        <td style="color:var(--text-2);font-size:12.5px">${p.pos}</td>
-        <td style="color:var(--text-3);font-size:12px">${p.start}</td>
-        <td style="color:var(--accent-green);font-weight:600">${serviceYears(p.start)}</td>
-      <td style="color:var(--accent-teal);font-weight:600">${formatDouble(getTotalDouble(p.id))}</td>
-        <td style="font-weight:700;font-size:12.5px">${p.grade?GRADE_LABELS[p.grade]:'-'}/${p.step}</td>
+          <div style="font-size:13px;color:var(--text-3)">${p.unit}</div></div></div></td>
+        <td style="color:var(--blue);font-size:15px;font-weight:700">${p.idno}</td>
+        <td style="color:var(--text-2);font-size:15px">${p.pos}</td>
+        <td style="color:var(--text-3);font-size:15px">${p.start}</td>
+        <td style="color:var(--accent-green);font-size:15px;font-weight:600">${serviceYears(p.start)}</td>
+      <td style="color:var(--accent-teal);font-size:15px;font-weight:600">${formatDouble(getTotalDouble(p.id))}</td>
+        <td style="font-weight:700;font-size:15px">${p.grade?GRADE_LABELS[p.grade]:'-'}/${p.step}</td>
+        <td style="font-size:15px;color:var(--text-2)">${(p.prd||0).toLocaleString()}</td>
+        <td style="font-size:15px;color:var(--text-2)">${(p.psr1||0).toLocaleString()}</td>
+        <td style="font-size:15px;color:var(--text-2)">${(p.psr2||0).toLocaleString()}</td>
+        <td style="font-size:15px;color:var(--text-2)">${(p.psr3||0).toLocaleString()}</td>
+        <td style="font-size:15px;color:var(--text-2)">${(p.psr4||0).toLocaleString()}</td>
         <td style="font-weight:800;color:var(--text-1)">${(p.salary||0).toLocaleString()}</td>
         <td><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></td>
         <td onclick="event.stopPropagation()">
@@ -2092,9 +2124,9 @@ function renderPromotion(){
       <td>${nm}</td>
       <td><span class="rank-tag">${pr.rank}</span></td>
       <td><span class="rank-tag" style="background:var(--blue-pale);color:var(--blue);border-color:rgba(26,111,212,.3)">${pr.target}</span></td>
-      <td style="color:var(--text-2);font-size:12px">${pr.condition}</td>
+      <td style="color:var(--text-2);font-size:15px">${pr.condition}</td>
       <td>${pr.exam}</td>
-      <td><div style="font-size:12px;color:var(--text-2)">${pr.pct}%</div>
+      <td><div style="font-size:15px;color:var(--text-2)">${pr.pct}%</div>
         <div class="prog" style="width:80px"><div class="prog-fill ${pr.pct>80?'prog-gold':'prog-blue'}" style="width:${pr.pct}%"></div></div></td>
       <td><span class="pill ${sc[pr.status]||'pill-blue'}"><span class="pill-dot"></span>${sl[pr.status]||pr.status}</span></td>
       <td><div style="display:flex;gap:5px">
@@ -2327,7 +2359,7 @@ function renderDocs(cat, pidFilter){
   if(!pid){ el.innerHTML=noSelectHTML('เลือกชื่อกำลังพลที่แถบด้านบนเพื่อดูเอกสาร'); return; }
   const filtered=(cat==='all'?docsData:docsData.filter(d=>d.cat===cat))
     .filter(d=>!pid||String(d.pid)===String(pid)||d.pid===0);
-  const cats={order:'คำสั่ง/หนังสือ',double:'วันทวีคูณ',pension:'บำเหน็จ/บำนาญ',photo:'รูปภาพ',cert:'ประกาศนียบัตร'};
+  const cats=getCatsObj();
   if(!filtered.length){
     el.innerHTML=`<div style="text-align:center;padding:56px 20px;color:var(--text-3);">
       <div style="font-size:36px;margin-bottom:12px">📁</div>
@@ -2930,6 +2962,150 @@ async function deleteDoc(docId, fileId){
   renderDocs(currentDocFilter);
   autoSave('documents');
 }
+
+
+// ===================== CATEGORY MANAGEMENT =====================
+// หมวดหมู่เริ่มต้น — เก็บใน localStorage
+let docCategories = JSON.parse(localStorage.getItem('doc_categories') || 'null') || [
+  {key:'order', name:'คำสั่ง/หนังสือ'},
+  {key:'double', name:'วันทวีคูณ'},
+  {key:'pension', name:'บำเหน็จ/บำนาญ'},
+  {key:'photo', name:'รูปภาพ'},
+  {key:'cert', name:'ประกาศนียบัตร'}
+];
+
+function saveDocCategories(){
+  localStorage.setItem('doc_categories', JSON.stringify(docCategories));
+}
+
+// สร้าง cats object จาก docCategories array
+function getCatsObj(){
+  const o = {};
+  docCategories.forEach(c => o[c.key] = c.name);
+  return o;
+}
+
+// rebuild stab buttons
+function rebuildDocTabs(){
+  const tabs = document.getElementById('docTabs');
+  if(!tabs) return;
+  // build buttons then attach listeners — avoids 'this' scope issues in onclick strings
+  const allBtn = document.createElement('button');
+  allBtn.className = 'stab active';
+  allBtn.textContent = 'ทั้งหมด';
+  allBtn.addEventListener('click', function(){ filterDocs('all', this); });
+  tabs.innerHTML = '';
+  tabs.appendChild(allBtn);
+  docCategories.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'stab';
+    btn.textContent = c.name;
+    btn.addEventListener('click', function(){ filterDocs(c.key, this); });
+    tabs.appendChild(btn);
+  });
+}
+
+function openCatSettingsModal(){
+  renderCatList();
+  document.getElementById('catSettingsModal').classList.add('open');
+}
+
+function renderCatList(){
+  const el = document.getElementById('catList');
+  if(!el) return;
+  el.innerHTML = '';
+  docCategories.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'cat-item';
+    div.draggable = true;
+    div.id = 'cat-item-' + i;
+    div.innerHTML = `
+      <span class="cat-drag-handle">⠿</span>
+      <span class="cat-name" contenteditable="true"
+        style="outline:none;cursor:text;flex:1;">${c.name}</span>
+      <span class="cat-key">${c.key}</span>
+      <button class="btn btn-red btn-sm btn-icon" style="padding:3px 8px;font-size:12px;">🗑️</button>`;
+    div.querySelector('.cat-name').addEventListener('blur', function(){
+      renameCat(i, this.textContent.trim());
+    });
+    div.querySelector('.cat-name').addEventListener('keydown', function(e){
+      if(e.key==='Enter'){ e.preventDefault(); this.blur(); }
+    });
+    div.querySelector('.btn-red').addEventListener('click', function(){ deleteCat(i); });
+    div.addEventListener('dragstart', e => catDragStart(e, i));
+    div.addEventListener('dragover',  e => catDragOver(e, i));
+    div.addEventListener('drop',      e => catDrop(e, i));
+    div.addEventListener('dragleave', e => catDragLeave(e));
+    el.appendChild(div);
+  });
+}
+
+let dragSrcIdx = null;
+
+function catDragStart(e, i){
+  dragSrcIdx = i;
+  e.dataTransfer.effectAllowed = 'move';
+}
+function catDragOver(e, i){
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.cat-item').forEach(el=>el.classList.remove('drag-over'));
+  const el = document.getElementById('cat-item-'+i);
+  if(el) el.classList.add('drag-over');
+}
+function catDragLeave(e){
+  e.currentTarget.classList.remove('drag-over');
+}
+function catDrop(e, i){
+  e.preventDefault();
+  if(dragSrcIdx === null || dragSrcIdx === i) return;
+  const moved = docCategories.splice(dragSrcIdx, 1)[0];
+  docCategories.splice(i, 0, moved);
+  dragSrcIdx = null;
+  renderCatList();
+}
+
+function renameCat(i, newName){
+  if(!newName) return;
+  docCategories[i].name = newName;
+}
+
+function deleteCat(i){
+  if(docCategories.length <= 1){ alert('ต้องมีหมวดหมู่อย่างน้อย 1 รายการ'); return; }
+  const cat = docCategories[i];
+  // หาหมวดหมู่สำรอง (ไม่ใช่ตัวที่จะลบ)
+  const fallbackCat = docCategories.find((c,idx)=>idx!==i) || {key:'order'};
+  if(!confirm('ลบหมวดหมู่ "'+cat.name+'"?\nเอกสารที่ใช้หมวดหมู่นี้จะถูกย้ายไป "'+fallbackCat.name+'"')) return;
+  docsData.forEach(d => { if(d.cat === cat.key) d.cat = fallbackCat.key; });
+  docCategories.splice(i, 1);
+  renderCatList();
+}
+
+function addDocCategory(){
+  const input = document.getElementById('newCatName');
+  const name = (input.value || '').trim();
+  if(!name){ alert('กรุณากรอกชื่อหมวดหมู่'); return; }
+  // generate key from name
+  const key = 'cat_' + Date.now();
+  docCategories.push({key, name});
+  input.value = '';
+  renderCatList();
+}
+
+function saveCatSettings(){
+  saveDocCategories();
+  rebuildDocTabs();
+  renderDocs(currentDocFilter);
+  closeModal('catSettingsModal');
+  showFbStatus('✅ บันทึกหมวดหมู่แล้ว', 'green');
+}
+
+// Override renderDocs to use dynamic cats
+const _origRenderDocs = renderDocs;
+// patch cats usage in renderDocs — we monkey-patch getCatsObj into it
+// instead we directly override the cats variable by patching renderDocs call
+
+// ===================== END CATEGORY MANAGEMENT =====================
 
 // ===================== FILE ICON HELPERS =====================
 function getFileIcon(filename){
