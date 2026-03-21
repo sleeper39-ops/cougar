@@ -436,7 +436,7 @@ tbody tr:last-child td{border-bottom:none;}
         <div class="stat-card sc-gold"><span class="stat-icon">📊</span><div class="stat-lbl">ค่าเฉลี่ยต่อคน</div><div class="stat-val" id="salaryAvg">0</div><div class="stat-sub">บาท / เดือน</div></div>
       </div>
       <div class="tcard">
-        <div class="tcard-head"><div class="tcard-title">รายละเอียดเงินเดือน / ขั้นเงิน</div><div class="tcard-tools"><button class="btn btn-outline btn-sm" onclick="exportSalaryPDF()">📄 ส่งออก PDF</button></div></div>
+        <div class="tcard-head"><div class="tcard-title" style="display:flex;align-items:center;gap:12px;">รายละเอียดเงินเดือน / ขั้นเงิน <button class="btn btn-outline btn-sm" onclick="exportSalaryPDF()" style="font-size:12px;padding:4px 10px;font-weight:600;">📄 ส่งออก PDF</button></div></div>
         <table>
           <thead><tr>
             <th>ยศ-ชื่อ-สกุล</th><th>ระดับ/ขั้น</th><th>ขั้นฐาน</th>
@@ -1433,6 +1433,7 @@ function exportPDF() {
 function exportProfilePDF(pid) {
   const p = personnel.find(x=>String(x.id)===String(pid));
   if (!p) return;
+  const psrSum=(p.psr1||0)+(p.psr2||0)+(p.psr3||0)+(p.psr4||0);
   const totalDoubleDays = getTotalDouble(p.id);
   const totalDoubleYears = totalDoubleDays/365.25;
   const serviceYrsNum = serviceYearsDecimal(p.start);
@@ -1440,97 +1441,86 @@ function exportProfilePDF(pid) {
   const totalDaysAll = Math.round(totalServiceYrs*365.25);
   const tvY=Math.floor(totalDaysAll/365), tvM=Math.floor((totalDaysAll%365)/30), tvD=totalDaysAll%365%30;
   const svcTotal=[tvY?tvY+' ปี':'',tvM?tvM+' เดือน':'',tvD?tvD+' วัน':''].filter(Boolean).join(' ')||'0 วัน';
-  const gratuity = Math.round(p.salary * Math.floor(totalServiceYrs));
-  const pensionRate = Math.min(Math.floor(totalServiceYrs)*2,70)/100;
-  const pension = Math.round(p.salary * pensionRate);
-
-  // หลักสูตร
-  const edu = eduData.filter(e=>String(e.pid)===String(pid));
-  const eduRows = edu.length ? edu.map(e=>`<tr><td>${e.course}</td><td>${e.school||'—'}</td><td>${e.year||'—'}</td><td>${e.duration||'—'}</td><td>${e.grade||'—'}</td></tr>`).join('') : '<tr><td colspan="5" style="color:#999;text-align:center">ไม่มีข้อมูล</td></tr>';
-
-  // ราชการสนาม
-  const fields = fieldData.filter(f=>String(f.pid)===String(pid));
-  const fieldRows = fields.length ? fields.map(f=>`<tr><td>${f.mission}</td><td>${f.area||'—'}</td><td>${f.start||'—'}</td><td>${f.end||'ปัจจุบัน'}</td><td>${formatDouble(f.double)}</td></tr>`).join('') : '<tr><td colspan="5" style="color:#999;text-align:center">ไม่มีข้อมูล</td></tr>';
 
   const html = `<!DOCTYPE html><html><head>
     <meta charset="utf-8">
-    <title>ประวัติ ${p.rank}${p.fname} ${p.lname}</title>
+    <title>ประวัติส่วนตัว ${p.rank}${p.fname} ${p.lname}</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
       * { margin:0; padding:0; box-sizing:border-box; }
       body { font-family:'Sarabun',sans-serif; font-size:11pt; color:#111; padding:15mm; }
       .header { display:flex; align-items:center; gap:16px; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid #1a6fd4; }
-      .avatar { width:70px; height:70px; background:#1a6fd4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:32px; color:#fff; flex-shrink:0; }
+      .avatar { width:80px; height:100px; background:#1a6fd4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:36px; color:#fff; flex-shrink:0; overflow:hidden; }
       .header-info h1 { font-size:18pt; font-weight:700; }
-      .header-info .sub { font-size:10pt; color:#555; margin-top:3px; }
-      .badge { display:inline-block; background:#e8f4fd; color:#1a6fd4; border-radius:4px; padding:2px 8px; font-size:9pt; margin-right:6px; }
+      .header-info .sub { font-size:10pt; color:#555; margin-top:4px; }
+      .badge { display:inline-block; background:#e8f4fd; color:#1a6fd4; border-radius:4px; padding:2px 8px; font-size:9pt; margin-right:6px; margin-top:3px; }
       .section { margin-bottom:16px; }
-      .sec-title { font-size:11pt; font-weight:700; color:#1a6fd4; border-left:3px solid #1a6fd4; padding-left:8px; margin-bottom:8px; }
-      .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px 12px; }
-      .grid-item label { font-size:8.5pt; color:#666; display:block; }
-      .grid-item span { font-size:10pt; font-weight:600; }
-      table { width:100%; border-collapse:collapse; font-size:9.5pt; margin-top:4px; }
-      th { background:#1a6fd4; color:#fff; padding:5px; text-align:left; font-size:9pt; }
-      td { padding:4px 5px; border-bottom:1px solid #e2e8f0; }
-      tr:nth-child(even) td { background:#f8faff; }
-      .summary { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px; }
-      .sum-card { background:#f0f7ff; border:1px solid #bee3f8; border-radius:6px; padding:8px 10px; }
-      .sum-card .lbl { font-size:8.5pt; color:#555; }
-      .sum-card .val { font-size:13pt; font-weight:700; color:#1a6fd4; }
+      .sec-title { font-size:11pt; font-weight:700; color:#1a6fd4; border-left:3px solid #1a6fd4; padding-left:8px; margin-bottom:10px; }
+      .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px 14px; }
+      .grid-item label { font-size:8.5pt; color:#666; display:block; margin-bottom:2px; }
+      .grid-item span { font-size:10.5pt; font-weight:600; }
+      .salary-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px 14px; margin-top:6px; }
+      .sal-card { background:#f0f7ff; border:1px solid #bee3f8; border-radius:5px; padding:7px 10px; }
+      .sal-card .lbl { font-size:8pt; color:#555; }
+      .sal-card .val { font-size:11pt; font-weight:700; color:#1a6fd4; }
+      .sal-card .val.green { color:#16a34a; }
       .footer { margin-top:20px; font-size:9pt; color:#888; border-top:1px solid #e2e8f0; padding-top:8px; display:flex; justify-content:space-between; }
       @page { size:A4 portrait; margin:10mm; }
     </style>
   </head><body>
     <div class="header">
-      <div class="avatar" style="${p.photo?'padding:0;overflow:hidden;':''}">
-        ${p.photo ? `<img src="${p.photo}" style="width:70px;height:70px;object-fit:cover;object-position:center top;border-radius:8px;">` : '🪖'}
+      <div class="avatar">
+        ${p.photo ? `<img src="${p.photo}" style="width:80px;height:100px;object-fit:cover;object-position:center top;border-radius:8px;">` : '🪖'}
       </div>
       <div class="header-info">
         <h1>${p.rank} ${p.fname} ${p.lname}</h1>
         <div class="sub">
           <span class="badge">📌 ${p.pos||'—'}</span>
-          <span class="badge">🏢 ${p.unit||'—'}</span>
+          <span class="badge">🏢 ${p.unit||'—'} ${p.company?'/ '+p.company:''}</span>
           <span class="badge">⚔️ ${p.branch||'—'}</span>
+          <span class="badge ${p.status==='s1'?'':''}">🔖 ${STATUS_LABELS[p.status]||p.status||'—'}</span>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <div class="sec-title">ข้อมูลส่วนตัว / ราชการ</div>
+      <div class="sec-title">ข้อมูลส่วนตัว</div>
       <div class="grid">
-        <div class="grid-item"><label>เลขประจำตัว</label><span>${p.idno||'—'}</span></div>
         <div class="grid-item"><label>เลขบัตรประชาชน</label><span>${p.cid||'—'}</span></div>
-        <div class="grid-item"><label>วันเกิด</label><span>${p.dob||'—'}</span></div>
+        <div class="grid-item"><label>วันเกิด (พ.ศ.)</label><span>${p.dob||'—'}</span></div>
         <div class="grid-item"><label>กรุ๊ปเลือด</label><span>${p.blood||'—'}</span></div>
-        <div class="grid-item"><label>วันเข้ารับราชการ</label><span>${p.start||'—'}</span></div>
-        <div class="grid-item"><label>อายุราชการ</label><span>${serviceYears(p.start)}</span></div>
-        <div class="grid-item"><label>วันทวีคูณ</label><span>${formatDouble(totalDoubleDays)}</span></div>
-        <div class="grid-item"><label>อายุราชการรวม</label><span>${svcTotal}</span></div>
-        <div class="grid-item"><label>ระดับ/ขั้น</label><span>${p.grade?GRADE_LABELS[p.grade]:'—'} / ${p.step||'—'}</span></div>
-        <div class="grid-item"><label>เงินเดือนสุทธิ</label><span>${(p.salary||0).toLocaleString()} บาท</span></div>
-        <div class="grid-item"><label>กองร้อย</label><span>${p.company||'—'}</span></div>
-        <div class="grid-item"><label>โทรศัพท์</label><span>${p.tel||'—'}</span></div>
+        <div class="grid-item"><label>เบอร์โทรศัพท์</label><span>${p.tel||'—'}</span></div>
       </div>
     </div>
 
     <div class="section">
-      <div class="sec-title">หลักสูตรการศึกษา</div>
-      <table><thead><tr><th>หลักสูตร</th><th>สถานศึกษา</th><th>ปี</th><th>ระยะเวลา</th><th>ผล</th></tr></thead>
-      <tbody>${eduRows}</tbody></table>
+      <div class="sec-title">ข้อมูลราชการ</div>
+      <div class="grid">
+        <div class="grid-item"><label>เลขประจำตัว 10 หลัก</label><span>${p.idno||'—'}</span></div>
+        <div class="grid-item"><label>ยศ</label><span>${p.rank||'—'}</span></div>
+        <div class="grid-item"><label>ตำแหน่ง</label><span>${p.pos||'—'}</span></div>
+        <div class="grid-item"><label>สังกัด</label><span>${p.unit||'—'}</span></div>
+        <div class="grid-item"><label>กองร้อย</label><span>${p.company||'—'}</span></div>
+        <div class="grid-item"><label>เหล่า</label><span>${p.branch||'—'}</span></div>
+        <div class="grid-item"><label>วันเข้ารับราชการ</label><span>${p.start||'—'}</span></div>
+        <div class="grid-item"><label>อายุราชการ</label><span>${serviceYears(p.start)}</span></div>
+        <div class="grid-item"><label>วันทวีคูณ</label><span>${formatDouble(totalDoubleDays)}</span></div>
+        <div class="grid-item"><label>อายุราชการรวม</label><span>${svcTotal}</span></div>
+        <div class="grid-item"><label>สถานะ</label><span>${STATUS_LABELS[p.status]||p.status||'—'}</span></div>
+      </div>
     </div>
 
     <div class="section">
-      <div class="sec-title">ราชการสนาม / วันทวีคูณ</div>
-      <table><thead><tr><th>ภารกิจ</th><th>พื้นที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>วันทวีคูณ</th></tr></thead>
-      <tbody>${fieldRows}</tbody></table>
-    </div>
-
-    <div class="section">
-      <div class="sec-title">บำเหน็จ/บำนาญโดยประมาณ</div>
-      <div class="summary">
-        <div class="sum-card"><div class="lbl">อายุราชการรวม</div><div class="val">${svcTotal}</div></div>
-        <div class="sum-card"><div class="lbl">💰 บำเหน็จ (เงินก้อน)</div><div class="val">${gratuity.toLocaleString()} บาท</div></div>
-        <div class="sum-card"><div class="lbl">📅 บำนาญ/เดือน (${Math.round(pensionRate*100)}%)</div><div class="val">${pension.toLocaleString()} บาท</div></div>
+      <div class="sec-title">ข้อมูลเงินเดือน</div>
+      <div class="salary-row">
+        <div class="sal-card"><div class="lbl">ระดับ/ขั้น</div><div class="val">${p.grade?GRADE_LABELS[p.grade]:'—'} / ${p.step||'—'}</div></div>
+        <div class="sal-card"><div class="lbl">เงินเดือนขั้นฐาน</div><div class="val">${(p.base||0).toLocaleString()} บาท</div></div>
+        <div class="sal-card"><div class="lbl">พ.ร.ด.</div><div class="val">${(p.prd||0).toLocaleString()} บาท</div></div>
+        <div class="sal-card"><div class="lbl">พ.ส.ร. ครั้งที่ 1</div><div class="val">${(p.psr1||0).toLocaleString()} บาท</div></div>
+        <div class="sal-card"><div class="lbl">พ.ส.ร. ครั้งที่ 2</div><div class="val">${(p.psr2||0).toLocaleString()} บาท</div></div>
+        <div class="sal-card"><div class="lbl">พ.ส.ร. ครั้งที่ 3</div><div class="val">${(p.psr3||0).toLocaleString()} บาท</div></div>
+        <div class="sal-card"><div class="lbl">พ.ส.ร. ครั้งที่ 4</div><div class="val">${(p.psr4||0).toLocaleString()} บาท</div></div>
+        <div class="sal-card" style="border-color:#a7f3d0;background:#f0fdf4;"><div class="lbl">เงินเดือนสุทธิ</div><div class="val green" style="font-size:14pt;">${(p.salary||0).toLocaleString()} บาท</div></div>
       </div>
     </div>
 
@@ -1540,7 +1530,7 @@ function exportProfilePDF(pid) {
     </div>
   </body></html>`;
 
-  openPrintWindow(html, `ประวัติ_${p.rank}${p.fname}_${p.lname}`);
+  openPrintWindow(html, `ประวัติส่วนตัว_${p.rank}${p.fname}_${p.lname}`);
 }
 
 // เปิด popup window แล้ว print อัตโนมัติ
@@ -1837,9 +1827,8 @@ function exportAllPDF(pid){
         <div class="h-name">${p.rank} ${p.fname} ${p.lname}</div>
         <div class="h-sub">
           <span class="badge">📌 ${p.pos||'—'}</span>
-          <span class="badge">🏢 ${p.unit||'—'}</span>
+          <span class="badge">🏢 ${p.unit||'—'}${p.company?' / '+p.company:''}</span>
           <span class="badge">⚔️ ${p.branch||'—'}</span>
-          <span class="badge">🏠 ${p.company||'—'}</span>
         </div>
       </div>
     </div>
@@ -2578,7 +2567,7 @@ function renderProfile(){
       <div style="display:flex;gap:7px;flex-shrink:0">
         ${isAdmin()?`<button class="btn btn-blue btn-sm" onclick="openEditModal(${p.id})">✏️ แก้ไข</button>`:''}
         <button class="btn btn-outline btn-sm" onclick="exportProfilePDF(${p.id})">📄 ส่งออก PDF</button>
-        <button class="btn btn-blue btn-sm" onclick="exportAllPDF(${p.id})">📦 ส่งออกข้อมูลทั้งหมด PDF</button>
+        <button class="btn btn-sm" style="background:#e2e8f0;color:#4a5568;border:1.5px solid #cbd5e0;" onclick="exportAllPDF(${p.id})">📦 ส่งออกข้อมูลทั้งหมด PDF</button>
       </div>
     </div>
     <div class="dsec">
