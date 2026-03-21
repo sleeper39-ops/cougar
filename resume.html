@@ -371,6 +371,7 @@ tbody tr:last-child td{border-bottom:none;}
       <div class="toolbar">
         <div class="search-wrap" style="max-width:300px"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหา..."></div>
         <button class="btn btn-blue admin-only" onclick="openAddEduModal()">＋ เพิ่มหลักสูตร</button>
+        <button class="btn btn-outline btn-sm" onclick="exportEduPDF()">📄 ส่งออก PDF</button>
       </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">หลักสูตรการศึกษา</div></div>
@@ -386,6 +387,7 @@ tbody tr:last-child td{border-bottom:none;}
       <div class="toolbar">
         <div class="search-wrap" style="max-width:300px"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหา..." id="trainSearch" oninput="renderTraining()"></div>
         <button class="btn btn-blue admin-only" onclick="openAddTrainingModal()">＋ เพิ่มการฝึกอบรม</button>
+        <button class="btn btn-outline btn-sm" onclick="exportTrainingPDF()">📄 ส่งออก PDF</button>
       </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">ประวัติการฝึกอบรม</div></div>
@@ -401,6 +403,7 @@ tbody tr:last-child td{border-bottom:none;}
       <div class="toolbar">
         <div class="search-wrap" style="max-width:300px"><span style="color:var(--text-3)">🔍</span><input type="text" placeholder="ค้นหา..."></div>
         <button class="btn btn-blue admin-only" onclick="openAddFieldModal()">＋ เพิ่มราชการสนาม</button>
+        <button class="btn btn-outline btn-sm" onclick="exportFieldPDF()">📄 ส่งออก PDF</button>
       </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">ราชการสนาม / วันทวีคูณ</div></div>
@@ -413,7 +416,10 @@ tbody tr:last-child td{border-bottom:none;}
 
     <!-- ===== PROMOTION ===== -->
     <div class="section-page" id="sec-promotion">
-      <div class="toolbar"><button class="btn btn-blue admin-only" onclick="openAddPromotionModal()">＋ เพิ่มแผน</button></div>
+      <div class="toolbar">
+        <button class="btn btn-blue admin-only" onclick="openAddPromotionModal()">＋ เพิ่มแผน</button>
+        <button class="btn btn-outline btn-sm" onclick="exportPromotionPDF()">📄 ส่งออก PDF</button>
+      </div>
       <div class="tcard">
         <div class="tcard-head"><div class="tcard-title">แผนเลื่อนยศ / สอบเลื่อนฐานะ</div></div>
         <table>
@@ -430,7 +436,7 @@ tbody tr:last-child td{border-bottom:none;}
         <div class="stat-card sc-gold"><span class="stat-icon">📊</span><div class="stat-lbl">ค่าเฉลี่ยต่อคน</div><div class="stat-val" id="salaryAvg">0</div><div class="stat-sub">บาท / เดือน</div></div>
       </div>
       <div class="tcard">
-        <div class="tcard-head"><div class="tcard-title">รายละเอียดเงินเดือน / ขั้นเงิน</div><div class="tcard-tools"><button class="btn btn-outline btn-sm">📤 ส่งออก</button></div></div>
+        <div class="tcard-head"><div class="tcard-title">รายละเอียดเงินเดือน / ขั้นเงิน</div><div class="tcard-tools"><button class="btn btn-outline btn-sm" onclick="exportSalaryPDF()">📄 ส่งออก PDF</button></div></div>
         <table>
           <thead><tr>
             <th>ยศ-ชื่อ-สกุล</th><th>ระดับ/ขั้น</th><th>ขั้นฐาน</th>
@@ -446,6 +452,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="section-page" id="sec-pension">
       <div id="penPersonBar" style="display:none;background:var(--blue-pale);border:1.5px solid rgba(26,111,212,.18);border-radius:var(--radius);padding:10px 16px;margin-bottom:14px;font-size:13.5px;font-weight:600;color:var(--blue);">
         👤 <span id="penPersonName"></span>
+        <button class="btn btn-outline btn-sm" style="margin-left:12px;" onclick="exportPensionPDF()">📄 ส่งออก PDF</button>
       </div>
       <select id="pensionSelect" style="display:none">
         <option value="">-- เลือกกำลังพล --</option>
@@ -1547,6 +1554,359 @@ function openPrintWindow(html, title) {
   setTimeout(()=>{ w.print(); }, 800);
 }
 
+// ===================== PDF EXPORT HELPERS =====================
+const PDF_STYLE = `
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Sarabun',sans-serif;font-size:11pt;color:#111;padding:12mm 15mm;}
+  h2{text-align:center;font-size:16pt;font-weight:700;margin-bottom:3px;}
+  .sub{text-align:center;font-size:10pt;color:#555;margin-bottom:12px;}
+  .line{border-top:2.5px solid #1a6fd4;margin-bottom:12px;}
+  .person-bar{background:#e8f4fd;border-left:4px solid #1a6fd4;padding:6px 10px;margin-bottom:10px;font-size:10.5pt;font-weight:600;color:#1a3a6b;border-radius:0 4px 4px 0;}
+  table{width:100%;border-collapse:collapse;font-size:9.5pt;}
+  th{background:#1a6fd4;color:#fff;padding:6px 5px;text-align:left;font-weight:600;white-space:nowrap;}
+  td{padding:5px;border-bottom:1px solid #e2e8f0;vertical-align:top;}
+  tr:nth-child(even) td{background:#f8faff;}
+  .footer{margin-top:16px;font-size:9pt;color:#888;border-top:1px solid #e2e8f0;padding-top:6px;display:flex;justify-content:space-between;}
+  @page{size:A4 landscape;margin:10mm;}
+`;
+
+function getPersonBar(pid){
+  if(!pid) return '';
+  const p = personnel.find(x=>String(x.id)===String(pid));
+  return p ? `<div class="person-bar">👤 ${p.rank} ${p.fname} ${p.lname} &nbsp;|&nbsp; เลขประจำตัว: ${p.idno||'—'} &nbsp;|&nbsp; สังกัด: ${p.unit||'—'}</div>` : '';
+}
+
+function pdfDateNow(){
+  return new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+}
+
+// --------- Education PDF ---------
+function exportEduPDF(){
+  const pid = getSelectedPid();
+  const data = pid ? eduData.filter(e=>String(e.pid)===String(pid)) : eduData;
+  if(!data.length){ alert('ไม่มีข้อมูลหลักสูตรการศึกษา'); return; }
+  const rows = data.map((e,i)=>{
+    const p = personnel.find(x=>String(x.id)===String(e.pid));
+    const nm = p?`${p.rank} ${p.fname} ${p.lname}`:'—';
+    const smap={done:'สำเร็จ',studying:'กำลังศึกษา',pending:'รอสมัคร'};
+    return `<tr><td style="text-align:center">${i+1}</td><td>${nm}</td><td>${e.course||'—'}</td><td>${e.school||'—'}</td><td>${e.year||'—'}</td><td>${e.duration||'—'}</td><td>${e.grade||'—'}</td><td>${smap[e.status]||e.status||'—'}</td></tr>`;
+  }).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><style>${PDF_STYLE}</style></head><body>
+    <h2>หลักสูตรการศึกษา</h2>
+    <div class="sub">ระบบบันทึกประวัติกำลังพล กองทัพบก • พิมพ์เมื่อ: ${pdfDateNow()}</div>
+    <div class="line"></div>${getPersonBar(pid)}
+    <table><thead><tr><th>ที่</th><th>ยศ ชื่อ-สกุล</th><th>หลักสูตร</th><th>สถานศึกษา</th><th>ปี</th><th>ระยะเวลา</th><th>ผล</th><th>สถานะ</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="footer"><span>จำนวน ${data.length} รายการ</span><span>ระบบบันทึกประวัติกำลังพล กองทัพบก</span></div>
+  </body></html>`;
+  openPrintWindow(html,'หลักสูตรการศึกษา');
+}
+
+// --------- Training PDF ---------
+function exportTrainingPDF(){
+  const pid = getSelectedPid();
+  const data = pid ? trainingData.filter(t=>String(t.pid)===String(pid)) : trainingData;
+  if(!data.length){ alert('ไม่มีข้อมูลการฝึกอบรม'); return; }
+  const rows = data.map((t,i)=>{
+    const p = personnel.find(x=>String(x.id)===String(t.pid));
+    const nm = p?`${p.rank} ${p.fname} ${p.lname}`:'—';
+    const smap={done:'เสร็จสิ้น',ongoing:'กำลังอบรม',pending:'รอเริ่ม'};
+    return `<tr><td style="text-align:center">${i+1}</td><td>${nm}</td><td>${t.course||'—'}</td><td>${t.org||'—'}</td><td>${t.start||'—'}</td><td>${t.end||'—'}</td><td style="text-align:center">${t.hours?t.hours+' ชม.':'—'}</td><td>${t.result||'—'}</td><td>${smap[t.status]||t.status||'—'}</td></tr>`;
+  }).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><style>${PDF_STYLE}</style></head><body>
+    <h2>ประวัติการฝึกอบรม</h2>
+    <div class="sub">ระบบบันทึกประวัติกำลังพล กองทัพบก • พิมพ์เมื่อ: ${pdfDateNow()}</div>
+    <div class="line"></div>${getPersonBar(pid)}
+    <table><thead><tr><th>ที่</th><th>ยศ ชื่อ-สกุล</th><th>หลักสูตร</th><th>หน่วยงาน</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>ชั่วโมง</th><th>ผล</th><th>สถานะ</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="footer"><span>จำนวน ${data.length} รายการ</span><span>ระบบบันทึกประวัติกำลังพล กองทัพบก</span></div>
+  </body></html>`;
+  openPrintWindow(html,'การฝึกอบรม');
+}
+
+// --------- Field Service PDF ---------
+function exportFieldPDF(){
+  const pid = getSelectedPid();
+  const data = pid ? fieldData.filter(f=>String(f.pid)===String(pid)) : fieldData;
+  if(!data.length){ alert('ไม่มีข้อมูลราชการสนาม'); return; }
+  const rows = data.map((f,i)=>{
+    const p = personnel.find(x=>String(x.id)===String(f.pid));
+    const nm = p?`${p.rank} ${p.fname} ${p.lname}`:'—';
+    return `<tr><td style="text-align:center">${i+1}</td><td>${nm}</td><td>${f.mission||'—'}</td><td>${f.area||'—'}</td><td>${f.start||'—'}</td><td>${f.end||'ปัจจุบัน'}</td><td>${f.pos||'—'}</td><td style="color:#0891b2;font-weight:700">${formatDouble(f.double)}</td><td>${f.status==='active'?'ปฏิบัติการ':'สิ้นสุดแล้ว'}</td></tr>`;
+  }).join('');
+  const totalDbl = data.reduce((a,f)=>a+(parseInt(f.double)||0),0);
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><style>${PDF_STYLE}</style></head><body>
+    <h2>ราชการสนาม / วันทวีคูณ</h2>
+    <div class="sub">ระบบบันทึกประวัติกำลังพล กองทัพบก • พิมพ์เมื่อ: ${pdfDateNow()}</div>
+    <div class="line"></div>${getPersonBar(pid)}
+    <table><thead><tr><th>ที่</th><th>ยศ ชื่อ-สกุล</th><th>ภารกิจ</th><th>พื้นที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>ตำแหน่ง</th><th>วันทวีคูณ</th><th>สถานะ</th></tr></thead>
+    <tbody>${rows}
+    <tr style="background:#e8f4fd;font-weight:700"><td colspan="7" style="text-align:right;padding-right:8px;color:#555;">รวมวันทวีคูณทั้งหมด</td><td style="color:#0891b2;">${formatDouble(totalDbl)}</td><td></td></tr>
+    </tbody></table>
+    <div class="footer"><span>จำนวน ${data.length} รายการ</span><span>ระบบบันทึกประวัติกำลังพล กองทัพบก</span></div>
+  </body></html>`;
+  openPrintWindow(html,'ราชการสนาม');
+}
+
+// --------- Promotion PDF ---------
+function exportPromotionPDF(){
+  const pid = getSelectedPid();
+  const data = pid ? promotionData.filter(pr=>String(pr.pid)===String(pid)) : promotionData;
+  if(!data.length){ alert('ไม่มีข้อมูลแผนเลื่อนยศ'); return; }
+  const rows = data.map((pr,i)=>{
+    const p = personnel.find(x=>String(x.id)===String(pr.pid));
+    const nm = p?`${p.rank} ${p.fname} ${p.lname}`:'—';
+    const smap={review:'อยู่ระหว่างพิจารณา',prep:'เตรียมสอบ',done:'ผ่านแล้ว'};
+    return `<tr><td style="text-align:center">${i+1}</td><td>${nm}</td><td style="text-align:center">${pr.rank||'—'}</td><td style="text-align:center">${pr.target||'—'}</td><td>${pr.condition||'—'}</td><td>${pr.exam||'—'}</td><td style="text-align:center">${pr.pct||0}%</td><td>${smap[pr.status]||pr.status||'—'}</td></tr>`;
+  }).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><style>${PDF_STYLE}</style></head><body>
+    <h2>แผนเลื่อนยศ / สอบเลื่อนฐานะ</h2>
+    <div class="sub">ระบบบันทึกประวัติกำลังพล กองทัพบก • พิมพ์เมื่อ: ${pdfDateNow()}</div>
+    <div class="line"></div>${getPersonBar(pid)}
+    <table><thead><tr><th>ที่</th><th>ยศ ชื่อ-สกุล</th><th>ยศปัจจุบัน</th><th>ยศเป้าหมาย</th><th>เงื่อนไข</th><th>วันสอบ</th><th>ความพร้อม</th><th>สถานะ</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="footer"><span>จำนวน ${data.length} รายการ</span><span>ระบบบันทึกประวัติกำลังพล กองทัพบก</span></div>
+  </body></html>`;
+  openPrintWindow(html,'แผนเลื่อนยศ');
+}
+
+// --------- Salary PDF ---------
+function exportSalaryPDF(){
+  const pid = getSelectedPid();
+  const data = pid ? personnel.filter(p=>String(p.id)===String(pid)) : personnel;
+  if(!data.length){ alert('ไม่มีข้อมูลเงินเดือน'); return; }
+  const rows = data.map((p,i)=>{
+    const psrSum=(p.psr1||0)+(p.psr2||0)+(p.psr3||0)+(p.psr4||0);
+    return `<tr><td style="text-align:center">${i+1}</td><td>${p.rank} ${p.fname} ${p.lname}</td><td>${p.grade?GRADE_LABELS[p.grade]:'—'} / ${p.step||'—'}</td><td style="text-align:right">${(p.base||0).toLocaleString()}</td><td style="text-align:right">${(p.prd||0).toLocaleString()}</td><td style="text-align:right">${(p.psr1||0).toLocaleString()}</td><td style="text-align:right">${(p.psr2||0).toLocaleString()}</td><td style="text-align:right">${(p.psr3||0).toLocaleString()}</td><td style="text-align:right">${(p.psr4||0).toLocaleString()}</td><td style="text-align:right;font-weight:700;color:#1a6fd4">${(p.salary||0).toLocaleString()}</td></tr>`;
+  }).join('');
+  const totalSalary=data.reduce((a,p)=>a+(p.salary||0),0);
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><style>${PDF_STYLE}@page{size:A4 landscape;margin:8mm;}</style></head><body>
+    <h2>รายละเอียดเงินเดือน / ขั้นเงิน</h2>
+    <div class="sub">ระบบบันทึกประวัติกำลังพล กองทัพบก • พิมพ์เมื่อ: ${pdfDateNow()}</div>
+    <div class="line"></div>${getPersonBar(pid)}
+    <table><thead><tr><th>ที่</th><th>ยศ ชื่อ-สกุล</th><th>ระดับ/ขั้น</th><th style="text-align:right">ขั้นฐาน</th><th style="text-align:right">พ.ร.ด.</th><th style="text-align:right">พ.ส.ร.1</th><th style="text-align:right">พ.ส.ร.2</th><th style="text-align:right">พ.ส.ร.3</th><th style="text-align:right">พ.ส.ร.4</th><th style="text-align:right">สุทธิ (บาท)</th></tr></thead>
+    <tbody>${rows}
+    <tr style="background:#e8f4fd;font-weight:700"><td colspan="9" style="text-align:right;padding-right:8px;color:#555;">รวมเงินเดือนทั้งหมด</td><td style="text-align:right;color:#1a6fd4;">${totalSalary.toLocaleString()} บาท</td></tr>
+    </tbody></table>
+    <div class="footer"><span>จำนวนกำลังพล ${data.length} นาย</span><span>ระบบบันทึกประวัติกำลังพล กองทัพบก</span></div>
+  </body></html>`;
+  openPrintWindow(html,'เงินเดือน');
+}
+
+// --------- Pension PDF ---------
+function exportPensionPDF(){
+  const id = parseInt(document.getElementById('pensionSelect')?.value);
+  const p = personnel.find(x=>String(x.id)===String(id));
+  if(!p){ alert('กรุณาเลือกกำลังพลก่อน'); return; }
+  const totalDoubleDays = getTotalDouble(p.id);
+  const totalDoubleYears = totalDoubleDays/365.25;
+  const serviceYrsNum = serviceYearsDecimal(p.start);
+  const totalServiceYrs = serviceYrsNum + totalDoubleYears;
+  const tDays=Math.round(totalServiceYrs*365.25);
+  const tY=Math.floor(tDays/365),tM=Math.floor((tDays%365)/30),tD=tDays%365%30;
+  const svcTotal=[tY?tY+' ปี':'',tM?tM+' เดือน':'',tD?tD+' วัน':''].filter(Boolean).join(' ')||'0 วัน';
+  let startBE=0,birthBE=0;
+  try{const sp=p.start.split('/');startBE=parseInt(sp[2]);const bp=p.dob.split('/');birthBE=parseInt(bp[2]);}catch(e){}
+  const retire25=startBE+25-Math.floor(totalDoubleYears);
+  const retire60=birthBE+60;
+  const curBE=new Date().getFullYear()+543;
+  const gratuity=Math.round(p.salary*Math.floor(totalServiceYrs));
+  const pensionRate=Math.min(Math.floor(totalServiceYrs)*2,70)/100;
+  const pension=Math.round(p.salary*pensionRate);
+  const psrSum=(p.psr1||0)+(p.psr2||0)+(p.psr3||0)+(p.psr4||0);
+  const fds=fieldData.filter(f=>String(f.pid)===String(p.id));
+  const fieldRows=fds.length?fds.map(f=>`<tr><td>${f.mission||'—'}</td><td>${f.area||'—'}</td><td>${f.start||'—'}</td><td>${f.end||'ปัจจุบัน'}</td><td style="color:#0891b2;font-weight:700">${formatDouble(f.double)}</td></tr>`).join(''):'<tr><td colspan="5" style="color:#999;text-align:center">ไม่มีข้อมูล</td></tr>';
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+    ${PDF_STYLE.replace('@page{size:A4 landscape;margin:10mm;}','@page{size:A4 portrait;margin:10mm;}')}
+    .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;}
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+    .info-card{background:#f0f7ff;border:1px solid #bee3f8;border-radius:5px;padding:8px 10px;}
+    .info-card .lbl{font-size:8.5pt;color:#555;}
+    .info-card .val{font-size:12pt;font-weight:700;color:#1a6fd4;}
+    .info-card .val.green{color:#16a34a;}
+    .info-card .val.gold{color:#c8861a;}
+    .sec-title{font-size:11pt;font-weight:700;color:#1a6fd4;border-left:3px solid #1a6fd4;padding-left:8px;margin:10px 0 6px;}
+  </style></head><body>
+    <h2>บำเหน็จ บำนาญ</h2>
+    <div class="sub">ระบบบันทึกประวัติกำลังพล กองทัพบก • พิมพ์เมื่อ: ${pdfDateNow()}</div>
+    <div class="line"></div>
+    <div style="margin-bottom:10px;padding:8px 10px;background:#e8f4fd;border-left:4px solid #1a6fd4;border-radius:0 4px 4px 0;">
+      <strong>${p.rank} ${p.fname} ${p.lname}</strong> &nbsp;|&nbsp; เลขประจำตัว: ${p.idno||'—'} &nbsp;|&nbsp; เข้ารับราชการ: ${p.start||'—'}
+    </div>
+    <div class="sec-title">อายุราชการ</div>
+    <div class="grid4">
+      <div class="info-card"><div class="lbl">อายุราชการปกติ</div><div class="val">${serviceYears(p.start)}</div></div>
+      <div class="info-card"><div class="lbl">วันทวีคูณทั้งหมด</div><div class="val" style="color:#0891b2">${formatDouble(totalDoubleDays)}</div></div>
+      <div class="info-card"><div class="lbl">อายุราชการรวม</div><div class="val">${svcTotal}</div></div>
+      <div class="info-card"><div class="lbl">เงินเดือนสุทธิ</div><div class="val gold">${(p.salary||0).toLocaleString()} บาท</div></div>
+    </div>
+    <div class="sec-title">รายละเอียดเงินเดือน (ฐานคำนวณ)</div>
+    <div class="grid4">
+      <div class="info-card"><div class="lbl">ขั้นฐาน</div><div class="val">${(p.base||0).toLocaleString()}</div></div>
+      <div class="info-card"><div class="lbl">พ.ร.ด.</div><div class="val">${(p.prd||0).toLocaleString()}</div></div>
+      <div class="info-card"><div class="lbl">พ.ส.ร. ครั้ง 1–4 รวม</div><div class="val">${psrSum.toLocaleString()}</div></div>
+      <div class="info-card"><div class="lbl">เงินเดือนสุทธิรวม</div><div class="val green">${(p.salary||0).toLocaleString()} บาท</div></div>
+    </div>
+    <div class="sec-title">วันเกษียณ & บำเหน็จ/บำนาญ</div>
+    <div class="grid4">
+      <div class="info-card"><div class="lbl">🏅 เกษียณ 25 ปี</div><div class="val">พ.ศ. ${retire25}</div><div class="lbl">อีก ~${Math.max(0,retire25-curBE)} ปี</div></div>
+      <div class="info-card"><div class="lbl">👴 เกษียณ 60 ปี</div><div class="val" style="color:#0891b2">พ.ศ. ${retire60}</div><div class="lbl">อีก ~${Math.max(0,retire60-curBE)} ปี</div></div>
+      <div class="info-card"><div class="lbl">💰 บำเหน็จ (เงินก้อน)</div><div class="val gold">${gratuity.toLocaleString()} บาท</div><div class="lbl">= ${Math.floor(totalServiceYrs)} ปี × เงินเดือน</div></div>
+      <div class="info-card"><div class="lbl">📅 บำนาญ/เดือน (${Math.round(pensionRate*100)}%)</div><div class="val green">${pension.toLocaleString()} บาท</div><div class="lbl">สูงสุด 70% ของเงินเดือน</div></div>
+    </div>
+    <div class="sec-title">ราชการสนาม / วันทวีคูณ</div>
+    <table><thead><tr><th>ภารกิจ</th><th>พื้นที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>วันทวีคูณ</th></tr></thead>
+    <tbody>${fieldRows}</tbody></table>
+    <div class="footer"><span>ระบบบันทึกประวัติกำลังพล กองทัพบก</span><span>พิมพ์เมื่อ: ${pdfDateNow()}</span></div>
+  </body></html>`;
+  openPrintWindow(html,`บำเหน็จบำนาญ_${p.rank}${p.fname}`);
+}
+
+// --------- Export ALL PDF (ประวัติส่วนตัว + ทุกหมวด) ---------
+function exportAllPDF(pid){
+  const p = personnel.find(x=>String(x.id)===String(pid));
+  if(!p){ alert('ไม่พบข้อมูลกำลังพล'); return; }
+  const totalDoubleDays=getTotalDouble(p.id);
+  const totalDoubleYears=totalDoubleDays/365.25;
+  const serviceYrsNum=serviceYearsDecimal(p.start);
+  const totalServiceYrs=serviceYrsNum+totalDoubleYears;
+  const tDays=Math.round(totalServiceYrs*365.25);
+  const tY=Math.floor(tDays/365),tM=Math.floor((tDays%365)/30),tD=tDays%365%30;
+  const svcTotal=[tY?tY+' ปี':'',tM?tM+' เดือน':'',tD?tD+' วัน':''].filter(Boolean).join(' ')||'0 วัน';
+  let startBE=0,birthBE=0;
+  try{const sp=p.start.split('/');startBE=parseInt(sp[2]);const bp=p.dob.split('/');birthBE=parseInt(bp[2]);}catch(e){}
+  const retire25=startBE+25-Math.floor(totalDoubleYears);
+  const retire60=birthBE+60;
+  const curBE=new Date().getFullYear()+543;
+  const gratuity=Math.round(p.salary*Math.floor(totalServiceYrs));
+  const pensionRate=Math.min(Math.floor(totalServiceYrs)*2,70)/100;
+  const pension=Math.round(p.salary*pensionRate);
+  const psrSum=(p.psr1||0)+(p.psr2||0)+(p.psr3||0)+(p.psr4||0);
+  // edu rows
+  const edu=eduData.filter(e=>String(e.pid)===String(pid));
+  const eduRows=edu.length?edu.map(e=>{const smap={done:'สำเร็จ',studying:'กำลังศึกษา',pending:'รอสมัคร'};return `<tr><td>${e.course||'—'}</td><td>${e.school||'—'}</td><td>${e.year||'—'}</td><td>${e.duration||'—'}</td><td>${e.grade||'—'}</td><td>${smap[e.status]||e.status||'—'}</td></tr>`}).join(''):'<tr><td colspan="6" style="color:#999;text-align:center">ไม่มีข้อมูล</td></tr>';
+  // training rows
+  const trn=trainingData.filter(t=>String(t.pid)===String(pid));
+  const trnRows=trn.length?trn.map(t=>{const smap={done:'เสร็จสิ้น',ongoing:'กำลังอบรม',pending:'รอเริ่ม'};return `<tr><td>${t.course||'—'}</td><td>${t.org||'—'}</td><td>${t.start||'—'}</td><td>${t.end||'—'}</td><td style="text-align:center">${t.hours?t.hours+' ชม.':'—'}</td><td>${t.result||'—'}</td></tr>`}).join(''):'<tr><td colspan="6" style="color:#999;text-align:center">ไม่มีข้อมูล</td></tr>';
+  // field rows
+  const fds=fieldData.filter(f=>String(f.pid)===String(pid));
+  const fieldRows=fds.length?fds.map(f=>`<tr><td>${f.mission||'—'}</td><td>${f.area||'—'}</td><td>${f.start||'—'}</td><td>${f.end||'ปัจจุบัน'}</td><td style="color:#0891b2;font-weight:700">${formatDouble(f.double)}</td></tr>`).join(''):'<tr><td colspan="5" style="color:#999;text-align:center">ไม่มีข้อมูล</td></tr>';
+  const totalDbl=fds.reduce((a,f)=>a+(parseInt(f.double)||0),0);
+  // promotion rows
+  const prms=promotionData.filter(pr=>String(pr.pid)===String(pid));
+  const prmRows=prms.length?prms.map(pr=>{const smap={review:'อยู่ระหว่างพิจารณา',prep:'เตรียมสอบ',done:'ผ่านแล้ว'};return `<tr><td style="text-align:center">${pr.rank||'—'}</td><td style="text-align:center">${pr.target||'—'}</td><td>${pr.condition||'—'}</td><td>${pr.exam||'—'}</td><td style="text-align:center">${pr.pct||0}%</td><td>${smap[pr.status]||pr.status||'—'}</td></tr>`}).join(''):'<tr><td colspan="6" style="color:#999;text-align:center">ไม่มีข้อมูล</td></tr>';
+
+  const S=`
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Sarabun',sans-serif;font-size:10.5pt;color:#111;padding:12mm 14mm;}
+    h1{text-align:center;font-size:17pt;font-weight:700;margin-bottom:3px;}
+    .doc-sub{text-align:center;font-size:10pt;color:#555;margin-bottom:12px;}
+    .line{border-top:2.5px solid #1a6fd4;margin-bottom:12px;}
+    .page-break{page-break-before:always;}
+    .header-block{display:flex;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #1a6fd4;}
+    .avatar{width:60px;height:60px;background:#1a6fd4;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;flex-shrink:0;overflow:hidden;}
+    .h-name{font-size:16pt;font-weight:700;}
+    .h-sub{font-size:10pt;color:#555;margin-top:4px;}
+    .badge{display:inline-block;background:#e8f4fd;color:#1a6fd4;border-radius:4px;padding:2px 8px;font-size:9pt;margin-right:5px;}
+    .sec-title{font-size:11pt;font-weight:700;color:#1a6fd4;border-left:3px solid #1a6fd4;padding-left:8px;margin:12px 0 7px;}
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px;}
+    .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:10px;}
+    .info-card{background:#f0f7ff;border:1px solid #bee3f8;border-radius:5px;padding:7px 9px;}
+    .info-card .lbl{font-size:8pt;color:#555;}
+    .info-card .val{font-size:11pt;font-weight:700;color:#1a6fd4;margin-top:2px;}
+    .info-card .val.green{color:#16a34a;}
+    .info-card .val.gold{color:#c8861a;}
+    .info-card .val.teal{color:#0891b2;}
+    table{width:100%;border-collapse:collapse;font-size:9pt;margin-top:4px;}
+    th{background:#1a6fd4;color:#fff;padding:5px 4px;text-align:left;font-weight:600;}
+    td{padding:4px;border-bottom:1px solid #e2e8f0;vertical-align:top;}
+    tr:nth-child(even) td{background:#f8faff;}
+    .footer{margin-top:16px;font-size:9pt;color:#888;border-top:1px solid #e2e8f0;padding-top:6px;display:flex;justify-content:space-between;}
+    @page{size:A4 portrait;margin:8mm;}
+  `;
+
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><style>${S}</style></head><body>
+    <!-- ========== หน้า 1: ข้อมูลส่วนตัว ========== -->
+    <div class="header-block">
+      <div class="avatar" style="${p.photo?'padding:0;':''}">
+        ${p.photo?`<img src="${p.photo}" style="width:60px;height:60px;object-fit:cover;border-radius:7px;">`:'🪖'}
+      </div>
+      <div>
+        <div class="h-name">${p.rank} ${p.fname} ${p.lname}</div>
+        <div class="h-sub">
+          <span class="badge">📌 ${p.pos||'—'}</span>
+          <span class="badge">🏢 ${p.unit||'—'}</span>
+          <span class="badge">⚔️ ${p.branch||'—'}</span>
+          <span class="badge">🏠 ${p.company||'—'}</span>
+        </div>
+      </div>
+    </div>
+    <div class="sec-title">ข้อมูลส่วนตัว</div>
+    <div class="grid4">
+      <div class="info-card"><div class="lbl">เลขประจำตัว</div><div class="val">${p.idno||'—'}</div></div>
+      <div class="info-card"><div class="lbl">เลขบัตรประชาชน</div><div class="val" style="font-size:9.5pt;">${p.cid||'—'}</div></div>
+      <div class="info-card"><div class="lbl">วันเกิด</div><div class="val">${p.dob||'—'}</div></div>
+      <div class="info-card"><div class="lbl">กรุ๊ปเลือด</div><div class="val">${p.blood||'—'}</div></div>
+      <div class="info-card"><div class="lbl">เบอร์โทร</div><div class="val">${p.tel||'—'}</div></div>
+      <div class="info-card"><div class="lbl">เหล่า</div><div class="val">${p.branch||'—'}</div></div>
+      <div class="info-card"><div class="lbl">กองร้อย</div><div class="val">${p.company||'—'}</div></div>
+      <div class="info-card"><div class="lbl">สถานะ</div><div class="val">${STATUS_LABELS[p.status]||p.status||'—'}</div></div>
+    </div>
+    <div class="sec-title">ข้อมูลราชการ & เงินเดือน</div>
+    <div class="grid4">
+      <div class="info-card"><div class="lbl">วันเข้ารับราชการ</div><div class="val">${p.start||'—'}</div></div>
+      <div class="info-card"><div class="lbl">อายุราชการ</div><div class="val">${serviceYears(p.start)}</div></div>
+      <div class="info-card"><div class="lbl">วันทวีคูณ</div><div class="val teal">${formatDouble(totalDoubleDays)}</div></div>
+      <div class="info-card"><div class="lbl">รวมอายุราชการ</div><div class="val">${svcTotal}</div></div>
+      <div class="info-card"><div class="lbl">ระดับ/ขั้น</div><div class="val">${p.grade?GRADE_LABELS[p.grade]:'—'} / ${p.step||'—'}</div></div>
+      <div class="info-card"><div class="lbl">ขั้นฐาน</div><div class="val">${(p.base||0).toLocaleString()}</div></div>
+      <div class="info-card"><div class="lbl">พ.ร.ด.</div><div class="val">${(p.prd||0).toLocaleString()}</div></div>
+      <div class="info-card"><div class="lbl">รวม พ.ส.ร.</div><div class="val">${psrSum.toLocaleString()}</div></div>
+      <div class="info-card" style="grid-column:1/-1"><div class="lbl">เงินเดือนสุทธิรวม</div><div class="val green" style="font-size:15pt;">${(p.salary||0).toLocaleString()} บาท</div></div>
+    </div>
+
+    <!-- ========== หลักสูตรการศึกษา ========== -->
+    <div class="sec-title">หลักสูตรการศึกษา</div>
+    <table><thead><tr><th>หลักสูตร</th><th>สถานศึกษา</th><th>ปี</th><th>ระยะเวลา</th><th>ผล</th><th>สถานะ</th></tr></thead>
+    <tbody>${eduRows}</tbody></table>
+
+    <!-- ========== การฝึกอบรม ========== -->
+    <div class="sec-title">ประวัติการฝึกอบรม</div>
+    <table><thead><tr><th>หลักสูตร</th><th>หน่วยงาน</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>ชั่วโมง</th><th>ผล</th></tr></thead>
+    <tbody>${trnRows}</tbody></table>
+
+    <!-- ========== ราชการสนาม ========== -->
+    <div class="sec-title">ราชการสนาม / วันทวีคูณ</div>
+    <table><thead><tr><th>ภารกิจ</th><th>พื้นที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>วันทวีคูณ</th></tr></thead>
+    <tbody>${fieldRows}
+      ${fds.length?`<tr style="background:#e8f4fd;font-weight:700"><td colspan="4" style="text-align:right;padding-right:8px;color:#555;">รวมวันทวีคูณทั้งหมด</td><td style="color:#0891b2;">${formatDouble(totalDbl)}</td></tr>`:''}
+    </tbody></table>
+
+    <!-- ========== แผนเลื่อนยศ ========== -->
+    <div class="sec-title">แผนเลื่อนยศ / สอบเลื่อนฐานะ</div>
+    <table><thead><tr><th>ยศปัจจุบัน</th><th>ยศเป้าหมาย</th><th>เงื่อนไข</th><th>วันสอบ</th><th>ความพร้อม</th><th>สถานะ</th></tr></thead>
+    <tbody>${prmRows}</tbody></table>
+
+    <!-- ========== บำเหน็จ บำนาญ ========== -->
+    <div class="sec-title">บำเหน็จ / บำนาญ (ประมาณการ)</div>
+    <div class="grid4">
+      <div class="info-card"><div class="lbl">🏅 เกษียณ 25 ปี</div><div class="val">พ.ศ. ${retire25}</div><div class="lbl">อีก ~${Math.max(0,retire25-curBE)} ปี</div></div>
+      <div class="info-card"><div class="lbl">👴 เกษียณ 60 ปี</div><div class="val teal">พ.ศ. ${retire60}</div><div class="lbl">อีก ~${Math.max(0,retire60-curBE)} ปี</div></div>
+      <div class="info-card"><div class="lbl">💰 บำเหน็จ (เงินก้อน)</div><div class="val gold">${gratuity.toLocaleString()} บาท</div><div class="lbl">${Math.floor(totalServiceYrs)} ปี × เงินเดือน</div></div>
+      <div class="info-card"><div class="lbl">📅 บำนาญ/เดือน (${Math.round(pensionRate*100)}%)</div><div class="val green">${pension.toLocaleString()} บาท</div><div class="lbl">สูงสุด 70% ของเงินเดือน</div></div>
+    </div>
+
+    <div class="footer">
+      <span>ระบบบันทึกประวัติกำลังพล กองทัพบก</span>
+      <span>พิมพ์เมื่อ: ${pdfDateNow()}</span>
+    </div>
+  </body></html>`;
+
+  openPrintWindow(html, `ข้อมูลทั้งหมด_${p.rank}${p.fname}_${p.lname}`);
+}
+
 // Drive picker stub
 function openDriveFilePicker() {
   const url = prompt('กรอก URL ไฟล์จาก Google Drive (ต้องเป็น Public link):','');
@@ -2218,6 +2578,7 @@ function renderProfile(){
       <div style="display:flex;gap:7px;flex-shrink:0">
         ${isAdmin()?`<button class="btn btn-blue btn-sm" onclick="openEditModal(${p.id})">✏️ แก้ไข</button>`:''}
         <button class="btn btn-outline btn-sm" onclick="exportProfilePDF(${p.id})">📄 ส่งออก PDF</button>
+        <button class="btn btn-blue btn-sm" onclick="exportAllPDF(${p.id})">📦 ส่งออกข้อมูลทั้งหมด PDF</button>
       </div>
     </div>
     <div class="dsec">
