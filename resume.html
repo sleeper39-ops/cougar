@@ -333,7 +333,7 @@ tbody tr:last-child td{border-bottom:none;}
           <thead><tr>
             <th>#</th><th>ยศ-ชื่อ-สกุล</th><th>เลขประจำตัว</th>
             <th>ตำแหน่ง</th><th>วันเข้ารับราชการ</th><th>อายุราชการ</th><th>วันทวีคูณ</th>
-            <th>ระดับ/ขั้น</th><th>พ.ร.ด.</th><th>พ.ส.ร.1</th><th>พ.ส.ร.2</th><th>พ.ส.ร.3</th><th>พ.ส.ร.4</th><th>เงินเดือนสุทธิ (บาท)</th><th>สถานะ</th><th>จัดการ</th>
+            <th>รวมอายุราชการ</th><th>สถานะ</th><th>จัดการ</th>
           </tr></thead>
           <tbody id="personnelBody"></tbody>
         </table>
@@ -1843,13 +1843,27 @@ function renderPersonnel(){
   document.getElementById('rowCount').textContent=filtered.length+' รายการ';
   document.getElementById('pgInfo').textContent=`แสดง 1–${Math.min(10,filtered.length)} จาก ${filtered.length}`;
   if(filtered.length===0){
-    document.getElementById('personnelBody').innerHTML=`<tr><td colspan="16" style="text-align:center;padding:48px;color:var(--text-3);">
+    document.getElementById('personnelBody').innerHTML=`<tr><td colspan="9" style="text-align:center;padding:48px;color:var(--text-3);">
       <div style="font-size:32px;margin-bottom:10px">👥</div>
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">ยังไม่มีข้อมูลกำลังพล</div>
       <div style="font-size:13px;">กดปุ่ม <b>＋ เพิ่มกำลังพล</b> หรือ <b>🔄 โหลด</b> จาก Google Sheets</div>
     </td></tr>`;
   } else {
-    document.getElementById('personnelBody').innerHTML=filtered.map((p,i)=>`
+    document.getElementById('personnelBody').innerHTML=filtered.map((p,i)=>{
+      // คำนวณรวมอายุราชการ = ปกติ + ทวีคูณ
+      const svcDec = serviceYearsDecimal(p.start);
+      const dblYrs = getTotalDouble(p.id) / 365.25;
+      const totalYrs = svcDec + dblYrs;
+      const tDays = Math.round(totalYrs * 365.25);
+      const tY = Math.floor(tDays/365);
+      const tM = Math.floor((tDays%365)/30);
+      const tD = tDays%365%30;
+      const totalSvcParts = [];
+      if(tY>0) totalSvcParts.push(tY+' ปี');
+      if(tM>0) totalSvcParts.push(tM+' เดือน');
+      if(tD>0) totalSvcParts.push(tD+' วัน');
+      const totalSvcStr = totalSvcParts.join(' ') || '0 วัน';
+      return `
       <tr onclick="openDetail(${p.id})">
         <td style="color:var(--text-3);font-size:15px">${i+1}</td>
         <td><div class="name-cell">
@@ -1859,14 +1873,8 @@ function renderPersonnel(){
         <td style="color:var(--text-2);font-size:15px">${p.pos}</td>
         <td style="color:var(--text-3);font-size:15px">${p.start}</td>
         <td style="color:var(--accent-green);font-size:15px;font-weight:600">${serviceYears(p.start)}</td>
-      <td style="color:var(--accent-teal);font-size:15px;font-weight:600">${formatDouble(getTotalDouble(p.id))}</td>
-        <td style="font-weight:700;font-size:15px">${p.grade?GRADE_LABELS[p.grade]:'-'}/${p.step}</td>
-        <td style="font-size:15px;color:var(--text-2)">${(p.prd||0).toLocaleString()}</td>
-        <td style="font-size:15px;color:var(--text-2)">${(p.psr1||0).toLocaleString()}</td>
-        <td style="font-size:15px;color:var(--text-2)">${(p.psr2||0).toLocaleString()}</td>
-        <td style="font-size:15px;color:var(--text-2)">${(p.psr3||0).toLocaleString()}</td>
-        <td style="font-size:15px;color:var(--text-2)">${(p.psr4||0).toLocaleString()}</td>
-        <td style="font-weight:800;color:var(--text-1);font-size:15px">${(p.salary||0).toLocaleString()}</td>
+        <td style="color:var(--accent-teal);font-size:15px;font-weight:600">${formatDouble(getTotalDouble(p.id))}</td>
+        <td style="color:var(--blue);font-size:15px;font-weight:700">${totalSvcStr}</td>
         <td><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></td>
         <td onclick="event.stopPropagation()">
           <div style="display:flex;gap:5px">
@@ -1874,7 +1882,8 @@ function renderPersonnel(){
             <button class="btn btn-red btn-sm btn-icon" onclick="askDelete(${p.id},'${p.rank} ${p.fname} ${p.lname}','personnel')" title="ลบ">🗑️</button>`:''}
           </div>
         </td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
   }
   updateStats();
 }
@@ -2241,6 +2250,10 @@ function renderProfile(){
         <div><div class="di-label">ระดับ/ขั้น</div><div class="di-val">${p.grade?GRADE_LABELS[p.grade]:'-'} / ${p.step}</div></div>
         <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${(p.base||0).toLocaleString()} บาท</div></div>
         <div><div class="di-label">พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} บาท</div></div>
+        <div><div class="di-label">พ.ส.ร. ครั้งที่ 1</div><div class="di-val">${(p.psr1||0).toLocaleString()} บาท</div></div>
+        <div><div class="di-label">พ.ส.ร. ครั้งที่ 2</div><div class="di-val">${(p.psr2||0).toLocaleString()} บาท</div></div>
+        <div><div class="di-label">พ.ส.ร. ครั้งที่ 3</div><div class="di-val">${(p.psr3||0).toLocaleString()} บาท</div></div>
+        <div><div class="di-label">พ.ส.ร. ครั้งที่ 4</div><div class="di-val">${(p.psr4||0).toLocaleString()} บาท</div></div>
         <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val" style="color:var(--accent-green);font-size:18px;font-weight:800">${(p.salary||0).toLocaleString()} บาท</div></div>
       </div>
     </div>
@@ -2409,6 +2422,19 @@ function renderPension(){
         </div>
       </div>
       <div class="dsec">
+        <div class="dsec-title">รายละเอียดเงินเดือน (ฐานคำนวณบำเหน็จ/บำนาญ)</div>
+        <div class="dg">
+          <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${(p.base||0).toLocaleString()} บาท</div></div>
+          <div><div class="di-label">พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} บาท</div></div>
+          <div><div class="di-label">พ.ส.ร. ครั้งที่ 1</div><div class="di-val">${(p.psr1||0).toLocaleString()} บาท</div></div>
+          <div><div class="di-label">พ.ส.ร. ครั้งที่ 2</div><div class="di-val">${(p.psr2||0).toLocaleString()} บาท</div></div>
+          <div><div class="di-label">พ.ส.ร. ครั้งที่ 3</div><div class="di-val">${(p.psr3||0).toLocaleString()} บาท</div></div>
+          <div><div class="di-label">พ.ส.ร. ครั้งที่ 4</div><div class="di-val">${(p.psr4||0).toLocaleString()} บาท</div></div>
+          <div><div class="di-label">รวม พ.ส.ร. ทั้งหมด</div><div class="di-val" style="color:var(--accent-teal);font-weight:700">${((p.psr1||0)+(p.psr2||0)+(p.psr3||0)+(p.psr4||0)).toLocaleString()} บาท</div></div>
+          <div><div class="di-label" style="color:var(--blue);font-weight:700">เงินเดือนสุทธิรวม</div><div class="di-val" style="color:var(--accent-green);font-size:17px;font-weight:800">${(p.salary||0).toLocaleString()} บาท</div></div>
+        </div>
+      </div>
+      <div class="dsec">
         <div class="dsec-title">วันเกษียณอายุ</div>
         <div class="pen-grid">
           <div class="pen-card" style="border-color:rgba(26,111,212,.3)">
@@ -2424,12 +2450,12 @@ function renderPension(){
           <div class="pen-card" style="border-color:rgba(200,134,26,.3)">
             <div class="pen-lbl">💰 บำเหน็จ (อายุราชการ × เงินเดือน)</div>
             <div class="pen-val gold">${gratuity.toLocaleString()} บาท</div>
-            <div class="pen-sub">= ${svcTotal} × ${(p.salary||0).toLocaleString()} บาท</div>
+            <div class="pen-sub">= ${Math.floor(totalServiceYrs)} ปี × ${(p.salary||0).toLocaleString()} บาท (รวม พ.ส.ร.)</div>
           </div>
           <div class="pen-card" style="border-color:rgba(22,163,74,.3)">
             <div class="pen-lbl">📅 บำนาญ / เดือน (${Math.round(pensionRate*100)}%)</div>
             <div class="pen-val" style="color:var(--accent-green)">${pension.toLocaleString()} บาท</div>
-            <div class="pen-sub">= เงินเดือน × 2% × ${Math.floor(totalServiceYrs)} ปี (สูงสุด 70%)</div>
+            <div class="pen-sub">= ${(p.salary||0).toLocaleString()} บาท × 2% × ${Math.floor(totalServiceYrs)} ปี (รวม พ.ส.ร., สูงสุด 70%)</div>
           </div>
         </div>
       </div>
