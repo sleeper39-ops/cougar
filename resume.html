@@ -1091,8 +1091,8 @@ let deleteTargetType='personnel';
 // เรียก fetch() ไปยัง https://PROJECT.firebaseio.com/NODE/COLLECTION.json?auth=APIKEY
 
 let FB = {
-  url:  localStorage.getItem('fb_url')  || '',
-  key:  localStorage.getItem('fb_key')  || '',
+  url:  localStorage.getItem('fb_url')  || 'https://army-personnel-default-rtdb.asia-southeast1.firebasedatabase.app',
+  key:  localStorage.getItem('fb_key')  || 'AIzaSyBoAEnMuRjF0fdb4u3srfYYTA_cqBBrybs',
   node: localStorage.getItem('fb_node') || 'aps_data'
 };
 
