@@ -221,10 +221,15 @@ tbody tr:last-child td{border-bottom:none;}
   .docs-grid{grid-template-columns:repeat(2,1fr);}
 }
 
-.cat-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-1);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;}
-.cat-drag-handle{color:var(--text-3);font-size:16px;cursor:grab;flex-shrink:0;}
-.cat-drag-handle:active{cursor:grabbing;}
-.cat-item.drag-over{border-color:var(--blue);background:var(--blue-pale);}
+.cat-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:7px;transition:box-shadow .15s,border-color .15s,background .15s;}
+.cat-item:hover{border-color:var(--border-mid);box-shadow:var(--shadow-sm);}
+.cat-drag-handle{color:var(--text-3);font-size:18px;cursor:grab;flex-shrink:0;padding:0 2px;user-select:none;line-height:1;}
+.cat-drag-handle:active{cursor:grabbing;color:var(--blue);}
+.cat-item.drag-over{border-color:var(--blue);background:var(--blue-pale);box-shadow:0 0 0 3px var(--blue-glow);}
+.cat-item.dragging{opacity:.45;border-style:dashed;}
+.cat-name-input{flex:1;background:transparent;border:none;outline:none;font-family:inherit;font-size:15px;font-weight:600;color:var(--text-1);padding:2px 4px;border-radius:4px;cursor:text;transition:background .15s;}
+.cat-name-input:focus{background:var(--bg-1);cursor:text;}
+.cat-key-badge{font-size:10.5px;color:var(--text-3);background:var(--bg-2);border-radius:4px;padding:2px 7px;font-family:monospace;white-space:nowrap;flex-shrink:0;}
 .cat-key{font-size:11px;color:var(--text-3);background:var(--bg-2);padding:1px 6px;border-radius:4px;font-family:monospace;flex-shrink:0;}
 </style>
 </head>
@@ -333,7 +338,7 @@ tbody tr:last-child td{border-bottom:none;}
           <thead><tr>
             <th>#</th><th>ยศ-ชื่อ-สกุล</th><th>เลขประจำตัว</th>
             <th>ตำแหน่ง</th><th>วันเข้ารับราชการ</th><th>อายุราชการ</th><th>วันทวีคูณ</th>
-            <th>ระดับ/ขั้น</th><th>พ.ร.ด.</th><th>พ.ส.ร.1</th><th>พ.ส.ร.2</th><th>พ.ส.ร.3</th><th>พ.ส.ร.4</th><th>เงินเดือนสุทธิ (฿)</th><th>สถานะ</th><th>จัดการ</th>
+            <th>อายุราชการรวม</th><th>สถานะ</th><th>จัดการ</th>
           </tr></thead>
           <tbody id="personnelBody"></tbody>
         </table>
@@ -1394,15 +1399,28 @@ function exportPDF() {
       <button class="mclose" onclick="closeModal('catSettingsModal')" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1)">✕</button>
     </div>
     <div class="form-body" style="padding:16px 20px;">
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
-        <input class="finput" id="newCatName" placeholder="ชื่อหมวดหมู่ใหม่" style="flex:1;">
-        <button class="btn btn-blue btn-sm" onclick="addDocCategory()">＋ เพิ่ม</button>
+
+      <!-- Add new -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:8px;">➕ เพิ่มหมวดหมู่ใหม่</div>
+        <div style="display:flex;gap:8px;">
+          <input class="finput" id="newCatName" placeholder="ชื่อหมวดหมู่..." style="flex:1;" onkeydown="if(event.key==='Enter')addDocCategory()">
+          <button class="btn btn-blue btn-sm" onclick="addDocCategory()" style="white-space:nowrap;">＋ เพิ่ม</button>
+        </div>
       </div>
-      <div style="font-size:12px;color:var(--text-3);margin-bottom:10px;">ลากเพื่อเรียงลำดับ • คลิกชื่อเพื่อแก้ไข</div>
+
+      <!-- Instructions -->
+      <div style="display:flex;align-items:center;gap:8px;background:var(--blue-pale);border:1px solid rgba(26,111,212,.2);border-radius:var(--radius);padding:9px 12px;margin-bottom:12px;font-size:13px;color:var(--blue);">
+        <span style="font-size:16px;">💡</span>
+        <span><b>ลาก ⠿</b> เพื่อสลับลำดับ &nbsp;|&nbsp; <b>คลิกชื่อ</b> เพื่อแก้ไขชื่อ &nbsp;|&nbsp; <b>🗑️</b> ลบหมวดหมู่</span>
+      </div>
+
+      <!-- Category list -->
       <div id="catList"></div>
+
     </div>
     <div class="form-actions">
-      <button class="btn btn-outline" onclick="closeModal('catSettingsModal')">ปิด</button>
+      <button class="btn btn-outline" onclick="closeModal('catSettingsModal')">ยกเลิก</button>
       <button class="btn btn-blue" onclick="saveCatSettings()">💾 บันทึก</button>
     </div>
   </div>
@@ -1832,13 +1850,27 @@ function renderPersonnel(){
   document.getElementById('rowCount').textContent=filtered.length+' รายการ';
   document.getElementById('pgInfo').textContent=`แสดง 1–${Math.min(10,filtered.length)} จาก ${filtered.length}`;
   if(filtered.length===0){
-    document.getElementById('personnelBody').innerHTML=`<tr><td colspan="16" style="text-align:center;padding:48px;color:var(--text-3);">
+    document.getElementById('personnelBody').innerHTML=`<tr><td colspan="10" style="text-align:center;padding:48px;color:var(--text-3);">
       <div style="font-size:32px;margin-bottom:10px">👥</div>
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">ยังไม่มีข้อมูลกำลังพล</div>
       <div style="font-size:13px;">กดปุ่ม <b>＋ เพิ่มกำลังพล</b> หรือ <b>🔄 โหลด</b> จาก Google Sheets</div>
     </td></tr>`;
   } else {
-    document.getElementById('personnelBody').innerHTML=filtered.map((p,i)=>`
+    document.getElementById('personnelBody').innerHTML=filtered.map((p,i)=>{
+      // คำนวณอายุราชการรวม (ปกติ + ทวีคูณ)
+      const svcDec = serviceYearsDecimal(p.start);
+      const dblYrs = getTotalDouble(p.id) / 365.25;
+      const totalYrs = svcDec + dblYrs;
+      const totalDays = Math.round(totalYrs * 365.25);
+      const rY = Math.floor(totalDays/365);
+      const rM = Math.floor((totalDays%365)/30);
+      const rD = totalDays%365%30;
+      const rParts = [];
+      if(rY>0) rParts.push(rY+' ปี');
+      if(rM>0) rParts.push(rM+' เดือน');
+      if(rD>0) rParts.push(rD+' วัน');
+      const totalSvcStr = rParts.join(' ') || '0 วัน';
+      return `
       <tr onclick="openDetail(${p.id})">
         <td style="color:var(--text-3);font-size:15px">${i+1}</td>
         <td><div class="name-cell">
@@ -1848,14 +1880,8 @@ function renderPersonnel(){
         <td style="color:var(--text-2);font-size:15px">${p.pos}</td>
         <td style="color:var(--text-3);font-size:15px">${p.start}</td>
         <td style="color:var(--accent-green);font-size:15px;font-weight:600">${serviceYears(p.start)}</td>
-      <td style="color:var(--accent-teal);font-size:15px;font-weight:600">${formatDouble(getTotalDouble(p.id))}</td>
-        <td style="font-weight:700;font-size:15px">${p.grade?GRADE_LABELS[p.grade]:'-'}/${p.step}</td>
-        <td style="font-size:15px;color:var(--text-2)">${(p.prd||0).toLocaleString()}</td>
-        <td style="font-size:15px;color:var(--text-2)">${(p.psr1||0).toLocaleString()}</td>
-        <td style="font-size:15px;color:var(--text-2)">${(p.psr2||0).toLocaleString()}</td>
-        <td style="font-size:15px;color:var(--text-2)">${(p.psr3||0).toLocaleString()}</td>
-        <td style="font-size:15px;color:var(--text-2)">${(p.psr4||0).toLocaleString()}</td>
-        <td style="font-weight:800;color:var(--text-1);font-size:15px">${(p.salary||0).toLocaleString()}</td>
+        <td style="color:var(--accent-teal);font-size:15px;font-weight:600">${formatDouble(getTotalDouble(p.id))}</td>
+        <td style="color:var(--blue);font-size:15px;font-weight:700">${totalSvcStr}</td>
         <td><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></td>
         <td onclick="event.stopPropagation()">
           <div style="display:flex;gap:5px">
@@ -1863,7 +1889,8 @@ function renderPersonnel(){
             <button class="btn btn-red btn-sm btn-icon" onclick="askDelete(${p.id},'${p.rank} ${p.fname} ${p.lname}','personnel')" title="ลบ">🗑️</button>`:''}
           </div>
         </td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
   }
   updateStats();
 }
@@ -2230,6 +2257,10 @@ function renderProfile(){
         <div><div class="di-label">ระดับ/ขั้น</div><div class="di-val">${p.grade?GRADE_LABELS[p.grade]:'-'} / ${p.step}</div></div>
         <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${(p.base||0).toLocaleString()} ฿</div></div>
         <div><div class="di-label">พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} ฿</div></div>
+        <div><div class="di-label">พ.ส.ร. ครั้งที่ 1</div><div class="di-val">${(p.psr1||0).toLocaleString()} ฿</div></div>
+        <div><div class="di-label">พ.ส.ร. ครั้งที่ 2</div><div class="di-val">${(p.psr2||0).toLocaleString()} ฿</div></div>
+        <div><div class="di-label">พ.ส.ร. ครั้งที่ 3</div><div class="di-val">${(p.psr3||0).toLocaleString()} ฿</div></div>
+        <div><div class="di-label">พ.ส.ร. ครั้งที่ 4</div><div class="di-val">${(p.psr4||0).toLocaleString()} ฿</div></div>
         <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val" style="color:var(--accent-green);font-size:18px;font-weight:800">${(p.salary||0).toLocaleString()} บาท</div></div>
       </div>
     </div>
@@ -2267,13 +2298,26 @@ function renderPension(){
   const retire60 = birthBE + 60;
   const curBE = new Date().getFullYear()+543;
 
-  // บำเหน็จ = เงินเดือน × อายุราชการรวม(ปี) ตามกฎหมาย ปัดเศษลง
-  const gratuity = Math.round(p.salary * Math.floor(totalServiceYrs));
+  // รวม พ.ส.ร. ทั้งหมด
+  const psrTotal = (p.psr1||0)+(p.psr2||0)+(p.psr3||0)+(p.psr4||0);
+  // เงินเดือนรวมทุกส่วน (ใช้เป็นฐานคำนวณบำเหน็จ/บำนาญ)
+  const salaryFull = p.salary || 0; // p.salary ถูกคำนวณมาแล้วรวม base+prd+psr
+
+  // บำเหน็จ = เงินเดือนรวม × อายุราชการรวม(ปี) ตามกฎหมาย ปัดเศษลง
+  const gratuity = Math.round(salaryFull * Math.floor(totalServiceYrs));
   // บำนาญ = 2% × จำนวนปีราชการรวม × เงินเดือน สูงสุดไม่เกิน 70%
   const pensionRate = Math.min(Math.floor(totalServiceYrs) * 2, 70) / 100;
-  const pension = Math.round(p.salary * pensionRate);
+  const pension = Math.round(salaryFull * pensionRate);
 
   const svcDisplay = serviceYears(p.start);
+
+  // PSR rows สำหรับแสดง
+  const psrRows = [
+    {label:'พ.ส.ร. ครั้งที่ 1', val: p.psr1||0},
+    {label:'พ.ส.ร. ครั้งที่ 2', val: p.psr2||0},
+    {label:'พ.ส.ร. ครั้งที่ 3', val: p.psr3||0},
+    {label:'พ.ส.ร. ครั้งที่ 4', val: p.psr4||0},
+  ];
 
   document.getElementById('pensionContent').innerHTML=`
     <div class="tcard">
@@ -2292,15 +2336,30 @@ function renderPension(){
           </div>
         </div>
       </div>
+
       <div class="dsec">
         <div class="dsec-title">อายุราชการ (รวมวันทวีคูณ)</div>
         <div class="dg">
           <div><div class="di-label">อายุราชการปกติ</div><div class="di-val g">${svcDisplay}</div></div>
           <div><div class="di-label">วันทวีคูณทั้งหมด</div><div class="di-val" style="color:var(--accent-teal)">${formatDouble(totalDoubleDays)}</div></div>
           <div><div class="di-label">อายุราชการรวม</div><div class="di-val hi">${svcTotal}</div></div>
-          <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val gold">${(p.salary||0).toLocaleString()} ฿</div></div>
+          <div><div class="di-label">เงินเดือนรวม (ฐานคำนวณ)</div><div class="di-val gold">${salaryFull.toLocaleString()} ฿</div></div>
         </div>
       </div>
+
+      <div class="dsec">
+        <div class="dsec-title">รายละเอียดเงินเดือน (ฐานคำนวณบำเหน็จ/บำนาญ)</div>
+        <div class="dg">
+          <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${(p.base||0).toLocaleString()} ฿</div></div>
+          <div><div class="di-label">พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} ฿</div></div>
+          ${psrRows.map(r=>`<div><div class="di-label">${r.label}</div><div class="di-val">${r.val.toLocaleString()} ฿</div></div>`).join('')}
+          <div style="grid-column:1/-1;border-top:2px solid var(--blue-pale);padding-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+            <div><div class="di-label">รวม พ.ส.ร. ทั้งหมด</div><div class="di-val" style="color:var(--accent-teal);font-weight:700">${psrTotal.toLocaleString()} ฿</div></div>
+            <div><div class="di-label" style="color:var(--blue);font-weight:700">เงินเดือนสุทธิรวม</div><div class="di-val" style="color:var(--accent-green);font-size:17px;font-weight:800">${salaryFull.toLocaleString()} บาท</div></div>
+          </div>
+        </div>
+      </div>
+
       <div class="dsec">
         <div class="dsec-title">วันเกษียณอายุ</div>
         <div class="pen-grid">
@@ -2317,15 +2376,16 @@ function renderPension(){
           <div class="pen-card" style="border-color:rgba(200,134,26,.3)">
             <div class="pen-lbl">💰 บำเหน็จ (อายุราชการ × เงินเดือน)</div>
             <div class="pen-val gold">${gratuity.toLocaleString()} ฿</div>
-            <div class="pen-sub">= ${svcTotal} × ${(p.salary||0).toLocaleString()}</div>
+            <div class="pen-sub">= ${Math.floor(totalServiceYrs)} ปี × ${salaryFull.toLocaleString()} ฿</div>
           </div>
           <div class="pen-card" style="border-color:rgba(22,163,74,.3)">
             <div class="pen-lbl">📅 บำนาญ / เดือน (${Math.round(pensionRate*100)}%)</div>
             <div class="pen-val" style="color:var(--accent-green)">${pension.toLocaleString()} ฿</div>
-            <div class="pen-sub">= เงินเดือน × 2% × ${Math.floor(totalServiceYrs)} ปี (สูงสุด 70%)</div>
+            <div class="pen-sub">= ${salaryFull.toLocaleString()} × 2% × ${Math.floor(totalServiceYrs)} ปี (สูงสุด 70%)</div>
           </div>
         </div>
       </div>
+
       <div class="dsec">
         <div class="dsec-title">ราชการสนาม / วันทวีคูณแต่ละครั้ง</div>
         ${fieldData.filter(f=>f.pid===p.id).length===0
@@ -2348,6 +2408,7 @@ function renderPension(){
               </tbody>
             </table>`}
       </div>
+
       <div class="dsec" style="border:none">
         <div class="dsec-title">สิทธิ์ที่ได้รับ</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px">
@@ -3003,32 +3064,77 @@ function renderCatList(){
   const el = document.getElementById('catList');
   if(!el) return;
   el.innerHTML = '';
+  if(docCategories.length===0){
+    el.innerHTML='<div style="text-align:center;color:var(--text-3);padding:24px;font-size:14px;">ยังไม่มีหมวดหมู่</div>';
+    return;
+  }
   docCategories.forEach(function(c, i){
     const div = document.createElement('div');
     div.className = 'cat-item';
     div.draggable = true;
     div.id = 'cat-item-' + i;
     div.dataset.index = String(i);
-    div.innerHTML =
-      '<span class="cat-drag-handle">⠿</span>' +
-      '<span class="cat-name" contenteditable="true" style="outline:none;cursor:text;flex:1;">' + c.name + '</span>' +
-      '<span class="cat-key">' + c.key + '</span>' +
-      '<button class="btn btn-red btn-sm btn-icon" style="padding:3px 8px;font-size:12px;">🗑️</button>';
-    div.querySelector('.cat-name').addEventListener('blur', function(){
+
+    // drag handle
+    const handle = document.createElement('span');
+    handle.className = 'cat-drag-handle';
+    handle.title = 'ลากเพื่อเรียงลำดับ';
+    handle.textContent = '⠿';
+
+    // order badge
+    const orderBadge = document.createElement('span');
+    orderBadge.style.cssText = 'font-size:12px;font-weight:700;color:var(--text-3);min-width:20px;text-align:center;flex-shrink:0;';
+    orderBadge.textContent = (i+1)+'.';
+
+    // name input
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'cat-name-input';
+    nameInput.value = c.name;
+    nameInput.title = 'คลิกเพื่อแก้ไขชื่อหมวดหมู่';
+    nameInput.addEventListener('change', function(){
       var idx = parseInt(div.dataset.index);
-      if(this.textContent.trim()) docCategories[idx].name = this.textContent.trim();
+      if(this.value.trim()) docCategories[idx].name = this.value.trim();
     });
-    div.querySelector('.cat-name').addEventListener('keydown', function(e){
-      if(e.key === 'Enter'){ e.preventDefault(); this.blur(); }
+    nameInput.addEventListener('keydown', function(e){
+      if(e.key==='Enter'){ this.blur(); }
     });
-    div.querySelector('.btn-red').addEventListener('click', function(){
+
+    // key badge
+    const keyBadge = document.createElement('span');
+    keyBadge.className = 'cat-key-badge';
+    keyBadge.textContent = c.key;
+
+    // delete button
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn btn-red btn-sm';
+    delBtn.style.cssText = 'padding:4px 10px;font-size:13px;flex-shrink:0;';
+    delBtn.innerHTML = '🗑️ ลบ';
+    delBtn.title = 'ลบหมวดหมู่นี้';
+    delBtn.addEventListener('click', function(){
       var idx = parseInt(div.dataset.index);
       deleteCat(idx);
     });
-    div.addEventListener('dragstart', function(e){ catDragStart(e, parseInt(div.dataset.index)); });
-    div.addEventListener('dragover',  function(e){ catDragOver(e,  parseInt(div.dataset.index)); });
-    div.addEventListener('drop',      function(e){ catDrop(e,      parseInt(div.dataset.index)); });
+
+    div.appendChild(handle);
+    div.appendChild(orderBadge);
+    div.appendChild(nameInput);
+    div.appendChild(keyBadge);
+    div.appendChild(delBtn);
+
+    // drag events
+    div.addEventListener('dragstart', function(e){
+      catDragStart(e, parseInt(div.dataset.index));
+      div.classList.add('dragging');
+    });
+    div.addEventListener('dragend', function(){
+      div.classList.remove('dragging');
+      document.querySelectorAll('.cat-item').forEach(function(el){ el.classList.remove('drag-over'); });
+    });
+    div.addEventListener('dragover',  function(e){ catDragOver(e, parseInt(div.dataset.index)); });
+    div.addEventListener('drop',      function(e){ catDrop(e, parseInt(div.dataset.index)); });
     div.addEventListener('dragleave', function(e){ catDragLeave(e); });
+
     el.appendChild(div);
   });
 }
@@ -3053,9 +3159,10 @@ function catDrop(e, i){
 function addDocCategory(){
   var input = document.getElementById('newCatName');
   var name = (input.value || '').trim();
-  if(!name){ alert('กรุณากรอกชื่อหมวดหมู่'); return; }
+  if(!name){ input.focus(); input.style.borderColor='var(--accent-red)'; setTimeout(()=>input.style.borderColor='',1200); return; }
   docCategories.push({ key: 'cat_' + Date.now(), name: name });
   input.value = '';
+  input.focus();
   renderCatList();
 }
 function deleteCat(i){
