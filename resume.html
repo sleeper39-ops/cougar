@@ -221,15 +221,10 @@ tbody tr:last-child td{border-bottom:none;}
   .docs-grid{grid-template-columns:repeat(2,1fr);}
 }
 
-.cat-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:7px;transition:box-shadow .15s,border-color .15s,background .15s;}
-.cat-item:hover{border-color:var(--border-mid);box-shadow:var(--shadow-sm);}
-.cat-drag-handle{color:var(--text-3);font-size:18px;cursor:grab;flex-shrink:0;padding:0 2px;user-select:none;line-height:1;}
-.cat-drag-handle:active{cursor:grabbing;color:var(--blue);}
-.cat-item.drag-over{border-color:var(--blue);background:var(--blue-pale);box-shadow:0 0 0 3px var(--blue-glow);}
-.cat-item.dragging{opacity:.45;border-style:dashed;}
-.cat-name-input{flex:1;background:transparent;border:none;outline:none;font-family:inherit;font-size:15px;font-weight:600;color:var(--text-1);padding:2px 4px;border-radius:4px;cursor:text;transition:background .15s;}
-.cat-name-input:focus{background:var(--bg-1);cursor:text;}
-.cat-key-badge{font-size:10.5px;color:var(--text-3);background:var(--bg-2);border-radius:4px;padding:2px 7px;font-family:monospace;white-space:nowrap;flex-shrink:0;}
+.cat-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-1);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;}
+.cat-drag-handle{color:var(--text-3);font-size:16px;cursor:grab;flex-shrink:0;}
+.cat-drag-handle:active{cursor:grabbing;}
+.cat-item.drag-over{border-color:var(--blue);background:var(--blue-pale);}
 .cat-key{font-size:11px;color:var(--text-3);background:var(--bg-2);padding:1px 6px;border-radius:4px;font-family:monospace;flex-shrink:0;}
 </style>
 </head>
@@ -338,7 +333,7 @@ tbody tr:last-child td{border-bottom:none;}
           <thead><tr>
             <th>#</th><th>ยศ-ชื่อ-สกุล</th><th>เลขประจำตัว</th>
             <th>ตำแหน่ง</th><th>วันเข้ารับราชการ</th><th>อายุราชการ</th><th>วันทวีคูณ</th>
-            <th>อายุราชการรวม</th><th>สถานะ</th><th>จัดการ</th>
+            <th>ระดับ/ขั้น</th><th>พ.ร.ด.</th><th>พ.ส.ร.1</th><th>พ.ส.ร.2</th><th>พ.ส.ร.3</th><th>พ.ส.ร.4</th><th>เงินเดือนสุทธิ (บาท)</th><th>สถานะ</th><th>จัดการ</th>
           </tr></thead>
           <tbody id="personnelBody"></tbody>
         </table>
@@ -440,7 +435,7 @@ tbody tr:last-child td{border-bottom:none;}
           <thead><tr>
             <th>ยศ-ชื่อ-สกุล</th><th>ระดับ/ขั้น</th><th>ขั้นฐาน</th>
             <th>พ.ร.ด.</th><th>พ.ส.ร.ครั้ง 1</th><th>พ.ส.ร.ครั้ง 2</th>
-            <th>พ.ส.ร.ครั้ง 3</th><th>พ.ส.ร.ครั้ง 4</th><th>สุทธิ (฿)</th>
+            <th>พ.ส.ร.ครั้ง 3</th><th>พ.ส.ร.ครั้ง 4</th><th>สุทธิ (บาท)</th>
           </tr></thead>
           <tbody id="salaryBody"></tbody>
         </table>
@@ -1016,6 +1011,34 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<!-- MODAL: CATEGORY SETTINGS -->
+<div class="overlay" id="catSettingsModal">
+  <div class="modal modal-sm">
+    <div class="mhead" style="background:linear-gradient(135deg,#1565c0,#1976d2)">
+      <div class="mhead-title" style="color:#fff">🗂️ จัดการหมวดหมู่เอกสาร</div>
+      <button class="mclose" onclick="closeModal('catSettingsModal')" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1)">✕</button>
+    </div>
+    <div class="form-body" style="padding:16px 20px;">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:8px;">➕ เพิ่มหมวดหมู่ใหม่</div>
+        <div style="display:flex;gap:8px;">
+          <input class="finput" id="newCatName" placeholder="ชื่อหมวดหมู่..." style="flex:1;" onkeydown="if(event.key==='Enter')addDocCategory()">
+          <button class="btn btn-blue btn-sm" onclick="addDocCategory()" style="white-space:nowrap;">＋ เพิ่ม</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;background:var(--blue-pale);border:1px solid rgba(26,111,212,.2);border-radius:var(--radius);padding:9px 12px;margin-bottom:12px;font-size:13px;color:var(--blue);">
+        <span style="font-size:16px;">💡</span>
+        <span><b>ลาก ⠿</b> เพื่อสลับลำดับ &nbsp;|&nbsp; <b>คลิกชื่อ</b> เพื่อแก้ไขชื่อ &nbsp;|&nbsp; <b>🗑️</b> ลบหมวดหมู่</span>
+      </div>
+      <div id="catList"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('catSettingsModal')">ยกเลิก</button>
+      <button class="btn btn-blue" onclick="saveCatSettings()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===================== SALARY TABLE =====================
 // Steps stored as [step_value, salary] pairs per grade
@@ -1199,7 +1222,11 @@ async function fbLoadAll() {
     renderPersonnel(); renderEdu(); renderTraining(); renderField();
     renderPromotion(); renderSalary(); renderDocs('all'); populateSelects();
     rebuildDocTabs();
-    restorePhotos(); // restore รูปจาก localStorage หลังโหลด Firebase
+    // โหลดรูปจาก Firebase แทน localStorage เพื่อให้ทุกเครื่องเห็นรูปเดียวกัน
+    loadAllPhotosFromFirebase().then(()=>{
+      renderPersonnel();
+      renderProfile();
+    });
     showFbStatus(`✅ ซิงค์สำเร็จ — กำลังพล ${personnel.length} นาย`, 'green');
   } catch(e) {
     showFbStatus('❌ ' + e.message, 'red');
@@ -1350,7 +1377,7 @@ function exportPDF() {
       <td>${p.start||'—'}</td>
       <td>${svc}</td>
       <td>${dbl}</td>
-      <td style="text-align:right">${(p.salary||0).toLocaleString()}</td>
+      <td style="text-align:right">${(p.salary||0).toLocaleString()} บาท</td>
     </tr>`;
   }).join('');
 
@@ -1391,41 +1418,6 @@ function exportPDF() {
     </table>
     <div class="footer">จำนวนกำลังพลทั้งสิ้น ${personnel.length} นาย</div>
   
-<!-- MODAL: CATEGORY SETTINGS -->
-<div class="overlay" id="catSettingsModal">
-  <div class="modal modal-sm">
-    <div class="mhead" style="background:linear-gradient(135deg,#1565c0,#1976d2)">
-      <div class="mhead-title" style="color:#fff">🗂️ จัดการหมวดหมู่เอกสาร</div>
-      <button class="mclose" onclick="closeModal('catSettingsModal')" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1)">✕</button>
-    </div>
-    <div class="form-body" style="padding:16px 20px;">
-
-      <!-- Add new -->
-      <div style="margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:8px;">➕ เพิ่มหมวดหมู่ใหม่</div>
-        <div style="display:flex;gap:8px;">
-          <input class="finput" id="newCatName" placeholder="ชื่อหมวดหมู่..." style="flex:1;" onkeydown="if(event.key==='Enter')addDocCategory()">
-          <button class="btn btn-blue btn-sm" onclick="addDocCategory()" style="white-space:nowrap;">＋ เพิ่ม</button>
-        </div>
-      </div>
-
-      <!-- Instructions -->
-      <div style="display:flex;align-items:center;gap:8px;background:var(--blue-pale);border:1px solid rgba(26,111,212,.2);border-radius:var(--radius);padding:9px 12px;margin-bottom:12px;font-size:13px;color:var(--blue);">
-        <span style="font-size:16px;">💡</span>
-        <span><b>ลาก ⠿</b> เพื่อสลับลำดับ &nbsp;|&nbsp; <b>คลิกชื่อ</b> เพื่อแก้ไขชื่อ &nbsp;|&nbsp; <b>🗑️</b> ลบหมวดหมู่</span>
-      </div>
-
-      <!-- Category list -->
-      <div id="catList"></div>
-
-    </div>
-    <div class="form-actions">
-      <button class="btn btn-outline" onclick="closeModal('catSettingsModal')">ยกเลิก</button>
-      <button class="btn btn-blue" onclick="saveCatSettings()">💾 บันทึก</button>
-    </div>
-  </div>
-</div>
-
 </body></html>`;
 
   openPrintWindow(html, 'รายชื่อกำลังพล');
@@ -1508,7 +1500,7 @@ function exportProfilePDF(pid) {
         <div class="grid-item"><label>วันทวีคูณ</label><span>${formatDouble(totalDoubleDays)}</span></div>
         <div class="grid-item"><label>อายุราชการรวม</label><span>${svcTotal}</span></div>
         <div class="grid-item"><label>ระดับ/ขั้น</label><span>${p.grade?GRADE_LABELS[p.grade]:'—'} / ${p.step||'—'}</span></div>
-        <div class="grid-item"><label>เงินเดือนสุทธิ</label><span>${(p.salary||0).toLocaleString()} ฿</span></div>
+        <div class="grid-item"><label>เงินเดือนสุทธิ</label><span>${(p.salary||0).toLocaleString()} บาท</span></div>
         <div class="grid-item"><label>กองร้อย</label><span>${p.company||'—'}</span></div>
         <div class="grid-item"><label>โทรศัพท์</label><span>${p.tel||'—'}</span></div>
       </div>
@@ -1530,8 +1522,8 @@ function exportProfilePDF(pid) {
       <div class="sec-title">บำเหน็จ/บำนาญโดยประมาณ</div>
       <div class="summary">
         <div class="sum-card"><div class="lbl">อายุราชการรวม</div><div class="val">${svcTotal}</div></div>
-        <div class="sum-card"><div class="lbl">💰 บำเหน็จ (เงินก้อน)</div><div class="val">${gratuity.toLocaleString()} ฿</div></div>
-        <div class="sum-card"><div class="lbl">📅 บำนาญ/เดือน (${Math.round(pensionRate*100)}%)</div><div class="val">${pension.toLocaleString()} ฿</div></div>
+        <div class="sum-card"><div class="lbl">💰 บำเหน็จ (เงินก้อน)</div><div class="val">${gratuity.toLocaleString()} บาท</div></div>
+        <div class="sum-card"><div class="lbl">📅 บำนาญ/เดือน (${Math.round(pensionRate*100)}%)</div><div class="val">${pension.toLocaleString()} บาท</div></div>
       </div>
     </div>
 
@@ -1786,6 +1778,7 @@ function navTo(sec, el){
 function initApp(){
   renderPersonnel(); renderEdu(); renderTraining(); renderField();
   renderPromotion(); renderSalary(); renderDocs('all');
+  renderPensionEmpty(); // แสดงโครงสร้างหัวข้อก่อนเลือกกำลังพล
   populateSelects();
   rebuildDocTabs();
   // Auto-sync Firebase ทันทีที่ login
@@ -1850,27 +1843,13 @@ function renderPersonnel(){
   document.getElementById('rowCount').textContent=filtered.length+' รายการ';
   document.getElementById('pgInfo').textContent=`แสดง 1–${Math.min(10,filtered.length)} จาก ${filtered.length}`;
   if(filtered.length===0){
-    document.getElementById('personnelBody').innerHTML=`<tr><td colspan="10" style="text-align:center;padding:48px;color:var(--text-3);">
+    document.getElementById('personnelBody').innerHTML=`<tr><td colspan="16" style="text-align:center;padding:48px;color:var(--text-3);">
       <div style="font-size:32px;margin-bottom:10px">👥</div>
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">ยังไม่มีข้อมูลกำลังพล</div>
       <div style="font-size:13px;">กดปุ่ม <b>＋ เพิ่มกำลังพล</b> หรือ <b>🔄 โหลด</b> จาก Google Sheets</div>
     </td></tr>`;
   } else {
-    document.getElementById('personnelBody').innerHTML=filtered.map((p,i)=>{
-      // คำนวณอายุราชการรวม (ปกติ + ทวีคูณ)
-      const svcDec = serviceYearsDecimal(p.start);
-      const dblYrs = getTotalDouble(p.id) / 365.25;
-      const totalYrs = svcDec + dblYrs;
-      const totalDays = Math.round(totalYrs * 365.25);
-      const rY = Math.floor(totalDays/365);
-      const rM = Math.floor((totalDays%365)/30);
-      const rD = totalDays%365%30;
-      const rParts = [];
-      if(rY>0) rParts.push(rY+' ปี');
-      if(rM>0) rParts.push(rM+' เดือน');
-      if(rD>0) rParts.push(rD+' วัน');
-      const totalSvcStr = rParts.join(' ') || '0 วัน';
-      return `
+    document.getElementById('personnelBody').innerHTML=filtered.map((p,i)=>`
       <tr onclick="openDetail(${p.id})">
         <td style="color:var(--text-3);font-size:15px">${i+1}</td>
         <td><div class="name-cell">
@@ -1880,8 +1859,14 @@ function renderPersonnel(){
         <td style="color:var(--text-2);font-size:15px">${p.pos}</td>
         <td style="color:var(--text-3);font-size:15px">${p.start}</td>
         <td style="color:var(--accent-green);font-size:15px;font-weight:600">${serviceYears(p.start)}</td>
-        <td style="color:var(--accent-teal);font-size:15px;font-weight:600">${formatDouble(getTotalDouble(p.id))}</td>
-        <td style="color:var(--blue);font-size:15px;font-weight:700">${totalSvcStr}</td>
+      <td style="color:var(--accent-teal);font-size:15px;font-weight:600">${formatDouble(getTotalDouble(p.id))}</td>
+        <td style="font-weight:700;font-size:15px">${p.grade?GRADE_LABELS[p.grade]:'-'}/${p.step}</td>
+        <td style="font-size:15px;color:var(--text-2)">${(p.prd||0).toLocaleString()}</td>
+        <td style="font-size:15px;color:var(--text-2)">${(p.psr1||0).toLocaleString()}</td>
+        <td style="font-size:15px;color:var(--text-2)">${(p.psr2||0).toLocaleString()}</td>
+        <td style="font-size:15px;color:var(--text-2)">${(p.psr3||0).toLocaleString()}</td>
+        <td style="font-size:15px;color:var(--text-2)">${(p.psr4||0).toLocaleString()}</td>
+        <td style="font-weight:800;color:var(--text-1);font-size:15px">${(p.salary||0).toLocaleString()}</td>
         <td><span class="pill ${STATUS_PILL[p.status]||'pill-blue'}"><span class="pill-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></td>
         <td onclick="event.stopPropagation()">
           <div style="display:flex;gap:5px">
@@ -1889,8 +1874,7 @@ function renderPersonnel(){
             <button class="btn btn-red btn-sm btn-icon" onclick="askDelete(${p.id},'${p.rank} ${p.fname} ${p.lname}','personnel')" title="ลบ">🗑️</button>`:''}
           </div>
         </td>
-      </tr>`;
-    }).join('');
+      </tr>`).join('');
   }
   updateStats();
 }
@@ -2210,7 +2194,7 @@ function renderProfile(){
         </div>
         <input type="file" id="photoInput_${p.id}" accept="image/*" style="display:none" onchange="uploadPersonnelPhoto(${p.id},this)">
         ${isAdmin()?`<div class="pphoto-actions">
-          <button onclick="document.getElementById('photoInput_${p.id}').click()" title="อัปโหลด/เปลี่ยนรูป">📷 ${p.photo?'เปลี่ยนรูป':'อัปโหลด'}</button>
+          <button onclick="document.getElementById('photoInput_${p.id}').click()" title="อัปโหลดรูปไปยัง Firebase (ไม่เกิน 2MB) — ทุกเครื่องเห็นรูปเดียวกัน">📷 ${p.photo?'เปลี่ยนรูป':'อัปโหลด'}</button>
           ${p.photo ? `<button class="del" onclick="deletePersonnelPhoto(${p.id})">🗑️ ลบ</button>` : ''}
         </div>`:''}
       </div>
@@ -2255,12 +2239,8 @@ function renderProfile(){
       <div class="dsec-title">ข้อมูลเงินเดือน</div>
       <div class="dg">
         <div><div class="di-label">ระดับ/ขั้น</div><div class="di-val">${p.grade?GRADE_LABELS[p.grade]:'-'} / ${p.step}</div></div>
-        <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${(p.base||0).toLocaleString()} ฿</div></div>
-        <div><div class="di-label">พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} ฿</div></div>
-        <div><div class="di-label">พ.ส.ร. ครั้งที่ 1</div><div class="di-val">${(p.psr1||0).toLocaleString()} ฿</div></div>
-        <div><div class="di-label">พ.ส.ร. ครั้งที่ 2</div><div class="di-val">${(p.psr2||0).toLocaleString()} ฿</div></div>
-        <div><div class="di-label">พ.ส.ร. ครั้งที่ 3</div><div class="di-val">${(p.psr3||0).toLocaleString()} ฿</div></div>
-        <div><div class="di-label">พ.ส.ร. ครั้งที่ 4</div><div class="di-val">${(p.psr4||0).toLocaleString()} ฿</div></div>
+        <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${(p.base||0).toLocaleString()} บาท</div></div>
+        <div><div class="di-label">พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} บาท</div></div>
         <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val" style="color:var(--accent-green);font-size:18px;font-weight:800">${(p.salary||0).toLocaleString()} บาท</div></div>
       </div>
     </div>
@@ -2268,10 +2248,106 @@ function renderProfile(){
 }
 
 // ===================== PENSION =====================
+
+// โครงสร้างหัวข้อว่าง (ก่อนเลือกกำลังพล)
+function renderPensionEmpty(){
+  const empty = '<span style="color:var(--text-3);font-size:13px;">—</span>';
+  const emptyTag = `<span style="display:inline-block;width:120px;height:16px;background:var(--bg-2);border-radius:4px;vertical-align:middle;"></span>`;
+  document.getElementById('pensionContent').innerHTML=`
+    <div class="tcard">
+      <!-- header skeleton -->
+      <div class="phdr" style="padding:16px 22px;background:var(--bg-1);">
+        <div class="pphoto-wrap">
+          <div class="pphoto" style="width:90px;height:110px;cursor:default;background:var(--bg-2);">
+            <span style="font-size:32px;opacity:.25;">🪖</span>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px;justify-content:center;">
+          <div style="width:220px;height:22px;background:var(--bg-2);border-radius:6px;"></div>
+          <div style="display:flex;gap:8px;">
+            <div style="width:130px;height:28px;background:var(--bg-2);border-radius:5px;"></div>
+            <div style="width:110px;height:28px;background:var(--bg-2);border-radius:5px;"></div>
+            <div style="width:130px;height:28px;background:var(--bg-2);border-radius:5px;"></div>
+          </div>
+          <div style="font-size:13px;color:var(--text-3);font-style:italic;">← เลือกกำลังพลด้านบนเพื่อดูข้อมูล</div>
+        </div>
+      </div>
+
+      <!-- อายุราชการ -->
+      <div class="dsec">
+        <div class="dsec-title">อายุราชการ (รวมวันทวีคูณ)</div>
+        <div class="dg">
+          <div><div class="di-label">อายุราชการปกติ</div><div class="di-val">${empty}</div></div>
+          <div><div class="di-label">วันทวีคูณทั้งหมด</div><div class="di-val">${empty}</div></div>
+          <div><div class="di-label">อายุราชการรวม</div><div class="di-val">${empty}</div></div>
+          <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val">${empty}</div></div>
+        </div>
+      </div>
+
+      <!-- เงินเดือน -->
+      <div class="dsec">
+        <div class="dsec-title">รายละเอียดเงินเดือน (ฐานคำนวณบำเหน็จ/บำนาญ)</div>
+        <div class="dg">
+          <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${empty}</div></div>
+          <div><div class="di-label">พ.ร.ด.</div><div class="di-val">${empty}</div></div>
+          <div><div class="di-label">พ.ส.ร. ครั้งที่ 1</div><div class="di-val">${empty}</div></div>
+          <div><div class="di-label">พ.ส.ร. ครั้งที่ 2</div><div class="di-val">${empty}</div></div>
+          <div><div class="di-label">พ.ส.ร. ครั้งที่ 3</div><div class="di-val">${empty}</div></div>
+          <div><div class="di-label">พ.ส.ร. ครั้งที่ 4</div><div class="di-val">${empty}</div></div>
+          <div style="grid-column:1/-1;border-top:2px solid var(--blue-pale);padding-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+            <div><div class="di-label">รวม พ.ส.ร. ทั้งหมด</div><div class="di-val">${empty}</div></div>
+            <div><div class="di-label" style="color:var(--blue);font-weight:700">เงินเดือนสุทธิรวม</div><div class="di-val">${empty}</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- วันเกษียณ -->
+      <div class="dsec">
+        <div class="dsec-title">วันเกษียณอายุ</div>
+        <div class="pen-grid">
+          <div class="pen-card" style="border-color:var(--border)">
+            <div class="pen-lbl">🏅 เกษียณ 25 ปี (รวมทวีคูณ)</div>
+            <div class="pen-val" style="color:var(--text-3)">พ.ศ. —</div>
+            <div class="pen-sub">—</div>
+          </div>
+          <div class="pen-card" style="border-color:var(--border)">
+            <div class="pen-lbl">👴 เกษียณอายุ 60 ปี</div>
+            <div class="pen-val" style="color:var(--text-3)">พ.ศ. —</div>
+            <div class="pen-sub">—</div>
+          </div>
+          <div class="pen-card" style="border-color:var(--border)">
+            <div class="pen-lbl">💰 บำเหน็จ (อายุราชการ × เงินเดือน)</div>
+            <div class="pen-val" style="color:var(--text-3)">— บาท</div>
+            <div class="pen-sub">—</div>
+          </div>
+          <div class="pen-card" style="border-color:var(--border)">
+            <div class="pen-lbl">📅 บำนาญ / เดือน</div>
+            <div class="pen-val" style="color:var(--text-3)">— บาท</div>
+            <div class="pen-sub">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ราชการสนาม -->
+      <div class="dsec">
+        <div class="dsec-title">ราชการสนาม / วันทวีคูณแต่ละครั้ง</div>
+        <div style="color:var(--text-3);font-size:13px;padding:8px 0;">เลือกกำลังพลเพื่อดูข้อมูลราชการสนาม</div>
+      </div>
+
+      <!-- สิทธิ์ -->
+      <div class="dsec" style="border:none">
+        <div class="dsec-title">สิทธิ์ที่ได้รับ</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;opacity:.35;">
+          ${['✅ รักษาพยาบาล','✅ สวัสดิการ ทบ.','✅ ที่พักอาศัย','✅ บำเหน็จตกทอด','✅ เบี้ยหวัด'].map(s=>`<span class="ptag">${s}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderPension(){
   const id=parseInt(document.getElementById('pensionSelect').value);
   const p=personnel.find(x=>String(x.id)===String(id));
-  if(!p){document.getElementById('pensionContent').innerHTML='<div style="padding:48px;text-align:center;color:var(--text-3);font-size:15px;">เลือกกำลังพลเพื่อดูข้อมูล</div>';return;}
+  if(!p){ renderPensionEmpty(); return; }
   const totalDoubleDays=getTotalDouble(p.id);
   const totalDoubleYears=totalDoubleDays/365.25;
 
@@ -2298,26 +2374,13 @@ function renderPension(){
   const retire60 = birthBE + 60;
   const curBE = new Date().getFullYear()+543;
 
-  // รวม พ.ส.ร. ทั้งหมด
-  const psrTotal = (p.psr1||0)+(p.psr2||0)+(p.psr3||0)+(p.psr4||0);
-  // เงินเดือนรวมทุกส่วน (ใช้เป็นฐานคำนวณบำเหน็จ/บำนาญ)
-  const salaryFull = p.salary || 0; // p.salary ถูกคำนวณมาแล้วรวม base+prd+psr
-
-  // บำเหน็จ = เงินเดือนรวม × อายุราชการรวม(ปี) ตามกฎหมาย ปัดเศษลง
-  const gratuity = Math.round(salaryFull * Math.floor(totalServiceYrs));
+  // บำเหน็จ = เงินเดือน × อายุราชการรวม(ปี) ตามกฎหมาย ปัดเศษลง
+  const gratuity = Math.round(p.salary * Math.floor(totalServiceYrs));
   // บำนาญ = 2% × จำนวนปีราชการรวม × เงินเดือน สูงสุดไม่เกิน 70%
   const pensionRate = Math.min(Math.floor(totalServiceYrs) * 2, 70) / 100;
-  const pension = Math.round(salaryFull * pensionRate);
+  const pension = Math.round(p.salary * pensionRate);
 
   const svcDisplay = serviceYears(p.start);
-
-  // PSR rows สำหรับแสดง
-  const psrRows = [
-    {label:'พ.ส.ร. ครั้งที่ 1', val: p.psr1||0},
-    {label:'พ.ส.ร. ครั้งที่ 2', val: p.psr2||0},
-    {label:'พ.ส.ร. ครั้งที่ 3', val: p.psr3||0},
-    {label:'พ.ส.ร. ครั้งที่ 4', val: p.psr4||0},
-  ];
 
   document.getElementById('pensionContent').innerHTML=`
     <div class="tcard">
@@ -2336,30 +2399,15 @@ function renderPension(){
           </div>
         </div>
       </div>
-
       <div class="dsec">
         <div class="dsec-title">อายุราชการ (รวมวันทวีคูณ)</div>
         <div class="dg">
           <div><div class="di-label">อายุราชการปกติ</div><div class="di-val g">${svcDisplay}</div></div>
           <div><div class="di-label">วันทวีคูณทั้งหมด</div><div class="di-val" style="color:var(--accent-teal)">${formatDouble(totalDoubleDays)}</div></div>
           <div><div class="di-label">อายุราชการรวม</div><div class="di-val hi">${svcTotal}</div></div>
-          <div><div class="di-label">เงินเดือนรวม (ฐานคำนวณ)</div><div class="di-val gold">${salaryFull.toLocaleString()} ฿</div></div>
+          <div><div class="di-label">เงินเดือนสุทธิ</div><div class="di-val gold">${(p.salary||0).toLocaleString()} บาท</div></div>
         </div>
       </div>
-
-      <div class="dsec">
-        <div class="dsec-title">รายละเอียดเงินเดือน (ฐานคำนวณบำเหน็จ/บำนาญ)</div>
-        <div class="dg">
-          <div><div class="di-label">เงินเดือนขั้นฐาน</div><div class="di-val">${(p.base||0).toLocaleString()} ฿</div></div>
-          <div><div class="di-label">พ.ร.ด.</div><div class="di-val">${(p.prd||0).toLocaleString()} ฿</div></div>
-          ${psrRows.map(r=>`<div><div class="di-label">${r.label}</div><div class="di-val">${r.val.toLocaleString()} ฿</div></div>`).join('')}
-          <div style="grid-column:1/-1;border-top:2px solid var(--blue-pale);padding-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
-            <div><div class="di-label">รวม พ.ส.ร. ทั้งหมด</div><div class="di-val" style="color:var(--accent-teal);font-weight:700">${psrTotal.toLocaleString()} ฿</div></div>
-            <div><div class="di-label" style="color:var(--blue);font-weight:700">เงินเดือนสุทธิรวม</div><div class="di-val" style="color:var(--accent-green);font-size:17px;font-weight:800">${salaryFull.toLocaleString()} บาท</div></div>
-          </div>
-        </div>
-      </div>
-
       <div class="dsec">
         <div class="dsec-title">วันเกษียณอายุ</div>
         <div class="pen-grid">
@@ -2375,17 +2423,16 @@ function renderPension(){
           </div>
           <div class="pen-card" style="border-color:rgba(200,134,26,.3)">
             <div class="pen-lbl">💰 บำเหน็จ (อายุราชการ × เงินเดือน)</div>
-            <div class="pen-val gold">${gratuity.toLocaleString()} ฿</div>
-            <div class="pen-sub">= ${Math.floor(totalServiceYrs)} ปี × ${salaryFull.toLocaleString()} ฿</div>
+            <div class="pen-val gold">${gratuity.toLocaleString()} บาท</div>
+            <div class="pen-sub">= ${svcTotal} × ${(p.salary||0).toLocaleString()} บาท</div>
           </div>
           <div class="pen-card" style="border-color:rgba(22,163,74,.3)">
             <div class="pen-lbl">📅 บำนาญ / เดือน (${Math.round(pensionRate*100)}%)</div>
-            <div class="pen-val" style="color:var(--accent-green)">${pension.toLocaleString()} ฿</div>
-            <div class="pen-sub">= ${salaryFull.toLocaleString()} × 2% × ${Math.floor(totalServiceYrs)} ปี (สูงสุด 70%)</div>
+            <div class="pen-val" style="color:var(--accent-green)">${pension.toLocaleString()} บาท</div>
+            <div class="pen-sub">= เงินเดือน × 2% × ${Math.floor(totalServiceYrs)} ปี (สูงสุด 70%)</div>
           </div>
         </div>
       </div>
-
       <div class="dsec">
         <div class="dsec-title">ราชการสนาม / วันทวีคูณแต่ละครั้ง</div>
         ${fieldData.filter(f=>f.pid===p.id).length===0
@@ -2408,7 +2455,6 @@ function renderPension(){
               </tbody>
             </table>`}
       </div>
-
       <div class="dsec" style="border:none">
         <div class="dsec-title">สิทธิ์ที่ได้รับ</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px">
@@ -3064,77 +3110,32 @@ function renderCatList(){
   const el = document.getElementById('catList');
   if(!el) return;
   el.innerHTML = '';
-  if(docCategories.length===0){
-    el.innerHTML='<div style="text-align:center;color:var(--text-3);padding:24px;font-size:14px;">ยังไม่มีหมวดหมู่</div>';
-    return;
-  }
   docCategories.forEach(function(c, i){
     const div = document.createElement('div');
     div.className = 'cat-item';
     div.draggable = true;
     div.id = 'cat-item-' + i;
     div.dataset.index = String(i);
-
-    // drag handle
-    const handle = document.createElement('span');
-    handle.className = 'cat-drag-handle';
-    handle.title = 'ลากเพื่อเรียงลำดับ';
-    handle.textContent = '⠿';
-
-    // order badge
-    const orderBadge = document.createElement('span');
-    orderBadge.style.cssText = 'font-size:12px;font-weight:700;color:var(--text-3);min-width:20px;text-align:center;flex-shrink:0;';
-    orderBadge.textContent = (i+1)+'.';
-
-    // name input
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.className = 'cat-name-input';
-    nameInput.value = c.name;
-    nameInput.title = 'คลิกเพื่อแก้ไขชื่อหมวดหมู่';
-    nameInput.addEventListener('change', function(){
+    div.innerHTML =
+      '<span class="cat-drag-handle">⠿</span>' +
+      '<span class="cat-name" contenteditable="true" style="outline:none;cursor:text;flex:1;">' + c.name + '</span>' +
+      '<span class="cat-key">' + c.key + '</span>' +
+      '<button class="btn btn-red btn-sm btn-icon" style="padding:3px 8px;font-size:12px;">🗑️</button>';
+    div.querySelector('.cat-name').addEventListener('blur', function(){
       var idx = parseInt(div.dataset.index);
-      if(this.value.trim()) docCategories[idx].name = this.value.trim();
+      if(this.textContent.trim()) docCategories[idx].name = this.textContent.trim();
     });
-    nameInput.addEventListener('keydown', function(e){
-      if(e.key==='Enter'){ this.blur(); }
+    div.querySelector('.cat-name').addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); this.blur(); }
     });
-
-    // key badge
-    const keyBadge = document.createElement('span');
-    keyBadge.className = 'cat-key-badge';
-    keyBadge.textContent = c.key;
-
-    // delete button
-    const delBtn = document.createElement('button');
-    delBtn.className = 'btn btn-red btn-sm';
-    delBtn.style.cssText = 'padding:4px 10px;font-size:13px;flex-shrink:0;';
-    delBtn.innerHTML = '🗑️ ลบ';
-    delBtn.title = 'ลบหมวดหมู่นี้';
-    delBtn.addEventListener('click', function(){
+    div.querySelector('.btn-red').addEventListener('click', function(){
       var idx = parseInt(div.dataset.index);
       deleteCat(idx);
     });
-
-    div.appendChild(handle);
-    div.appendChild(orderBadge);
-    div.appendChild(nameInput);
-    div.appendChild(keyBadge);
-    div.appendChild(delBtn);
-
-    // drag events
-    div.addEventListener('dragstart', function(e){
-      catDragStart(e, parseInt(div.dataset.index));
-      div.classList.add('dragging');
-    });
-    div.addEventListener('dragend', function(){
-      div.classList.remove('dragging');
-      document.querySelectorAll('.cat-item').forEach(function(el){ el.classList.remove('drag-over'); });
-    });
-    div.addEventListener('dragover',  function(e){ catDragOver(e, parseInt(div.dataset.index)); });
-    div.addEventListener('drop',      function(e){ catDrop(e, parseInt(div.dataset.index)); });
+    div.addEventListener('dragstart', function(e){ catDragStart(e, parseInt(div.dataset.index)); });
+    div.addEventListener('dragover',  function(e){ catDragOver(e,  parseInt(div.dataset.index)); });
+    div.addEventListener('drop',      function(e){ catDrop(e,      parseInt(div.dataset.index)); });
     div.addEventListener('dragleave', function(e){ catDragLeave(e); });
-
     el.appendChild(div);
   });
 }
@@ -3159,10 +3160,9 @@ function catDrop(e, i){
 function addDocCategory(){
   var input = document.getElementById('newCatName');
   var name = (input.value || '').trim();
-  if(!name){ input.focus(); input.style.borderColor='var(--accent-red)'; setTimeout(()=>input.style.borderColor='',1200); return; }
+  if(!name){ alert('กรุณากรอกชื่อหมวดหมู่'); return; }
   docCategories.push({ key: 'cat_' + Date.now(), name: name });
   input.value = '';
-  input.focus();
   renderCatList();
 }
 function deleteCat(i){
@@ -3252,57 +3252,97 @@ function openImgModal(docId){
 }
 
 // ===================== PERSONNEL PHOTO =====================
-// รูปภาพเก็บใน localStorage (key: aps_photo_<pid>) ไม่ส่งไป Firebase เพราะ base64 ใหญ่เกิน
+// ===================== PHOTO — เก็บใน Firebase Realtime Database =====================
+// node: aps_data/photos/<pid>  →  { dataUrl: "data:image/...;base64,..." }
+// ทำให้ทุกเครื่องเห็นรูปเดียวกัน
 
-function getPersonnelPhoto(pid){ return localStorage.getItem('aps_photo_'+pid)||''; }
-function setPersonnelPhoto(pid, dataUrl){ localStorage.setItem('aps_photo_'+pid, dataUrl); }
-function delPersonnelPhoto(pid){ localStorage.removeItem('aps_photo_'+pid); }
-
-// หลัง load จาก Firebase ให้ restore รูปจาก localStorage ให้ทุกคน
-function restorePhotos(){
-  personnel.forEach(p=>{ const ph=getPersonnelPhoto(p.id); if(ph) p.photo=ph; else delete p.photo; });
+function fbPhotoEndpoint(pid) {
+  return `${FB.url}/${FB.node}/photos/${pid}.json?auth=${FB.key}`;
 }
 
-function uploadPersonnelPhoto(pid, input){
+// โหลดรูปทุกคนจาก Firebase ครั้งเดียว แล้วแมปลงใน personnel[]
+async function loadAllPhotosFromFirebase() {
+  if (!FB.url || !FB.key) return;
+  try {
+    const resp = await fetch(`${FB.url}/${FB.node}/photos.json?auth=${FB.key}`);
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (!data) return;
+    personnel.forEach(p => {
+      if (data[p.id] && data[p.id].dataUrl) {
+        p.photo = data[p.id].dataUrl;
+      } else {
+        delete p.photo;
+      }
+    });
+  } catch(e) {
+    console.warn('[photo] loadAll failed:', e.message);
+  }
+}
+
+// ฟังก์ชัน restorePhotos ยังคงไว้เพื่อ backward compat (ไม่ทำอะไรแล้ว)
+function restorePhotos() {}
+
+function uploadPersonnelPhoto(pid, input) {
   const file = input.files[0];
-  if(!file) return;
-  if(!file.type.startsWith('image/')){ alert('กรุณาเลือกไฟล์รูปภาพ'); return; }
-  if(file.size > 10*1024*1024){ alert('ไฟล์รูปภาพต้องไม่เกิน 10MB'); input.value=''; return; }
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { alert('กรุณาเลือกไฟล์รูปภาพ'); return; }
+  if (file.size > 2 * 1024 * 1024) { alert('ไฟล์รูปภาพต้องไม่เกิน 2MB (เพื่อประหยัด Firebase quota)'); input.value=''; return; }
+
   const reader = new FileReader();
-  reader.onload = function(e){
-    const p = personnel.find(x=>String(x.id)===String(pid));
-    if(!p) return;
-    p.photo = e.target.result;
-    setPersonnelPhoto(pid, e.target.result);
-    input.value='';
+  reader.onload = async function(e) {
+    const dataUrl = e.target.result;
+    const p = personnel.find(x => String(x.id) === String(pid));
+    if (!p) return;
 
-    // อัปเดต DOM รูปทันที — ทุก pphoto ที่มี data-pid ตรงกัน
-    updatePhotoDOM(pid, e.target.result);
-
-    // re-render profile เพื่ออัปเดตปุ่ม ลบ ด้วย
+    // แสดงรูปทันที (optimistic update)
+    p.photo = dataUrl;
+    input.value = '';
+    updatePhotoDOM(pid, dataUrl);
     renderProfile();
-
-    // อัปเดตหน้า pension ถ้าเลือกอยู่
     const penId = document.getElementById('pensionSelect')?.value;
-    if(penId && String(penId)===String(pid)) renderPension();
+    if (penId && String(penId) === String(pid)) renderPension();
 
-    // อัปเดตหน้ารายชื่อ (avatar)
-    renderPersonnel();
+    // บันทึกลง Firebase
+    showFbStatus('⏳ กำลังอัปโหลดรูป...', 'blue');
+    try {
+      const resp = await fetch(fbPhotoEndpoint(pid), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataUrl: dataUrl, updatedAt: new Date().toISOString() })
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      showFbStatus('✅ อัปโหลดรูปสำเร็จ', 'green');
+    } catch(err) {
+      showFbStatus('❌ อัปโหลดรูปล้มเหลว: ' + err.message, 'red');
+      console.error('[photo upload]', err);
+    }
   };
   reader.readAsDataURL(file);
 }
 
-function deletePersonnelPhoto(pid){
-  if(!confirm('ลบรูปภาพของกำลังพลนี้?')) return;
-  const p = personnel.find(x=>String(x.id)===String(pid));
-  if(!p) return;
+async function deletePersonnelPhoto(pid) {
+  if (!confirm('ลบรูปภาพของกำลังพลนี้?')) return;
+  const p = personnel.find(x => String(x.id) === String(pid));
+  if (!p) return;
+
+  // ลบจาก memory
   delete p.photo;
-  delPersonnelPhoto(pid);
   updatePhotoDOM(pid, null);
   renderProfile();
   const penId = document.getElementById('pensionSelect')?.value;
-  if(penId && String(penId)===String(pid)) renderPension();
+  if (penId && String(penId) === String(pid)) renderPension();
   renderPersonnel();
+
+  // ลบจาก Firebase
+  showFbStatus('⏳ กำลังลบรูป...', 'blue');
+  try {
+    const resp = await fetch(fbPhotoEndpoint(pid), { method: 'DELETE' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    showFbStatus('✅ ลบรูปแล้ว', 'green');
+  } catch(err) {
+    showFbStatus('❌ ลบรูปล้มเหลว: ' + err.message, 'red');
+  }
 }
 
 // อัปเดตรูปใน DOM ทุกจุดที่มี data-photo-pid="pid"
