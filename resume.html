@@ -2491,7 +2491,22 @@ function renderPension(){
 }
 
 // ===================== DOCS =====================
-let currentDocFilter='all';
+let currentDocFilter = 'all';
+
+// เปลี่ยนหมวดหมู่เอกสาร + บันทึก Firebase ทันที พร้อม feedback
+function changeDocCat(docId, selectEl) {
+  var x = docsData.find(function(i){ return String(i.id) === String(docId); });
+  if (!x) return;
+  x.cat = selectEl.value;
+  // แสดง feedback ✓ บันทึก
+  var badge = document.getElementById('catsaved-' + docId);
+  if (badge) {
+    badge.style.opacity = '1';
+    setTimeout(function(){ badge.style.opacity = '0'; }, 2000);
+  }
+  autoSave('documents');
+}
+
 function filterDocs(cat,el){
   currentDocFilter=cat;
   document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
@@ -2554,9 +2569,12 @@ function renderDocs(cat, pidFilter){
       </td>
       <td style="color:var(--text-2);font-size:12.5px;">${d.date||'—'}</td>
       <td>
-        <select class="fsel" style="font-size:12px;padding:3px 6px;height:28px;" onchange="(function(el){var x=docsData.find(function(i){return String(i.id)==='${d.id}';});if(x){x.cat=el.value;renderDocs(currentDocFilter);}})(this)">
-          ${catOpts}
-        </select>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <select class="fsel" id="catsel-${d.id}" style="font-size:12px;padding:3px 6px;height:28px;" onchange="changeDocCat('${d.id}', this)">
+            ${catOpts}
+          </select>
+          <span id="catsaved-${d.id}" style="font-size:11px;color:var(--accent-green);font-weight:700;opacity:0;transition:opacity .4s;">✓ บันทึก</span>
+        </div>
       </td>
       <td>
         <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
