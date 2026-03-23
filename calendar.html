@@ -62,6 +62,14 @@
         .calendar-frame { flex: 1; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
         iframe { width: 100%; height: 100%; border: none; }
 
+        /* Toast Notification */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .toast { background: #1e293b; color: white; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 1.5s forwards; }
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.danger { border-left: 4px solid var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
         /* Loading Animation */
         .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -120,18 +128,30 @@
         </div>
 
         <div class="calendar-frame">
-            <iframe id="calendarIframe" src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok"></iframe>
+            <iframe id="calendarIframe" src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok&mode=MONTH" style="border: 0" width="100%" height="100%" frameborder="0" scrolling="no"></iframe>
         </div>
     </div>
 
     <script>
-        // *** ตั้งค่า URL ของคุณที่นี่ ***
         const scriptUrl = "https://script.google.com/macros/s/AKfycbzJirF7Ldstah4LZepPRCGWmnoPSDnLGv0KvFb3bac-bvh8iLLxMdUH0Tc5EmIAz_c/exec";
-
         let allEvents = [];
-        let currentFilter = 'upcoming'; // เริ่มต้นที่เมนู "เร็วๆ นี้"
+        let currentFilter = 'upcoming';
 
-        // เปลี่ยนรูปแบบวันที่จาก yyyy-mm-dd เป็น dd-mm-yyyy
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container') || (() => {
+                const c = document.createElement('div');
+                c.id = 'toast-container';
+                c.className = 'toast-container';
+                document.body.appendChild(c);
+                return c;
+            })();
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = (type === 'success' ? '✅ ' : '❌ ') + message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
         function formatDisplayDate(dateStr) {
             if(!dateStr) return "";
             const [y, m, d] = dateStr.split('-');
@@ -141,16 +161,10 @@
         async function loadEvents() {
             const container = document.getElementById('eventDisplay');
             container.innerHTML = '<div class="loading-spinner"></div>';
-            
             try {
                 const response = await fetch(`${scriptUrl}?action=list`);
                 const data = await response.json();
-                
-                allEvents = data.map(ev => ({
-                    ...ev,
-                    _class: classifyEvent(ev.date)
-                }));
-                
+                allEvents = data.map(ev => ({ ...ev, _class: classifyEvent(ev.date) }));
                 renderEvents();
                 updateSummary();
             } catch (err) {
@@ -167,17 +181,12 @@
         function renderEvents() {
             const container = document.getElementById('eventDisplay');
             const filtered = allEvents.filter(ev => currentFilter === 'all' || ev._class === currentFilter);
-            
-            // เรียงลำดับ: กิจกรรมที่กำลังจะถึง (ใกล้ที่สุด) ไว้ด้านบนสุด
             filtered.sort((a, b) => new Date(`${a.date}T${a.startTime}`) - new Date(`${b.date}T${b.startTime}`));
-
             document.getElementById('countBadge').textContent = filtered.length;
-
             if (filtered.length === 0) {
                 container.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8; font-size:13px;">ไม่มีกิจกรรมในหมวดนี้</div>';
                 return;
             }
-
             container.innerHTML = filtered.map(ev => `
                 <div class="event-card">
                     <div>
@@ -194,21 +203,18 @@
 
         async function deleteEvent(title, date, startTime) {
             if (!confirm(`คุณต้องการลบกิจกรรม "${title}" ใช่หรือไม่?`)) return;
-            
             const url = `${scriptUrl}?action=delete&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}`;
             try {
                 const res = await fetch(url);
                 const result = await res.text();
                 if(result.includes("Success")) {
-                    alert("ลบสำเร็จ");
-                    loadEvents();
-                    document.getElementById('calendarIframe').src += ''; // Refresh Iframe
-                } else {
-                    alert("ลบไม่สำเร็จ: " + result);
-                }
-            } catch (e) {
-                alert("เกิดข้อผิดพลาดในการลบ");
-            }
+                    showToast("ลบข้อมูลเรียบร้อยแล้ว");
+                    setTimeout(() => {
+                        loadEvents();
+                        document.getElementById('calendarIframe').src += '';
+                    }, 500);
+                } else { showToast("ลบไม่สำเร็จ", "danger"); }
+            } catch (e) { showToast("เกิดข้อผิดพลาด", "danger"); }
         }
 
         async function manageEvent(action) {
@@ -217,22 +223,21 @@
             const date = document.getElementById('date').value;
             const startTime = document.getElementById('startH').value + ":" + document.getElementById('startM').value;
             const endTime = document.getElementById('endH').value + ":" + document.getElementById('endM').value;
-
-            if (!title || !date) return alert("กรุณาระบุชื่อและวันที่");
-
-            btn.disabled = true;
-            btn.innerText = "กำลังบันทึก...";
-
+            if (!title || !date) return showToast("กรุณาระบุชื่อและวันที่", "danger");
+            btn.disabled = true; btn.innerText = "กำลังบันทึก...";
             const url = `${scriptUrl}?action=add&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${endTime}`;
-            
             try {
                 await fetch(url);
-                alert("บันทึกสำเร็จ");
-                location.reload();
+                showToast("บันทึกนัดหมายสำเร็จ!");
+                setTimeout(() => {
+                    document.getElementById('title').value = "";
+                    loadEvents();
+                    document.getElementById('calendarIframe').src += '';
+                    btn.disabled = false; btn.innerText = "＋ บันทึกนัดหมาย";
+                }, 1000);
             } catch (e) {
-                alert("บันทึกไม่สำเร็จ");
-                btn.disabled = false;
-                btn.innerText = "＋ บันทึกนัดหมาย";
+                showToast("บันทึกไม่สำเร็จ", "danger");
+                btn.disabled = false; btn.innerText = "＋ บันทึกนัดหมาย";
             }
         }
 
@@ -245,21 +250,17 @@
 
         function setFilter(f) {
             currentFilter = f;
-            document.querySelectorAll('.filter-tab').forEach(btn => {
-                btn.classList.toggle('active', btn.id === `tab-${f}`);
-            });
+            document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.toggle('active', btn.id === `tab-${f}`));
             renderEvents();
         }
 
         window.onload = () => {
-            // สร้างตัวเลือกเวลา
             let h="", m="";
             for(let i=0; i<24; i++) h += `<option value="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</option>`;
             for(let i=0; i<60; i+=5) m += `<option value="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</option>`;
             document.getElementById('startH').innerHTML = document.getElementById('endH').innerHTML = h;
             document.getElementById('startM').innerHTML = document.getElementById('endM').innerHTML = m;
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
-            
             loadEvents();
         };
     </script>
