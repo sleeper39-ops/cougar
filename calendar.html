@@ -3,124 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการปฏิทิน v2.0</title>
+    <title>ระบบจัดการปฏิทินอัจฉริยะ</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --bg: #f1f5f9; --border: #e2e8f0; --danger: #dc2626; }
-        body { font-family: 'Sarabun', sans-serif; margin: 0; background: var(--bg); display: flex; flex-direction: column; height: 100vh; }
-        .header-section { background: white; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; border-bottom: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .input-item { display: flex; flex-direction: column; gap: 4px; }
-        input, select { padding: 8px; border: 1px solid var(--border); border-radius: 6px; }
-        .btn-add { background: #16a34a; color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .main-content { display: flex; flex: 1; overflow: hidden; padding: 15px; gap: 15px; }
-        .list-panel { width: 350px; background: white; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .filter-tabs { display: flex; padding: 10px; gap: 5px; border-bottom: 1px solid var(--border); }
-        .filter-tab { flex: 1; padding: 6px; border: 1px solid var(--border); border-radius: 4px; background: none; font-size: 12px; cursor: pointer; }
-        .filter-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .event-container { flex: 1; overflow-y: auto; padding: 10px; }
-        .event-card { border-left: 4px solid var(--primary); background: #f8fafc; padding: 10px; margin-bottom: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; border-left-width: 4px; }
-        .btn-del { color: #ccc; background: none; border: none; font-size: 20px; cursor: pointer; }
-        .btn-del:hover { color: var(--danger); }
-        .calendar-frame { flex: 1; background: white; border-radius: 12px; overflow: hidden; }
+        :root {
+            --primary: #2563eb; --primary-light: #eff6ff; --success: #16a34a;
+            --success-light: #f0fdf4; --danger: #dc2626; --danger-light: #fef2f2;
+            --warning: #d97706; --warning-light: #fffbeb; --bg: #f1f5f9;
+            --card: #ffffff; --text-main: #1e293b; --text-sub: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Sarabun', sans-serif; margin: 0; background: var(--bg); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* Header Section */
+        .header-section { background: white; padding: 14px 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: center; z-index: 10; border-bottom: 1px solid var(--border); }
+        .input-item { display: flex; flex-direction: column; gap: 5px; }
+        .input-item label { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
+        input, select { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; outline: none; font-size: 15px; font-family: 'Sarabun', sans-serif; }
+        #title { width: 260px; }
+        .time-group { display: flex; align-items: center; gap: 4px; font-weight: 800; }
+        .time-group select { width: 66px; text-align: center; padding: 9px 4px; }
+        
+        .btn-add { background: var(--success); color: white; border: none; padding: 0 22px; border-radius: 8px; cursor: pointer; font-weight: 700; height: 42px; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+        .btn-add:hover { background: #15803d; transform: translateY(-1px); }
+
+        /* Main Content */
+        .main-content { display: flex; flex: 1; overflow: hidden; gap: 14px; padding: 14px; }
+        
+        /* Left Panel (List) */
+        .today-list { width: 340px; background: white; border-radius: 14px; display: flex; flex-direction: column; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; }
+        .panel-header { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); }
+        .panel-title { display: flex; align-items: center; justify-content: space-between; }
+        .event-count-badge { background: var(--primary); color: white; font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+        
+        .filter-tabs { display: flex; gap: 4px; margin-top: 10px; }
+        .filter-tab { flex: 1; padding: 5px 4px; border: 1.5px solid var(--border); border-radius: 6px; background: transparent; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .filter-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+        .event-container { flex: 1; overflow-y: auto; padding: 12px; scrollbar-width: thin; }
+        .event-card { background: #f8fafc; border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 12px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .event-card:hover { transform: translateX(3px); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        
+        .event-title { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+        .meta-info { font-size: 12px; color: var(--text-sub); display: flex; flex-direction: column; gap: 2px; }
+        .time-chip { color: var(--primary); font-weight: 800; }
+
+        .btn-del { background: transparent; border: 1px solid #eee; cursor: pointer; border-radius: 6px; width: 28px; height: 28px; color: #ccc; font-size: 18px; transition: 0.2s; }
+        .btn-del:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+
+        /* Summary Bar */
+        .summary-bar { padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 6px; background: #fafafa; }
+        .summary-item { flex: 1; text-align: center; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 5px; }
+        .summary-val { font-weight: 800; font-size: 14px; display: block; }
+        .summary-lbl { font-size: 9px; color: var(--text-sub); text-transform: uppercase; }
+
+        /* Right Panel (Calendar) */
+        .calendar-frame { flex: 1; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
         iframe { width: 100%; height: 100%; border: none; }
+
+        /* Loading Animation */
+        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div class="header-section">
-        <div class="input-item"><input type="text" id="title" placeholder="ชื่อกิจกรรม..."></div>
-        <div class="input-item"><input type="date" id="date"></div>
-        <div class="input-item"><div style="display:flex;gap:2px"><select id="startH"></select>:<select id="startM"></select></div></div>
-        <button class="btn-add" onclick="manageEvent('add')">บันทึก</button>
+        <div class="input-item">
+            <label>หัวข้อกิจกรรม</label>
+            <input type="text" id="title" placeholder="พิมพ์ชื่อกิจกรรมที่นี่...">
+        </div>
+        <div class="input-item">
+            <label>วันที่</label>
+            <input type="date" id="date">
+        </div>
+        <div class="input-item">
+            <label>เวลาเริ่ม</label>
+            <div class="time-group">
+                <select id="startH"></select> : <select id="startM"></select>
+            </div>
+        </div>
+        <div class="input-item">
+            <label>เวลาสิ้นสุด</label>
+            <div class="time-group">
+                <select id="endH"></select> : <select id="endM"></select>
+            </div>
+        </div>
+        <button class="btn-add" id="btnAdd" onclick="manageEvent('add')">＋ บันทึกนัดหมาย</button>
     </div>
 
     <div class="main-content">
-        <div class="list-panel">
-            <div class="filter-tabs" id="tabs">
-                <button class="filter-tab" onclick="setFilter('today')">วันนี้</button>
-                <button class="filter-tab" onclick="setFilter('upcoming')">เร็วๆ นี้</button>
-                <button class="filter-tab" onclick="setFilter('past')">จบแล้ว</button>
+        <div class="today-list">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <h3 style="margin:0; font-size: 16px;">📅 รายการกิจกรรม <span class="event-count-badge" id="countBadge">0</span></h3>
+                    <button style="background:none; border:none; cursor:pointer; color:var(--primary); font-weight:bold;" onclick="loadEvents()">↻ รีเฟรช</button>
+                </div>
+                <div class="filter-tabs">
+                    <button class="filter-tab" id="tab-today" onclick="setFilter('today')">วันนี้</button>
+                    <button class="filter-tab active" id="tab-upcoming" onclick="setFilter('upcoming')">เร็วๆ นี้</button>
+                    <button class="filter-tab" id="tab-past" onclick="setFilter('past')">จบแล้ว</button>
+                </div>
             </div>
-            <div id="eventDisplay" class="event-container"></div>
+
+            <div id="eventDisplay" class="event-container">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <div class="summary-bar">
+                <div class="summary-item"><span class="summary-val" id="sumTotal">0</span><span class="summary-lbl">ทั้งหมด</span></div>
+                <div class="summary-item"><span class="summary-val" id="sumToday">0</span><span class="summary-lbl">วันนี้</span></div>
+                <div class="summary-item"><span class="summary-val" id="sumUpcoming">0</span><span class="summary-lbl">หน้า</span></div>
+                <div class="summary-item"><span class="summary-val" id="sumPast">0</span><span class="summary-lbl">อดีต</span></div>
+            </div>
         </div>
+
         <div class="calendar-frame">
-            <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok"></iframe>
+            <iframe id="calendarIframe" src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok"></iframe>
         </div>
     </div>
 
     <script>
+        // *** ตั้งค่า URL ของคุณที่นี่ ***
         const scriptUrl = "https://script.google.com/macros/s/AKfycbzJirF7Ldstah4LZepPRCGWmnoPSDnLGv0KvFb3bac-bvh8iLLxMdUH0Tc5EmIAz_c/exec";
-        let allEvents = [];
-        let currentFilter = 'upcoming'; // หัวข้อหลักคือ "เร็วๆ นี้"
 
-        // ฟังก์ชันเปลี่ยน yyyy-MM-dd -> dd-MM-yyyy
+        let allEvents = [];
+        let currentFilter = 'upcoming'; // เริ่มต้นที่เมนู "เร็วๆ นี้"
+
+        // เปลี่ยนรูปแบบวันที่จาก yyyy-mm-dd เป็น dd-mm-yyyy
         function formatDisplayDate(dateStr) {
+            if(!dateStr) return "";
             const [y, m, d] = dateStr.split('-');
             return `${d}-${m}-${y}`;
         }
 
         async function loadEvents() {
             const container = document.getElementById('eventDisplay');
-            container.innerHTML = "กำลังโหลด...";
+            container.innerHTML = '<div class="loading-spinner"></div>';
+            
             try {
-                const res = await fetch(`${scriptUrl}?action=list`);
-                const data = await res.json();
-                allEvents = data.map(ev => ({...ev, _class: classify(ev.date)}));
-                render();
-            } catch (e) { container.innerHTML = "เกิดข้อผิดพลาด"; }
+                const response = await fetch(`${scriptUrl}?action=list`);
+                const data = await response.json();
+                
+                allEvents = data.map(ev => ({
+                    ...ev,
+                    _class: classifyEvent(ev.date)
+                }));
+                
+                renderEvents();
+                updateSummary();
+            } catch (err) {
+                container.innerHTML = '<p style="text-align:center; padding:20px; color:red;">ไม่สามารถโหลดข้อมูลได้</p>';
+            }
         }
 
-        function classify(dateStr) {
+        function classifyEvent(dateStr) {
             const today = new Date().toISOString().split('T')[0];
             if (dateStr === today) return 'today';
             return dateStr > today ? 'upcoming' : 'past';
         }
 
-        function render() {
+        function renderEvents() {
             const container = document.getElementById('eventDisplay');
-            const filtered = allEvents.filter(e => e._class === currentFilter);
+            const filtered = allEvents.filter(ev => currentFilter === 'all' || ev._class === currentFilter);
             
-            // เรียงลำดับ: กิจกรรมที่กำลังจะถึง (ใกล้สุด) ไว้ด้านบน
+            // เรียงลำดับ: กิจกรรมที่กำลังจะถึง (ใกล้ที่สุด) ไว้ด้านบนสุด
             filtered.sort((a, b) => new Date(`${a.date}T${a.startTime}`) - new Date(`${b.date}T${b.startTime}`));
+
+            document.getElementById('countBadge').textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8; font-size:13px;">ไม่มีกิจกรรมในหมวดนี้</div>';
+                return;
+            }
 
             container.innerHTML = filtered.map(ev => `
                 <div class="event-card">
                     <div>
-                        <div style="font-weight:bold">${ev.title}</div>
-                        <div style="font-size:12px;color:#666">📅 ${formatDisplayDate(ev.date)} | 🕒 ${ev.startTime}</div>
+                        <div class="event-title">${ev.title}</div>
+                        <div class="meta-info">
+                            <span class="time-chip">🕒 ${ev.startTime} - ${ev.endTime}</span>
+                            <span>📅 ${formatDisplayDate(ev.date)}</span>
+                        </div>
                     </div>
-                    <button class="btn-del" onclick="deleteEv('${ev.title}','${ev.date}','${ev.startTime}')">×</button>
+                    <button class="btn-del" onclick="deleteEvent('${ev.title}', '${ev.date}', '${ev.startTime}')">×</button>
                 </div>
             `).join('');
-            
-            document.querySelectorAll('.filter-tab').forEach(t => {
-                t.classList.toggle('active', t.getAttribute('onclick').includes(currentFilter));
-            });
         }
 
-        async function deleteEv(t, d, s) {
-            if (!confirm(`ลบ "${t}"?`)) return;
-            await fetch(`${scriptUrl}?action=delete&title=${encodeURIComponent(t)}&date=${d}&startTime=${s}`);
-            loadEvents();
+        async function deleteEvent(title, date, startTime) {
+            if (!confirm(`คุณต้องการลบกิจกรรม "${title}" ใช่หรือไม่?`)) return;
+            
+            const url = `${scriptUrl}?action=delete&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}`;
+            try {
+                const res = await fetch(url);
+                const result = await res.text();
+                if(result.includes("Success")) {
+                    alert("ลบสำเร็จ");
+                    loadEvents();
+                    document.getElementById('calendarIframe').src += ''; // Refresh Iframe
+                } else {
+                    alert("ลบไม่สำเร็จ: " + result);
+                }
+            } catch (e) {
+                alert("เกิดข้อผิดพลาดในการลบ");
+            }
         }
 
         async function manageEvent(action) {
-            const title = document.getElementById('title').value;
+            const btn = document.getElementById('btnAdd');
+            const title = document.getElementById('title').value.trim();
             const date = document.getElementById('date').value;
             const startTime = document.getElementById('startH').value + ":" + document.getElementById('startM').value;
-            if(!title || !date) return alert("กรุณากรอกข้อมูล");
-            await fetch(`${scriptUrl}?action=add&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${startTime}`); // EndTime สมมติให้เท่ากันก่อน
-            location.reload();
+            const endTime = document.getElementById('endH').value + ":" + document.getElementById('endM').value;
+
+            if (!title || !date) return alert("กรุณาระบุชื่อและวันที่");
+
+            btn.disabled = true;
+            btn.innerText = "กำลังบันทึก...";
+
+            const url = `${scriptUrl}?action=add&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${endTime}`;
+            
+            try {
+                await fetch(url);
+                alert("บันทึกสำเร็จ");
+                location.reload();
+            } catch (e) {
+                alert("บันทึกไม่สำเร็จ");
+                btn.disabled = false;
+                btn.innerText = "＋ บันทึกนัดหมาย";
+            }
         }
 
-        function setFilter(f) { currentFilter = f; render(); }
+        function updateSummary() {
+            document.getElementById('sumTotal').innerText = allEvents.length;
+            document.getElementById('sumToday').innerText = allEvents.filter(e => e._class === 'today').length;
+            document.getElementById('sumUpcoming').innerText = allEvents.filter(e => e._class === 'upcoming').length;
+            document.getElementById('sumPast').innerText = allEvents.filter(e => e._class === 'past').length;
+        }
+
+        function setFilter(f) {
+            currentFilter = f;
+            document.querySelectorAll('.filter-tab').forEach(btn => {
+                btn.classList.toggle('active', btn.id === `tab-${f}`);
+            });
+            renderEvents();
+        }
 
         window.onload = () => {
+            // สร้างตัวเลือกเวลา
             let h="", m="";
-            for(let i=0;i<24;i++) h+=`<option>${i.toString().padStart(2,'0')}</option>`;
-            for(let i=0;i<60;i+=5) m+=`<option>${i.toString().padStart(2,'0')}</option>`;
-            document.getElementById('startH').innerHTML = h; document.getElementById('startM').innerHTML = m;
+            for(let i=0; i<24; i++) h += `<option value="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</option>`;
+            for(let i=0; i<60; i+=5) m += `<option value="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</option>`;
+            document.getElementById('startH').innerHTML = document.getElementById('endH').innerHTML = h;
+            document.getElementById('startM').innerHTML = document.getElementById('endM').innerHTML = m;
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            
             loadEvents();
         };
     </script>
