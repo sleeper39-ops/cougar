@@ -248,16 +248,16 @@
             }
         }
 
-        function manageEvent(action, titleDel, dateDel) {
+        // ฟังก์ชันหลักในการบันทึกและลบข้อมูลแบบรวดเร็ว (ไม่ต้องรีโหลดหน้า)
+        async function manageEvent(action, titleDel, dateDel) {
             const title = titleDel || document.getElementById('title').value;
-            const date = dateDel || document.getElementById('date').value;
-            const startTime = document.getElementById('startH').value + ":" + document.getElementById('startM').value;
-            const endTime = document.getElementById('endH').value + ":" + document.getElementById('endM').value;
+            const dateInput = dateDel || document.getElementById('date').value;
+            const start = document.getElementById('startH').value + ":" + document.getElementById('startM').value;
+            const end = document.getElementById('endH').value + ":" + document.getElementById('endM').value;
 
-            if (!title || !date) return alert("กรุณาระบุหัวข้อและวันที่");
+            if (!title || !dateInput) return alert("กรุณาระบุหัวข้อและวันที่");
 
             const btnAdd = document.getElementById('btnAdd');
-            if(action === 'add') {
                 btnAdd.innerText = 'บันทึก...';
                 btnAdd.disabled = true;
             }
