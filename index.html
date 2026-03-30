@@ -125,7 +125,7 @@
     </div>
     <div class="topbar-nav">
         <div class="nav-item active" id="nav-dash"     onclick="window.showPage('dash-page', this)"><i class="fas fa-home"></i> หน้าหลัก</div>
-        <a   class="nav-link"        href="obsdock.html"                                             ><i class="fas fa-boxes-stacked"></i> Obs Docks UI</a>
+        <div class="nav-item"        id="nav-obs"      onclick="window.showPage('obs-page', this)"><i class="fas fa-boxes-stacked"></i> Obs Docks UI</div>
         <div class="nav-item"        id="nav-edoc"     onclick="window.showPage('edoc-page', this)"><i class="fas fa-file-alt"></i> E-doc</div>
         <div class="nav-item"        id="nav-resume"   onclick="window.showPage('resume-page', this)"><i class="fas fa-id-card"></i> Resume</div>
         <div class="nav-item"        id="nav-live"     onclick="window.showPage('live-page', this)"><i class="fas fa-video"></i> กล้องสด</div>
@@ -148,6 +148,7 @@
     </div>
 
     <div id="edoc-page"     class="page-content"><iframe src="e-doc.html"></iframe></div>
+    <div id="obs-page"      class="page-content"><iframe src="obsdock.html"></iframe></div>
     <div id="resume-page"   class="page-content"><iframe src="resume.html"></iframe></div>
     <div id="live-page"     class="page-content"><iframe src="cctv.html"></iframe></div>
     <div id="map-page"      class="page-content"><iframe src="map.html"></iframe></div>
