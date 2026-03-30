@@ -146,7 +146,7 @@
             <div class="tagline">Select a menu item above to get started</div>
         </div>
     </div>
-    
+
     <div id="edoc-page"     class="page-content"><iframe src="e-doc.html"></iframe></div>
     <div id="obs-page"      class="page-content"><iframe src="obsdock.html"></iframe></div>
     <div id="resume-page"   class="page-content"><iframe src="resume.html"></iframe></div>
@@ -158,17 +158,37 @@
 </div>
 
 <script>
+    /** 
+     * ฟังก์ชันสำหรับสลับหน้าเพจ (Page Switcher)
+     * @param {string} id - ไอดีของหน้าที่ต้องการเปิด (เช่น dash-page)
+     * @param {HTMLElement} el - องค์ประกอบของเมนูที่ถูกคลิก
+     */
     window.showPage = function(id, el) {
+        // 1. ซ่อนหน้าอื่นๆ ทั้งหมด
         document.querySelectorAll('.page-content').forEach(function(p) {
             p.classList.remove('active');
         });
+        
+        // 2. แสดงหน้าที่เลือก
         var pg = document.getElementById(id);
-        if (pg) pg.classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(function(a) {
-            a.classList.remove('active');
+        if (pg) {
+            pg.classList.add('active');
+        } else {
+            console.error("ไม่พบหน้า ID: " + id);
+        }
+
+        // 3. ปรับไฮไลท์ที่เมนูบาร์ (Active Item)
+        document.querySelectorAll('.nav-item').forEach(function(item) {
+            item.classList.remove('active');
         });
-        if (el) el.classList.add('active');
+        
+        if (el) {
+            el.classList.add('active');
+        }
     };
+
+    // ตัวเลือกเสริม: ตรวจสอบการคลิกเบื้องต้นในหน้า Console เพื่อการ Debug
+    console.log("Cougar2 Dashboard Loaded Successfully");
 </script>
 </body>
 </html>
