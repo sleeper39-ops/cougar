@@ -65,11 +65,11 @@
         /* ส่วนเนื้อหา */
         .main-content { display: flex; flex: 1; overflow: hidden; gap: 15px; padding: 15px; }
         
-        .today-list { 
+        .event-list { 
             width: 330px; background: white; border-radius: 12px; padding: 20px; 
             display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
         }
-        .today-list h3 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; }
+        .event-list h3 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; }
         
         .event-container { flex: 1; overflow-y: auto; margin-top: 10px; padding-right: 5px; }
         .event-card { 
@@ -85,6 +85,16 @@
             display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s;
         }
         .btn-del:hover { background: var(--danger); color: white; }
+        
+        /* สไตล์สำหรับ Tabs */
+        .list-tabs { display: flex; gap: 5px; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .tab-btn { 
+            flex: 1; border: none; background: none; padding: 8px; font-size: 13px; font-weight: 700; 
+            color: var(--text-sub); cursor: pointer; border-radius: 6px; transition: 0.2s; 
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .tab-btn:hover { background: #f1f5f9; }
+        .tab-btn.active { color: var(--primary); background: #eff6ff; }
 
         .calendar-frame { flex: 1; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         iframe { width: 100%; height: 100%; border: none; }
@@ -132,9 +142,12 @@
     </div>
 
     <div class="main-content">
-        <div class="today-list">
-            <h3>📅 รายการกิจกรรม</h3>
-            <div id="loading" style="font-size: 13px; color: #94a3b8; text-align: center;">กำลังโหลดข้อมูล...</div>
+        <div class="event-list">
+            <div class="list-tabs">
+                <button class="tab-btn active" onclick="setFilter('all')">ทั้งหมด</button>
+                <button class="tab-btn" onclick="setFilter('past')">ย้อนหลัง</button>
+            </div>
+            <div id="loading" style="font-size: 13px; color: #94a3b8; text-align: center; margin-top:10px;">กำลังโหลดข้อมูล...</div>
             <div id="eventDisplay" class="event-container"></div>
         </div>
 
@@ -181,33 +194,66 @@
             return timeStr.replace(/\s?[AaPp][Mm]/g, "").trim();
         }
 
+        let allEvents = [];
+        let currentFilter = 'all';
+
         async function loadEvents() {
             try {
                 const res = await fetch(`${scriptUrl}?action=list`);
-                const data = await res.json();
-                const list = document.getElementById('eventDisplay');
-                document.getElementById('loading').style.display = 'none';
-                list.innerHTML = '';
-
-                if (data.length === 0) {
-                    list.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:14px; margin-top:20px;">ไม่มีกิจกรรมวันนี้</div>';
-                    return;
-                }
-
-                data.forEach(ev => {
-                    list.innerHTML += `
-                        <div class="event-card">
-                            <div class="event-info">
-                                <strong>${ev.title}</strong>
-                                <span>📅 ${ev.displayDate}</span>
-                                <span>🕒 ${formatTo24hr(ev.startTime)} - ${formatTo24hr(ev.endTime)} น.</span>
-                            </div>
-                            <button class="btn-del" onclick="confirmDelete('${ev.title}', '${ev.date}')" title="ลบกิจกรรม">×</button>
-                        </div>`;
-                });
+                allEvents = await res.json();
+                renderEvents();
             } catch (err) {
                 document.getElementById('loading').innerText = 'ไม่สามารถโหลดข้อมูลได้';
             }
+        }
+
+        function setFilter(type) {
+            currentFilter = type;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.includes(type === 'all' ? 'ทั้งหมด' : 'ย้อนหลัง'));
+            });
+            renderEvents();
+        }
+
+        function renderEvents() {
+            const list = document.getElementById('eventDisplay');
+            document.getElementById('loading').style.display = 'none';
+            list.innerHTML = '';
+
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            // กรองข้อมูลตามประเภท
+            let filtered = allEvents;
+            if (currentFilter === 'past') {
+                filtered = allEvents.filter(ev => {
+                    const evDate = new Date(ev.date);
+                    evDate.setHours(0,0,0,0);
+                    return evDate < today;
+                });
+                // เรียงจากล่าสุดไปอดีต
+                filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+            } else {
+                // กรองเอาเฉพาะวันนี้และอนาคต (หรือถ้าต้องการทั้งหมดก็เอา filter ออกได้)
+                filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
+            }
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:14px; margin-top:20px;">ไม่มีกิจกรรมในหมวดนี้</div>`;
+                return;
+            }
+
+            filtered.forEach(ev => {
+                list.innerHTML += `
+                    <div class="event-card">
+                        <div class="event-info">
+                            <strong>${ev.title}</strong>
+                            <span>📅 ${ev.displayDate}</span>
+                            <span>🕒 ${formatTo24hr(ev.startTime)} - ${formatTo24hr(ev.endTime)} น.</span>
+                        </div>
+                        <button class="btn-del" onclick="confirmDelete('${ev.title}', '${ev.date}')" title="ลบกิจกรรม">×</button>
+                    </div>`;
+            });
         }
 
         function confirmDelete(title, date) {
