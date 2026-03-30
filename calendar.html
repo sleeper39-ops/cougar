@@ -44,7 +44,6 @@
 
         .main-content { display: flex; flex: 1; overflow: hidden; gap: 15px; padding: 15px; }
         
-        /* สไตล์หน้าจัดการรายการกิจกรรม */
         .event-list { 
             width: 330px; background: white; border-radius: 12px; padding: 20px; 
             display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
@@ -130,7 +129,7 @@
         </div>
 
         <div class="calendar-frame">
-            <iframe src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok&mode=MONTH&showTitle=0&showNav=1&showPrint=0&showTabs=1&showCalendars=0"></iframe>
+            <iframe id="calendarIframe" src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok&mode=MONTH&showTitle=0&showNav=1&showPrint=0&showTabs=1&showCalendars=0"></iframe>
         </div>
     </div>
 
@@ -170,7 +169,7 @@
 
         function formatTo24hr(timeStr) {
             if (!timeStr) return "--:--";
-            return timeStr.replace(/\s?[AaPp][Mm]/g, "").trim();
+            return timeStr.replace(/\s?[AaPp][Mm]/g, "").replace(/[^0-9:]/g, "").trim();
         }
 
         async function loadEvents() {
@@ -204,22 +203,18 @@
             let filtered = [];
 
             if (currentFilter === 'past') {
-                // กรองเฉพาะอดีต (วันที่ก่อนวันนี้)
                 filtered = allEvents.filter(ev => {
                     const d = new Date(ev.date);
                     d.setHours(0,0,0,0);
                     return d < today;
                 });
-                // เรียงจากล่าสุดไปหาอดีต
                 filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
             } else {
-                // กรองเฉพาะ "วันนี้" และ "อนาคต"
                 filtered = allEvents.filter(ev => {
                     const d = new Date(ev.date);
                     d.setHours(0,0,0,0);
                     return d >= today;
                 });
-                // เรียงจากใกล้ที่สุดไปหาอนาคต
                 filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
             }
 
@@ -248,7 +243,6 @@
             }
         }
 
-        // ฟังก์ชันหลักในการบันทึกและลบข้อมูลแบบรวดเร็ว (ไม่ต้องรีโหลดหน้า)
         async function manageEvent(action, titleDel, dateDel) {
             const title = titleDel || document.getElementById('title').value;
             const dateInput = dateDel || document.getElementById('date').value;
@@ -258,15 +252,41 @@
             if (!title || !dateInput) return alert("กรุณาระบุหัวข้อและวันที่");
 
             const btnAdd = document.getElementById('btnAdd');
-                btnAdd.innerText = 'บันทึก...';
+            
+            if (action === 'delete') {
+                // Optimistic UI: ลบออกจากหน้าจอทันทีเพื่อความเร็ว
+                allEvents = allEvents.filter(ev => !(ev.title === titleDel && ev.date === dateDel));
+                renderEvents();
+            } else if (action === 'add') {
+                btnAdd.innerText = 'กำลังบันทึก...';
                 btnAdd.disabled = true;
             }
 
-            const url = `${scriptUrl}?action=${action}&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${endTime}`;
+            const url = `${scriptUrl}?action=${action}&title=${encodeURIComponent(title)}&date=${dateInput}&startTime=${start}&endTime=${end}`;
 
-            fetch(url, { mode: 'no-cors' }).then(() => {
-                setTimeout(() => { location.reload(); }, 800);
-            });
+            try {
+                // ส่งคำขอแบบเบื้องหลัง
+                await fetch(url, { mode: 'no-cors' });
+                
+                // โหลดข้อมูลล่าสุดจากเซิร์ฟเวอร์
+                await loadEvents();
+
+                // รีเฟรชเฉพาะ iframe ปฏิทิน
+                const iframe = document.getElementById('calendarIframe');
+                if (iframe) iframe.src = iframe.src;
+
+                if (action === 'add') {
+                    document.getElementById('title').value = "";
+                    btnAdd.innerText = 'บันทึกนัดหมาย';
+                    btnAdd.disabled = false;
+                }
+            } catch (err) {
+                console.error("Sync Error:", err);
+                if (action === 'add') {
+                    btnAdd.innerText = 'บันทึกนัดหมาย';
+                    btnAdd.disabled = false;
+                }
+            }
         }
     </script>
 </body>
