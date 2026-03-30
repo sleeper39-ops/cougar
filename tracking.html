@@ -264,6 +264,9 @@
             <line x1="18.5" y1="12" x2="22" y2="12" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
         </svg>
     </button>
+    <button id="btn-all-trucks" class="fab-btn" title="ดูรถทั้งหมด" onclick="zoomToAll()">
+        <span style="font-size:18px;">🚚</span>
+    </button>
 </div>
 
 <div id="last-update-text"></div>
@@ -476,6 +479,17 @@ window.goMyLocation = function() {
     );
 };
 
+// ── ZOOM TO ALL TRUCKS ──────────────────────────────────
+window.zoomToAll = function() {
+    if (!map) return;
+    const markers = [];
+    map.eachLayer(l => { if (l instanceof L.Marker) markers.push(l.getLatLng()); });
+    if (markers.length > 0) {
+        const bounds = L.latLngBounds(markers);
+        map.flyToBounds(bounds, { padding: [50, 50], duration: 1.2, maxZoom: 16 });
+    }
+};
+
 // ── MAP ROTATION ────────────────────────────────────────
 function applyBearing(deg) {
     const pane = map.getPanes().mapPane;
@@ -615,9 +629,11 @@ window.addEventListener('load', function() {
                             `<div class="truck-label" style="border-color:${color};color:${color};">${id}</div>`,
                             { permanent:true, direction:'top', className:'leaflet-tooltip-plain', offset:[0,-22] }
                         );
-                        m.bindPopup(`<b style="color:${color}">${id}</b><br>📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}<br>🕐 ${timeStr}`);
                         otherMarkers[id] = m;
                     }
+                    // อัปเดตเนื้อหาใน Popup ทุกครั้งให้เวลาเดิน
+                    otherMarkers[id].bindPopup(`<b style="color:${color}">${id}</b><br>📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}<br>🕐 ${timeStr} <span style="font-size:10px;color:#888;">(Live)</span>`);
+                    
                     bounds.push([lat, lng]);
                 });
 
@@ -640,6 +656,11 @@ window.addEventListener('load', function() {
 
     window.updateMap = updateMap; // ย้ายมาให้เรียกจากภายนอกได้
     window.triggerUpdateMap = updateMap;
+    
+    // อัปเดตเมื่อสลับหน้าต่างกลับมา
+    window.addEventListener('focus', () => {
+        if (typeof updateMap === 'function') updateMap();
+    });
 });
 </script>
 </body>
