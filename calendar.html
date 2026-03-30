@@ -13,65 +13,147 @@
             --card: #ffffff; --text-main: #1e293b; --text-sub: #64748b;
             --border: #e2e8f0;
         }
-        * { box-sizing: border-box; }
-        body { font-family: 'Sarabun', sans-serif; margin: 0; background: var(--bg); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        /* Header Section */
-        .header-section { background: white; padding: 14px 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: center; z-index: 10; border-bottom: 1px solid var(--border); }
-        .input-item { display: flex; flex-direction: column; gap: 5px; }
-        .input-item label { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
-        input, select { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; outline: none; font-size: 15px; font-family: 'Sarabun', sans-serif; }
-        #title { width: 260px; }
-        .time-group { display: flex; align-items: center; gap: 4px; font-weight: 800; }
-        .time-group select { width: 66px; text-align: center; padding: 9px 4px; }
-        
-        .btn-add { background: var(--success); color: white; border: none; padding: 0 22px; border-radius: 8px; cursor: pointer; font-weight: 700; height: 42px; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
-        .btn-add:hover { background: #15803d; transform: translateY(-1px); }
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--text-main); 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
 
-        /* Main Content */
-        .main-content { display: flex; flex: 1; overflow: hidden; gap: 14px; padding: 14px; }
+        /* Header / Input Section */
+        .header-section { 
+            background: white; 
+            padding: 16px 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 12px; 
+            align-items: flex-end; 
+            justify-content: center; 
+            z-index: 100;
+        }
         
-        /* Left Panel (List) */
-        .today-list { width: 340px; background: white; border-radius: 14px; display: flex; flex-direction: column; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; }
-        .panel-header { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); }
-        .panel-title { display: flex; align-items: center; justify-content: space-between; }
-        .event-count-badge { background: var(--primary); color: white; font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+        .input-item { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px; }
+        .input-item label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
         
-        .filter-tabs { display: flex; gap: 4px; margin-top: 10px; }
-        .filter-tab { flex: 1; padding: 5px 4px; border: 1.5px solid var(--border); border-radius: 6px; background: transparent; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        input, select { 
+            padding: 12px; 
+            border: 1.5px solid var(--border); 
+            border-radius: 10px; 
+            font-size: 15px; 
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--primary); outline: none; }
+
+        .time-row { display: flex; gap: 8px; align-items: center; }
+        .time-group { display: flex; align-items: center; gap: 4px; flex: 1; }
+        .time-group select { padding: 10px 4px; text-align: center; }
+
+        .btn-add { 
+            background: var(--success); 
+            color: white; 
+            border: none; 
+            padding: 0 25px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            height: 48px; 
+            font-size: 16px;
+            transition: all 0.2s; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            justify-content: center;
+            min-width: 160px;
+        }
+        .btn-add:hover { background: #15803d; transform: translateY(-1px); }
+        .btn-add:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Main Layout */
+        .main-content { display: flex; flex: 1; overflow: hidden; gap: 15px; padding: 15px; }
+
+        /* Left Panel: List */
+        .today-list { 
+            width: 360px; 
+            background: white; 
+            border-radius: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+            overflow: hidden; 
+        }
+        .panel-header { padding: 16px; border-bottom: 1px solid var(--border); }
+        .panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .event-count-badge { background: var(--primary); color: white; font-size: 12px; padding: 2px 10px; border-radius: 20px; }
+        
+        .filter-tabs { display: flex; gap: 6px; }
+        .filter-tab { 
+            flex: 1; padding: 8px 4px; border: 1.5px solid var(--border); 
+            border-radius: 8px; background: transparent; font-size: 12px; 
+            font-weight: 700; cursor: pointer; transition: 0.2s; 
+        }
         .filter-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
 
-        .event-container { flex: 1; overflow-y: auto; padding: 12px; scrollbar-width: thin; }
-        .event-card { background: #f8fafc; border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 12px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        .event-card:hover { transform: translateX(3px); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        
-        .event-title { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
-        .meta-info { font-size: 12px; color: var(--text-sub); display: flex; flex-direction: column; gap: 2px; }
+        .event-container { flex: 1; overflow-y: auto; padding: 12px; }
+        .event-card { 
+            background: #f8fafc; border: 1px solid var(--border); 
+            border-left: 5px solid var(--primary); padding: 14px; 
+            margin-bottom: 12px; border-radius: 10px; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        .event-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--text-main); }
+        .meta-info { font-size: 13px; color: var(--text-sub); display: flex; flex-direction: column; gap: 3px; }
         .time-chip { color: var(--primary); font-weight: 800; }
 
-        .btn-del { background: transparent; border: 1px solid #eee; cursor: pointer; border-radius: 6px; width: 28px; height: 28px; color: #ccc; font-size: 18px; transition: 0.2s; }
+        .btn-del { 
+            background: #fff; border: 1px solid #ddd; cursor: pointer; 
+            border-radius: 8px; width: 32px; height: 32px; color: #999; 
+            font-size: 20px; display: flex; align-items: center; justify-content: center;
+        }
         .btn-del:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
 
-        /* Summary Bar */
-        .summary-bar { padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 6px; background: #fafafa; }
-        .summary-item { flex: 1; text-align: center; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 5px; }
-        .summary-val { font-weight: 800; font-size: 14px; display: block; }
-        .summary-lbl { font-size: 9px; color: var(--text-sub); text-transform: uppercase; }
-
-        /* Right Panel (Calendar) */
-        .calendar-frame { flex: 1; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        /* Right Panel: Calendar */
+        .calendar-frame { flex: 1; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* Toast Notification */
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
-        .toast { background: #1e293b; color: white; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 1.5s forwards; }
-        .toast.success { border-left: 4px solid var(--success); }
-        .toast.danger { border-left: 4px solid var(--danger); }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        /* Summary Footer */
+        .summary-bar { padding: 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; background: #fcfcfc; }
+        .summary-item { flex: 1; text-align: center; background: white; border: 1px solid var(--border); border-radius: 10px; padding: 8px 4px; }
+        .summary-val { font-weight: 800; font-size: 16px; display: block; color: var(--primary); }
+        .summary-lbl { font-size: 10px; color: var(--text-sub); font-weight: 600; }
 
-        /* Loading Animation */
-        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 20px auto; }
+        /* Toast */
+        .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; }
+        .toast { 
+            background: #1e293b; color: white; padding: 16px; border-radius: 12px; 
+            margin-top: 10px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+            display: flex; align-items: center; gap: 12px; font-weight: 600; 
+            animation: fadeInUp 0.3s ease; 
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Responsive Design */
+        @media (max-width: 850px) {
+            body { overflow-y: auto; height: auto; }
+            .header-section { flex-direction: column; align-items: stretch; padding: 12px; }
+            .input-item { min-width: 100%; }
+            .btn-add { width: 100%; max-width: none; height: 55px; }
+            .main-content { flex-direction: column; height: auto; overflow: visible; padding: 10px; }
+            .calendar-frame { height: 450px; order: 1; width: 100%; }
+            .today-list { width: 100%; order: 2; height: 600px; }
+        }
+
+        .loading-spinner { 
+            border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); 
+            border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 40px auto; 
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -80,33 +162,37 @@
     <div class="header-section">
         <div class="input-item">
             <label>หัวข้อกิจกรรม</label>
-            <input type="text" id="title" placeholder="พิมพ์ชื่อกิจกรรมที่นี่...">
+            <input type="text" id="title" placeholder="นัดหมายอะไรดี?">
         </div>
         <div class="input-item">
             <label>วันที่</label>
             <input type="date" id="date">
         </div>
         <div class="input-item">
-            <label>เวลาเริ่ม</label>
-            <div class="time-group">
-                <select id="startH"></select> : <select id="startM"></select>
+            <label>ช่วงเวลา (เริ่ม - สิ้นสุด)</label>
+            <div class="time-row">
+                <div class="time-group">
+                    <select id="startH"></select> : <select id="startM"></select>
+                </div>
+                <span>-</span>
+                <div class="time-group">
+                    <select id="endH"></select> : <select id="endM"></select>
+                </div>
             </div>
         </div>
-        <div class="input-item">
-            <label>เวลาสิ้นสุด</label>
-            <div class="time-group">
-                <select id="endH"></select> : <select id="endM"></select>
-            </div>
-        </div>
-        <button class="btn-add" id="btnAdd" onclick="manageEvent('add')">＋ บันทึกนัดหมาย</button>
+        <button class="btn-add" id="btnAdd" onclick="manageEvent()">＋ บันทึกนัดหมาย</button>
     </div>
 
     <div class="main-content">
+        <div class="calendar-frame">
+            <iframe id="calendarIframe" src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok&mode=MONTH"></iframe>
+        </div>
+
         <div class="today-list">
             <div class="panel-header">
                 <div class="panel-title">
-                    <h3 style="margin:0; font-size: 16px;">📅 รายการกิจกรรม <span class="event-count-badge" id="countBadge">0</span></h3>
-                    <button style="background:none; border:none; cursor:pointer; color:var(--primary); font-weight:bold;" onclick="loadEvents()">↻ รีเฟรช</button>
+                    <h3 style="margin:0; font-size: 18px;">📅 รายการ <span class="event-count-badge" id="countBadge">0</span></h3>
+                    <button style="background:none; border:none; cursor:pointer; color:var(--primary); font-weight:800; font-size:14px;" onclick="loadEvents()">↻ รีเฟรช</button>
                 </div>
                 <div class="filter-tabs">
                     <button class="filter-tab" id="tab-today" onclick="setFilter('today')">วันนี้</button>
@@ -122,40 +208,29 @@
             <div class="summary-bar">
                 <div class="summary-item"><span class="summary-val" id="sumTotal">0</span><span class="summary-lbl">ทั้งหมด</span></div>
                 <div class="summary-item"><span class="summary-val" id="sumToday">0</span><span class="summary-lbl">วันนี้</span></div>
-                <div class="summary-item"><span class="summary-val" id="sumUpcoming">0</span><span class="summary-lbl">หน้า</span></div>
+                <div class="summary-item"><span class="summary-val" id="sumUpcoming">0</span><span class="summary-lbl">เร็วๆ นี้</span></div>
                 <div class="summary-item"><span class="summary-val" id="sumPast">0</span><span class="summary-lbl">อดีต</span></div>
             </div>
         </div>
-
-        <div class="calendar-frame">
-            <iframe id="calendarIframe" src="https://calendar.google.com/calendar/embed?src=0862ce80073c1952685942ed711afe8838017aeda13bd78dd57f561929e4b083%40group.calendar.google.com&ctz=Asia%2FBangkok&mode=MONTH" style="border: 0" width="100%" height="100%" frameborder="0" scrolling="no"></iframe>
-        </div>
     </div>
 
+    <div id="toast-container" class="toast-container"></div>
+
     <script>
+        // *** ใส่ URL ของ Google Apps Script (Web App) ของคุณที่นี่ ***
         const scriptUrl = "https://script.google.com/macros/s/AKfycbzJirF7Ldstah4LZepPRCGWmnoPSDnLGv0KvFb3bac-bvh8iLLxMdUH0Tc5EmIAz_c/exec";
+        
         let allEvents = [];
         let currentFilter = 'upcoming';
 
         function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container') || (() => {
-                const c = document.createElement('div');
-                c.id = 'toast-container';
-                c.className = 'toast-container';
-                document.body.appendChild(c);
-                return c;
-            })();
+            const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = (type === 'success' ? '✅ ' : '❌ ') + message;
+            toast.className = 'toast';
+            toast.style.borderLeft = `6px solid ${type === 'success' ? '#16a34a' : '#dc2626'}`;
+            toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> <span>${message}</span>`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
-        }
-
-        function formatDisplayDate(dateStr) {
-            if(!dateStr) return "";
-            const [y, m, d] = dateStr.split('-');
-            return `${d}-${m}-${y}`;
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
         }
 
         async function loadEvents() {
@@ -164,15 +239,15 @@
             try {
                 const response = await fetch(`${scriptUrl}?action=list`);
                 const data = await response.json();
-                allEvents = data.map(ev => ({ ...ev, _class: classifyEvent(ev.date) }));
+                allEvents = data.map(ev => ({ ...ev, _status: classifyDate(ev.date) }));
                 renderEvents();
                 updateSummary();
             } catch (err) {
-                container.innerHTML = '<p style="text-align:center; padding:20px; color:red;">ไม่สามารถโหลดข้อมูลได้</p>';
+                container.innerHTML = '<p style="text-align:center; padding:20px; color:var(--danger);">โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่</p>';
             }
         }
 
-        function classifyEvent(dateStr) {
+        function classifyDate(dateStr) {
             const today = new Date().toISOString().split('T')[0];
             if (dateStr === today) return 'today';
             return dateStr > today ? 'upcoming' : 'past';
@@ -180,87 +255,112 @@
 
         function renderEvents() {
             const container = document.getElementById('eventDisplay');
-            const filtered = allEvents.filter(ev => currentFilter === 'all' || ev._class === currentFilter);
+            const filtered = allEvents.filter(ev => currentFilter === 'all' || ev._status === currentFilter);
+            
+            // เรียงลำดับเวลา
             filtered.sort((a, b) => new Date(`${a.date}T${a.startTime}`) - new Date(`${b.date}T${b.startTime}`));
+            
             document.getElementById('countBadge').textContent = filtered.length;
+            
             if (filtered.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8; font-size:13px;">ไม่มีกิจกรรมในหมวดนี้</div>';
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8;">— ไม่มีรายการ —</div>';
                 return;
             }
+
             container.innerHTML = filtered.map(ev => `
                 <div class="event-card">
                     <div>
                         <div class="event-title">${ev.title}</div>
                         <div class="meta-info">
-                            <span class="time-chip">🕒 ${ev.startTime} - ${ev.endTime}</span>
-                            <span>📅 ${formatDisplayDate(ev.date)}</span>
+                            <span class="time-chip">🕒 ${ev.startTime} - ${ev.endTime} น.</span>
+                            <span>📅 ${new Date(ev.date).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'})}</span>
                         </div>
                     </div>
-                    <button class="btn-del" onclick="deleteEvent('${ev.title}', '${ev.date}', '${ev.startTime}')">×</button>
+                    <button class="btn-del" onclick="deleteEvent('${ev.title}', '${ev.date}')">×</button>
                 </div>
             `).join('');
         }
 
-        async function deleteEvent(title, date, startTime) {
-            if (!confirm(`คุณต้องการลบกิจกรรม "${title}" ใช่หรือไม่?`)) return;
-            const url = `${scriptUrl}?action=delete&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}`;
-            try {
-                const res = await fetch(url);
-                const result = await res.text();
-                if(result.includes("Success")) {
-                    showToast("ลบข้อมูลเรียบร้อยแล้ว");
-                    setTimeout(() => {
-                        loadEvents();
-                        document.getElementById('calendarIframe').src += '';
-                    }, 500);
-                } else { showToast("ลบไม่สำเร็จ", "danger"); }
-            } catch (e) { showToast("เกิดข้อผิดพลาด", "danger"); }
-        }
-
-        async function manageEvent(action) {
-            const btn = document.getElementById('btnAdd');
+        async function manageEvent() {
             const title = document.getElementById('title').value.trim();
             const date = document.getElementById('date').value;
-            const startTime = document.getElementById('startH').value + ":" + document.getElementById('startM').value;
-            const endTime = document.getElementById('endH').value + ":" + document.getElementById('endM').value;
-            if (!title || !date) return showToast("กรุณาระบุชื่อและวันที่", "danger");
-            btn.disabled = true; btn.innerText = "กำลังบันทึก...";
-            const url = `${scriptUrl}?action=add&title=${encodeURIComponent(title)}&date=${date}&startTime=${startTime}&endTime=${endTime}`;
+            const start = document.getElementById('startH').value + ":" + document.getElementById('startM').value;
+            const end = document.getElementById('endH').value + ":" + document.getElementById('endM').value;
+            const btn = document.getElementById('btnAdd');
+
+            if (!title || !date) return showToast("กรุณากรอกหัวข้อและวันที่", "error");
+
+            btn.disabled = true;
+            btn.innerText = "กำลังบันทึก...";
+
             try {
-                await fetch(url);
-                showToast("บันทึกนัดหมายสำเร็จ!");
-                setTimeout(() => {
+                const url = `${scriptUrl}?action=add&title=${encodeURIComponent(title)}&date=${date}&startTime=${start}&endTime=${end}`;
+                const res = await fetch(url);
+                const result = await res.text();
+                
+                if (result.includes("Success")) {
+                    showToast("บันทึกนัดหมายสำเร็จ!");
                     document.getElementById('title').value = "";
-                    loadEvents();
-                    document.getElementById('calendarIframe').src += '';
-                    btn.disabled = false; btn.innerText = "＋ บันทึกนัดหมาย";
-                }, 1000);
+                    refreshAll();
+                }
             } catch (e) {
-                showToast("บันทึกไม่สำเร็จ", "danger");
-                btn.disabled = false; btn.innerText = "＋ บันทึกนัดหมาย";
+                showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "＋ บันทึกนัดหมาย";
             }
+        }
+
+        async function deleteEvent(title, date) {
+            if (!confirm(`ต้องการลบ "${title}" ใช่หรือไม่?`)) return;
+            try {
+                const url = `${scriptUrl}?action=delete&title=${encodeURIComponent(title)}&date=${date}`;
+                const res = await fetch(url);
+                showToast("ลบรายการแล้ว");
+                refreshAll();
+            } catch (e) {
+                showToast("ลบไม่สำเร็จ", "error");
+            }
+        }
+
+        function refreshAll() {
+            loadEvents();
+            // รีเฟรช Iframe ปฏิทิน
+            const iframe = document.getElementById('calendarIframe');
+            iframe.src = iframe.src;
         }
 
         function updateSummary() {
             document.getElementById('sumTotal').innerText = allEvents.length;
-            document.getElementById('sumToday').innerText = allEvents.filter(e => e._class === 'today').length;
-            document.getElementById('sumUpcoming').innerText = allEvents.filter(e => e._class === 'upcoming').length;
-            document.getElementById('sumPast').innerText = allEvents.filter(e => e._class === 'past').length;
+            document.getElementById('sumToday').innerText = allEvents.filter(e => e._status === 'today').length;
+            document.getElementById('sumUpcoming').innerText = allEvents.filter(e => e._status === 'upcoming').length;
+            document.getElementById('sumPast').innerText = allEvents.filter(e => e._status === 'past').length;
         }
 
         function setFilter(f) {
             currentFilter = f;
-            document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.toggle('active', btn.id === `tab-${f}`));
+            document.querySelectorAll('.filter-tab').forEach(btn => {
+                btn.classList.toggle('active', btn.id === `tab-${f}`);
+            });
             renderEvents();
         }
 
+        // Initialize Time Selects
         window.onload = () => {
-            let h="", m="";
-            for(let i=0; i<24; i++) h += `<option value="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</option>`;
-            for(let i=0; i<60; i+=5) m += `<option value="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</option>`;
+            let h = "", m = "";
+            for (let i = 0; i < 24; i++) h += `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`;
+            for (let i = 0; i < 60; i += 5) m += `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`;
+            
             document.getElementById('startH').innerHTML = document.getElementById('endH').innerHTML = h;
             document.getElementById('startM').innerHTML = document.getElementById('endM').innerHTML = m;
+            
+            // Default time
+            document.getElementById('startH').value = "09";
+            document.getElementById('endH').value = "10";
+            
+            // Set default date to today
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            
             loadEvents();
         };
     </script>
