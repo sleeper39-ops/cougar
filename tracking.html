@@ -362,7 +362,10 @@ window.switchTab = function(tab) {
     document.getElementById('view-tracking').classList.toggle('show', isDriver);
     document.getElementById('fab-group').style.display = isDriver ? 'none' : '';
     document.getElementById('last-update-text').style.display = isDriver ? 'none' : '';
-    if (!isDriver && map) setTimeout(() => map.invalidateSize(), 50);
+    if (!isDriver && map) {
+        setTimeout(() => map.invalidateSize(), 50);
+        if (typeof updateMap === 'function') updateMap(); // โหลดข้อมูลทันทีเมื่อสลับมาหน้า Viewer
+    }
 };
 
 // ── GPS: ส่งตำแหน่ง ────────────────────────────────────
@@ -574,7 +577,7 @@ window.addEventListener('load', function() {
     let firstLoad = true;
 
     function updateMap() {
-        fetch(`${GAS_URL}?action=getAll`)
+        fetch(`${GAS_URL}?action=getAll&_t=${Date.now()}`) // เพิ่ม timestamp ป้องกัน cache
             .then(r => r.json())
             .then(arr => {
                 if (!arr || !arr.length) {
@@ -633,8 +636,9 @@ window.addEventListener('load', function() {
     }
 
     updateMap();
-    setInterval(updateMap, 10000);
+    setInterval(updateMap, 2000); // ปรับจาก 10000 เป็น 2000 (2 วินาที) เพื่อความลื่นไหล
 
+    window.updateMap = updateMap; // ย้ายมาให้เรียกจากภายนอกได้
     window.triggerUpdateMap = updateMap;
 });
 </script>
