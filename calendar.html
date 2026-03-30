@@ -204,7 +204,7 @@
             let filtered = [];
 
             if (currentFilter === 'past') {
-                // กรองเฉพาะอดีต
+                // กรองเฉพาะอดีต (วันที่ก่อนวันนี้)
                 filtered = allEvents.filter(ev => {
                     const d = new Date(ev.date);
                     d.setHours(0,0,0,0);
@@ -213,13 +213,18 @@
                 // เรียงจากล่าสุดไปหาอดีต
                 filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
             } else {
-                // แสดงทั้งหมด (ล่วงหน้า และวันนี้) เรียงจากใกล้ที่สุดไปหาอนาคต
-                filtered = [...allEvents];
+                // กรองเฉพาะ "วันนี้" และ "อนาคต"
+                filtered = allEvents.filter(ev => {
+                    const d = new Date(ev.date);
+                    d.setHours(0,0,0,0);
+                    return d >= today;
+                });
+                // เรียงจากใกล้ที่สุดไปหาอนาคต
                 filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
             }
 
             if (filtered.length === 0) {
-                const msg = currentFilter === 'all' ? 'ไม่มีกิจกรรมที่บันทึกไว้' : 'ไม่มีกิจกรรมย้อนหลัง';
+                const msg = currentFilter === 'all' ? 'ไม่มีกิจกรรมล่วงหน้า' : 'ไม่มีกิจกรรมย้อนหลัง';
                 list.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:14px; margin-top:20px;">${msg}</div>`;
                 return;
             }
